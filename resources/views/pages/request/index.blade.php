@@ -1,194 +1,273 @@
 @extends('layouts.app')
-@section('title', 'الطلبات')
-@section('Breadcrumb', 'الطلبات')
+@section('title', 'قائمة الطرود')
+@section('Breadcrumb', 'قائمة الطرود')
 @section('content')
-    <div class="space-y-5 sm:space-y-6">
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="px-5 py-4 sm:px-6 sm:py-5">
+    <x-modals.success-modal />
+    <x-modals.error-modal />
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+        <!-- رأس الصفحة مع زر إضافة جديد -->
+        <div class="flex flex-col xl:flex-row md:items-center  justify-between mb-6">
+            <a href="{{ route('request.create') }}"
+                class="mt-4 md:mt-0 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 my-4 px-4 rounded-lg inline-flex items-center">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                تسجيل طرد جديد
+            </a>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-white">جميع الطرود المسجلة</h2>
 
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
+        </div>
 
-                    <!-- حقل البحث -->
-                    <div class="flex-1 min-w-[250px]">
-                        <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300 text-right">
-                            البحث
-                        </label>
-                        <input type="text"
-                            class="shadow-theme-xs h-10 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 text-right"
-                            placeholder="أدخل نص البحث..." />
-                    </div>
-                    <!-- زر التطبيق -->
-                    <a href="{{ route('request.create') }}"
-                        class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg px-6 py-2 text-sm font-medium text-white min-w-[100px]">
-                        تسجيل طرد جديد
-                    </a>
-                    <!-- خيار المتصلين فقط / الكل -->
-                    <div class="min-w-[180px]">
-                        <label class="mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300 text-right">
-                            الحالة
-                        </label>
-                        <select
-                            class="shadow-theme-xs h-10 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-brand-300 focus:ring-3 focus:ring-brand-500/10 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 text-right">
-                            <option value="all">الكل</option>
-                            <option value="connected">المتصلين فقط</option>
-                        </select>
-                    </div>
+        <!-- جدول الطرود -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            #
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            المرسل
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            المستلم
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            الوجهة
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            نوع الطرد
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            الفرع
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            حالة الدفع
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            حالة الطرد
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            الإجراءات
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    @forelse ($requests as $request)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-800 dark:text-gray-300">{{ $request->sender_name }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->sender_phone }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-800 dark:text-gray-300">{{ $request->receiver_name }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->receiver_phone }}</div>
+                            </td>
 
-                    <!-- زر التطبيق -->
-                    <button
-                        class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg px-6 py-2 text-sm font-medium text-white min-w-[100px]">
-                        تطبيق
-                    </button>
+                            <td class="py-3">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <p
+                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
+                                        {{ $request->from_city }}
+                                    </p>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                    <p
+                                        class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                        {{ $request->to_city }}
+                                    </p>
+                                </div>
+                            </td>
 
-                </div>
+                            {{-- <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-800 dark:text-gray-300"></div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">→ </div>
+                            </td> --}}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
+                                {{ $request->package_type }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
+                                {{ $request->branch }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if ($request->payment_method == 'prepaid')
+                                    <span
+                                        class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        دفع مقدم
+                                    </span>
+                                @else
+                                    <span
+                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                                        دفع عند التسليم
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if ($request->status == 'pending')
+                                    <span
+                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                                        قيد الانتظار
+                                    </span>
+                                @elseif ($request->status == 'in_transit')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-brand-100 text-brand-800 dark:bg-brand-800 dark:text-brand-100">
+                                        قيد النقل
+                                    </span>
+                                @elseif ($request->status == 'delivered')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-success-100 text-success-800 dark:bg-success-800 dark:text-success-100">
+                                        تم التسليم
+                                    </span>
+                                @elseif ($request->status == 'cancelled')
+                                    <span
+                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-100">
+                                        ملغي
+                                    </span>
+                                @endif
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex mx-5 space-x-reverse space-x-2">
+                                    <!-- زر التعديل -->
+                                    <a href="{{ route('request.edit', $request->id) }}"
+                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
+                                        title="تعديل">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </a>
 
+                                    {{-- <!-- زر الحذف -->
+        <form action="{{ route('request.destroy', $request->id) }}" method="POST"
+            class="inline">
+            @csrf
+            @method('DELETE')
+            <button type="button"
+                onclick="confirmDelete('{{ $request->id }}', '{{ $request->sender_name }}')"
+                class="text-error-600 hover:text-error-900 dark:text-error-400 dark:hover:text-error-300">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </form> --}}
+
+                                    <!-- زر الطباعة -->
+                                  
+
+                                    <!-- زر العرض -->
+                                    <a href="{{ route('request.show', $request->id) }}"
+                                        class="text-success-600 hover:text-success-900 dark:text-success-400 dark:hover:text-success-300"
+                                        title="عرض التفاصيل">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                      <a href="{{ route('request.invoice', $request->id) }}" target="_blank"
+                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
+                                        title="طباعة الفاتورة">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                                لا توجد طرود مسجلة حالياً.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- الترقيم -->
+        @if ($requests->hasPages())
+            <div class="mt-6">
+                {{ $requests->links() }}
             </div>
+        @endif
+    </div>
 
-            <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
-                <!-- ====== Table Six Start -->
-                <div
-                    class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                    <div class="max-w-full overflow-x-auto">
-                        <table class="min-w-full">
-                            <!-- table header start -->
-                            <thead>
-                                <tr class="border-b border-gray-100 dark:border-gray-800">
-                                    <th class="px-5 py-3 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                الأسم
-                                            </p>
-                                        </div>
-                                    </th>
-                                    <th class="px-5 py-3 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                رقم الواتساب
-                                            </p>
-                                        </div>
-                                    </th>
-                                    <th class="px-5 py-3 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                نوعه
-                                            </p>
-                                        </div>
-                                    </th>
-                                    <th class="px-5 py-3 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                حالته
-                                            </p>
-                                        </div>
-                                    </th>
-                                    <th class="px-5 py-3 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="font-medium text-gray-500 text-theme-xs dark:text-gray-400">
-                                                الطلبات
-                                            </p>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <!-- table header end -->
-                            <!-- table body start -->
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                                <tr>
-                                    <td class="px-5 py-4 sm:px-6">
-                                        <div class="flex items-center">
-                                            <div class="flex items-center gap-3">
-                                                <div>
-                                                    <span
-                                                        class="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                                                        احمد شرجبي
-                                                    </span>
-                                                    <span class="block text-gray-500 text-theme-xs dark:text-gray-400">
-                                                        +967780236552
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">
-                                                +967780236551
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p
-                                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-700 dark:bg-success-500/15 dark:text-success-500">
-                                                مستخدم عادي
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p
-                                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-700 dark:bg-success-500/15 dark:text-success-500">
-                                                نشط
-                                            </p>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4 sm:px-6">
-                                        <div class="flex items-center">
-                                            <p class="text-gray-500 text-theme-sm dark:text-gray-400">30</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {{-- <!-- الباجينشن -->
-                <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-800 sm:px-6">
-                    <div class="flex flex-1 justify-between sm:hidden">
-                        <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">السابق</a>
-                        <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">التالي</a>
-                    </div>
-                    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700 dark:text-gray-300">
-                                عرض
-                                <span class="font-medium">1</span>
-                                إلى
-                                <span class="font-medium">10</span>
-                                من
-                                <span class="font-medium">97</span>
-                                نتائج
-                            </p>
-                        </div>
-                        <div>
-                            <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                                <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-gray-700">
-                                    <span class="sr-only">السابق</span>
-                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                                    </svg>
-                                </a>
-                                <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">1</a>
-                                <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-700">2</a>
-                                <a href="#" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-700 md:inline-flex">3</a>
-                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-gray-300 dark:ring-gray-600">...</span>
-                                <a href="#" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-700 md:inline-flex">8</a>
-                                <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-700">9</a>
-                                <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-100 dark:ring-gray-600 dark:hover:bg-gray-700">10</a>
-                                <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-gray-700">
-                                    <span class="sr-only">التالي</span>
-                                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd" />
-                                    </svg>
-                                </a>
-                            </nav>
-                        </div>
-                    </div>
-                </div> --}}
+    <!-- نموذج تأكيد الحذف -->
+    <div id="deleteModal"
+        class="fixed inset-0 bg-gray-400/50 backdrop-blur-[32px] hidden items-center justify-center z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+            <div class="text-center">
+                <svg class="mx-auto h-12 w-12 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">تأكيد الحذف</h3>
+                <div class="mt-2">
+                    <p class="text-sm text-gray-500 dark:text-gray-400" id="deleteMessage">
+                        هل أنت متأكد من رغبتك في حذف هذا الطرد؟ لا يمكن التراجع عن هذا الإجراء.
+                    </p>
                 </div>
-                <!-- ====== Table Six End -->
+                <div class="mt-6 flex justify-center space-x-4 space-x-reverse">
+                    <button type="button" onclick="hideDeleteModal()"
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                        إلغاء
+                    </button>
+                    <form id="deleteForm" method="POST" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="px-4 py-2 mx-2 text-sm font-medium text-white bg-error-500 hover:bg-error-700 rounded-lg">
+                            حذف
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function confirmDelete(id, senderName) {
+            const deleteForm = document.getElementById('deleteForm');
+            const deleteMessage = document.getElementById('deleteMessage');
+            const deleteModal = document.getElementById('deleteModal');
+
+            deleteForm.action = `/request/${id}`;
+            deleteMessage.textContent = `هل أنت متأكد من رغبتك في حذف طرد ${senderName}؟ لا يمكن التراجع عن هذا الإجراء.`;
+            deleteModal.classList.remove('hidden');
+            deleteModal.classList.add('flex');
+        }
+
+        function hideDeleteModal() {
+            const deleteModal = document.getElementById('deleteModal');
+            deleteModal.classList.add('hidden');
+            deleteModal.classList.remove('flex');
+        }
+
+        // إغلاق النافذة عند النقر خارجها
+        document.getElementById('deleteModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideDeleteModal();
+            }
+        });
+    </script>
 
 @endsection

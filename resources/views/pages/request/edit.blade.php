@@ -1,14 +1,16 @@
 @extends('layouts.app')
-@section('title', 'تسجيل طرد جديد')
-@section('Breadcrumb', 'تسجيل طرد جديد')
+@section('title', 'تعديل طرد')
+@section('Breadcrumb', 'تعديل طرد')
 @section('content')
-
+  <x-modals.success-modal />
+  <x-modals.error-modal />
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
 
-        <form action="{{ route('request.store') }}" method="POST">
+        <form action="{{ route('request.update', $shipment->id) }}" method="POST">
             @csrf
+            @method('PUT')
 
-            <!-- الشبكة الرئيسية: عمود واحد في الموبايل وعمودين في الشاشات الأكبر -->
+            <!-- الشبكة الرئيسية -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
 
                 <!-- بيانات المرسل -->
@@ -17,7 +19,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                        <input type="text" name="sender_name" value="{{ old('sender_name') }}"
+                        <input type="text" name="sender_name" value="{{ old('sender_name', $shipment->sender_name) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="اسم المرسل">
                         <div class="text-sm text-error-600 mt-1">
@@ -29,7 +31,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="sender_phone" value="{{ old('sender_phone') }}"
+                        <input type="text" name="sender_phone" value="{{ old('sender_phone', $shipment->sender_phone) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="رقم الهاتف">
                         <div class="text-sm text-error-600 mt-1">
@@ -41,7 +43,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\من</label>
-                        <input type="text" name="from_city" value="{{ old('from_city') }}"
+                        <input type="text" name="from_city" value="{{ old('from_city', $shipment->from_city) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="الجهه\من">
                         <div class="text-sm text-error-600 mt-1">
@@ -58,7 +60,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                        <input type="text" name="receiver_name" value="{{ old('receiver_name') }}"
+                        <input type="text" name="receiver_name" value="{{ old('receiver_name', $shipment->receiver_name) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="اسم المستلم">
                         <div class="text-sm text-error-600 mt-1">
@@ -70,7 +72,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="receiver_phone" value="{{ old('receiver_phone') }}"
+                        <input type="text" name="receiver_phone" value="{{ old('receiver_phone', $shipment->receiver_phone) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="رقم الهاتف">
                         <div class="text-sm text-error-600 mt-1">
@@ -82,7 +84,7 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\الى</label>
-                        <input type="text" name="to_city" value="{{ old('to_city') }}"
+                        <input type="text" name="to_city" value="{{ old('to_city', $shipment->to_city) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="الجهه\الى">
                         <div class="text-sm text-error-600 mt-1">
@@ -91,21 +93,23 @@
                             @enderror
                         </div>
                     </div>
-
-
                 </div>
-
-
             </div>
-            <div class="mt-3">
+
+            <!-- الفرع -->
+            <div class="mt-6">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الفرع</label>
                 <select name="branch"
                     class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:gray-400">
                     <option value="">اختر الفرع</option>
-                    <option>الفرع الرئيسي</option>
-                    <option>المكلا</option>
-                    <option>صنعاء</option>
-                    <option>عدن</option>
+                    <option value="الفرع الرئيسي" {{ old('branch', $shipment->branch) == 'الفرع الرئيسي' ? 'selected' : '' }}>
+                        الفرع الرئيسي
+                    </option>
+                    <option value="المكلا" {{ old('branch', $shipment->branch) == 'المكلا' ? 'selected' : '' }}>المكلا
+                    </option>
+                    <option value="صنعاء" {{ old('branch', $shipment->branch) == 'صنعاء' ? 'selected' : '' }}>صنعاء
+                    </option>
+                    <option value="عدن" {{ old('branch', $shipment->branch) == 'عدن' ? 'selected' : '' }}>عدن</option>
                 </select>
                 <div class="text-sm text-error-600 mt-1">
                     @error('branch')
@@ -114,17 +118,14 @@
                 </div>
             </div>
 
+            <!-- تفاصيل الطرد وطريقة الدفع -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">
-
-
-
                 <!-- نوع الطرد -->
                 <div class="space-y-4 w-full md:col-span-2">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
-
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">نوع الطرد</label>
-                        <input type="text" name="package_type" value="{{ old('package_type') }}"
+                        <input type="text" name="package_type" value="{{ old('package_type', $shipment->package_type) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="نوع الطرد">
                         <div class="text-sm text-error-600 mt-1">
@@ -133,35 +134,26 @@
                             @enderror
                         </div>
                     </div>
-                </div class="mt-3">
+                </div>
+
                 <!-- طريقة الدفع -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-sm font-bold mb-3 text-gray-700 dark:text-gray-400 my-6">طريقة الدفع</h3>
-
                     <div class="flex gap-6">
-                        <div x-data="{ payment: 'prepaid' }" class="flex gap-6">
-
+                        <div x-data="{ payment: '{{ old('payment_method', $shipment->payment_method) }}' }" class="flex gap-6">
                             <!-- دفع مقدم -->
                             <label
                                 :class="payment === 'prepaid' ? 'text-gray-700 dark:text-gray-400' :
                                     'text-gray-500 dark:text-gray-400'"
                                 class="relative flex cursor-pointer items-center gap-3 text-sm font-medium select-none">
-
-                                <input class="sr-only" type="radio" name="payment_method" value="prepaid" checked
-                                    @change="payment = 'prepaid'">
-
+                                <input class="sr-only" type="radio" name="payment_method" value="prepaid"
+                                    :checked="payment === 'prepaid'" @change="payment = 'prepaid'">
                                 <span
-                                    :class="payment === 'prepaid'
-                                        ?
-                                        'border-brand-500 bg-brand-500' :
-                                        'bg-transparent border-gray-300 dark:border-gray-700'"
+                                    :class="payment === 'prepaid' ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
                                     class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-
                                     <span :class="payment === 'prepaid' ? 'block' : 'hidden'"
                                         class="h-2 w-2 rounded-full bg-white"></span>
-
                                 </span>
-
                                 دفع مقدم
                             </label>
 
@@ -170,58 +162,50 @@
                                 :class="payment === 'cod' ? 'text-gray-700 dark:text-gray-400' :
                                     'text-gray-500 dark:text-gray-400'"
                                 class="relative flex cursor-pointer items-center gap-3 text-sm font-medium select-none">
-
                                 <input class="sr-only" type="radio" name="payment_method" value="cod"
-                                    @change="payment = 'cod'">
-
+                                    :checked="payment === 'cod'" @change="payment = 'cod'">
                                 <span
-                                    :class="payment === 'cod'
-                                        ?
-                                        'border-brand-500 bg-brand-500' :
-                                        'bg-transparent border-gray-300 dark:border-gray-700'"
+                                    :class="payment === 'cod' ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
                                     class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-
                                     <span :class="payment === 'cod' ? 'block' : 'hidden'"
                                         class="h-2 w-2 rounded-full bg-white"></span>
-
                                 </span>
-
                                 دفع عند التسليم (آجل)
                             </label>
-                            <div class="text-sm text-error-600 mt-1">
-                                @error('payment_method')
-                                    {{ $message }}
-                                @enderror
-                            </div>
-
                         </div>
-
-
                     </div>
-
+                    <div class="text-sm text-error-600 mt-1">
+                        @error('payment_method')
+                            {{ $message }}
+                        @enderror
+                    </div>
                 </div>
-
             </div>
-            <div class="mt-3">
+
+            <!-- الملاحظات -->
+            <div class="mt-6">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                 <textarea placeholder="وصف المركبه" rows="4" name="notes"
-                    class="hover:border-brand-500 dark:bg-dark-900 h-auto w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs resize-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"></textarea>
+                    class="hover:border-brand-500 dark:bg-dark-900 h-auto w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs resize-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">{{ old('notes', $shipment->notes) }}</textarea>
                 <div class="text-sm text-error-600 mt-1">
                     @error('notes')
                         {{ $message }}
                     @enderror
                 </div>
             </div>
-            <!-- زر التسجيل -->
-            <div class="mt-6">
+
+            <!-- الأزرار -->
+            <div class="mt-6 flex flex-col md:flex-row gap-4">
                 <button type="submit"
                     class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto">
-                    تسجيل الطرد
+                    تحديث الطرد
                 </button>
+                <a href="{{ route('request.index') }}"
+                    class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto text-center">
+                    رجوع للقائمة
+                </a>
             </div>
-
         </form>
-
     </div>
 
 @endsection

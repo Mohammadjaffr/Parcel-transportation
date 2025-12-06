@@ -168,7 +168,7 @@
           <!-- Menu Item Forms -->
 
           <!-- Menu Item Tables -->
-          <li>
+          {{-- <li>
             <a href="{{ route('Coupon.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
               :class="window.location.href.includes('{{ route('Coupon.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
@@ -185,9 +185,9 @@
                 كوبونات الخصم
               </span>
             </a>
-          </li>
+          </li> --}}
           <!-- Menu Item Tables -->
-          <li>
+          {{-- <li>
             <a href="{{ route('Vehicle.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
               :class="window.location.href.includes('{{ route('Vehicle.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
@@ -221,10 +221,10 @@
                 إدارة المركبات
               </span>
             </a>
-          </li>
+          </li> --}}
 
           <!-- Menu Item Pages -->
-          <li>
+          {{-- <li>
             <a href="{{ route('systems.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
               :class="window.location.href.includes('{{ route('systems.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
@@ -246,7 +246,7 @@
                 اعدادات النظام
               </span>
             </a>
-          </li>
+          </li> --}}
           <!-- Menu Item Pages -->
         </ul>
       </div>

@@ -26,16 +26,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', usercontroller::class);
     Route::resource('drivers', drivercontroller::class);
-    Route::resource('request',requestcontroller::class);
-    Route::resource('Coupon',couponcontroller::class);
-    Route::resource('Vehicle',VehicleController::class);
-    Route::resource('systems',SystemSettingsController::class);
+    Route::resource('request', requestcontroller::class);
+    Route::resource('Coupon', couponcontroller::class);
+    Route::resource('Vehicle', VehicleController::class);
+    Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');
 
-        
+    Route::get('/request/{id}/invoice', [requestController::class, 'invoice'])->name('request.invoice');
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
