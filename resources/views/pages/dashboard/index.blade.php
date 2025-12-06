@@ -6,44 +6,9 @@
         /* ===== Responsive Layout ===== */
         .chart-container {
             width: 100%;
-        }
+        }       
 
-        .ratings-container {
-            width: 100%;
-        }
-
-
-        @media (max-width: 767px) {
-            .chart-container {
-                width: 100%;
-                margin-bottom: 1rem;
-            }
-
-            .ratings-container {
-                width: 100%;
-            }
-        }
-
-
-        @media (min-width: 768px) and (max-width: 1279px) {
-            .chart-container {
-                width: 65%;
-            }
-
-            .ratings-container {
-                width: 35%;
-            }
-        }
-
-        @media (min-width: 1280px) {
-            .chart-container {
-                width: 75%;
-            }
-
-            .ratings-container {
-                width: 25%;
-            }
-        }
+        
     </style>
 @endsection
 @section('content')
@@ -96,229 +61,22 @@
             </div>
         </div>
 
-        <div
-            class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                <svg fill="#dc6803" width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="27" y="11" width="2" height="4"></rect>
-                    <rect x="3" y="11" width="2" height="4"></rect>
-                    <rect x="20" y="20" width="2" height="2"></rect>
-                    <rect x="10" y="20" width="2" height="2"></rect>
-                    <path
-                        d="M21,4H11A5.0059,5.0059,0,0,0,6,9V23a2.0023,2.0023,0,0,0,2,2v3h2V25H22v3h2V25a2.0027,2.0027,0,0,0,2-2V9A5.0059,5.0059,0,0,0,21,4Zm3,6,.0009,6H8V10ZM11,6H21a2.995,2.995,0,0,1,2.8157,2H8.1843A2.995,2.995,0,0,1,11,6ZM8,23V18H24.0012l.0008,5Z"
-                        transform="translate(0 0)"></path>
-                </svg>
-            </div>
-            <div class="mt-3 w-full">
-                <span class="text-xs text-gray-500 dark:text-gray-400">السائقين</span>
-                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">50</h4>
-            </div>
-        </div>
-
-        <div
-            class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                <svg fill="#dc6803" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M26,26V4H18v6H12v6H6V26H2v2H30V26ZM8,26V18h4v8Zm6,0V12h4V26Zm6,0V6h4V26Z"></path>
-                </svg>
-            </div>
-            <div class="mt-3 w-full">
-                <span class="text-xs text-gray-500 dark:text-gray-400">الطلبات</span>
-                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">1,250</h4>
-            </div>
-        </div>
-
-        <div
-            class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                <svg fill="#dc6803" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="23.586 13 21 10.414 21 6 23 6 23 9.586 25 11.586 23.586 13"></polygon>
-                    <path d="M22,18a8,8,0,1,1,8-8A8.0092,8.0092,0,0,1,22,18ZM22,4a6,6,0,1,0,6,6A6.0066,6.0066,0,0,0,22,4Z">
-                    </path>
-                    <path d="M8.63,18l7,6H30V22H16.37l-7-6H4V2H2V28a2.0025,2.0025,0,0,0,2,2H30V28H4V18Z"></path>
-                </svg>
-            </div>
-            <div class="mt-3 w-full">
-                <span class="text-xs text-gray-500 dark:text-gray-400">الطلبات الحالية</span>
-                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">45</h4>
-            </div>
-        </div>
     </div>
 
     <!-- ====== Chart One Start -->
 
-    <div class="flex flex-col lg:flex-row gap-4 mb-4">
+    <div class="flex flex-col lg:flex-row mb-4">
         <div class="chart-container">
             <div
                 class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6 h-full">
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        الطلبات خلال <span class="text-warning-500 dark:text-warning/90"> سنة</span>
+                        الطرود خلال <span class="text-warning-500 dark:text-warning/90"> سنة</span>
                     </h3>
                 </div>
 
                 <div class="mt-4">
                     <div id="chartOne" class="w-full h-64"></div>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="ratings-container">
-            <div
-                class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-5 sm:pt-5 h-full">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        أكثر فروع نشاطاً </h3>
-                </div>
-
-                <div class="mt-4 space-y-3">
-                    <!-- المستخدم 1 -->
-                    <div class="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <div
-                            class="relative w-12 h-12 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 flex-shrink-0">
-                            <img src="{{ asset('tailadmin/build/src/images/user/SO.jpg') }}" alt="user"
-                                class="object-cover w-full h-full" />
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-semibold text-gray-800 dark:text-white/90 truncate">
-                                أحمد شرجبي (<span class="text-warning-500 dark:text-warning/90">نوها</span>)
-                            </h4>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    +967780236552
-                                </p>
-                                <div class="h-3 w-px bg-gray-300 dark:bg-gray-700"></div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    عدن
-                                </p>
-                            </div>
-
-                            <div class="flex items-center gap-1 mt-1">
-                                <div class="flex">
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#e5e7eb" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-medium text-gray-800 dark:text-white/90">(4.8)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- المستخدم 2 -->
-                    <div class="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <div
-                            class="relative w-12 h-12 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 flex-shrink-0">
-                            <img src="{{ asset('tailadmin/build/src/images/user/SO.jpg') }}" alt="user"
-                                class="object-cover w-full h-full" />
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-semibold text-gray-800 dark:text-white/90 truncate">
-                                محمد العبد (<span class="text-warning-500 dark:text-warning/90">فوكسي</span>)
-                            </h4>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    +967712345678
-                                </p>
-                                <div class="h-3 w-px bg-gray-300 dark:bg-gray-700"></div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    صنعاء
-                                </p>
-                            </div>
-                            <!-- التقييم -->
-                            <div class="flex items-center gap-1 mt-1">
-                                <div class="flex">
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#e5e7eb" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-medium text-gray-800 dark:text-white/90">(4.6)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- المستخدم 3 -->
-                    <div class="flex gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                        <div
-                            class="relative w-12 h-12 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 flex-shrink-0">
-                            <img src="{{ asset('tailadmin/build/src/images/user/SO.jpg') }}" alt="user"
-                                class="object-cover w-full h-full" />
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h4 class="text-sm font-semibold text-gray-800 dark:text-white/90 truncate">
-                                فاطمة قاسم (<span class="text-warning-500 dark:text-warning/90">باص</span>)
-                            </h4>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                    +967798765432
-                                </p>
-                                <div class="h-3 w-px bg-gray-300 dark:bg-gray-700"></div>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    تعز
-                                </p>
-                            </div>
-                            <!-- التقييم -->
-                            <div class="flex items-center gap-1 mt-1">
-                                <div class="flex">
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#dc6803" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#e5e7eb" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                    <svg class="w-3 h-3" fill="#e5e7eb" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-medium text-gray-800 dark:text-white/90">(4.2)</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

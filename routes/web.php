@@ -2,12 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\usercontroller;
-use App\Http\Controllers\couponcontroller;
-use App\Http\Controllers\drivercontroller;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\requestcontroller;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\SystemSettingsController;
 
 // Route::get('/', function () {
@@ -25,10 +22,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', usercontroller::class);
-    Route::resource('drivers', drivercontroller::class);
     Route::resource('request', requestcontroller::class);
-    Route::resource('Coupon', couponcontroller::class);
-    Route::resource('Vehicle', VehicleController::class);
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');

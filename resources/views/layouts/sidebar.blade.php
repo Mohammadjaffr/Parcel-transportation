@@ -93,7 +93,7 @@
           <!-- Menu Item Calendar -->
 
           <!-- Menu Item Profile -->
-          <li>
+          {{-- <li>
             <a href="{{ route('drivers.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
               :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
@@ -127,7 +127,7 @@
                 إدارة السائقين
               </span>
             </a>
-          </li>
+          </li> --}}
           <!-- Menu Item Profile -->
 
           <!-- Menu Item Forms -->
@@ -161,7 +161,7 @@
                 </g>
               </svg>
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إدارة الطلبات
+                إدارة الطرود
               </span>
             </a>
           </li>
