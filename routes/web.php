@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\requestcontroller;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\BranchController;
 
 // Route::get('/', function () {
 //     return view('dashboard');
@@ -22,7 +23,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', usercontroller::class);
+    Route::resource('branch', BranchController::class);
     Route::resource('request', requestcontroller::class);
+    Route::patch('/request/{id}/status', [RequestController::class, 'updateStatus'])
+        ->name('request.updateStatus');
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');

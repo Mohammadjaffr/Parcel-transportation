@@ -2,8 +2,8 @@
 @section('title', 'تعديل طرد')
 @section('Breadcrumb', 'تعديل طرد')
 @section('content')
-  <x-modals.success-modal />
-  <x-modals.error-modal />
+    <x-modals.success-modal />
+    <x-modals.error-modal />
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
 
         <form action="{{ route('request.update', $shipment->id) }}" method="POST">
@@ -60,7 +60,8 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                        <input type="text" name="receiver_name" value="{{ old('receiver_name', $shipment->receiver_name) }}"
+                        <input type="text" name="receiver_name"
+                            value="{{ old('receiver_name', $shipment->receiver_name) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="اسم المستلم">
                         <div class="text-sm text-error-600 mt-1">
@@ -72,7 +73,8 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="receiver_phone" value="{{ old('receiver_phone', $shipment->receiver_phone) }}"
+                        <input type="text" name="receiver_phone"
+                            value="{{ old('receiver_phone', $shipment->receiver_phone) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="رقم الهاتف">
                         <div class="text-sm text-error-600 mt-1">
@@ -99,20 +101,18 @@
             <!-- الفرع -->
             <div class="mt-6">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الفرع</label>
-                <select name="branch"
+                <select name="branch_id"
                     class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:gray-400">
                     <option value="">اختر الفرع</option>
-                    <option value="الفرع الرئيسي" {{ old('branch', $shipment->branch) == 'الفرع الرئيسي' ? 'selected' : '' }}>
-                        الفرع الرئيسي
-                    </option>
-                    <option value="المكلا" {{ old('branch', $shipment->branch) == 'المكلا' ? 'selected' : '' }}>المكلا
-                    </option>
-                    <option value="صنعاء" {{ old('branch', $shipment->branch) == 'صنعاء' ? 'selected' : '' }}>صنعاء
-                    </option>
-                    <option value="عدن" {{ old('branch', $shipment->branch) == 'عدن' ? 'selected' : '' }}>عدن</option>
+                    @foreach ($branches as $branch)
+                        <option value="{{ $branch->id }}" {{ old('branch_id') == $branch->id ? 'selected' : '' }}>
+                            {{ $branch->name }}
+                        </option>
+                    @endforeach
+
                 </select>
                 <div class="text-sm text-error-600 mt-1">
-                    @error('branch')
+                    @error('branch_id')
                         {{ $message }}
                     @enderror
                 </div>
@@ -125,7 +125,8 @@
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">نوع الطرد</label>
-                        <input type="text" name="package_type" value="{{ old('package_type', $shipment->package_type) }}"
+                        <input type="text" name="package_type"
+                            value="{{ old('package_type', $shipment->package_type) }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="نوع الطرد">
                         <div class="text-sm text-error-600 mt-1">
@@ -149,7 +150,8 @@
                                 <input class="sr-only" type="radio" name="payment_method" value="prepaid"
                                     :checked="payment === 'prepaid'" @change="payment = 'prepaid'">
                                 <span
-                                    :class="payment === 'prepaid' ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                    :class="payment === 'prepaid' ? 'border-brand-500 bg-brand-500' :
+                                        'bg-transparent border-gray-300 dark:border-gray-700'"
                                     class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
                                     <span :class="payment === 'prepaid' ? 'block' : 'hidden'"
                                         class="h-2 w-2 rounded-full bg-white"></span>
@@ -165,7 +167,8 @@
                                 <input class="sr-only" type="radio" name="payment_method" value="cod"
                                     :checked="payment === 'cod'" @change="payment = 'cod'">
                                 <span
-                                    :class="payment === 'cod' ? 'border-brand-500 bg-brand-500' : 'bg-transparent border-gray-300 dark:border-gray-700'"
+                                    :class="payment === 'cod' ? 'border-brand-500 bg-brand-500' :
+                                        'bg-transparent border-gray-300 dark:border-gray-700'"
                                     class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
                                     <span :class="payment === 'cod' ? 'block' : 'hidden'"
                                         class="h-2 w-2 rounded-full bg-white"></span>
@@ -194,6 +197,25 @@
                 </div>
             </div>
 
+            <div class="relative">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المبلغ</label>
+
+                <input type="number" id="cod_amount" name="cod_amount"
+                    value="{{ old('cod_amount', $shipment->cod_amount) }}" min="0" step="0.01"
+                    placeholder="0.00"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg 
+                               bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300
+                               focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+                               @error('cod_amount') border-error-500 focus:ring-error-500 focus:border-error-500 @enderror">
+
+
+            </div>
+
+            @error('cod_amount')
+                <div class="text-sm text-error-600 mt-1">
+                    {{ $message }}
+                </div>
+            @enderror
             <!-- الأزرار -->
             <div class="mt-6 flex flex-col md:flex-row gap-4">
                 <button type="submit"

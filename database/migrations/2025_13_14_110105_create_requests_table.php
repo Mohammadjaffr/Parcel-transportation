@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('driver_id')->nullable()->constrained()->onDelete('set null');
+            // $table->foreignId('driver_id')->nullable()->constrained()->onDelete('set null');
             $table->string('sender_name');
             $table->string('sender_phone');
             $table->string('from_city');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('to_city');
 
             // الفرع (إن كانت الشركة لها أكثر من فرع)
-            $table->string('branch')->nullable();
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
 
             // تفاصيل الطرد
             $table->string('package_type')->nullable(); // نوع الطرد

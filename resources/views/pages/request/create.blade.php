@@ -99,16 +99,15 @@
             </div>
             <div class="mt-3">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الفرع</label>
-                <select name="branch"
+                <select name="branch_id"
                     class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:gray-400">
                     <option value="">اختر الفرع</option>
-                    <option>الفرع الرئيسي</option>
-                    <option>المكلا</option>
-                    <option>صنعاء</option>
-                    <option>عدن</option>
+                    @foreach ($branches as $branch)
+                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                    @endforeach
                 </select>
                 <div class="text-sm text-error-600 mt-1">
-                    @error('branch')
+                    @error('branch_id')
                         {{ $message }}
                     @enderror
                 </div>
@@ -212,15 +211,38 @@
                     @enderror
                 </div>
             </div>
-            <!-- زر التسجيل -->
-            <div class="mt-6">
-                <button type="submit"
-                    class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto">
-                    تسجيل الطرد
-                </button>
+            <div class="relative">
+                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المبلغ</label>
+
+                <input type="number" id="cod_amount" name="cod_amount" value="{{ old('cod_amount') }}" min="0"
+                    step="0.01" placeholder="0.00"
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg 
+                               bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300
+                               focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+                               @error('cod_amount') border-error-500 focus:ring-error-500 focus:border-error-500 @enderror">
+
+
             </div>
 
-        </form>
+            @error('cod_amount')
+                <div class="text-sm text-error-600 mt-1">
+                    {{ $message }}
+                </div>
+            @enderror
+
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                أدخل المبلغ المطلوب تحصيله من العميل عند التسليم
+            </p>
+    </div>
+    <!-- زر التسجيل -->
+    <div class="mt-6">
+        <button type="submit"
+            class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto">
+            تسجيل الطرد
+        </button>
+    </div>
+
+    </form>
 
     </div>
 

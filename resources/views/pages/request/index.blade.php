@@ -57,6 +57,10 @@
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            المبلغ
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             الإجراءات
                         </th>
                     </tr>
@@ -68,11 +72,11 @@
                                 {{ $loop->iteration }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-800 dark:text-gray-300">{{ $request->sender_name }}</div>
+                                <div class="text-sm text-gray-800 dark:text-gray-400">{{ $request->sender_name }}</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->sender_phone }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-800 dark:text-gray-300">{{ $request->receiver_name }}</div>
+                                <div class="text-sm text-gray-800 dark:text-gray-400">{{ $request->receiver_name }}</div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->receiver_phone }}</div>
                             </td>
 
@@ -98,11 +102,11 @@
                                 <div class="text-sm text-gray-800 dark:text-gray-300"></div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">→ </div>
                             </td> --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->package_type }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
-                                {{ $request->branch }}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                                {{ $request->branch?->name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')
@@ -139,11 +143,15 @@
                                         ملغي
                                     </span>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-warning-600 dark:text-warning-400">
+                                {{ $request->cod_amount ? number_format($request->cod_amount, 2) . ' ر.س' : '0.00 ر.س' }}
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex mx-5 space-x-reverse space-x-2">
                                     <!-- زر التعديل -->
                                     <a href="{{ route('request.edit', $request->id) }}"
-                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
+                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
                                         title="تعديل">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -167,7 +175,7 @@
         </form> --}}
 
                                     <!-- زر الطباعة -->
-                                  
+
 
                                     <!-- زر العرض -->
                                     <a href="{{ route('request.show', $request->id) }}"
@@ -181,7 +189,7 @@
                                         </svg>
                                     </a>
 
-                                      <a href="{{ route('request.invoice', $request->id) }}" target="_blank"
+                                    <a href="{{ route('request.invoice', $request->id) }}" target="_blank"
                                         class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
                                         title="طباعة الفاتورة">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -4,6 +4,18 @@
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
+    <div 
+    x-data="{
+        isSuccessModalOpen: false,
+        successTitle: '',
+        successMessage: '',
+    }"
+    @open-success-modal.window="
+        successTitle = $event.detail.title;
+        successMessage = $event.detail.message;
+        isSuccessModalOpen = true;
+    "
+></div>
     <div class="flex flex-col sm:flex-row gap-4 md:gap-6 flex-wrap mb-4">
         <div
             class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
@@ -207,7 +219,7 @@
                     </div>
                     <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">الفرع</h4>
                 </div>
-                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->branch }}</p>
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->branch->name }}</p>
             </div>
 
             <div
@@ -244,38 +256,93 @@
                 </div>
             </div>
 
-            <div
-                class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
-                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">طريقة الدفع</h4>
-                </div>
-                <p class="text-lg font-bold">
-                    @if ($shipment->payment_method == 'prepaid')
-                        <span class="text-success-600 dark:text-success-400 flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                            دفع مقدم
-                        </span>
-                    @else
-                        <span class="text-warning-600 dark:text-warning-400 flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            دفع عند التسليم
-                        </span>
-                    @endif
-                </p>
+         <div 
+    x-data="{
+        status: '{{ $shipment->status }}',
+        updating: false,
+        isSuccessModalOpen: false,
+        successTitle: '',
+        successMessage: '',
+
+        updateStatus() {
+            this.updating = true;
+            fetch('{{ route('request.updateStatus', $shipment->id) }}', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ status: this.status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.updating = false;
+                if (data.success) {
+                    this.successTitle = data.success_title;
+                    this.successMessage = data.success_message;
+                    this.isSuccessModalOpen = true;
+                }
+            })
+            .catch(() => {
+                this.updating = false;
+                alert('حدث خطأ أثناء التحديث');
+            });
+        }
+    }"
+    class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm"
+>
+    <div class="flex items-center gap-3 mb-3">
+        <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+            <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
+    </div>
+
+    <select 
+        x-model="status" 
+        @change="updateStatus()" 
+        class="w-full rounded-lg border-gray-300 text-sm p-2 dark:bg-gray-900 dark:text-white"
+    >
+        <option value="pending">قيد الانتظار</option>
+        <option value="in_transit">في الطريق</option>
+        <option value="deliverd">تم التسليم</option>
+        <option value="cancelled">ملغي</option>
+    </select>
+
+    <p x-show="updating" class="text-xs text-brand-600 mt-2">جاري التحديث...</p>
+<div x-show="isSuccessModalOpen"
+    x-transition.opacity
+    class="fixed inset-0 flex items-center justify-center p-5 z-[999999]"
+    style="display:none">
+
+    <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
+        <div class="text-center py-4">
+
+            <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90"
+                x-text="successTitle"></h4>
+
+            <p class="text-sm leading-6 text-gray-500 dark:text-gray-400"
+                x-text="successMessage"></p>
+
+            <div class="flex justify-center mt-6">
+                <button @click="isSuccessModalOpen = false" type="button"
+                    class="px-6 py-2 text-sm font-medium text-success-500 rounded-lg bg-success-500/[0.08] hover:bg-success-500 hover:text-white transition-colors duration-200">
+                    حسناً
+                </button>
             </div>
+
+        </div>
+    </div>
+</div>
+
+
         </div>
 
         <!-- الملاحظات -->

@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Validator;
 use App\Models\Shipment;
-// use Barryvdh\DomPDF\PDF;
+use TCPDF;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Branch;
+
 
 class RequestController extends Controller
 {
@@ -14,13 +15,16 @@ class RequestController extends Controller
     public function index()
     {
         $requests = Shipment::latest()->paginate(10);
+
         return view('pages.request.index', compact('requests'));
     }
 
     /* ========== 2- صفحة إنشاء طلب ========== */
     public function create()
     {
-        return view('pages.request.create');
+        $branches = Branch::all();
+
+        return view('pages.request.create ', compact('branches'));
     }
 
     /* ========== 3- تخزين طلب جديد ========== */
@@ -33,7 +37,7 @@ class RequestController extends Controller
             'receiver_name'   => 'required|string',
             'receiver_phone'  => 'required|string',
             'to_city'         => 'required|string',
-            'branch'          => 'required|string',
+            'branch_id' => 'required|exists:branches,id',
             'package_type'    => 'required|string',
             'weight'          => 'nullable|numeric',
             'payment_method'  => 'required|in:prepaid,cod',
@@ -46,7 +50,7 @@ class RequestController extends Controller
             'receiver_name.required'  => 'حقل اسم المستلم مطلوب.',
             'receiver_phone.required' => 'حقل هاتف المستلم مطلوب.',
             'to_city.required'        => 'حقل إلى المدينة مطلوب.',
-            'branch.required'         => 'حقل الفرع مطلوب.',
+            'branch_id.required'         => 'حقل الفرع مطلوب.',
             'package_type.required'   => 'حقل نوع الطرد مطلوب.',
             'payment_method.required' => 'حقل طريقة الدفع مطلوب.',
             'payment_method.in'       => 'طريقة الدفع المختارة غير صالحة.',
@@ -79,7 +83,8 @@ class RequestController extends Controller
     public function edit($id)
     {
         $shipment = Shipment::findOrFail($id);
-        return view('pages.request.edit', compact('shipment'));
+        $branches = Branch::all();
+        return view('pages.request.edit', compact('shipment', 'branches'));
     }
 
     /* ========== 6- تحديث الطلب ========== */
@@ -94,10 +99,11 @@ class RequestController extends Controller
             'receiver_name'   => 'required|string|max:255',
             'receiver_phone'  => 'required|string|max:20',
             'to_city'         => 'required|string|max:255',
-            'branch'          => 'required|string|max:255',
+            'branch_id' => 'required|exists:branches,id',
             'package_type'    => 'required|string|max:255',
             'payment_method'  => 'required|in:prepaid,cod',
             'notes'           => 'nullable|string',
+            'cod_amount'      => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -162,13 +168,71 @@ class RequestController extends Controller
             ->with('error_message', $e->getMessage())
             ->with('error_buttonText', 'حسناً');
     }
+
+
+
     public function invoice($id)
+    {
+
+        $shipment = Shipment::findOrFail($id);
+
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+
+        $pdf->SetMargins(5, 5, 5);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+
+        $pdf->SetFont('dejavusans', '', 12);
+
+        $html = view('pages.request.invoice', compact('shipment'))->render();
+        $pdf->AddPage();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
+    }
+
+
+
+    public function printThermal($id)
     {
         $shipment = Shipment::findOrFail($id);
 
-        // يمكنك استخدام مكتبة مثل barryvdh/laravel-dompdf
-        // أو إنشاء واجهة HTML خاصة للطباعة
-$pdf = Pdf::loadView('pages.request.invoice', compact('shipment'));
-        return $pdf->download('invoice-' . $shipment->id . '.pdf');
+        $pdf = new TCPDF('P', 'mm', [80, 300], true, 'UTF-8', false);
+        $pdf->setRTL(true);
+        $pdf->SetFont('aealarabiya', '', 12);
+        $pdf->AddPage();
+
+        $html = view('shipments.thermal', compact('shipment'))->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        return $pdf->Output('thermal-' . $shipment->id . '.pdf', 'I');
     }
+
+
+
+ public function updateStatus(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'status' => 'required|in:pending,in_transit,deliverd,cancelled'
+        ]);
+
+        $shipment = Shipment::findOrFail($id);
+        $shipment->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'success_title' => 'تم التحديث!',
+            'success_message' => 'تم تحديث حالة الطرد بنجاح.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error_message' => $e->getMessage()
+        ], 500);
+    }
+}
+
 }
