@@ -76,7 +76,9 @@ class RequestController extends Controller
     public function show($id)
     {
         $shipment = Shipment::findOrFail($id);
-        return view('pages.request.show', compact('shipment'));
+        $countrequests = Shipment::count();
+        
+        return view('pages.request.show', compact('shipment', 'countrequests'));
     }
 
     /* ========== 5- صفحة تعديل الطلب ========== */

@@ -4,18 +4,17 @@
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
-    <div 
-    x-data="{
+    <div x-data="{
         isSuccessModalOpen: false,
         successTitle: '',
         successMessage: '',
     }"
-    @open-success-modal.window="
+        @open-success-modal.window="
         successTitle = $event.detail.title;
         successMessage = $event.detail.message;
         isSuccessModalOpen = true;
-    "
-></div>
+    ">
+    </div>
     <div class="flex flex-col sm:flex-row gap-4 md:gap-6 flex-wrap mb-4">
         <div
             class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
@@ -26,7 +25,7 @@
             </div>
             <div class="mt-3 w-full">
                 <span class="text-xs text-gray-500 dark:text-gray-400">إجمالي الطلبات</span>
-                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">50</h4>
+                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">{{ $countrequests }}</h4>
             </div>
         </div>
 
@@ -83,6 +82,13 @@
                         d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                 </svg>
             </a>
+            <a href="{{ route('request.index') }}"
+                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white mx-2" title="رجوع">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+
         </div>
 
         <!-- شبكة المعلومات -->
@@ -236,7 +242,7 @@
                 </div>
                 <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->package_type }}</p>
             </div>
-            <div>
+            {{-- <div>
                 <div
                     class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
                     <div class="flex items-center gap-3 mb-3">
@@ -250,154 +256,159 @@
                         <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
                     </div>
                     <p
-                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                        class="rounded-full px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
                         {{ $shipment->status }}</p>
 
                 </div>
-            </div>
+            </div> --}}
 
-         <div 
-    x-data="{
-        status: '{{ $shipment->status }}',
-        updating: false,
-        isSuccessModalOpen: false,
-        successTitle: '',
-        successMessage: '',
-
-        updateStatus() {
-            this.updating = true;
-            fetch('{{ route('request.updateStatus', $shipment->id) }}', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ status: this.status })
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.updating = false;
-                if (data.success) {
-                    this.successTitle = data.success_title;
-                    this.successMessage = data.success_message;
-                    this.isSuccessModalOpen = true;
+            <div x-data="{
+                status: '{{ $shipment->status }}',
+                updating: false,
+                isSuccessModalOpen: false,
+                successTitle: '',
+                successMessage: '',
+            
+                updateStatus() {
+                    this.updating = true;
+                    fetch('{{ route('request.updateStatus', $shipment->id) }}', {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ status: this.status })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            this.updating = false;
+                            if (data.success) {
+                                this.successTitle = data.success_title;
+                                this.successMessage = data.success_message;
+                                this.isSuccessModalOpen = true;
+                            }
+                        })
+                        .catch(() => {
+                            this.updating = false;
+                            alert('حدث خطأ أثناء التحديث');
+                        });
                 }
-            })
-            .catch(() => {
-                this.updating = false;
-                alert('حدث خطأ أثناء التحديث');
-            });
-        }
-    }"
-    class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm"
->
-    <div class="flex items-center gap-3 mb-3">
-        <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
-            <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
-                viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 13l4 4L19 7" />
-            </svg>
-        </div>
-        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
-    </div>
-
-    <select 
-        x-model="status" 
-        @change="updateStatus()" 
-        class="w-full rounded-lg border-gray-300 text-sm p-2 dark:bg-gray-900 dark:text-white"
-    >
-        <option value="pending">قيد الانتظار</option>
-        <option value="in_transit">في الطريق</option>
-        <option value="deliverd">تم التسليم</option>
-        <option value="cancelled">ملغي</option>
-    </select>
-
-    <p x-show="updating" class="text-xs text-brand-600 mt-2">جاري التحديث...</p>
-<div x-show="isSuccessModalOpen"
-    x-transition.opacity
-    class="fixed inset-0 flex items-center justify-center p-5 z-[999999]"
-    style="display:none">
-
-    <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
-
-    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
-        <div class="text-center py-4">
-
-            <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90"
-                x-text="successTitle"></h4>
-
-            <p class="text-sm leading-6 text-gray-500 dark:text-gray-400"
-                x-text="successMessage"></p>
-
-            <div class="flex justify-center mt-6">
-                <button @click="isSuccessModalOpen = false" type="button"
-                    class="px-6 py-2 text-sm font-medium text-success-500 rounded-lg bg-success-500/[0.08] hover:bg-success-500 hover:text-white transition-colors duration-200">
-                    حسناً
-                </button>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
-        </div>
-
-        <!-- الملاحظات -->
-        @if ($shipment->notes)
-            <div
-                class="mt-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+            }"
+                class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
-                    <h4 class="text-lg font-bold text-gray-800 dark:text-white">الملاحظات</h4>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
                 </div>
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
-                    <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ $shipment->notes }}</p>
-                </div>
-            </div>
-        @endif
 
-        <!-- معلومات الوقت -->
-        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">تم الإنشاء</p>
-                        <p class="font-medium text-gray-800 dark:text-white">
-                            {{ $shipment->created_at->format('Y/m/d H:i') }}</p>
+                <select x-model="status" @change="updateStatus()"
+                    class="w-full rounded-lg border-gray-300 border text-sm p-2 dark:bg-gray-900 dark:text-white">
+                    <option value="pending">قيد الانتظار</option>
+                    <option value="in_transit">في الطريق</option>
+                    <option value="deliverd">تم التسليم</option>
+                    <option value="cancelled">ملغي</option>
+                </select>
+
+                <p x-show="updating" class="text-xs text-brand-600 mt-2">جاري التحديث...</p>
+                <div x-show="isSuccessModalOpen" x-transition.opacity
+                    class="fixed inset-0 flex items-center justify-center p-5 z-[999999]" style="display:none">
+
+                    <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
+
+                    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
+                        <div class="text-center py-4">
+
+                            <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90"
+                                x-text="successTitle"></h4>
+
+                            <p class="text-sm leading-6 text-gray-500 dark:text-gray-400" x-text="successMessage"></p>
+
+                            <div class="flex justify-center mt-6">
+                                <button @click="isSuccessModalOpen = false" type="button"
+                                    class="px-6 py-2 text-sm font-medium text-success-500 rounded-lg bg-success-500/[0.08] hover:bg-success-500 hover:text-white transition-colors duration-200">
+                                    حسناً
+                                </button>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">آخر تحديث</p>
-                        <p class="font-medium text-gray-800 dark:text-white">
-                            {{ $shipment->updated_at->format('Y/m/d H:i') }}</p>
-                    </div>
-                </div>
+
+
             </div>
+
+            <!-- الملاحظات -->
+            @if ($shipment->notes)
+                <div
+                    class="mt-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                            </svg>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white">الملاحظات</h4>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ $shipment->notes }}</p>
+                    </div>
+                </div>
+            @endif
+
+       
+
         </div>
-    </div>
+     <!-- معلومات الوقت -->
+            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
 
-@endsection
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">سجل الوقت</h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                    <!-- وقت الإنشاء -->
+                    <div
+                        class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                        <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
+                            <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">تم الإنشاء في</p>
+                            <p class="font-semibold text-gray-800 dark:text-white">
+                                {{ $shipment->created_at->format('Y/m/d H:i') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- آخر تحديث -->
+                    <div
+                        class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                        <div class="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">آخر تحديث</p>
+                            <p class="font-semibold text-gray-800 dark:text-white">
+                                {{ $shipment->updated_at->format('Y/m/d H:i') }}
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+    @endsection

@@ -14,6 +14,7 @@
                 </svg>
                 تسجيل طرد جديد
             </a>
+            
             <h2 class="text-lg font-semibold text-gray-800 dark:text-white">جميع الطرود المسجلة</h2>
 
         </div>
@@ -129,17 +130,17 @@
                                     </span>
                                 @elseif ($request->status == 'in_transit')
                                     <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-brand-100 text-brand-800 dark:bg-brand-800 dark:text-brand-100">
+                                        class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
                                         قيد النقل
                                     </span>
-                                @elseif ($request->status == 'delivered')
+                                @elseif ($request->status == 'deliverd')
                                     <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-success-100 text-success-800 dark:bg-success-800 dark:text-success-100">
+                                        class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
                                         تم التسليم
                                     </span>
                                 @elseif ($request->status == 'cancelled')
                                     <span
-                                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-error-100 text-error-800 dark:bg-error-800 dark:text-error-100">
+                                        class="rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
                                         ملغي
                                     </span>
                                 @endif
