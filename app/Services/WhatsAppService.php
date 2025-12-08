@@ -48,7 +48,7 @@ class WhatsAppService
         
         return "📦 *تأكيد شحن الطرد*
 
-📮 *رقم التتبع:* {$shipment->tracking_number}
+📮 *رقم التتبع:* {$shipment->id}
 👤 *المستلم:* {$shipment->receiver_name}
 📍 *مدينة المستلم:* {$shipment->to_city}
 🏢 *الفرع:* {$branchName}
