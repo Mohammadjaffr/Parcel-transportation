@@ -7,27 +7,17 @@ use App\Models\Shipment;
 
 class WhatsAppService
 {
-    /**
-     * إنشاء رابط واتساب لفتح في تاب جديد
-     */
     public function createWhatsAppLink($phone, $message)
     {
-        // تنسيق الرقم أولاً
         $formattedPhone = $this->formatPhone($phone);
         $encodedMessage = urlencode($message);
         
         return "https://web.whatsapp.com/send?phone={$formattedPhone}&text={$encodedMessage}";
     }
     
-    /**
-     * تنسيق رقم الهاتف
-     */
     private function formatPhone($phone)
     {
-        // إزالة جميع الرموز غير رقمية
         $phone = preg_replace('/[^0-9]/', '', $phone);
-        
-        // إذا بدأ بـ 0، استبدله بـ 966 (للسعودية)
         if (str_starts_with($phone, '0')) {
             $phone = '966' . substr($phone, 1);
         }
@@ -35,27 +25,18 @@ class WhatsAppService
         return $phone;
     }
     
-    /**
-     * الحصول على رابط المرسل
-     */
     public function getSenderLink(Shipment $shipment)
     {
         $message = $this->createSenderMessage($shipment);
         return $this->createWhatsAppLink($shipment->sender_phone, $message);
     }
     
-    /**
-     * الحصول على رابط المستلم
-     */
     public function getReceiverLink(Shipment $shipment)
     {
         $message = $this->createReceiverMessage($shipment);
         return $this->createWhatsAppLink($shipment->receiver_phone, $message);
     }
     
-    /**
-     * رسالة للمرسل
-     */
     public function createSenderMessage(Shipment $shipment)
     {
         $codText = '';
@@ -80,9 +61,7 @@ class WhatsAppService
 شكراً لثقتك بنا! 🌟";
     }
 
-    /**
-     * رسالة للمستلم
-     */
+   
     public function createReceiverMessage(Shipment $shipment)
     {
         $codText = '';

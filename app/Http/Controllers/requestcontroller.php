@@ -243,16 +243,13 @@ class RequestController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getSenderLink($shipment);
-        
-        // صفحة HTML بسيطة تفتح التاب مباشرة
+    
         return $this->openInNewTab($link, 'sender', $shipment);
     }
      public function openForReceiver($id)
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getReceiverLink($shipment);
-        
-        // صفحة HTML بسيطة تفتح التاب مباشرة
         return $this->openInNewTab($link, 'receiver', $shipment);
     }
     private function openInNewTab($link, $type, $shipment)
@@ -265,15 +262,13 @@ class RequestController extends Controller
 <head>
     <title>واتساب {$title}</title>
     <script>
-        // فتح الرابط في تاب جديد
+        
         window.open('{$link}', '_blank');
         
-        // محاولة إغلاق هذه النافذة بعد ثانية
         setTimeout(function() {
             try {
                 window.close();
             } catch(e) {
-                // إذا فشل الإغلاق، توجيه إلى صفحة أخرى
                 window.location.href = '/shipments/{$shipment->id}';
             }
         }, 1000);
