@@ -41,15 +41,22 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\من</label>
-                        <input type="text" name="from_city" value="{{ old('from_city') }}"
-                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="الجهه\من">
-                        <div class="text-sm text-error-600 mt-1">
-                            @error('from_city')
-                                {{ $message }}
-                            @enderror
-                        </div>
+
+                        <select id="from_city" name="from_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
+                            <option disabled selected>اختر الجهة</option>
+                            @foreach ($branches as $branch)
+                                <option value="{{ $branch->name }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+
+                        @error('from_city')
+                            <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
+
+
+
+
                 </div>
 
                 <!-- بيانات المستلم -->
@@ -82,14 +89,17 @@
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\الى</label>
-                        <input type="text" name="to_city" value="{{ old('to_city') }}"
-                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="الجهه\الى">
-                        <div class="text-sm text-error-600 mt-1">
-                            @error('to_city')
-                                {{ $message }}
-                            @enderror
-                        </div>
+
+                        <select id="to_city" name="to_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
+                            <option disabled selected>اختر الجهة</option>
+                            @foreach ($branches as $branch)
+                                <option value="{{ $branch->name }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+
+                        @error('to_city')
+                            <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
 
 
@@ -97,7 +107,7 @@
 
 
             </div>
-            <div class="mt-3">
+            {{-- <div class="mt-3">
                 <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الفرع</label>
                 <select name="branch_id"
                     class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:gray-400">
@@ -111,7 +121,7 @@
                         {{ $message }}
                     @enderror
                 </div>
-            </div>
+            </div> --}}
 
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">
 
@@ -245,5 +255,22 @@
     </form>
 
     </div>
+    <script>
+        document.getElementById('from_city').addEventListener('change', function() {
+            let selectedFrom = this.value;
+            let toCitySelect = document.getElementById('to_city');
+
+            for (let option of toCitySelect.options) {
+                option.hidden = false;
+            }
+
+            if (selectedFrom) {
+                let optionToHide = toCitySelect.querySelector('option[value="' + selectedFrom + '"]');
+                if (optionToHide) optionToHide.hidden = true;
+            }
+
+            toCitySelect.value = "";
+        });
+    </script>
 
 @endsection

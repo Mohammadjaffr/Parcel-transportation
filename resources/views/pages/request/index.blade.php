@@ -107,7 +107,7 @@
                                 {{ $request->package_type }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
-                                {{ $request->branch?->name }}
+                                {{ $request->from_city}}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')
@@ -118,7 +118,7 @@
                                 @else
                                     <span
                                         class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
-                                        دفع عند التسليم
+                                      أجل
                                     </span>
                                 @endif
                             </td>
@@ -146,7 +146,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-warning-600 dark:text-warning-400">
-                                {{ $request->cod_amount ? number_format($request->cod_amount, 2) . ' ر.س' : '0.00 ر.س' }}
+                                {{ $request->cod_amount ? number_format($request->cod_amount, 2) . ' ر.ي' : '0.00 ر.ي' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex mx-5 space-x-reverse space-x-2">
