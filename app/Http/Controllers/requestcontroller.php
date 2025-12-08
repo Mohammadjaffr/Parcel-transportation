@@ -5,12 +5,18 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Shipment;
 use TCPDF;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use App\Models\Branch;
 
 
 class RequestController extends Controller
 {
+    protected $whatsAppService;
+    public function __construct(WhatsAppService $whatsAppService)
+    {
+        $this->whatsAppService = $whatsAppService;
+    }
     /* ========== 1- عرض جميع الطلبات ========== */
     public function index()
     {
@@ -236,5 +242,55 @@ class RequestController extends Controller
         ], 500);
     }
 }
+    public function openForSender($id)
+    {
+        $shipment = Shipment::findOrFail($id);
+        $link = $this->whatsAppService->getSenderLink($shipment);
+        
+        // صفحة HTML بسيطة تفتح التاب مباشرة
+        return $this->openInNewTab($link, 'sender', $shipment);
+    }
+     public function openForReceiver($id)
+    {
+        $shipment = Shipment::findOrFail($id);
+        $link = $this->whatsAppService->getReceiverLink($shipment);
+        
+        // صفحة HTML بسيطة تفتح التاب مباشرة
+        return $this->openInNewTab($link, 'receiver', $shipment);
+    }
+    private function openInNewTab($link, $type, $shipment)
+    {
+        $title = $type === 'sender' ? 'المرسل' : 'المستلم';
+        
+        $html = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <title>واتساب {$title}</title>
+    <script>
+        // فتح الرابط في تاب جديد
+        window.open('{$link}', '_blank');
+        
+        // محاولة إغلاق هذه النافذة بعد ثانية
+        setTimeout(function() {
+            try {
+                window.close();
+            } catch(e) {
+                // إذا فشل الإغلاق، توجيه إلى صفحة أخرى
+                window.location.href = '/shipments/{$shipment->id}';
+            }
+        }, 1000);
+    </script>
+</head>
+<body style="text-align: center; padding: 50px;">
+    <h2>📱 جاري فتح واتساب {$title}...</h2>
+    <p>رقم التتبع: {$shipment->tracking_number}</p>
+    <p>سيتم فتح المحادثة في تاب جديد</p>
+</body>
+</html>
+HTML;
+
+        return response($html);
+    }
 
 }

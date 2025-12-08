@@ -31,6 +31,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');
 
+    Route::get('/whatsapp/sender/{id}', [requestcontroller::class, 'openForSender'])
+    ->name('whatsapp.sender');
+
+Route::get('/whatsapp/receiver/{id}', [requestcontroller::class, 'openForReceiver'])
+    ->name('whatsapp.receiver');
+
     Route::get('/request/{id}/invoice', [requestController::class, 'invoice'])->name('request.invoice');
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');

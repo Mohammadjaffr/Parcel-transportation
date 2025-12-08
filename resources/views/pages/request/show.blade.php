@@ -5,15 +5,14 @@
     <x-modals.success-modal />
     <x-modals.error-modal />
     <div x-data="{
-        isSuccessModalOpen: false,
-        successTitle: '',
-        successMessage: '',
-    }"
-        @open-success-modal.window="
-        successTitle = $event.detail.title;
-        successMessage = $event.detail.message;
-        isSuccessModalOpen = true;
-    ">
+            isSuccessModalOpen: false,
+            successTitle: '',
+            successMessage: '',
+        }" @open-success-modal.window="
+            successTitle = $event.detail.title;
+            successMessage = $event.detail.message;
+            isSuccessModalOpen = true;
+        ">
     </div>
     <div class="flex flex-col sm:flex-row gap-4 md:gap-6 flex-wrap mb-4">
         <div
@@ -26,6 +25,8 @@
             <div class="mt-3 w-full">
                 <span class="text-xs text-gray-500 dark:text-gray-400">إجمالي الطلبات</span>
                 <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white/90">{{ $countrequests }}</h4>
+                <div>
+                </div>
             </div>
         </div>
 
@@ -62,10 +63,10 @@
                     <div class="flex items-center gap-2 mt-1">
                         <span
                             class="px-3 py-1 rounded-full text-xs font-medium 
-                        @if ($shipment->status == 'pending') rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500
-                        @elseif($shipment->status == 'in_transit') rounded-full bg-brand-50 px-2 py-0.5 text-theme-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-500
-                        @elseif($shipment->status == 'deliverd') rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500
-                        @elseif($shipment->status == 'cancelled') rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500 @endif">
+                            @if ($shipment->status == 'pending') rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500
+                            @elseif($shipment->status == 'in_transit') rounded-full bg-brand-50 px-2 py-0.5 text-theme-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-500
+                            @elseif($shipment->status == 'deliverd') rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500
+                            @elseif($shipment->status == 'cancelled') rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500 @endif">
                             {{ $shipment->status }}
                         </span>
                         <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
@@ -109,6 +110,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">المرسل</h3>
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
+
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -145,6 +147,14 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400">الموقع</p>
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->from_city }}</p>
                             </div>
+                            <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
+                                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700  font-semibold py-3 px-4 rounded-lg transition-colors duration-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                إرسال للمرسل
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -167,8 +177,7 @@
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
@@ -180,8 +189,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
@@ -193,8 +201,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -205,6 +212,16 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400">الموقع</p>
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->to_city }}</p>
                             </div>
+                            <a href="{{ route('whatsapp.receiver', $shipment->id) }}" 
+           target="_blank"
+           class="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700  font-semibold py-3 px-4 rounded-lg transition-colors duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            إرسال للمستلم
+        </a>
+
                         </div>
                     </div>
                 </div>
@@ -247,10 +264,9 @@
                     class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
                     <div class="flex items-center gap-3 mb-3">
                         <div class="p-2 bg-success-50 dark:bg-success-900/20 rounded-lg">
-                            <svg class="w-5 h-5 text-success-600 dark:text-success-400" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7" />
+                            <svg class="w-5 h-5 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
                         <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
@@ -263,38 +279,38 @@
             </div> --}}
 
             <div x-data="{
-                status: '{{ $shipment->status }}',
-                updating: false,
-                isSuccessModalOpen: false,
-                successTitle: '',
-                successMessage: '',
-            
-                updateStatus() {
-                    this.updating = true;
-                    fetch('{{ route('request.updateStatus', $shipment->id) }}', {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({ status: this.status })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            this.updating = false;
-                            if (data.success) {
-                                this.successTitle = data.success_title;
-                                this.successMessage = data.success_message;
-                                this.isSuccessModalOpen = true;
-                            }
-                        })
-                        .catch(() => {
-                            this.updating = false;
-                            alert('حدث خطأ أثناء التحديث');
-                        });
-                }
-            }"
+                    status: '{{ $shipment->status }}',
+                    updating: false,
+                    isSuccessModalOpen: false,
+                    successTitle: '',
+                    successMessage: '',
+
+                    updateStatus() {
+                        this.updating = true;
+                        fetch('{{ route('request.updateStatus', $shipment->id) }}', {
+                                method: 'PATCH',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ status: this.status })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                this.updating = false;
+                                if (data.success) {
+                                    this.successTitle = data.success_title;
+                                    this.successMessage = data.success_message;
+                                    this.isSuccessModalOpen = true;
+                                }
+                            })
+                            .catch(() => {
+                                this.updating = false;
+                                alert('حدث خطأ أثناء التحديث');
+                            });
+                    }
+                }"
                 class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
@@ -323,8 +339,8 @@
                     <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
                         <div class="text-center py-4">
 
-                            <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90"
-                                x-text="successTitle"></h4>
+                            <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90" x-text="successTitle">
+                            </h4>
 
                             <p class="text-sm leading-6 text-gray-500 dark:text-gray-400" x-text="successMessage"></p>
 
@@ -348,8 +364,8 @@
                     class="mt-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
@@ -362,53 +378,53 @@
                 </div>
             @endif
 
-       
+
 
         </div>
-     <!-- معلومات الوقت -->
-            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <!-- معلومات الوقت -->
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
 
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">سجل الوقت</h3>
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">سجل الوقت</h3>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                    <!-- وقت الإنشاء -->
-                    <div
-                        class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
-                        <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
-                            <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">تم الإنشاء في</p>
-                            <p class="font-semibold text-gray-800 dark:text-white">
-                                {{ $shipment->created_at->format('Y/m/d H:i') }}
-                            </p>
-                        </div>
+                <!-- وقت الإنشاء -->
+                <div
+                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
+                        <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                     </div>
-
-                    <!-- آخر تحديث -->
-                    <div
-                        class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
-                        <div class="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                            <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">آخر تحديث</p>
-                            <p class="font-semibold text-gray-800 dark:text-white">
-                                {{ $shipment->updated_at->format('Y/m/d H:i') }}
-                            </p>
-                        </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">تم الإنشاء في</p>
+                        <p class="font-semibold text-gray-800 dark:text-white">
+                            {{ $shipment->created_at->format('Y/m/d H:i') }}
+                        </p>
                     </div>
+                </div>
 
+                <!-- آخر تحديث -->
+                <div
+                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    <div class="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+                        <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">آخر تحديث</p>
+                        <p class="font-semibold text-gray-800 dark:text-white">
+                            {{ $shipment->updated_at->format('Y/m/d H:i') }}
+                        </p>
+                    </div>
                 </div>
 
             </div>
-    @endsection
+
+        </div>
+@endsection
