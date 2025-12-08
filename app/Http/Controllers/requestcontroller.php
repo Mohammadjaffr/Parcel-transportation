@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminActivity;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Shipment;
 use TCPDF;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use App\Models\Branch;
+use App\Services\AdminLoggerService;
+
 
 
 class RequestController extends Controller
@@ -17,7 +20,7 @@ class RequestController extends Controller
     {
         $this->whatsAppService = $whatsAppService;
     }
-    /* ========== 1- عرض جميع الطلبات ========== */
+    /* ========== 1- عرض جميع الطردات ========== */
     public function index()
     {
         $requests = Shipment::latest()->paginate(10);
@@ -25,7 +28,7 @@ class RequestController extends Controller
         return view('pages.request.index', compact('requests'));
     }
 
-    /* ========== 2- صفحة إنشاء طلب ========== */
+    /* ========== 2- صفحة إنشاء طرد ========== */
     public function create()
     {
         $branches = Branch::all();
@@ -33,59 +36,69 @@ class RequestController extends Controller
         return view('pages.request.create ', compact('branches'));
     }
 
-    /* ========== 3- تخزين طلب جديد ========== */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'sender_name'     => 'required|string',
-            'sender_phone'    => 'required|string',
-            'from_city'       => 'required|string',
-            'receiver_name'   => 'required|string',
-            'receiver_phone'  => 'required|string',
-            'to_city'         => 'required|string',
-            'package_type'    => 'required|string',
-            'weight'          => 'nullable|numeric',
-            'payment_method'  => 'required|in:prepaid,cod',
-            'cod_amount'      => 'nullable|numeric',
-            'notes'           => 'nullable|string',
-        ], [
-            'sender_name.required'    => 'حقل اسم المرسل مطلوب.',
-            'sender_phone.required'   => 'حقل هاتف المرسل مطلوب.',
-            'from_city.required'      => 'حقل من المدينة مطلوب.',
-            'receiver_name.required'  => 'حقل اسم المستلم مطلوب.',
-            'receiver_phone.required' => 'حقل هاتف المستلم مطلوب.',
-            'to_city.required'        => 'حقل إلى المدينة مطلوب.',
-            'package_type.required'   => 'حقل نوع الطرد مطلوب.',
-            'payment_method.required' => 'حقل طريقة الدفع مطلوب.',
-            'payment_method.in'       => 'طريقة الدفع المختارة غير صالحة.',
-        ]);
+    /* ========== 3- تخزين طرد جديد ========== */
+  public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'sender_name'     => 'required|string',
+        'sender_phone'    => 'required|string',
+        'from_city'       => 'required|string',
+        'receiver_name'   => 'required|string',
+        'receiver_phone'  => 'required|string',
+        'to_city'         => 'required|string',
+        'package_type'    => 'required|string',
+        'weight'          => 'nullable|numeric',
+        'payment_method'  => 'required|in:prepaid,cod',
+        'cod_amount'      => 'nullable|numeric',
+        'notes'           => 'nullable|string',
+    ], [
+        'sender_name.required'    => 'حقل اسم المرسل مطلوب.',
+        'sender_phone.required'   => 'حقل هاتف المرسل مطلوب.',
+        'from_city.required'      => 'حقل من المدينة مطلوب.',
+        'receiver_name.required'  => 'حقل اسم المستلم مطلوب.',
+        'receiver_phone.required' => 'حقل هاتف المستلم مطلوب.',
+        'to_city.required'        => 'حقل إلى المدينة مطلوب.',
+        'package_type.required'   => 'حقل نوع الطرد مطلوب.',
+        'payment_method.required' => 'حقل طريقة الدفع مطلوب.',
+        'payment_method.in'       => 'طريقة الدفع المختارة غير صالحة.',
+    ]);
 
-        if ($validator->fails()) {
-            return $this->ValidationError($validator);
-        }
-
-        try {
-            Shipment::create($validator->validated());
-
-            return $this->SuccessBacktoIndex(
-                'تمت الإضافة!',
-                'تم إنشاء الطرد بنجاح.'
-            );
-        } catch (\Exception $e) {
-            return $this->ExceptionError($e);
-        }
+    if ($validator->fails()) {
+        return $this->ValidationError($validator);
     }
 
-    /* ========== 4- عرض تفاصيل طلب واحد ========== */
+    try {
+        // حفظ الطلب
+        $shipment = Shipment::create($validator->validated());
+
+        // تسجيل في السجلات
+        AdminLoggerService::log(
+            'إنشاء طرد',
+            'Shipment',
+            $shipment->id,
+            "إنشاء طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
+        );
+
+        return $this->SuccessBacktoIndex(
+            'تمت الإضافة!',
+            'تم إنشاء الطرد بنجاح.'
+        );
+
+    } catch (\Exception $e) {
+        return $this->ExceptionError($e);
+    }
+}
+
+    /* ========== 4- عرض تفاصيل طرد واحد ========== */
     public function show($id)
     {
         $shipment = Shipment::findOrFail($id);
         $countrequests = Shipment::count();
-        
+
         return view('pages.request.show', compact('shipment', 'countrequests'));
     }
 
-    /* ========== 5- صفحة تعديل الطلب ========== */
+    /* ========== 5- صفحة تعديل الطرد ========== */
     public function edit($id)
     {
         $shipment = Shipment::findOrFail($id);
@@ -93,7 +106,7 @@ class RequestController extends Controller
         return view('pages.request.edit', compact('shipment', 'branches'));
     }
 
-    /* ========== 6- تحديث الطلب ========== */
+    /* ========== 6- تحديث الطرد ========== */
     public function update(Request $request, $id)
     {
         $shipment = Shipment::findOrFail($id);
@@ -117,7 +130,12 @@ class RequestController extends Controller
 
         try {
             $shipment->update($validator->validated());
-
+ AdminLoggerService::log(
+            'تحديث طرد',
+            'Shipment',
+            $shipment->id,
+            "تحديث طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
+        );
             return $this->SuccessBacktoIndex(
                 'تم التحديث!',
                 'تم تحديث الطرد بنجاح.'
@@ -127,11 +145,12 @@ class RequestController extends Controller
         }
     }
 
-    /* ========== 7- حذف الطلب ========== */
+    /* ========== 7- حذف الطرد ========== */
     public function destroy($id)
     {
         try {
             Shipment::findOrFail($id)->delete();
+            AdminLoggerService::log('حذف طرد', 'Shipment', "تم حذف الطرد بنجاح");
 
             return $this->SuccessBacktoIndex(
                 'تم الحذف!',
@@ -213,40 +232,45 @@ class RequestController extends Controller
         return $pdf->Output('thermal-' . $shipment->id . '.pdf', 'I');
     }
 
-
-
- public function updateStatus(Request $request, $id)
+    public function adminlog()
 {
-    try {
-        $request->validate([
-            'status' => 'required|in:pending,in_transit,deliverd,cancelled'
-        ]);
-
-        $shipment = Shipment::findOrFail($id);
-        $shipment->update([
-            'status' => $request->status
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'success_title' => 'تم التحديث!',
-            'success_message' => 'تم تحديث حالة الطرد بنجاح.'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'error_message' => $e->getMessage()
-        ], 500);
-    }
+    $logs = AdminActivity::latest()->paginate(20);
+    return view('pages.log.logs', compact('logs'));
 }
+
+
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:pending,in_transit,deliverd,cancelled'
+            ]);
+
+            $shipment = Shipment::findOrFail($id);
+            $shipment->update([
+                'status' => $request->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'success_title' => 'تم التحديث!',
+                'success_message' => 'تم تحديث حالة الطرد بنجاح.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error_message' => $e->getMessage()
+            ], 500);
+        }
+    }
     public function openForSender($id)
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getSenderLink($shipment);
-    
+
         return $this->openInNewTab($link, 'sender', $shipment);
     }
-     public function openForReceiver($id)
+    public function openForReceiver($id)
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getReceiverLink($shipment);
@@ -255,7 +279,7 @@ class RequestController extends Controller
     private function openInNewTab($link, $type, $shipment)
     {
         $title = $type === 'sender' ? 'المرسل' : 'المستلم';
-        
+
         $html = <<<HTML
 <!DOCTYPE html>
 <html>
@@ -284,5 +308,4 @@ HTML;
 
         return response($html);
     }
-
 }

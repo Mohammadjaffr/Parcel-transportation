@@ -1,4 +1,4 @@
-@extends('layouts.app')
+{{-- @extends('layouts.app')
 @section('title', 'لوحة التحكم')
 @section('Breadcrumb', 'الصفحة الرئيسية')
 @section('style')
@@ -250,7 +250,7 @@
                                         d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                                 <p
-                                    class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                    class="rounded-full bg-brand-light-50 px-2 py-0.5 text-theme-xs font-medium text-brand-light-500 dark:bg-brand-light-500/15 dark:text-brand-light-500">
                                     التواهي
                                 </p>
                             </div>
@@ -344,7 +344,7 @@
                                         d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                                 <p
-                                    class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                    class="rounded-full bg-brand-light-50 px-2 py-0.5 text-theme-xs font-medium text-brand-light-500 dark:bg-brand-light-500/15 dark:text-brand-light-500">
                                     المعلا
                                 </p>
                             </div>
@@ -437,7 +437,7 @@
                                         d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
                                 <p
-                                    class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                    class="rounded-full bg-brand-light-50 px-2 py-0.5 text-theme-xs font-medium text-brand-light-500 dark:bg-brand-light-500/15 dark:text-brand-light-500">
                                     عدن
                                 </p>
                             </div>
@@ -518,4 +518,179 @@
         };
     </script>
 
+@endsection --}}
+
+@extends('layouts.app')
+@section('title', 'لوحة التحكم')
+@section('Breadcrumb', 'الصفحة الرئيسية')
+
+@section('style')
+<style>
+    .chart-container {
+        width: 100%;
+    }
+</style>
 @endsection
+
+@section('content')
+
+    {{-- بطاقات الإحصائيات --}}
+    <div class="flex flex-col sm:flex-row gap-4 md:gap-6 flex-wrap mb-4">
+
+        {{-- شحنات اليوم --}}
+        <div class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 transition hover:shadow-md flex-1 min-w-[180px]">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                📦
+            </div>
+            <div class="mt-3 w-full">
+                <span class="text-xs text-gray-500 dark:text-gray-400">عدد الطرود المسجلة اليوم</span>
+                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white">{{ $todayShipments }}</h4>
+            </div>
+        </div>
+
+        {{-- قيد النقل --}}
+        <div class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 transition hover:shadow-md flex-1 min-w-[180px]">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                🚚
+            </div>
+            <div class="mt-3 w-full">
+                <span class="text-xs text-gray-500 dark:text-gray-400">عدد الطرود في الطريق</span>
+                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white">{{ $inTransit }}</h4>
+            </div>
+        </div>
+
+        {{-- تم التسليم --}}
+        <div class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 transition hover:shadow-md flex-1 min-w-[180px]">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                ✔
+            </div>
+            <div class="mt-3 w-full">
+                <span class="text-xs text-gray-500 dark:text-gray-400">عدد الطرود التي تم استلامها</span>
+                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white">{{ $delivered }}</h4>
+            </div>
+        </div>
+
+        {{-- الإيرادات --}}
+        <div class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 transition hover:shadow-md flex-1 min-w-[180px]">
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700">
+                💰
+            </div>
+            <div class="mt-3 w-full">
+                <span class="text-xs text-gray-500 dark:text-gray-400">إيرادات COD المحصلة</span>
+                <h4 class="mt-1 text-lg font-bold text-gray-800 dark:text-white">
+                    {{ number_format($revenueCOD, 2) }} ر.ي
+                </h4>
+            </div>
+        </div>
+
+    </div>
+
+    {{-- المخطط البياني --}}
+    <div class="flex flex-col lg:flex-row mb-4">
+        <div class="chart-container">
+            <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-gray-900 h-full">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">
+                    الإيرادات خلال السنة
+                </h3>
+                <div class="mt-4">
+                    <canvas id="chartOne" class="w-full h-64"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- آخر 24 ساعة --}}
+    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900 px-4 pb-3 pt-4">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+            الطرود خلال آخر 24 ساعة
+        </h3>
+
+        <div class="w-full overflow-x-auto">
+            <table class="min-w-full">
+                <thead>
+                    <tr class="border-b border-gray-200 dark:border-gray-700">
+                        <th class="py-3 text-center">رقم الطلب</th>
+                        <th class="py-3">السائق</th>
+                        <th class="py-3">العميل</th>
+                        <th class="py-3 text-center">السعر</th>
+                        <th class="py-3 text-center">الحالة</th>
+                        <th class="py-3 text-center">طريقة الدفع</th>
+                        <th class="py-3 text-center">من → إلى</th>
+                        <th class="py-3 text-center">الإجراءات</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-800">
+                    @forelse($last24Shipments as $shipment)
+                        <tr>
+                            <td class="py-3 text-center">{{ $shipment->id }}</td>
+                            <td class="py-3 text-center">{{ optional($shipment->driver)->name ?? '--' }}</td>
+                            <td class="py-3 text-center">{{ $shipment->receiver_name }}</td>
+                            <td class="py-3 text-center">{{ $shipment->cod_amount ?? 0 }}</td>
+
+                            <td class="py-3 text-center">
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                {{
+                                    $shipment->status == 'deliverd' ? 'bg-success-100 text-success-700' :
+                                    ($shipment->status == 'in_transit' ? 'bg-brand-100 text-brand-700' :
+                                    ($shipment->status == 'cancelled' ? 'bg-error-100 text-error-700' : 'bg-warning-100 text-warning-700'))
+                                }}">
+                                {{ $shipment->status }}
+                                </span>
+                            </td>
+
+                            <td class="py-3 text-center">
+                                @if($shipment->payment_method == 'cod')
+                                    <span class="bg-warning-100 text-warning-800 px-2 py-1 rounded-full text-xs">آجل</span>
+                                @else
+                                    <span class="bg-success-600 text-success-800 px-2 py-1 rounded-full text-xs">نقد</span>
+                                @endif
+                            </td>
+
+                            <td class="py-3 text-center">
+                                {{ $shipment->from_city }} → {{ $shipment->to_city }}
+                            </td>
+
+                            <td class="py-3 text-center">
+                                <a href="{{ route('request.show', $shipment->id) }}" class="text-brand-600 hover:text-brand-800 text-xs">
+                                    تفاصيل
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center py-3">لا توجد شحنات خلال آخر 24 ساعة</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+@endsection
+
+@section('script')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const chartCtx = document.getElementById('chartOne').getContext('2d');
+
+    new Chart(chartCtx, {
+        type: 'bar',
+        data: {
+            // labels: @json(array_map(
+            //     fn($m) => ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'][$m-1],
+            //     array_keys($monthlySales)
+            // )),
+            datasets: [{
+                label: 'الإيرادات',
+                data: @json(array_values($monthlySales)),
+                borderWidth: 2,
+                backgroundColor: '#dc6803'
+            }]
+        }
+    });
+</script>
+
+
+@endsection
+

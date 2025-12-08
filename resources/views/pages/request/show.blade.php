@@ -52,6 +52,7 @@
         <!-- الهيدر -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
             <div class="flex items-center gap-3">
+
                 <div class="p-3 bg-brand-100 dark:bg-brand-900/30 rounded-xl">
                     <svg class="w-8 h-8 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
@@ -98,17 +99,27 @@
             <!-- بطاقة المرسل -->
             <div
                 class="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div class="absolute top-4 left-4">
-                    <div class="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg">
-                        <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div class="absolute top-4 left-4 flex items-center justify-center">
+                    <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
+                        class="mt-2 flex items-center justify-center bg-success-500 hover:bg-success-700 mx-2 text-white rounded-full p-2 transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
                         </svg>
-                    </div>
+                    </a>
+                
                 </div>
                 <div class="pr-12">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">المرسل</h3>
+                    <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
+                        <svg class="w-6 h-6 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">المرسل</h3>
+                    </div>
+
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
 
@@ -137,7 +148,8 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <div class="w-8">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -148,15 +160,10 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400">الموقع</p>
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->from_city }}</p>
                             </div>
-                            <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
-                                class="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700  font-semibold py-3 px-4 rounded-lg transition-colors duration-300">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                إرسال للمرسل
-                            </a>
+
+
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -164,17 +171,28 @@
             <!-- بطاقة المستلم -->
             <div
                 class="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div class="absolute top-4 left-4">
-                    <div class="p-2 bg-success-50 dark:bg-success-900/20 rounded-lg">
-                        <svg class="w-6 h-6 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                <div class="absolute top-4 left-4 flex items-center justify-center">
+                    <a href="{{ route('whatsapp.receiver', $shipment->id) }}" target="_blank"
+                        class="mt-2 flex items-center justify-center bg-success-500 hover:bg-success-700 mx-2 text-white rounded-full p-2 transition-colors duration-300">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
                         </svg>
-                    </div>
+                    </a>
+                   
+
+
                 </div>
+
                 <div class="pr-12">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">المستلم</h3>
+                    <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
+                        <svg class="w-5 h-5 text-gray-400 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">المستلم</h3>
+                    </div>
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">
                             <div class="w-8">
@@ -216,16 +234,9 @@
                                 <p class="text-sm text-gray-500 dark:text-gray-400">الموقع</p>
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->to_city }}</p>
                             </div>
-                            <a href="{{ route('whatsapp.receiver', $shipment->id) }}" target="_blank"
-                                class="flex items-center justify-center gap-2 bg-success-600 hover:bg-success-700  font-semibold py-3 px-4 rounded-lg transition-colors duration-300">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                </svg>
-                                إرسال للمستلم
-                            </a>
 
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -245,7 +256,7 @@
                     </div>
                     <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">الفرع</h4>
                 </div>
-                {{-- <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->branch->name }}</p> --}}
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->from_city }}</p>
             </div>
 
             <div
@@ -431,4 +442,5 @@
             </div>
 
         </div>
+        
     @endsection

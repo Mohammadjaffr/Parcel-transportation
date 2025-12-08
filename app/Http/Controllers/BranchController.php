@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use App\Services\AdminLoggerService;
+
 
 class BranchController extends Controller
 {
@@ -40,6 +42,8 @@ class BranchController extends Controller
 
         try {
             Branch::create($validator->validated());
+            AdminLoggerService::log('إنشاء فرع', 'Branch', "تم إنشاء الفرع بنجاح");
+
 
             return $this->SuccessBacktoIndex(
                 'تمت الإضافة!',
@@ -81,6 +85,7 @@ class BranchController extends Controller
 
         try {
             $branch->update($validator->validated());
+            AdminLoggerService::log('تحديث فرع', 'Branch', "تم تحديث بيانات الفرع بنجاح");
 
             return $this->SuccessBacktoIndex(
                 'تم التحديث!',
@@ -96,6 +101,8 @@ class BranchController extends Controller
     {
         try {
             Branch::findOrFail($id)->delete();
+            AdminLoggerService::log('حذف فرع', 'Branch', "تم حذف الفرع بنجاح");
+
 
             return $this->SuccessBacktoIndex(
                 'تم الحذف!',

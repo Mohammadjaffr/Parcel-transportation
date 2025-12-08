@@ -168,10 +168,10 @@
           <!-- Menu Item Forms -->
 
           <!-- Menu Item Tables -->
-          {{-- <li>
-            <a href="{{ route('Coupon.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+          <li>
+            <a href="{{ route('request.adminlog')  }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
-              :class="window.location.href.includes('{{ route('Coupon.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
+              :class="window.location.href.includes('{{ route('request.adminlog')  }}') ? 'menu-item-active' : 'menu-item-inactive'">
 
               <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -182,15 +182,14 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                كوبونات الخصم
-              </span>
+عرض السجلات              </span>
             </a>
-          </li> --}}
+          </li>
           <!-- Menu Item Tables -->
-          {{-- <li>
-            <a href="{{ route('Vehicle.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+          <li>
+            <a href="{{ route('reports.revenue') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
-              :class="window.location.href.includes('{{ route('Vehicle.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
+              :class="window.location.href.includes('{{ route('reports.revenue') }}') ? 'menu-item-active' : 'menu-item-inactive'">
 
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -218,10 +217,10 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إدارة المركبات
+                إلتقارير
               </span>
             </a>
-          </li> --}}
+          </li>
 
           <!-- Menu Item Pages -->
           {{-- <li>

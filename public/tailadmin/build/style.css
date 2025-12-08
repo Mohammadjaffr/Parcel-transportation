@@ -562,6 +562,16 @@ svg{-ms-touch-action:none;touch-action:none}image,text,.jvm-zoomin,.jvm-zoomout{
   .my-6 {
     margin-block: calc(var(--spacing) * 6);
   }
+  .my-2 {
+    margin-block: calc(var(--spacing) * 2);
+  }
+  .my-3 {
+    margin-block: calc(var(--spacing) * 3);
+  }
+  .my-4 {
+    margin-block: calc(var(--spacing) *  4);
+  }
+
   .-mt-0\.5 {
     margin-top: calc(var(--spacing) * -0.5);
   }

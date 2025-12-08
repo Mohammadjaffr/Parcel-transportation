@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+
 class Shipment extends Model
 {
     use HasFactory;
@@ -16,6 +17,12 @@ class Shipment extends Model
         'payment_method', 'cod_amount', 'status',
         'notes'
     ];
+public function logs()
+{
+    return $this->hasMany(AdminActivity::class, 'model_id')
+                ->where('model_type', 'Shipment')
+                ->latest();
+}
 
     public function user()
     {

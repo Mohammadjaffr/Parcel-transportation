@@ -117,7 +117,7 @@
             </div>
 
             <div class="logo-box">
-                ضع الشعار هنا
+                {{-- <img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="width: 100px;"> --}}
             </div>
 
             <div class="branch-info">

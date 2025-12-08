@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ReportController;
+use App\Models\AdminActivity;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\usercontroller;
 use App\Http\Controllers\ProfileController;
@@ -32,10 +34,18 @@ Route::middleware('auth')->group(function () {
         ->name('system-settings.auto-assign.update');
 
     Route::get('/whatsapp/sender/{id}', [requestcontroller::class, 'openForSender'])
-    ->name('whatsapp.sender');
+        ->name('whatsapp.sender');
 
-Route::get('/whatsapp/receiver/{id}', [requestcontroller::class, 'openForReceiver'])
-    ->name('whatsapp.receiver');
+    Route::get('/admin/logs', [requestController::class, 'adminlog'])
+        ->name('request.adminlog');
+
+    Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
+
+    Route::get('/reports/revenue/pdf', [ReportController::class, 'exportRevenuePDF'])
+        ->name('reports.revenue.pdf');
+
+    Route::get('/whatsapp/receiver/{id}', [requestcontroller::class, 'openForReceiver'])
+        ->name('whatsapp.receiver');
 
     Route::get('/request/{id}/invoice', [requestController::class, 'invoice'])->name('request.invoice');
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
