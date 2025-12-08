@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('receiver_name');
             $table->string('receiver_phone');
             $table->string('to_city');
-            $table->string('branch')->nullable();
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->string('package_type')->nullable();
             $table->decimal('weight', 8, 2)->nullable();
             $table->enum('payment_method', ['prepaid', 'cod']);

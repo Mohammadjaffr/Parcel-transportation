@@ -6,15 +6,15 @@
   <!-- SIDEBAR HEADER -->
   <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
     class="flex items-center gap-2 pt-8 sidebar-header pb-3">
-    <a href="#">
+    <a href="#" >
       <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
-        <img class="dark:hidden w-12 h-12" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
+        <img class="dark:hidden w-40 h-40"  src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
         {{-- Dark logo --}}
         <img class="hidden dark:block w-12 h-12" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
           alt="Logo" />
       </span>
 
-      <img class="logo-icon w-12 h-12" :class="sidebarToggle ? 'lg:block' : 'hidden'"
+      <img  class="logo-icon w-12 h-12" :class="sidebarToggle ? 'lg:block' : 'hidden'"
         src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
     </a>
   </div>
@@ -93,12 +93,12 @@
           <!-- Menu Item Calendar -->
 
           <!-- Menu Item Profile -->
-          {{-- <li>
-            <a href="{{ route('drivers.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+          <li>
+            <a href="{{ route('branch.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
               class="menu-item group"
-              :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
+              :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' : 'menu-item-inactive'">
               <svg
-                :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
+                :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-icon-active' : 'menu-item-icon-inactive'"
                 fill="#dc6803" width="30" height="30" viewBox="0 0 32 32" id="icon" xmlns="http://www.w3.org/2000/svg">
                 <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
                 <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
@@ -110,7 +110,7 @@
                       }
                     </style>
                   </defs>
-                  <title>bus</title>
+                  <title>branch</title>
                   <rect x="27" y="11" width="2" height="4"></rect>
                   <rect x="3" y="11" width="2" height="4"></rect>
                   <rect x="20" y="20" width="2" height="2"></rect>
@@ -124,10 +124,10 @@
                 </g>
               </svg>
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إدارة السائقين
+                إدارة الافرع
               </span>
             </a>
-          </li> --}}
+          </li>
           <!-- Menu Item Profile -->
 
           <!-- Menu Item Forms -->

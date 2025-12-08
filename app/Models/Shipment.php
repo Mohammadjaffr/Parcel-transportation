@@ -12,7 +12,7 @@ class Shipment extends Model
     protected $fillable = [
         'user_id', 'driver_id',  'sender_name', 'sender_phone', 'from_city',
         'receiver_name', 'receiver_phone', 'to_city',
-        'branch', 'package_type', 'weight',
+        'branch_id', 'package_type', 'weight',
         'payment_method', 'cod_amount', 'status',
         'notes'
     ];
@@ -26,6 +26,10 @@ class Shipment extends Model
         return $this->belongsTo(Driver::class);
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
  
 
     public function discountCode()
