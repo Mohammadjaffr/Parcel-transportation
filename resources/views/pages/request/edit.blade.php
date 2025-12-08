@@ -59,7 +59,7 @@
                             <option disabled selected>اختر الجهة</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->name }}"
-                                    {{ old('from_city', $shipment->from_city) == $branch->id ? 'selected' : '' }}>
+                                    {{ old('from_city', $shipment->from_city) == $branch->name ? 'selected' : '' }}>
                                     {{ $branch->name }}</option>
                             @endforeach
                         </select>
@@ -120,7 +120,7 @@
                             <option disabled selected>اختر الجهة</option>
                             @foreach ($branches as $branch)
                                 <option value="{{ $branch->name }}"
-                                    {{ old('to_city', $shipment->to_city) == $branch->id ? 'selected' : '' }}>
+                                    {{ old('to_city', $shipment->to_city) == $branch->name ? 'selected' : '' }}>
                                     {{ $branch->name }}</option>
                             @endforeach
                         </select>
