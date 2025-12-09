@@ -14,7 +14,7 @@
                 </svg>
                 تسجيل طرد جديد
             </a>
-            
+
             <h2 class="text-lg font-semibold text-gray-800 dark:text-white">جميع الطرود المسجلة</h2>
 
         </div>
@@ -26,7 +26,7 @@
                     <tr>
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            #
+                            رقم السند
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -43,6 +43,18 @@
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             نوع الطرد
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            عدد قروف العسل
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            عدد جوالين العسل
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            عدد الرمز العسل
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -70,7 +82,7 @@
                     @forelse ($requests as $request)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
-                                {{ $loop->iteration }}
+                                {{ $request->bond_number }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-800 dark:text-gray-400">{{ $request->sender_name }}</div>
@@ -107,7 +119,16 @@
                                 {{ $request->package_type }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
-                                {{ $request->from_city}}
+                                {{ $request->no_honey_jars }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                                {{ $request->no_gallons_honey }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                                {{ $request->code }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                                {{ $request->from_city }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')
@@ -118,7 +139,7 @@
                                 @else
                                     <span
                                         class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
-                                      أجل
+                                        أجل
                                     </span>
                                 @endif
                             </td>

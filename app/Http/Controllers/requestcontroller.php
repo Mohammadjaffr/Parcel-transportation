@@ -37,7 +37,7 @@ class RequestController extends Controller
     }
 
     /* ========== 3- تخزين طرد جديد ========== */
-  public function store(Request $request)
+public function store(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'sender_name'     => 'required|string',
@@ -49,18 +49,24 @@ class RequestController extends Controller
         'package_type'    => 'required|string',
         'weight'          => 'nullable|numeric',
         'payment_method'  => 'required|in:prepaid,cod',
-        'cod_amount'      => 'nullable|numeric',
+        'cod_amount'      => 'required|numeric',
         'notes'           => 'nullable|string',
-    ], [
-        'sender_name.required'    => 'حقل اسم المرسل مطلوب.',
-        'sender_phone.required'   => 'حقل هاتف المرسل مطلوب.',
-        'from_city.required'      => 'حقل من المدينة مطلوب.',
-        'receiver_name.required'  => 'حقل اسم المستلم مطلوب.',
-        'receiver_phone.required' => 'حقل هاتف المستلم مطلوب.',
-        'to_city.required'        => 'حقل إلى المدينة مطلوب.',
-        'package_type.required'   => 'حقل نوع الطرد مطلوب.',
-        'payment_method.required' => 'حقل طريقة الدفع مطلوب.',
-        'payment_method.in'       => 'طريقة الدفع المختارة غير صالحة.',
+        'code'            => 'nullable|string|max:255',
+        'no_honey_jars'   => 'nullable|numeric',
+        'no_gallons_honey' => 'nullable|numeric',
+    ],[
+        'sender_name.required' => 'حقل اسم المرسل مطلوب.',
+        'sender_phone.required' => 'حقل رقم الهاتف المرسل مطلوب.',
+        'from_city.required' => 'حقل المدينة المرسلة مطلوبة.',
+        'receiver_name.required' => 'حقل اسم المستلم مطلوب.',
+        'receiver_phone.required' => 'حقل رقم الهاتف المستلم مطلوب.',
+        'to_city.required' => 'حقل المدينة المستلمة مطلوبة.',
+        'package_type.required' => 'حقل نوع الطرد مطلوب.',
+        'payment_method.required' => 'حقل طريقة الدفع مطلوبة.',
+        'weight.required' => 'حقل الوزن مطلوب.',
+        'no_honey_jars.required' => 'حقل عدد القروض العسلية مطلوبة.',
+        'no_gallons_honey.required' => 'حقل عدد الحقول العسلية مطلوبة.',
+        'cod_amount.required' => 'حقل المبلغ مطلوب.',
     ]);
 
     if ($validator->fails()) {
@@ -68,15 +74,20 @@ class RequestController extends Controller
     }
 
     try {
-        // حفظ الطلب
-        $shipment = Shipment::create($validator->validated());
+        $data = $validator->validated();
 
-        // تسجيل في السجلات
+        // توليد رقم العقد تلقائياً - مثال:
+        $data['bond_number'] = 'BND-' . date('YmdHis') . rand(100,999);
+
+        // حفظ الطلب
+        $shipment = Shipment::create($data);
+
+        // تسجيل عملية الإنشاء
         AdminLoggerService::log(
             'إنشاء طرد',
             'Shipment',
             $shipment->id,
-            "إنشاء طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
+            "تك : {$data['from_city']} → {$data['to_city']} - رقم العقد {$data['bond_number']}"
         );
 
         return $this->SuccessBacktoIndex(
@@ -122,6 +133,9 @@ class RequestController extends Controller
             'payment_method'  => 'required|in:prepaid,cod',
             'notes'           => 'nullable|string',
             'cod_amount'      => 'nullable|numeric',
+            'code'            => 'nullable|string|max:255',
+            'no_honey_jars'   => 'nullable|numeric',
+            'no_gallons_honey' => 'nullable|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -195,25 +209,26 @@ class RequestController extends Controller
 
 
 
-    public function invoice($id)
-    {
+public function invoice($id)
+{
+    $shipment = Shipment::findOrFail($id);
 
-        $shipment = Shipment::findOrFail($id);
+    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
-        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+    $pdf->SetMargins(5, 5, 5);
+    $pdf->setPrintHeader(false);
+    $pdf->setPrintFooter(false);
+    $pdf->setRTL(true);
+    $pdf->SetFont('dejavusans', '', 12);
 
-        $pdf->SetMargins(5, 5, 5);
-        $pdf->setPrintHeader(false);
-        $pdf->setPrintFooter(false);
+    $html = view('pages.request.invoice', compact('shipment'))->render();
 
-        $pdf->SetFont('dejavusans', '', 12);
+    $pdf->AddPage();
+    $pdf->writeHTML($html, true, false, true, false, '');
 
-        $html = view('pages.request.invoice', compact('shipment'))->render();
-        $pdf->AddPage();
-        $pdf->writeHTML($html, true, false, true, false, '');
+    return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
+}
 
-        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
-    }
 
 
 

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -23,7 +24,7 @@ class UserSeeder extends Seeder
             'is_banned' => false,
         ]);
         User::create([
-            'name' => 'أحمد شرجبي',
+            'name' => 'محمد السعدي',
             'phone' => '967780236552',
             'whatsapp_number' => '966500000002',
             'phone_verified_at'=> now(),
@@ -31,5 +32,22 @@ class UserSeeder extends Seeder
             'type' => 'admin',
             'is_banned' => false,
         ]);
+        
+        Branch::create([
+            'name' => 'القطن',
+            'region' => 'القطن',
+            'phone' => '966500000001',
+        ]);
+        Branch::create([
+            'name' => 'عدن',
+            'region' => 'المعلا',
+            'phone' => '966500000001',
+        ]);
+        Branch::create([
+            'name' => 'المكلا',
+            'region' => 'الشرج',
+            'phone' => '966500000001',
+        ]);
+        
     }
 }

@@ -54,6 +54,18 @@
                         @enderror
                     </div>
 
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
+                            العسل</label>
+                        <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
+                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="عدد قروف العسل">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('no_honey_jars')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                    </div>
 
 
 
@@ -101,6 +113,18 @@
                             <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                         @enderror
                     </div>
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
+                            العسل</label>
+                        <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
+                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="عدد جوالين العسل">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('no_gallons_honey')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                    </div>
 
 
                 </div>
@@ -122,11 +146,22 @@
                     @enderror
                 </div>
             </div> --}}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full xl:col-span-3">
 
+                <div class="mt-3">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
+                    <input type="text" name="code" value="{{ old('code') }}"
+                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                        placeholder="اكتب الرمز">
+                    <div class="text-sm text-error-600 mt-1">
+                        @error('code')
+                            {{ $message }}
+                        @enderror
+                    </div>
+                </div>
+
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">
-
-
-
                 <!-- نوع الطرد -->
                 <div class="space-y-4 w-full md:col-span-2">
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
@@ -244,6 +279,7 @@
                 أدخل المبلغ المطلوب تحصيله من العميل عند التسليم
             </p>
     </div>
+
     <!-- زر التسجيل -->
     <div class="mt-6">
         <button type="submit"

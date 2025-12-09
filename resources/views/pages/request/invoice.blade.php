@@ -2,103 +2,42 @@
 <html lang="ar" dir="rtl">
 
 <head>
-    <meta charset="utf-8">
-    <title>سند استلام رقم {{ $shipment->id }}</title>
+    <meta charset="UTF-8">
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700;800&display=swap');
-
         body {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'dejavusans';
             direction: rtl;
-            background: #fff;
-            margin: 0;
-            padding: 0;
-        }
-
-        .invoice {
-            width: 95%;
-            margin: auto;
-            padding: 15px;
-            border: 1px solid #000;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            /* border-bottom: 3px solid #000; */
-            padding-bottom: 10px;
-        }
-
-        .branch-info {
-            font-size: 14px;
-            font-weight: 700;
-            text-align: center;
-        }
-
-        .logo-box {
-            width: 130px;
-            height: 130px;
-            /* border: 1px solid #000; */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .company-title {
-            font-size: 28px;
-            font-weight: 800;
-        }
-
-        .small-text {
-            font-size: 14px;
+            text-align: right;
+            font-size: 13px;
         }
 
         table {
             width: 100%;
-            margin-top: 8px;
             border-collapse: collapse;
-            font-size: 17px;
         }
 
-        td {
-            padding: 6px;
-            text-align: right;
-            
-        }
-
-        .box {
+        .invoice {
             border: 1px solid #000;
-            padding: 10px;
-            margin-top: 7px;
-            min-height: 140px;
-        }
-        tr {
-            margin: 10px 20px;
+            padding: 8px;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 8px;
-            font-weight: bold;
-            font-size: 13px;
+        .box table td {
+            /* border: 1px solid #333; */
+            padding: 4px;
         }
 
         .center-title {
             text-align: center;
-            font-size: 20px;
-            padding: 10px;
-            border: 1px solid #000;
+            font-size: 18px;
+            margin: 8px 0 10px;
             font-weight: bold;
-            width: fit-content;
-            margin: 20px 20px;
         }
 
-        .payment-box td {
-            font-weight: bold;
+        .footer {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 11px;
         }
     </style>
 
@@ -109,71 +48,88 @@
     <div class="invoice">
 
         <!-- HEADER -->
-        <div class="header">
+        <table style="width:100%; text-align:center; margin-bottom:5px;">
+            <tr>
+                <!-- فرع المكلا -->
+                <td style="width:35%; font-size:11px; vertical-align:top;">
+                    فرع المكلا – ملاعب العمودي – مقابل حديقة القصر <br>
+                    735637947 - 774996316 - 772038561
+                </td>
 
-            <div class="branch-info">
-                فرع المكلا – ملاعب العمودي – مقابل حديقة القصر <br>
-                735637947 - 774996316 - 772038561
-            </div>
+                <!-- اللوجو -->
+                <td style="width:34%; vertical-align:middle;">
+                    <img src="{{ public_path('images/new.svg') }}"
+                        style="width:150px; height:150px; object-fit:contain; margin:0 auto;">
+                </td>
 
-            <div class="logo-box">
-                {{-- <img src="{{ asset('assets/images/logo.png') }}" alt="logo" style="width: 100px;"> --}}
-            </div>
+                <!-- معلومات الشركة -->
+                <td style="width:33%; font-size:11px; vertical-align:top;">
+                    <span style="font-size:18px; font-weight:bold;">الزاجل</span> <br>
+                    الزاجل للنقل والشحن السريع <br>
+                    إلى جميع المحافظات ودول الخليج <br>
+                    للتواصل:<br>
+                    781216757 - 730831802 <br>
+                    773136727 - 781989021
+                </td>
+            </tr>
+        </table>
 
-            <div class="branch-info">
-                <h1>الزاجل</h1>
-                الزاجل للنقل والشحن السريع <br>
-                إلى جميع المحافظات ودول الخليج <br>
-                للتواصل:<br>
-                781216757 - 730831802 <br>
-                773136727 - 781989021
-            </div>
-
+        <!-- العنوان الرئيسي -->
+        <div class="center-title">
+            سند إستلام - فرع {{ $shipment->to_city }}
         </div>
 
-        <div class="center-title">سند إستلام - فرع {{ $shipment->to_city }}</div>
-
-        <!-- Date + Amount -->
-        <table>
+        <!-- تاريخ + مبلغ -->
+        <table style="margin-bottom:5px;">
             <tr>
-                <td style="font-size: 18px;">المبلغ: ( {{ number_format($shipment->cod_amount, 2) }}@if ($shipment->payment_method == 'prepaid')
+                <td style="font-size: 16px;">
+                    المبلغ: ( {{ number_format($shipment->cod_amount, 2) }}
+                    @if ($shipment->payment_method == 'prepaid')
                         نقداً
                     @else
                         آجلاً
-                    @endif) </td>
-                <td style="text-align:left;font-size:18px;">التاريخ: {{ now()->format('Y-m-d') }}</td>
+                    @endif
+                    )
+                </td>
+
+                <td style="text-align:left; font-size:16px;">
+                    التاريخ: {{ now()->format('Y-m-d') }}
+                </td>
             </tr>
-            
         </table>
 
-        <!-- Sender / Receiver -->
+        <!-- بيانات المرسل والمستلم -->
         <div class="box">
             <table>
                 <tr>
-                    <td>جوال: {{ $shipment->sender_phone }}</td>
                     <td>اسم المرسل: {{ $shipment->sender_name }}</td>
+                    <td>جوال: {{ $shipment->sender_phone }}</td>
                 </tr>
-                <tr>
-                    <td>جوال: {{ $shipment->receiver_phone }}</td>
-                    <td>اسم المستلم: {{ $shipment->receiver_name }}</td>
 
+                <tr>
+                    <td>اسم المستلم: {{ $shipment->receiver_name }}</td>
+                    <td>جوال: {{ $shipment->receiver_phone }}</td>
                 </tr>
+
                 <tr>
                     <td colspan="2">
                         الجهة / من {{ $shipment->from_city }} إلى {{ $shipment->to_city }}
                     </td>
                 </tr>
+
                 <tr>
-                    <td>عدد جوالين العسل: -</td>
-                    <td>عدد العلب قروف: -</td>
+                    <td>عدد جوالين العسل: -{{ $shipment->no_gallons_honey }}</td>
+                    <td>عدد العلب قروف: -{{ $shipment->no_honey_jars }}</td>
                 </tr>
+
                 <tr>
-                    <td colspan="2">نوع الرسالة: {{ $shipment->package_type }}</td>
+                    <td>الرمز: {{ $shipment->code }}</td>
+                    <td>نوع الرسالة: {{ $shipment->package_type }}</td>
                 </tr>
             </table>
         </div>
 
-        <!-- Footer Notes -->
+        <!-- Footer -->
         <div class="footer">
             نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا • نحن غير مسؤولين عن ضياع أو تأخر أو تلف البضاعة
             <br>

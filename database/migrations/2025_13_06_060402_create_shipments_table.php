@@ -13,13 +13,16 @@ return new class extends Migration
     {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
+            $table->string('bond_number')->unique();
             $table->string('sender_name');
             $table->string('sender_phone');
-            $table->string('from_city');
             $table->string('receiver_name');
             $table->string('receiver_phone');
+            $table->string('from_city');
             $table->string('to_city');
-            // $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->string('no_gallons_honey');
+            $table->string('no_honey_jars');
+            $table->string('code');
             $table->string('package_type')->nullable();
             $table->decimal('weight', 8, 2)->nullable();
             $table->enum('payment_method', ['prepaid', 'cod']);
