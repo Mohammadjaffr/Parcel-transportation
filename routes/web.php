@@ -10,6 +10,7 @@ use App\Http\Controllers\requestcontroller;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\BranchFinanceController;
 
 // Route::get('/', function () {
 //     return view('dashboard');
@@ -58,6 +59,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/request/{id}/invoice', [requestController::class, 'invoice'])->name('request.invoice');
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
+
+
+
+          // تقارير الفروع
+    Route::get('/finance/branches', [BranchFinanceController::class, 'index'])
+        ->name('finance.branches.index');
+
+    Route::get('/finance/branches/{branch}', [BranchFinanceController::class, 'show'])
+        ->name('finance.branches.show');
+
+    // تسويات
+    Route::get('/finance/settlements/create', [BranchFinanceController::class, 'createSettlement'])
+        ->name('finance.settlements.create');
+
+    Route::post('/finance/settlements', [BranchFinanceController::class, 'storeSettlement'])
+        ->name('finance.settlements.store');
+
+    // API رصيد فرع
+    Route::get('/api/branches/{branch}/balance', [BranchFinanceController::class, 'apiBranchBalance'])
+        ->name('api.branch.balance');
 });
 
 require __DIR__ . '/auth.php';

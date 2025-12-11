@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
+use App\Models\Driver;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -38,9 +39,9 @@ class UserSeeder extends Seeder
             'whatsapp_number' => '966500000001',
             'phone_verified_at'=> now(),
             'password' => '12121212',
-            'type' => 'user',
+            'type' => 'admin',
             'is_banned' => false,
-            'branch_id' => 1,
+            'branch_id' => 3,
         ]);
         User::create([
             'name' => 'محمد السعدي',
@@ -51,6 +52,18 @@ class UserSeeder extends Seeder
             'type' => 'admin',
             'is_banned' => false,
             'branch_id' => 1,
+        ]);
+        Driver::create([
+            'name' => 'محمد صالح',
+            'phone' => '967780236524',
+            'city' => 'المكلا',
+            'status' => 'active',
+        ]);
+        Driver::create([
+            'name' => 'سالم علي',
+            'phone' => '967780236564',
+            'city' => 'القطن',
+            'status' => 'active',
         ]);
         
    

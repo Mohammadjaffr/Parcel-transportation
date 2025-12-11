@@ -11,8 +11,7 @@ use Illuminate\Http\Request;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Services\AdminLoggerService;
-
-
+use App\Models\BranchTransaction;
 
 class RequestController extends Controller
 {
@@ -24,7 +23,9 @@ class RequestController extends Controller
     /* ========== 1- عرض جميع الطردات ========== */
     public function index()
     {
-        $requests = Shipment::latest()->paginate(10);
+        $requests = Shipment::where('branch_id', auth()->user()->branch_id)
+                             ->latest()
+                             ->paginate(10);
 
         return view('pages.request.index', compact('requests'));
     }
@@ -39,72 +40,79 @@ class RequestController extends Controller
     }
 
     /* ========== 3- تخزين طرد جديد ========== */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'sender_name'     => 'required|string',
-            'sender_phone'    => 'required|string',
-            'from_city'       => 'required|string',
-            'receiver_name'   => 'required|string',
-            'receiver_phone'  => 'required|string',
-            'to_city'         => 'required|string',
-            'package_type'    => 'required|string',
-            'weight'          => 'nullable|numeric',
-            'payment_method'  => 'required|in:prepaid,cod',
-            'cod_amount'      => 'required|numeric',
-            'notes'           => 'nullable|string',
-            'code'            => 'nullable|string|max:255',
-            'no_honey_jars'   => 'nullable|numeric',
-            'no_gallons_honey' => 'nullable|numeric',
-            'driver_id'       => 'required|exists:drivers,id',
-            'branch_id' => 'required|exists:branches,id',
+  public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'sender_name'     => 'required|string',
+        'sender_phone'    => 'required|string',
+        'from_city'       => 'required|string',
+        'receiver_name'   => 'required|string',
+        'receiver_phone'  => 'required|string',
+        'to_city'         => 'required|string',
+        'package_type'    => 'required|string',
+        'weight'          => 'nullable|numeric',
+        'payment_method'  => 'required|in:prepaid,cod',
+        'cod_amount'      => 'required|numeric',
+        'notes'           => 'nullable|string',
+        'code'            => 'nullable|string|max:255',
+        'no_honey_jars'   => 'nullable|numeric',
+        'no_gallons_honey' => 'nullable|numeric',
+        'driver_id'       => 'required|exists:drivers,id',
+    ]);
 
-        ], [
-            'sender_name.required' => 'حقل اسم المرسل مطلوب.',
-            'sender_phone.required' => 'حقل رقم الهاتف المرسل مطلوب.',
-            'from_city.required' => 'حقل المدينة المرسلة مطلوبة.',
-            'receiver_name.required' => 'حقل اسم المستلم مطلوب.',
-            'receiver_phone.required' => 'حقل رقم الهاتف المستلم مطلوب.',
-            'to_city.required' => 'حقل المدينة المستلمة مطلوبة.',
-            'package_type.required' => 'حقل نوع الطرد مطلوب.',
-            'payment_method.required' => 'حقل طريقة الدفع مطلوبة.',
-            'weight.required' => 'حقل الوزن مطلوب.',
-            'no_honey_jars.required' => 'حقل عدد القروض العسلية مطلوبة.',
-            'no_gallons_honey.required' => 'حقل عدد الحقول العسلية مطلوبة.',
-            'cod_amount.required' => 'حقل المبلغ مطلوب.',
-            'driver_id.required' => 'حقل السائق مطلوب.',
-        ]);
-
-        if ($validator->fails()) {
-            return $this->ValidationError($validator);
-        }
-
-        try {
-            $data = $validator->validated();
-            $data['branch_id'] = auth()->user()->branch_id;
-
-            // توليد رقم العقد تلقائياً - مثال:
-            $data['bond_number'] = 'BND-' . date('YmdHis') . rand(100, 999);
-
-            // حفظ الطلب
-            $shipment = Shipment::create($data);
-
-            // تسجيل عملية الإنشاء
-            AdminLoggerService::log(
-                'إنشاء طرد',
-                'Shipment',
-                $shipment->id,
-                "تك : {$data['from_city']} → {$data['to_city']} - رقم العقد {$data['bond_number']}"
-            );
-
-            return $this->SuccessBacktoIndex(
-                'تمت الإضافة!',
-                'تم إنشاء الطرد بنجاح.'
-            );
-        } catch (\Exception $e) {
-            return $this->ExceptionError($e);
-        }
+    if ($validator->fails()) {
+        return $this->ValidationError($validator);
     }
+
+    try {
+
+        $data = $validator->validated();
+        $data['branch_id'] = auth()->user()->branch_id;
+
+        $shipment = Shipment::create($data);
+
+        /*
+        =========================================
+        |   تسجيل القيد المحاسبي للشحنات COD   |
+        =========================================
+        */
+        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
+
+            $from = $shipment->branch_id; // الفرع المرسل
+            $to = Branch::where('name', $shipment->to_city)->value('id'); // الفرع المستلم
+
+            if ($to && $to != $from) {
+
+                // قيد واحد فقط: الفرع المستلم عليه مبلغ لصالح الفرع المرسل
+                BranchTransaction::create([
+                    'shipment_id'    => $shipment->id,
+                    'from_branch_id' => $to,   // المستلم (عليه)
+                    'to_branch_id'   => $from, // المرسل (له)
+                    'amount'         => $shipment->cod_amount,
+                    'type'           => 'cod',
+                    'description'    => "له مبلغ من العميل {$shipment->receiver_name} على شحنة رقم {$shipment->id}",
+                ]);
+            }
+        }
+
+        AdminLoggerService::log(
+            'إنشاء طرد',
+            'Shipment',
+            $shipment->id,
+            "إنشاء طرد من {$shipment->from_city} إلى {$shipment->to_city} - سند {$shipment->bond_number}"
+        );
+
+        return $this->SuccessBacktoIndex(
+            'تمت الإضافة!',
+            'تم إنشاء الطرد بنجاح.'
+        );
+
+    } catch (\Exception $e) {
+        return $this->ExceptionError($e);
+    }
+}
+
+
 
     /* ========== 4- عرض تفاصيل طرد واحد ========== */
     public function show($id)
@@ -125,49 +133,79 @@ class RequestController extends Controller
     }
 
     /* ========== 6- تحديث الطرد ========== */
-    public function update(Request $request, $id)
-    {
-        $shipment = Shipment::findOrFail($id);
+  public function update(Request $request, $id)
+{
+    $shipment = Shipment::findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'sender_name'     => 'required|string|max:255',
-            'sender_phone'    => 'required|string|max:20',
-            'from_city'       => 'required|string|max:255',
-            'receiver_name'   => 'required|string|max:255',
-            'receiver_phone'  => 'required|string|max:20',
-            'to_city'         => 'required|string|max:255',
-            'package_type'    => 'required|string|max:255',
-            'payment_method'  => 'required|in:prepaid,cod',
-            'notes'           => 'nullable|string',
-            'cod_amount'      => 'nullable|numeric',
-            'code'            => 'nullable|string|max:255',
-            'no_honey_jars'   => 'nullable|numeric',
-            'no_gallons_honey' => 'nullable|numeric',
-            'driver_id'       => 'required|exists:drivers,id',
-            'branch_id' => 'required|exists:branches,id',
+    $validator = Validator::make($request->all(), [
+        'sender_name'     => 'required|string|max:255',
+        'sender_phone'    => 'required|string|max:20',
+        'from_city'       => 'required|string|max:255',
+        'receiver_name'   => 'required|string|max:255',
+        'receiver_phone'  => 'required|string|max:20',
+        'to_city'         => 'required|string|max:255',
+        'package_type'    => 'required|string|max:255',
+        'payment_method'  => 'required|in:prepaid,cod',
+        'notes'           => 'nullable|string',
+        'cod_amount'      => 'nullable|numeric',
+        'code'            => 'nullable|string|max:255',
+        'no_honey_jars'   => 'nullable|numeric',
+        'no_gallons_honey' => 'nullable|numeric',
+        'driver_id'       => 'required|exists:drivers,id',
+    ]);
 
-        ]);
-
-        if ($validator->fails()) {
-            return $this->ValidationError($validator);
-        }
-
-        try {
-            $shipment->update($validator->validated());
-            AdminLoggerService::log(
-                'تحديث طرد',
-                'Shipment',
-                $shipment->id,
-                "تحديث طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
-            );
-            return $this->SuccessBacktoIndex(
-                'تم التحديث!',
-                'تم تحديث الطرد بنجاح.'
-            );
-        } catch (\Exception $e) {
-            return $this->ExceptionError($e);
-        }
+    if ($validator->fails()) {
+        return $this->ValidationError($validator);
     }
+
+    try {
+
+        // تحديث البيانات
+        $shipment->update($validator->validated());
+
+        // حذف القيود القديمة
+        BranchTransaction::where('shipment_id', $shipment->id)->delete();
+
+        /*
+        =========================================
+        |   إعادة إنشاء القيد المحاسبي الجديد  |
+        =========================================
+        */
+        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
+
+            $from = $shipment->branch_id;
+            $to = Branch::where('name', $shipment->to_city)->value('id');
+
+            if ($to && $to != $from) {
+
+                BranchTransaction::create([
+                    'shipment_id'    => $shipment->id,
+                    'from_branch_id' => $to,   // المستلم = عليه
+                    'to_branch_id'   => $from, // المرسل = له
+                    'amount'         => $shipment->cod_amount,
+                    'type'           => 'cod',
+                    'description'    => "تحديث: مبلغ على فرع {$shipment->to_city} لشحنة رقم {$shipment->id}",
+                ]);
+            }
+        }
+
+        AdminLoggerService::log(
+            'تحديث طرد',
+            'Shipment',
+            $shipment->id,
+            "تحديث طرد: {$shipment->from_city} → {$shipment->to_city}"
+        );
+
+        return $this->SuccessBacktoIndex(
+            'تم التحديث!',
+            'تم تحديث الطرد بنجاح.'
+        );
+
+    } catch (\Exception $e) {
+        return $this->ExceptionError($e);
+    }
+}
+
 
     /* ========== 7- حذف الطرد ========== */
     public function destroy($id)

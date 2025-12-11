@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Branch;
 
 
 class Shipment extends Model
@@ -30,7 +31,7 @@ class Shipment extends Model
         'code',
         'no_honey_jars',
         'no_gallons_honey',
-        'driver_id'
+        
     ];
     public function logs()
     {
