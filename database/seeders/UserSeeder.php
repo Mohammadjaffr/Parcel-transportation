@@ -14,6 +14,24 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+             Branch::create([
+            'name' => 'القطن',
+            'region' => 'القطن',
+            'phone' => '966500000001',
+            'code' => 'QTN',
+        ]);
+        Branch::create([
+            'name' => 'عدن',
+            'region' => 'المعلا',
+            'phone' => '966500000001',
+            'code' => 'ADN',
+        ]);
+        Branch::create([
+            'name' => 'المكلا',
+            'region' => 'الشرج',
+            'phone' => '966500000001',
+            'code' => 'MKL',
+        ]);
         User::create([
             'name' => 'عوض لشرم',
             'phone' => '967780236551',
@@ -22,6 +40,7 @@ class UserSeeder extends Seeder
             'password' => '12121212',
             'type' => 'user',
             'is_banned' => false,
+            'branch_id' => 1,
         ]);
         User::create([
             'name' => 'محمد السعدي',
@@ -31,23 +50,10 @@ class UserSeeder extends Seeder
             'password' => '12121212',
             'type' => 'admin',
             'is_banned' => false,
+            'branch_id' => 1,
         ]);
         
-        Branch::create([
-            'name' => 'القطن',
-            'region' => 'القطن',
-            'phone' => '966500000001',
-        ]);
-        Branch::create([
-            'name' => 'عدن',
-            'region' => 'المعلا',
-            'phone' => '966500000001',
-        ]);
-        Branch::create([
-            'name' => 'المكلا',
-            'region' => 'الشرج',
-            'phone' => '966500000001',
-        ]);
+   
         
     }
 }

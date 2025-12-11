@@ -53,22 +53,27 @@
                         </div>
                     </div> --}}
                     <div class="mt-3">
-                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\من</label>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه \ من</label>
 
-                        <select id="from_city" name="from_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
-                            <option disabled selected>اختر الجهة</option>
-                            @foreach ($branches as $branch)
-                                <option value="{{ $branch->name }}"
-                                    {{ old('from_city', $shipment->from_city) == $branch->name ? 'selected' : '' }}>
-                                    {{ $branch->name }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" value="{{ $shipment->from_city }}"
+                            class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm bg-gray-100 dark:bg-gray-700" disabled>
 
-                        @error('from_city')
-                            <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
-                        @enderror
+                        <input type="hidden" name="from_city" value="{{ $shipment->from_city }}">
                     </div>
 
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
+                            العسل</label>
+                        <input type="number" name="no_honey_jars"
+                            value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}"
+                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="عدد قروف العسل">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('no_honey_jars')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                    </div>
                 </div>
 
                 <!-- بيانات المستلم -->
@@ -114,14 +119,18 @@
                     </div>
                      --}}
                     <div class="mt-3">
-                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\الى</label>
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه \ إلى</label>
 
                         <select id="to_city" name="to_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
-                            <option disabled selected>اختر الجهة</option>
+                            <option disabled>اختر الجهة</option>
+
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->name }}"
-                                    {{ old('to_city', $shipment->to_city) == $branch->name ? 'selected' : '' }}>
-                                    {{ $branch->name }}</option>
+                                @if ($branch->name !== auth()->user()->branch->name)
+                                    <option value="{{ $branch->name }}"
+                                        {{ old('to_city', $shipment->to_city) == $branch->name ? 'selected' : '' }}>
+                                        {{ $branch->name }}
+                                    </option>
+                                @endif
                             @endforeach
                         </select>
 
@@ -129,29 +138,57 @@
                             <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
+                            العسل</label>
+                        <input type="number" name="no_gallons_honey"
+                            value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}"
+                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="عدد جوالين العسل">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('no_gallons_honey')
+                                {{ $message }}
+                            @enderror
+                        </div>
+                    </div>
                 </div>
+                <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
+
             </div>
 
-            {{-- <!-- الفرع -->
-            <div class="mt-6">
-                <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الفرع</label>
-                <select name="branch_id"
-                    class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:gray-400">
-                    <option value="">اختر الفرع</option>
-                    @foreach ($branches as $branch)
-                        <option value="{{ $branch->id }}"
-                            {{ old('branch_id', $shipment->branch_id) == $branch->id ? 'selected' : '' }}>
-                            {{ $branch->name }}
-                        </option>
-                    @endforeach
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full">
 
-                </select>
-                <div class="text-sm text-error-600 mt-1">
-                    @error('branch_id')
-                        {{ $message }}
+                <div class="mt-3">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
+                    <input type="text" name="code" value="{{ old('code', $shipment->code) }}"
+                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                        placeholder="اكتب الرمز">
+                    <div class="text-sm text-error-600 mt-1">
+                        @error('code')
+                            {{ $message }}
+                        @enderror
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">السائق</label>
+
+                    <select id="driver_id" name="driver_id" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
+                        {{-- <option disabled selected>اختر السائق</option> --}}
+                        @foreach ($drivers as $driver)
+                            <option value="{{ $driver->id }}"
+                                {{ old('driver_id', $shipment->driver_id) == $driver->name ? 'selected' : '' }}>
+                                {{ $driver->name }}</option>
+                        @endforeach
+                    </select>
+
+                    @error('driver_id')
+                        <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                     @enderror
                 </div>
-            </div> --}}
+
+
+            </div>
 
             <!-- تفاصيل الطرد وطريقة الدفع -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">

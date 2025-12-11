@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('region');
             $table->string('phone');
+            $table->string('code', 10)->unique();
             $table->timestamps();
         });
     }

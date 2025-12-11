@@ -30,6 +30,7 @@ class Shipment extends Model
         'code',
         'no_honey_jars',
         'no_gallons_honey',
+        'driver_id'
     ];
     public function logs()
     {
@@ -42,9 +43,33 @@ class Shipment extends Model
         parent::boot();
 
         static::creating(function ($shipment) {
-            $shipment->bond_number = 'BND-' . date('ymd') . '-' . str_pad(Shipment::max('id') + 1, 5, '0', STR_PAD_LEFT);
+
+            // جلب كود الفرع بناءً على from_city
+            $branchCode = Branch::where('name', $shipment->from_city)->value('code') ?? 'XXX';
+
+            // التاريخ بصيغة YYYYMMDD -> مثال: 20251210
+            $date = date('Ymd');
+
+            // جلب آخر سند من نفس الفرع في نفس اليوم
+            $lastShipment = Shipment::where('from_city', $shipment->from_city)
+                ->whereDate('created_at', today())
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($lastShipment) {
+                // استخراج رقم التسلسل (آخر 3 أرقام)
+                $lastSeq = intval(substr($lastShipment->bond_number, -3));
+                $newSeq = str_pad($lastSeq + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newSeq = '001';
+            }
+
+            // رقم السند النهائي
+            $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
         });
     }
+
+
 
     public function user()
     {

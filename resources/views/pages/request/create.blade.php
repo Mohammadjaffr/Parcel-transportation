@@ -42,17 +42,12 @@
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\من</label>
 
-                        <select id="from_city" name="from_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
-                            <option disabled selected>اختر الجهة</option>
-                            @foreach ($branches as $branch)
-                                <option value="{{ $branch->name }}">{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" id="from_city_display" value="{{ auth()->user()->branch->name }}"
+                            class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm bg-gray-100 dark:bg-gray-700" disabled>
 
-                        @error('from_city')
-                            <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
-                        @enderror
+                        <input type="hidden" name="from_city" value="{{ auth()->user()->branch->name }}">
                     </div>
+
 
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
@@ -105,8 +100,12 @@
                         <select id="to_city" name="to_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
                             <option disabled selected>اختر الجهة</option>
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->name }}">{{ $branch->name }}</option>
+                                @if ($branch->name !== auth()->user()->branch->name)
+                                    <option value="{{ $branch->name }}">{{ $branch->name }}</option>
+                                @endif
                             @endforeach
+
+
                         </select>
 
                         @error('to_city')
@@ -125,6 +124,9 @@
                             @enderror
                         </div>
                     </div>
+
+                    <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
+
 
 
                 </div>
@@ -146,7 +148,7 @@
                     @enderror
                 </div>
             </div> --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full xl:col-span-3">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 w-full">
 
                 <div class="mt-3">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
@@ -159,6 +161,21 @@
                         @enderror
                     </div>
                 </div>
+                <div class="mt-3">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">السائق</label>
+
+                    <select id="driver_id" name="driver_id" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
+                        <option disabled selected>اختر السائق</option>
+                        @foreach ($drivers as $driver)
+                            <option value="{{ $driver->id }}">{{ $driver->name }}</option>
+                        @endforeach
+                    </select>
+
+                    @error('driver_id')
+                        <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
+
 
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6 mt-6">
@@ -291,22 +308,6 @@
     </form>
 
     </div>
-    <script>
-        document.getElementById('from_city').addEventListener('change', function() {
-            let selectedFrom = this.value;
-            let toCitySelect = document.getElementById('to_city');
 
-            for (let option of toCitySelect.options) {
-                option.hidden = false;
-            }
-
-            if (selectedFrom) {
-                let optionToHide = toCitySelect.querySelector('option[value="' + selectedFrom + '"]');
-                if (optionToHide) optionToHide.hidden = true;
-            }
-
-            toCitySelect.value = "";
-        });
-    </script>
 
 @endsection

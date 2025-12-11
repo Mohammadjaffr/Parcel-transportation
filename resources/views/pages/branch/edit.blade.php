@@ -61,6 +61,20 @@
                         @enderror
                     </div>
                 </div>
+                <!-- رمز الفرع -->
+                <div class="mt-3">
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">رمز الفرع</label>
+                    <input type="text" name="code" value="{{ old('code', $branch->code) }}"
+                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                        placeholder="رمز الفرع">
+                    <div class="text-sm text-error-600 mt-1">
+                        @error('code')
+                            {{ $message }}
+                        @enderror
+                    </div>
+                </div>
 
             </div>
         </div>

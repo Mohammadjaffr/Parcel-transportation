@@ -9,6 +9,7 @@ use TCPDF;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use App\Models\Branch;
+use App\Models\Driver;
 use App\Services\AdminLoggerService;
 
 
@@ -32,73 +33,78 @@ class RequestController extends Controller
     public function create()
     {
         $branches = Branch::all();
+        $drivers = Driver::where('status', 'active')->get();
 
-        return view('pages.request.create ', compact('branches'));
+        return view('pages.request.create ', compact('branches', 'drivers'));
     }
 
     /* ========== 3- تخزين طرد جديد ========== */
-public function store(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'sender_name'     => 'required|string',
-        'sender_phone'    => 'required|string',
-        'from_city'       => 'required|string',
-        'receiver_name'   => 'required|string',
-        'receiver_phone'  => 'required|string',
-        'to_city'         => 'required|string',
-        'package_type'    => 'required|string',
-        'weight'          => 'nullable|numeric',
-        'payment_method'  => 'required|in:prepaid,cod',
-        'cod_amount'      => 'required|numeric',
-        'notes'           => 'nullable|string',
-        'code'            => 'nullable|string|max:255',
-        'no_honey_jars'   => 'nullable|numeric',
-        'no_gallons_honey' => 'nullable|numeric',
-    ],[
-        'sender_name.required' => 'حقل اسم المرسل مطلوب.',
-        'sender_phone.required' => 'حقل رقم الهاتف المرسل مطلوب.',
-        'from_city.required' => 'حقل المدينة المرسلة مطلوبة.',
-        'receiver_name.required' => 'حقل اسم المستلم مطلوب.',
-        'receiver_phone.required' => 'حقل رقم الهاتف المستلم مطلوب.',
-        'to_city.required' => 'حقل المدينة المستلمة مطلوبة.',
-        'package_type.required' => 'حقل نوع الطرد مطلوب.',
-        'payment_method.required' => 'حقل طريقة الدفع مطلوبة.',
-        'weight.required' => 'حقل الوزن مطلوب.',
-        'no_honey_jars.required' => 'حقل عدد القروض العسلية مطلوبة.',
-        'no_gallons_honey.required' => 'حقل عدد الحقول العسلية مطلوبة.',
-        'cod_amount.required' => 'حقل المبلغ مطلوب.',
-    ]);
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'sender_name'     => 'required|string',
+            'sender_phone'    => 'required|string',
+            'from_city'       => 'required|string',
+            'receiver_name'   => 'required|string',
+            'receiver_phone'  => 'required|string',
+            'to_city'         => 'required|string',
+            'package_type'    => 'required|string',
+            'weight'          => 'nullable|numeric',
+            'payment_method'  => 'required|in:prepaid,cod',
+            'cod_amount'      => 'required|numeric',
+            'notes'           => 'nullable|string',
+            'code'            => 'nullable|string|max:255',
+            'no_honey_jars'   => 'nullable|numeric',
+            'no_gallons_honey' => 'nullable|numeric',
+            'driver_id'       => 'required|exists:drivers,id',
+            'branch_id' => 'required|exists:branches,id',
 
-    if ($validator->fails()) {
-        return $this->ValidationError($validator);
+        ], [
+            'sender_name.required' => 'حقل اسم المرسل مطلوب.',
+            'sender_phone.required' => 'حقل رقم الهاتف المرسل مطلوب.',
+            'from_city.required' => 'حقل المدينة المرسلة مطلوبة.',
+            'receiver_name.required' => 'حقل اسم المستلم مطلوب.',
+            'receiver_phone.required' => 'حقل رقم الهاتف المستلم مطلوب.',
+            'to_city.required' => 'حقل المدينة المستلمة مطلوبة.',
+            'package_type.required' => 'حقل نوع الطرد مطلوب.',
+            'payment_method.required' => 'حقل طريقة الدفع مطلوبة.',
+            'weight.required' => 'حقل الوزن مطلوب.',
+            'no_honey_jars.required' => 'حقل عدد القروض العسلية مطلوبة.',
+            'no_gallons_honey.required' => 'حقل عدد الحقول العسلية مطلوبة.',
+            'cod_amount.required' => 'حقل المبلغ مطلوب.',
+            'driver_id.required' => 'حقل السائق مطلوب.',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->ValidationError($validator);
+        }
+
+        try {
+            $data = $validator->validated();
+            $data['branch_id'] = auth()->user()->branch_id;
+
+            // توليد رقم العقد تلقائياً - مثال:
+            $data['bond_number'] = 'BND-' . date('YmdHis') . rand(100, 999);
+
+            // حفظ الطلب
+            $shipment = Shipment::create($data);
+
+            // تسجيل عملية الإنشاء
+            AdminLoggerService::log(
+                'إنشاء طرد',
+                'Shipment',
+                $shipment->id,
+                "تك : {$data['from_city']} → {$data['to_city']} - رقم العقد {$data['bond_number']}"
+            );
+
+            return $this->SuccessBacktoIndex(
+                'تمت الإضافة!',
+                'تم إنشاء الطرد بنجاح.'
+            );
+        } catch (\Exception $e) {
+            return $this->ExceptionError($e);
+        }
     }
-
-    try {
-        $data = $validator->validated();
-
-        // توليد رقم العقد تلقائياً - مثال:
-        $data['bond_number'] = 'BND-' . date('YmdHis') . rand(100,999);
-
-        // حفظ الطلب
-        $shipment = Shipment::create($data);
-
-        // تسجيل عملية الإنشاء
-        AdminLoggerService::log(
-            'إنشاء طرد',
-            'Shipment',
-            $shipment->id,
-            "تك : {$data['from_city']} → {$data['to_city']} - رقم العقد {$data['bond_number']}"
-        );
-
-        return $this->SuccessBacktoIndex(
-            'تمت الإضافة!',
-            'تم إنشاء الطرد بنجاح.'
-        );
-
-    } catch (\Exception $e) {
-        return $this->ExceptionError($e);
-    }
-}
 
     /* ========== 4- عرض تفاصيل طرد واحد ========== */
     public function show($id)
@@ -114,7 +120,8 @@ public function store(Request $request)
     {
         $shipment = Shipment::findOrFail($id);
         $branches = Branch::all();
-        return view('pages.request.edit', compact('shipment', 'branches'));
+        $drivers = Driver::where('status', 'active')->get();
+        return view('pages.request.edit', compact('shipment', 'branches', 'drivers'));
     }
 
     /* ========== 6- تحديث الطرد ========== */
@@ -136,6 +143,9 @@ public function store(Request $request)
             'code'            => 'nullable|string|max:255',
             'no_honey_jars'   => 'nullable|numeric',
             'no_gallons_honey' => 'nullable|numeric',
+            'driver_id'       => 'required|exists:drivers,id',
+            'branch_id' => 'required|exists:branches,id',
+
         ]);
 
         if ($validator->fails()) {
@@ -144,12 +154,12 @@ public function store(Request $request)
 
         try {
             $shipment->update($validator->validated());
- AdminLoggerService::log(
-            'تحديث طرد',
-            'Shipment',
-            $shipment->id,
-            "تحديث طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
-        );
+            AdminLoggerService::log(
+                'تحديث طرد',
+                'Shipment',
+                $shipment->id,
+                "تحديث طرد: {$request->input('from_city')} إلى {$request->input('to_city')}"
+            );
             return $this->SuccessBacktoIndex(
                 'تم التحديث!',
                 'تم تحديث الطرد بنجاح.'
@@ -209,25 +219,25 @@ public function store(Request $request)
 
 
 
-public function invoice($id)
-{
-    $shipment = Shipment::findOrFail($id);
+    public function invoice($id)
+    {
+        $shipment = Shipment::findOrFail($id);
 
-    $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
+        $pdf = new TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
 
-    $pdf->SetMargins(5, 5, 5);
-    $pdf->setPrintHeader(false);
-    $pdf->setPrintFooter(false);
-    $pdf->setRTL(true);
-    $pdf->SetFont('dejavusans', '', 12);
+        $pdf->SetMargins(5, 5, 5);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->setRTL(true);
+        $pdf->SetFont('dejavusans', '', 12);
 
-    $html = view('pages.request.invoice', compact('shipment'))->render();
+        $html = view('pages.request.invoice', compact('shipment'))->render();
 
-    $pdf->AddPage();
-    $pdf->writeHTML($html, true, false, true, false, '');
+        $pdf->AddPage();
+        $pdf->writeHTML($html, true, false, true, false, '');
 
-    return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
-}
+        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
+    }
 
 
 
@@ -248,10 +258,10 @@ public function invoice($id)
     }
 
     public function adminlog()
-{
-    $logs = AdminActivity::latest()->paginate(20);
-    return view('pages.log.logs', compact('logs'));
-}
+    {
+        $logs = AdminActivity::latest()->paginate(20);
+        return view('pages.log.logs', compact('logs'));
+    }
 
 
     public function updateStatus(Request $request, $id)

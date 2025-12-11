@@ -1,9 +1,10 @@
 <?php
 
+use App\Http\Controllers\DriverController;
 use App\Http\Controllers\ReportController;
 use App\Models\AdminActivity;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\usercontroller;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\requestcontroller;
 use App\Http\Controllers\DashboardController;
@@ -24,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::resource('users', usercontroller::class);
+    Route::resource('users', UserController::class);
     Route::resource('branch', BranchController::class);
     Route::resource('request', requestcontroller::class);
     Route::patch('/request/{id}/status', [RequestController::class, 'updateStatus'])
@@ -32,12 +33,19 @@ Route::middleware('auth')->group(function () {
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');
+    Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
 
     Route::get('/whatsapp/sender/{id}', [requestcontroller::class, 'openForSender'])
         ->name('whatsapp.sender');
 
     Route::get('/admin/logs', [requestController::class, 'adminlog'])
         ->name('request.adminlog');
+    Route::resource('drivers', DriverController::class);
+    Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])
+        ->name('drivers.shipments');
+    Route::get('/drivers/{id}/shipments/print', [DriverController::class, 'printShipments'])
+        ->name('drivers.shipments.print');
+
 
     Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
 

@@ -44,7 +44,7 @@
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             نوع الطرد
                         </th>
-                        <th scope="col"
+                        {{-- <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             عدد قروف العسل
                         </th>
@@ -55,10 +55,10 @@
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             عدد الرمز العسل
-                        </th>
+                        </th> --}}
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            الفرع
+                            السائق
                         </th>
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
@@ -118,7 +118,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->package_type }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->no_honey_jars }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
@@ -126,9 +126,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->code }}
-                            </td>
+                            </td> --}}
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
-                                {{ $request->from_city }}
+                                {{ $request->driver->name ?? 'غير متاح' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')

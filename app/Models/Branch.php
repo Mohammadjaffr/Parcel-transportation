@@ -15,8 +15,13 @@ class Branch extends Model
         'name',
         'region',
         'phone',
+        'code',
     ];
     
 
-    
+    public function users()
+{
+    return $this->hasMany(User::class);
+}
+
 }

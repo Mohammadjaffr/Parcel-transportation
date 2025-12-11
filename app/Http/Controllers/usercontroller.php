@@ -2,17 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use GPBMetadata\Google\Api\Auth;
 use Illuminate\Http\Request;
 
-class usercontroller extends Controller
+class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return view('pages.users.index');
+        $currentBranch = auth()->user()->branch_id;
+
+        $users = User::with('branch')
+            ->where('branch_id', $currentBranch)
+            ->paginate(10);
+
+        return view('pages.users.index', compact('users'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -35,8 +44,17 @@ class usercontroller extends Controller
      */
     public function show($id)
     {
-        return view('pages.users.show');
+        $user = User::with('branch')->findOrFail($id);
+
+        // جلب كل المستخدمين في نفس الفرع
+        $users = User::with('branch')
+            ->where('branch_id', $user->branch_id)
+            ->get();
+
+        // تمرير user + users للواجهة
+        return view('pages.users.show', compact('user', 'users'));
     }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -60,5 +78,17 @@ class usercontroller extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function toggleStatus($id)
+    {
+        $user = User::findOrFail($id);
+
+        $user->is_banned = !$user->is_banned;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'status'  => $user->is_banned
+        ]);
     }
 }

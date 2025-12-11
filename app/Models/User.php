@@ -20,13 +20,17 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        // 'email',
         'password',
-        'phone', 
-        'whatsapp_number', 
+        'phone',
+        'whatsapp_number',
         'type',
         'is_banned',
+        'branch_id'
     ];
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -56,12 +60,13 @@ class User extends Authenticatable
         return $this->hasMany(UserDevice::class);
     }
 
-    public function requests()
-    {
-        return $this->hasMany(Request::class);
-    }
+    public function shipments()
+{
+    return $this->hasMany(Shipment::class, 'sender_phone', 'phone');
+}
 
-     public function ratings()
+
+    public function ratings()
     {
         return $this->hasMany(Rating::class);
     }
