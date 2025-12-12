@@ -8,23 +8,27 @@ use Illuminate\Http\Request;
 
 class BranchFinanceController extends Controller
 {
-    public function index()
-    {
-        $branches = Branch::all();
+  public function index()
+{
+    $currentBranchId = auth()->user()->branch_id;
 
-        $branchesSummary = $branches->map(function ($branch) {
-            $summary = $this->calculateBranchSummary($branch->id);
-            return [
-                'branch'      => $branch,
-                'total_cod'   => $summary['total_cod'],
-                'total_settle_in'  => $summary['total_settle_in'],
-                'total_settle_out' => $summary['total_settle_out'],
-                'net_balance' => $summary['net_balance'], // موجب = له، سالب = عليه
-            ];
-        });
+    $counterparties = $this->calculateBranchCounterparties($currentBranchId);
 
-        return view('pages.finance.branches.index', compact('branchesSummary'));
-    }
+    $branchesSummary = collect($counterparties)->map(function ($row) use ($currentBranchId) {
+        $summary = $this->calculateBranchSummary($row['branch']->id);
+
+        return [
+            'branch' => $row['branch'],
+            'total_cod' => $summary['total_cod'],
+            'total_settle_in' => $summary['total_settle_in'],
+            'total_settle_out' => $summary['total_settle_out'],
+            'net_balance' => $row['net'],
+        ];
+    });
+
+    return view('pages.finance.branches.index', compact('branchesSummary'));
+}
+
 
     /**
      * صفحة: تقرير تفصيلي لفرع محدد
@@ -82,52 +86,52 @@ class BranchFinanceController extends Controller
     /**
      * تخزين تسوية بين فرعين
      */
- public function storeSettlement(Request $request)
-{
-    $data = $request->validate([
-        'from_branch_id' => 'required|different:to_branch_id|exists:branches,id',
-        'to_branch_id'   => 'required|exists:branches,id',
-        'amount'         => 'required|numeric|min:0.01',
-        'description'    => 'nullable|string|max:255',
-    ]);
+    public function storeSettlement(Request $request)
+    {
+        $data = $request->validate([
+            'from_branch_id' => 'required|different:to_branch_id|exists:branches,id',
+            'to_branch_id'   => 'required|exists:branches,id',
+            'amount'         => 'required|numeric|min:0.01',
+            'description'    => 'nullable|string|max:255',
+        ]);
 
-    // ============================
-    // 1) تحقق من أن الفرع الحالي عليه دين للفرع الآخر
-    // ============================
-    $currentBranchId = $data['from_branch_id'];
-    $counterparties = $this->calculateBranchCounterparties($currentBranchId);
+        // ============================
+        // 1) تحقق من أن الفرع الحالي عليه دين للفرع الآخر
+        // ============================
+        $currentBranchId = $data['from_branch_id'];
+        $counterparties = $this->calculateBranchCounterparties($currentBranchId);
 
-    if (!isset($counterparties[$data['to_branch_id']])) {
-        return back()->withErrors(['to_branch_id' => 'لا يوجد تعامل مالي بين الفرعين.']);
+        if (!isset($counterparties[$data['to_branch_id']])) {
+            return back()->withErrors(['to_branch_id' => 'لا يوجد تعامل مالي بين الفرعين.']);
+        }
+
+        $net = $counterparties[$data['to_branch_id']]['net'];
+
+        if ($net >= 0) {
+            return back()->withErrors(['to_branch_id' => 'ليس عليك أي مبلغ لهذا الفرع.']);
+        }
+
+        $maxAmount = abs($net);
+
+        if ($data['amount'] > $maxAmount) {
+            return back()->withErrors(['amount' => "لا يمكنك دفع أكثر من مبلغ الدين: " . number_format($maxAmount, 2) . " ر.ي"]);
+        }
+
+        // ============================
+        // 2) إنشاء قيد التسوية (بعد نجاح التحقق)
+        // ============================
+        BranchTransaction::create([
+            'shipment_id'    => null,
+            'from_branch_id' => $data['from_branch_id'], // الفرع الدافع
+            'to_branch_id'   => $data['to_branch_id'],   // الفرع المستلم
+            'amount'         => $data['amount'],
+            'type'           => 'settlement',
+            'description'    => $data['description'] ?? 'تسوية يدوية بين الفروع',
+        ]);
+
+        return redirect()->route('finance.branches.show', $data['from_branch_id'])
+            ->with('success', 'تم تسجيل التسوية المالية بنجاح.');
     }
-
-    $net = $counterparties[$data['to_branch_id']]['net'];
-
-    if ($net >= 0) {
-        return back()->withErrors(['to_branch_id' => 'ليس عليك أي مبلغ لهذا الفرع.']);
-    }
-
-    $maxAmount = abs($net);
-
-    if ($data['amount'] > $maxAmount) {
-        return back()->withErrors(['amount' => "لا يمكنك دفع أكثر من مبلغ الدين: " . number_format($maxAmount, 2) . " ر.ي"]);
-    }
-
-    // ============================
-    // 2) إنشاء قيد التسوية (بعد نجاح التحقق)
-    // ============================
-    BranchTransaction::create([
-        'shipment_id'    => null,
-        'from_branch_id' => $data['from_branch_id'], // الفرع الدافع
-        'to_branch_id'   => $data['to_branch_id'],   // الفرع المستلم
-        'amount'         => $data['amount'],
-        'type'           => 'settlement',
-        'description'    => $data['description'] ?? 'تسوية يدوية بين الفروع',
-    ]);
-
-    return redirect()->route('finance.branches.show', $data['from_branch_id'])
-        ->with('success', 'تم تسجيل التسوية المالية بنجاح.');
-}
 
     /**
      * API: إرجاع الرصيد النهائي لفرع (مقابل جميع الفروع)
@@ -162,16 +166,19 @@ class BranchFinanceController extends Controller
 
         foreach ($transactions as $t) {
             if ($t->type === 'cod') {
-                // شحنة آجل:
-                // إذا كان هذا الفرع هو المرسِل => الفرع الآخر مديون له
-                if ($t->from_branch_id == $branchId) {
-                    $net += $t->amount;
-                    $totalCod += $t->amount;
-                }
-                // إذا كان هذا الفرع هو المستلم => هو مديون للمرسل
-                if ($t->to_branch_id == $branchId) {
-                    $net -= $t->amount;
-                }
+
+    // هذا الفرع عليه المبلغ
+    if ($t->from_branch_id == $branchId) {
+        $net -= $t->amount;
+    }
+
+    // هذا الفرع له المبلغ
+    if ($t->to_branch_id == $branchId) {
+        $net += $t->amount;
+        $totalCod += $t->amount;
+    }
+
+
             } elseif ($t->type === 'settlement') {
                 // تسوية:
                 // إذا هذا الفرع دافع (from) => دفع للآخر => يقل ما للفرع / يزيد ما عليه
@@ -225,10 +232,15 @@ class BranchFinanceController extends Controller
                     $result[$otherId]['net'] -= $t->amount;
                 }
             } elseif ($t->type === 'settlement') {
+
+                // الفرع الحالي دفع → يقل الدين
                 if ($t->from_branch_id == $branchId) {
-                    $result[$otherId]['net'] -= $t->amount;
-                } else {
                     $result[$otherId]['net'] += $t->amount;
+                }
+
+                // الفرع الحالي استلم → يقل المبلغ له
+                else {
+                    $result[$otherId]['net'] -= $t->amount;
                 }
             }
         }
