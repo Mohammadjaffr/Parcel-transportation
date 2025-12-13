@@ -31,7 +31,8 @@ class Shipment extends Model
         'code',
         'no_honey_jars',
         'no_gallons_honey',
-        
+        'customer_id',
+
     ];
     public function logs()
     {
@@ -69,8 +70,21 @@ class Shipment extends Model
             $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
         });
     }
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
 
+  public function fromBranch()
+    {
+        return $this->belongsTo(Branch::class, 'from_city', 'name');
+    }
 
+    // علاقة فرع المستلم
+    public function toBranch()
+    {
+        return $this->belongsTo(Branch::class, 'to_city', 'name');
+    }
 
     public function user()
     {

@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
+use App\Http\Controllers\CustomerController;
 
 // Route::get('/', function () {
 //     return view('dashboard');
@@ -61,24 +62,57 @@ Route::middleware('auth')->group(function () {
         ->name('system-settings.auto-assign.get');
 
 
+    Route::resource('customers', CustomerController::class);
 
-          // تقارير الفروع
     Route::get('/finance/branches', [BranchFinanceController::class, 'index'])
         ->name('finance.branches.index');
 
     Route::get('/finance/branches/{branch}', [BranchFinanceController::class, 'show'])
         ->name('finance.branches.show');
 
-    // تسويات
     Route::get('/finance/settlements/create', [BranchFinanceController::class, 'createSettlement'])
         ->name('finance.settlements.create');
 
     Route::post('/finance/settlements', [BranchFinanceController::class, 'storeSettlement'])
         ->name('finance.settlements.store');
 
-    // API رصيد فرع
     Route::get('/api/branches/{branch}/balance', [BranchFinanceController::class, 'apiBranchBalance'])
         ->name('api.branch.balance');
+
+
+
+
+
+    // Dashboard النظام
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard.index');
+
+    // التقارير
+    Route::get('/reports', [ReportController::class, 'index'])
+        ->name('reports.index');
+
+    Route::get('/reports/dashboard', [ReportController::class, 'dashboard'])
+        ->name('reports.dashboard');
+    Route::get('/reports/shipments', [ReportController::class, 'shipments'])
+        ->name('reports.shipments');
+
+    // تقارير العملاء
+    Route::get('/reports/customers/{id}', [ReportController::class, 'customerStatement'])
+        ->name('reports.customers.statement');
+
+    Route::get('/reports/customers/{id}/pdf', [ReportController::class, 'customerStatementPDF'])
+        ->name('reports.customers.statement.pdf');
+
+    // تقارير الفروع
+    Route::get('/reports/branches/{id}', [ReportController::class, 'branchStatement'])
+        ->name('reports.branches.statement');
+
+    Route::get('/reports/branches/{id}/pdf', [ReportController::class, 'branchStatementPDF'])
+        ->name('reports.branches.statement.pdf');
+
+    // الإقفال الشهري
+    Route::get('/reports/monthly/closing/pdf', [ReportController::class, 'monthlyClosingPDF'])
+        ->name('reports.monthly.closing.pdf');
 });
 
 require __DIR__ . '/auth.php';

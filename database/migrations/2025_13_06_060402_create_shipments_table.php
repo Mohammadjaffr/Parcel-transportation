@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('driver_id')->nullable()->constrained('drivers');
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->string('bond_number')->unique();
             $table->string('sender_name');
             $table->string('sender_phone');
