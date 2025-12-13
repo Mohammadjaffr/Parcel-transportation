@@ -73,7 +73,7 @@ class BranchFinanceController extends Controller
         });
 
         if (empty($branchesOwed)) {
-            return back()->with('error', 'لا توجد مبالغ متبقية لتسويتها على هذا الفرع.');
+            return back()->with('error', 'لا توجد مبالغ متبقية لتصفينها على هذا الفرع.');
         }
 
         return view('pages.finance.settlements.create', [
@@ -126,7 +126,7 @@ class BranchFinanceController extends Controller
             'to_branch_id'   => $data['to_branch_id'],   // الفرع المستلم
             'amount'         => $data['amount'],
             'type'           => 'settlement',
-            'description'    => $data['description'] ?? 'تسوية يدوية بين الفروع',
+            'description'    => $data['description'] ?? 'تصفية يدوية بين الفروع',
         ]);
 
         return redirect()->route('finance.branches.show', $data['from_branch_id'])

@@ -37,7 +37,7 @@ class RequestController extends Controller
     {
         $branches = Branch::all();
         $drivers = Driver::where('status', 'active')->get();
-        $customers = Customer::all();
+        $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
 
         return view('pages.request.create ', compact('branches', 'drivers', 'customers'));
     }
@@ -55,14 +55,14 @@ class RequestController extends Controller
             'package_type'    => 'required|string',
             'weight'          => 'nullable|numeric',
             'payment_method'  => 'required|in:prepaid,cod',
-            'cod_amount'      => 'required|numeric',
+            'cod_amount' => 'required_if:payment_method,cod|numeric|min:0',
             'notes'           => 'nullable|string',
             'code'            => 'nullable|string|max:255',
             'no_honey_jars'   => 'nullable|numeric',
             'no_gallons_honey' => 'nullable|numeric',
             'driver_id'       => 'required|exists:drivers,id',
             'customer_id'     => 'required|exists:customers,id',
-        ]);
+        ], []);
 
         if ($validator->fails()) {
             return $this->ValidationError($validator);
@@ -107,7 +107,7 @@ class RequestController extends Controller
                         'to_branch_id'   => $from, // المرسل (له)
                         'amount'         => $shipment->cod_amount,
                         'type'           => 'cod',
-                        'description'    => "له مبلغ من العميل {$shipment->receiver_name} على شحنة رقم {$shipment->id}",
+                        'description'    => "له مبلغ من العميل {$shipment->receiver_name} على سند رقم {$shipment->bond_number}",
                     ]);
                 }
             }
@@ -116,7 +116,7 @@ class RequestController extends Controller
                     'customer_id' => $shipment->customer_id,
                     'type'        => 'debit',
                     'amount'      => $shipment->cod_amount,
-                    'description' => "شحنة رقم {$shipment->id}",
+                    'description' => "سند رقم {$shipment->bond_number}",
                 ]);
             }
 
@@ -211,16 +211,16 @@ class RequestController extends Controller
                         'to_branch_id'   => $from, // المرسل = له
                         'amount'         => $shipment->cod_amount,
                         'type'           => 'cod',
-                        'description'    => "تحديث: مبلغ على فرع {$shipment->to_city} لشحنة رقم {$shipment->id}",
+                        'description'    => "تحديث: مبلغ على فرع {$shipment->to_city} لسند رقم {$shipment->bond_number}",
                     ]);
                 }
             }
-             if ($shipment->payment_method === 'cod' && $shipment->customer_id) {
+            if ($shipment->payment_method === 'cod' && $shipment->customer_id) {
                 CustomerTransaction::create([
                     'customer_id' => $shipment->customer_id,
                     'type'        => 'debit',
                     'amount'      => $shipment->cod_amount,
-                    'description' => "شحنة رقم {$shipment->id}",
+                    'description' => "شحنة رقم {$shipment->bond_number}",
                 ]);
             }
 

@@ -99,7 +99,7 @@
                     <!-- Menu Item Calendar -->
 
                     <!-- Menu Item Profile -->
-                    <li>
+                    {{-- <li>
                         <a href="{{ route('branch.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
@@ -115,7 +115,7 @@
                                 إدارة الافرع
                             </span>
                         </a>
-                    </li>
+                    </li> --}}
                     <!-- Menu Item Profile -->
 
                     <!-- Menu Item Forms -->

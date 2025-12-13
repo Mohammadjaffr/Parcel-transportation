@@ -128,6 +128,7 @@
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">العميل</label>
                         <select id="customer_id" name="customer_id" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
                             <option disabled selected>اختر العميل</option>
+                            
                             @foreach ($customers as $customer)
                                 <option value="{{ $customer->id }}">{{ $customer->name }}</option>
                             @endforeach

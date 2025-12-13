@@ -6,7 +6,7 @@ use App\Models\AdminActivity;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\requestcontroller;
+use App\Http\Controllers\Requestcontroller;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\BranchController;
@@ -29,18 +29,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', UserController::class);
     Route::resource('branch', BranchController::class);
-    Route::resource('request', requestcontroller::class);
+    Route::resource('request', Requestcontroller::class);
     Route::patch('/request/{id}/status', [RequestController::class, 'updateStatus'])
         ->name('request.updateStatus');
+
+        
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');
     Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
 
-    Route::get('/whatsapp/sender/{id}', [requestcontroller::class, 'openForSender'])
+    Route::get('/whatsapp/sender/{id}', [Requestcontroller::class, 'openForSender'])
         ->name('whatsapp.sender');
 
-    Route::get('/admin/logs', [requestController::class, 'adminlog'])
+    Route::get('/admin/logs', [RequestController::class, 'adminlog'])
         ->name('request.adminlog');
     Route::resource('drivers', DriverController::class);
     Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])
@@ -54,10 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/revenue/pdf', [ReportController::class, 'exportRevenuePDF'])
         ->name('reports.revenue.pdf');
 
-    Route::get('/whatsapp/receiver/{id}', [requestcontroller::class, 'openForReceiver'])
+    Route::get('/whatsapp/receiver/{id}', [Requestcontroller::class, 'openForReceiver'])
         ->name('whatsapp.receiver');
 
-    Route::get('/request/{id}/invoice', [requestController::class, 'invoice'])->name('request.invoice');
+    Route::get('/request/{id}/invoice', [RequestController::class, 'invoice'])->name('request.invoice');
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
 
@@ -113,6 +115,11 @@ Route::middleware('auth')->group(function () {
     // الإقفال الشهري
     Route::get('/reports/monthly/closing/pdf', [ReportController::class, 'monthlyClosingPDF'])
         ->name('reports.monthly.closing.pdf');
+
+
+Route::get('/reports/revenue', [ReportController::class, 'dashboard'])
+    ->name('reports.revenue');
+
 });
 
 require __DIR__ . '/auth.php';

@@ -17,7 +17,7 @@ class ReportController extends Controller
     /* ===============================
        صفحة التقارير الرئيسية
     =============================== */
-   public function index()
+    public function index()
     {
         return view('pages.reports.index');
     }
@@ -29,35 +29,35 @@ class ReportController extends Controller
     {
         // فلترة الشحنات
         $query = Shipment::with(['customer', 'fromBranch', 'toBranch', 'driver']);
-        
+
         // فلترة حسب الفرع
         if ($request->filled('branch_id')) {
             $query->where('branch_id', $request->branch_id);
         }
-        
+
         // فلترة حسب تاريخ البداية
         if ($request->filled('start_date')) {
             $query->whereDate('created_at', '>=', $request->start_date);
         }
-        
+
         // فلترة حسب تاريخ النهاية
         if ($request->filled('end_date')) {
             $query->whereDate('created_at', '<=', $request->end_date);
         }
-        
+
         // فلترة حسب حالة الدفع
         if ($request->filled('payment_method')) {
             $query->where('payment_method', $request->payment_method);
         }
-        
+
         $shipments = $query->latest()->paginate(25);
         $branches = Branch::all();
-        
+
         // إحصائيات
         $totalShipments = $shipments->total();
         $totalCod = $shipments->where('payment_method', 'cod')->sum('cod_amount');
         $totalPrepaid = $shipments->where('payment_method', 'prepaid')->count();
-        
+
         return view('pages.reports.shipments', compact(
             'shipments',
             'branches',
@@ -242,14 +242,21 @@ class ReportController extends Controller
         $pdf->AddPage();
 
         $html = view('pages.reports.monthly.closing_pdf', compact(
-    'month',
-    'shipments',
-    'revenue',
-    'customersDebit'
-))->render();
+            'month',
+            'shipments',
+            'revenue',
+            'customersDebit'
+        ))->render();
 
 
         $pdf->writeHTML($html);
         return $pdf->Output("monthly_closing_{$month}.pdf", 'I');
     }
+    public function revenue()
+{
+    $revenue = Shipment::where('payment_method', 'cod')->sum('cod_amount');
+
+    return view('pages.reports.revenue', compact('revenue'));
+}
+
 }

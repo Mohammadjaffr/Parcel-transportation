@@ -43,7 +43,7 @@
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($customers as $customer)
                             @php
-                                $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
+                                $balance = ($customer->debit_sum ?? 0) - ($customer->cerrorit_sum ?? 0);
                             @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
 
@@ -70,17 +70,17 @@
 
                                 <!-- الائتمان -->
                                 <td class="px-5 py-4">
-                                    {{ number_format($customer->credit_limit ?? 0, 2) }} ر.س
+                                    {{ number_format($customer->cerrorit_limit ?? 0, 2) }} ر.س
                                 </td>
 
                                 <!-- الحالة -->
                                 <td class="px-5 py-4">
                                     @if ($balance > 0)
-                                        <span class="px-3 py-1 text-xs rounded-full bg-red-100 text-red-700">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-error-100 text-error-700">
                                             مدين {{ number_format($balance, 2) }}
                                         </span>
                                     @else
-                                        <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-700">
+                                        <span class="px-3 py-1 text-xs rounded-full bg-success-100 text-success-700">
                                             دائن {{ number_format(abs($balance), 2) }}
                                         </span>
                                     @endif

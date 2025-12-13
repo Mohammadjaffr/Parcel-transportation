@@ -61,16 +61,28 @@
                     </svg>
                 </div>
                 <div>
+
                     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">الطرد #{{ $shipment->id }}</h2>
                     <div class="flex items-center gap-2 mt-1">
+                        @php
+                            $statusText = match ($shipment->status) {
+                                'pending' => 'قيد الانتظار',
+                                'in_transit' => 'في الطريق',
+                                'deliverd' => 'تم التسليم',
+                                'cancelled' => 'ملغي',
+                                default => $shipment->status,
+                            };
+                        @endphp
+
                         <span
                             class="px-3 py-1 rounded-full text-xs font-medium 
-                            @if ($shipment->status == 'pending') rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500
-                            @elseif($shipment->status == 'in_transit') rounded-full bg-brand-50 px-2 py-0.5 text-theme-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-500
-                            @elseif($shipment->status == 'deliverd') rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500
-                            @elseif($shipment->status == 'cancelled') rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500 @endif">
-                            {{ $shipment->status }}
+    @if ($shipment->status == 'pending') bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-500
+    @elseif($shipment->status == 'in_transit') bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-500
+    @elseif($shipment->status == 'deliverd') bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-500
+    @elseif($shipment->status == 'cancelled') bg-error-50 text-error-600 dark:bg-error-500/15 dark:text-error-500 @endif">
+                            {{ $statusText }}
                         </span>
+
                         <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
                         <span
                             class="text-sm text-gray-500 dark:text-gray-400">{{ $shipment->created_at->diffForHumans() }}</span>
@@ -107,7 +119,7 @@
                                 d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
                         </svg>
                     </a>
-                
+
                 </div>
                 <div class="pr-12">
                     <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
@@ -179,14 +191,15 @@
                                 d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
                         </svg>
                     </a>
-                   
+
 
 
                 </div>
 
                 <div class="pr-12">
                     <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
-                        <svg class="w-5 h-5 text-gray-400 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-gray-400 text-success-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -243,7 +256,7 @@
         </div>
 
         <!-- معلومات إضافية في شبكة ثلاثية -->
-        <div class="mt-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
             <div
                 class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
                 <div class="flex items-center gap-3 mb-3">
@@ -442,5 +455,5 @@
             </div>
 
         </div>
-        
+
     @endsection

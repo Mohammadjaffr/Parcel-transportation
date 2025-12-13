@@ -32,7 +32,7 @@
                             الفرع
                         </th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400">
-                            إجمالي COD
+                            إجمالي الاجل
                         </th>
                         <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400">
                             تسويات مستلمة
