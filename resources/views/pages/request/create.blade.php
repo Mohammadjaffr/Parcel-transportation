@@ -124,7 +124,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="mt-3">
+                    {{-- <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">العميل</label>
                         <select id="customer_id" name="customer_id" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
                             <option disabled selected>اختر العميل</option>
@@ -136,7 +136,7 @@
                         @error('customer_id')
                             <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                         @enderror
-                    </div>
+                    </div> --}}
 
                     <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
 
@@ -174,7 +174,7 @@
                         @enderror
                     </div>
                 </div>
-                <div class="mt-3">
+                {{-- <div class="mt-3">
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">السائق</label>
 
                     <select id="driver_id" name="driver_id" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
@@ -187,7 +187,7 @@
                     @error('driver_id')
                         <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                     @enderror
-                </div>
+                </div> --}}
 
 
             </div>

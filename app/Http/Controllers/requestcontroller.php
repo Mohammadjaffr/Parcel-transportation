@@ -33,14 +33,26 @@ class RequestController extends Controller
     }
 
     /* ========== 2- صفحة إنشاء طرد ========== */
-    public function create()
+    public function create(Request $request)
     {
         $branches = Branch::all();
-        $drivers = Driver::where('status', 'active')->get();
         $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
 
-        return view('pages.request.create ', compact('branches', 'drivers', 'customers'));
+        $customer = null;
+        $role = $request->query('role'); // sender | receiver
+
+        if ($request->filled('customer_id')) {
+            $customer = Customer::findOrFail($request->customer_id);
+        }
+
+        return view('pages.request.create', compact(
+            'branches',
+            'customers',
+            'customer',
+            'role'
+        ));
     }
+
 
     /* ========== 3- تخزين طرد جديد ========== */
     public function store(Request $request)
@@ -60,8 +72,8 @@ class RequestController extends Controller
             'code'            => 'nullable|string|max:255',
             'no_honey_jars'   => 'nullable|numeric',
             'no_gallons_honey' => 'nullable|numeric',
-            'driver_id'       => 'required|exists:drivers,id',
-            'customer_id'     => 'required|exists:customers,id',
+            // 'driver_id'       => 'required|exists:drivers,id',
+            'customer_id'     => 'nullable|exists:customers,id',
         ], []);
 
         if ($validator->fails()) {
@@ -137,6 +149,31 @@ class RequestController extends Controller
         }
     }
 
+    public function createCustomer()
+    {
+        return view('pages.request.customer.create');
+    }
+
+    public function storeCustomer(Request $request)
+    {
+        $data = $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'role'  => 'required|in:sender,receiver',
+        ]);
+
+        $customer = Customer::create([
+            'name'      => $data['name'],
+            'phone'     => $data['phone'],
+            'branch_id' => auth()->user()->branch_id,
+            'type'      => 'general', // مهم للمستقبل
+        ]);
+
+        return redirect()->route('request.create', [
+            'customer_id' => $customer->id,
+            'role'        => $data['role'],
+        ]);
+    }
 
 
     /* ========== 4- عرض تفاصيل طرد واحد ========== */
@@ -177,8 +214,8 @@ class RequestController extends Controller
             'code'            => 'nullable|string|max:255',
             'no_honey_jars'   => 'nullable|numeric',
             'no_gallons_honey' => 'nullable|numeric',
-            'driver_id'       => 'required|exists:drivers,id',
-            'customer_id'     => 'required|exists:customers,id',
+            // 'driver_id'       => 'required|exists:drivers,id',
+            'customer_id'     => 'nullable|exists:customers,id',
         ]);
 
         if ($validator->fails()) {
@@ -333,6 +370,11 @@ class RequestController extends Controller
     {
         $logs = AdminActivity::latest()->paginate(20);
         return view('pages.log.logs', compact('logs'));
+    }
+    public function selectCustomer()
+    {
+        $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
+        return view('pages.request.select-customer', compact('customers'));
     }
 
 

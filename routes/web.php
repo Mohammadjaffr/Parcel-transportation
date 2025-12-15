@@ -60,6 +60,15 @@ Route::middleware('auth')->group(function () {
         ->name('whatsapp.receiver');
 
     Route::get('/request/{id}/invoice', [RequestController::class, 'invoice'])->name('request.invoice');
+    Route::get('/shipments/select-customer', [RequestController::class, 'selectCustomer'])
+    ->name('shipments.selectCustomer');
+
+    Route::get('/shipments/create-customer', [RequestController::class, 'createCustomer'])
+    ->name('shipments.createCustomer');
+
+Route::post('/shipments/store-customer', [RequestController::class, 'storeCustomer'])
+    ->name('shipments.storeCustomer');
+
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
 
