@@ -26,14 +26,17 @@ class BranchController extends Controller
     /* ========== 3- تخزين فرع جديد ========== */
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'name'   => 'required|string|max:255',
             'region' => 'required|string|max:255',
             'phone'  => 'required|string|max:50',
+            'code' => 'required|string|max:50|unique:branches,code',
         ], [
             'name.required'   => 'حقل اسم الفرع مطلوب.',
             'region.required' => 'حقل المنطقة مطلوب.',
             'phone.required'  => 'حقل الهاتف مطلوب.',
+            'code.required'     => 'رمز الفرع مطلوب'
         ]);
 
         if ($validator->fails()) {
@@ -41,8 +44,13 @@ class BranchController extends Controller
         }
 
         try {
-            Branch::create($validator->validated());
-            AdminLoggerService::log('إنشاء فرع', 'Branch', "تم إنشاء الفرع بنجاح");
+            $branch = Branch::create($validator->validated());
+            AdminLoggerService::log(
+                'إنشاء فرع',
+                Branch::class,
+                $branch->id,
+                'تم إنشاء الفرع بنجاح'
+            );
 
 
             return $this->SuccessBacktoIndex(
@@ -77,6 +85,7 @@ class BranchController extends Controller
             'name'   => 'required|string|max:255',
             'region' => 'required|string|max:255',
             'phone'  => 'required|string|max:50',
+            'code' => 'required|string|max:50|unique:branches,code',
         ]);
 
         if ($validator->fails()) {
@@ -85,7 +94,7 @@ class BranchController extends Controller
 
         try {
             $branch->update($validator->validated());
-            AdminLoggerService::log('تحديث فرع', 'Branch', "تم تحديث بيانات الفرع بنجاح");
+            AdminLoggerService::log('تحديث فرع', 'Branch', $branch->id, "تم تحديث بيانات الفرع بنجاح");
 
             return $this->SuccessBacktoIndex(
                 'تم التحديث!',
@@ -101,7 +110,7 @@ class BranchController extends Controller
     {
         try {
             Branch::findOrFail($id)->delete();
-            AdminLoggerService::log('حذف فرع', 'Branch', "تم حذف الفرع بنجاح");
+            AdminLoggerService::log('حذف فرع', 'Branch', $id, "تم حذف الفرع بنجاح");
 
 
             return $this->SuccessBacktoIndex(

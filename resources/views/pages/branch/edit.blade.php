@@ -12,7 +12,7 @@
         @csrf
         @method('PUT')
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2">
 
             <div class="space-y-4 w-full md:col-span-2">
                 <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات الفرع</h3>

@@ -43,7 +43,7 @@
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\من</label>
 
                         <input type="text" id="from_city_display" value="{{ auth()->user()->branch->name }}"
-                            class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm bg-gray-100 dark:bg-gray-700" disabled>
+                            class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm bg-gray-100 dark:text-gray-400 dark:bg-gray-700" disabled>
 
                         <input type="hidden" name="from_city" value="{{ auth()->user()->branch->name }}">
                     </div>
@@ -97,7 +97,7 @@
                     <div class="mt-3">
                         <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الجهه\الى</label>
 
-                        <select id="to_city" name="to_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm">
+                        <select id="to_city" name="to_city" class="h-11 w-full rounded-lg border px-4 py-2.5 text-sm dark:text-gray-400">
                             <option disabled selected>اختر الجهة</option>
                             @foreach ($branches as $branch)
                                 @if ($branch->name !== auth()->user()->branch->name)
@@ -291,9 +291,9 @@
 
                 <input type="number" id="cod_amount" name="cod_amount" value="{{ old('cod_amount') }}" min="0"
                     step="0.01" placeholder="0.00"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg 
-                               bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300
-                               focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg 
+                               bg-white dark:bg-gray-700 text-gray-700 dark:text-white
+                               focus:ring-2 focus:ring-brand-500 focus:border-brand-500 
                                @error('cod_amount') border-error-500 focus:ring-error-500 focus:border-error-500 @enderror">
 
 

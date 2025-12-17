@@ -389,7 +389,7 @@
             <!-- الملاحظات -->
             @if ($shipment->notes)
                 <div
-                    class="mt-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                    class="mt-6  dark:from-gray-800  dark:to-gray-900 rounded-2xl p-6 border border-gray-800 dark:border-gray-700 shadow-sm">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg">
                             <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
@@ -398,10 +398,10 @@
                                     d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
                         </div>
-                        <h4 class="text-lg font-bold text-gray-800 dark:text-white">الملاحظات</h4>
+                        <h4 class="text-lg font-bold text-gray-800  dark:text-white">الملاحظات</h4>
                     </div>
-                    <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
-                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ $shipment->notes }}</p>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ $shipment->notes }}</p>
                     </div>
                 </div>
             @endif
@@ -410,7 +410,7 @@
 
         </div>
         <!-- معلومات الوقت -->
-        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
 
             <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">سجل الوقت</h3>
 
@@ -418,7 +418,7 @@
 
                 <!-- وقت الإنشاء -->
                 <div
-                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-800 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -436,7 +436,7 @@
 
                 <!-- آخر تحديث -->
                 <div
-                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-800 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">

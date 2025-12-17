@@ -87,7 +87,7 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm text-center">
                     <thead>
-                        <tr class="bg-gray-50 dark:bg-gray-800/40 text-xs text-gray-500 dark:text-gray-300">
+                        <tr class="bg-gray-50 dark:bg-gray-700 text-xs text-gray-500 dark:text-white/90">
                             <th class="py-3 px-2">#</th>
                             <th class="py-3 px-2">السائق</th>
                             <th class="py-3 px-2">العميل</th>
@@ -102,7 +102,7 @@
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-700 text-gray-700 dark:text-white/80">
 
                         @forelse ($last24Shipments as $shipment)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                            <tr class="hover:bg-gray-300 dark:hover:bg-gray-700 transition">
                                 <td class="py-3 px-2 font-medium">{{ $shipment->id }}</td>
 
                                 <td class="py-3 px-2">{{ optional($shipment->driver)->name ?? '--' }}</td>

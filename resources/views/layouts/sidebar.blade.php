@@ -99,7 +99,7 @@
                     <!-- Menu Item Calendar -->
 
                     <!-- Menu Item Profile -->
-                    {{-- <li>
+                    <li>
                         <a href="{{ route('branch.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
@@ -115,7 +115,7 @@
                                 إدارة الافرع
                             </span>
                         </a>
-                    </li> --}}
+                    </li>
                     <!-- Menu Item Profile -->
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Requests' ? '' : 'Requests')"
@@ -250,7 +250,7 @@
                         </a>
                     </li>
                     <!-- Menu Item Tables -->
-                    <li>
+                    {{-- <li>
                         <a href="{{ route('drivers.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' :
@@ -291,8 +291,8 @@
 
                             </span>
                         </a>
-                    </li>
-                    <li>
+                    </li> --}}
+                    {{-- <li>
                         <a href="{{ route('finance.branches.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
@@ -311,7 +311,7 @@
 
                             </span>
                         </a>
-                    </li>
+                    </li> --}}
 
                     <!-- Menu Item Pages -->
                     <li>
