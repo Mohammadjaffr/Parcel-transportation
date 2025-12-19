@@ -81,7 +81,7 @@
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @forelse ($requests as $request)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-300">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->bond_number }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

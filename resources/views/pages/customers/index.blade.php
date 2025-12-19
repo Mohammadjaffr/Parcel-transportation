@@ -29,7 +29,7 @@
             class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
                 <table class="min-w-full text-sm text-right">
-                    <thead class="bg-gray-100 dark:bg-gray-800">
+                    <thead class="bg-gray-100 dark:bg-gray-700 dark:text-gray-400 ">
                         <tr>
                             <th class="px-5 py-4 font-semibold">العميل</th>
                             <th class="px-5 py-4 font-semibold">الهاتف</th>
@@ -45,7 +45,7 @@
                             @php
                                 $balance = ($customer->debit_sum ?? 0) - ($customer->cerrorit_sum ?? 0);
                             @endphp
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition">
+                            <tr class="hover:bg-gray-400 dark:hover:bg-gray-800/40 transition">
 
                                 <!-- الاسم -->
                                 <td class="px-5 py-4">
@@ -57,20 +57,27 @@
                                 </td>
 
                                 <!-- الهاتف -->
-                                <td class="px-5 py-4 font-mono">{{ $customer->phone }}</td>
+                                <td class="px-5 py-4 font-mono ">
+                                    <span class="dark:text-white"> {{ $customer->phone }}
+                                    </span>
+
+                                </td>
 
                                 <!-- النوع -->
                                 <td class="px-5 py-4">
                                     <span
-                                        class="px-3 py-1 text-xs rounded-full
-            {{ $customer->type === 'company' ? 'bg-brand-100 text-brand-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                        class="px-3 py-1 text-xs rounded-full dark:text-white
+            {{ $customer->type === 'company' ? 'bg-brand-100 text-brand-700' : 'bg-brand-100 text-brand-400' }}">
                                         {{ $customer->type === 'company' ? 'شركة' : 'فرد' }}
                                     </span>
                                 </td>
 
                                 <!-- الائتمان -->
                                 <td class="px-5 py-4">
-                                    {{ number_format($customer->cerrorit_limit ?? 0, 2) }} ر.س
+                                    <span class="dark:text-white">
+                                        {{ number_format($customer->cerrorit_limit ?? 0, 2) }} ر.س
+
+                                    </span>
                                 </td>
 
                                 <!-- الحالة -->
@@ -91,7 +98,7 @@
                                     <div class="flex justify-center gap-2">
 
                                         <a href="{{ route('customers.show', $customer->id) }}"
-                                            class="px-3 py-1.5 rounded-lg text-xs bg-brand-100 text-brand-700 hover:bg-brand-200">
+                                            class="px-3 py-1.5 rounded-lg text-xs bg-brand-100 text-brand-700 hover:bg-brand-200 dark:text-white">
                                             كشف
                                         </a>
 

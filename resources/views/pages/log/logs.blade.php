@@ -35,10 +35,10 @@
                 </tr>
             </thead>
 
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-400">
                 @forelse($logs as $log)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-300">
+                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-400">
                         {{ $loop->iteration }}
                     </td>
 
@@ -46,7 +46,7 @@
                         {{ $log->action }}
                     </td>
 
-                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-300">
+                    <td class="px-6 py-4 text-sm text-gray-800 dark:text-gray-400">
                         {{ $log->description ?? 'لا يوجد وصف' }}
                     </td>
 

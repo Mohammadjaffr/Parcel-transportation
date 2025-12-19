@@ -99,7 +99,7 @@
                     <!-- Menu Item Calendar -->
 
                     <!-- Menu Item Profile -->
-                    {{-- <li>
+                    <li>
                         <a href="{{ route('branch.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
@@ -115,11 +115,83 @@
                                 إدارة الافرع
                             </span>
                         </a>
-                    </li> --}}
+                    </li>
                     <!-- Menu Item Profile -->
-
-                    <!-- Menu Item Forms -->
                     <li>
+                        <a href="#" @click.prevent="selected = (selected === 'Requests' ? '' : 'Requests')"
+                            class="menu-item group flex items-center relative"
+                            :class="(selected === 'Requests') || window.location.href.includes(
+                                '{{ route('request.index') }}') || window.location.href.includes(
+                                '{{ route('shipments.selectCustomer') }}') ? 'menu-item-active' : 'menu-item-inactive'">
+
+                            <!-- السهم المطلق في أقصى اليسار -->
+                            <svg class="absolute left-4 transition-transform duration-300"
+                                :class="(selected === 'Requests') ? 'rotate-180' : ''" width="20" height="20"
+                                viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="currentColor"
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+
+                            <!-- الأيقونة مع هامش لترك مساحة للسهم -->
+                            <svg :class="(selected === 'Requests') || window.location.href.includes(
+                                    '{{ route('request.index') }}') || window.location.href.includes(
+                                    '{{ route('shipments.selectCustomer') }}') ? 'menu-item-icon-active' :
+                                'menu-item-icon-inactive'"
+                                class="ml-10" fill="#dc6803" width="30" height="30" viewBox="0 0 32 32"
+                                id="icon" xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <defs>
+                                        <style>
+                                            .cls-1 {
+                                                fill: none;
+                                            }
+                                        </style>
+                                    </defs>
+                                    <title>request</title>
+                                    <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"
+                                        transform="translate(0)"></path>
+                                    <path
+                                        d="M29.54,5.76l-3.3-3.3a1.6,1.6,0,0,0-2.24,0l-14,14V22h5.53l14-14a1.6,1.6,0,0,0,0-2.24ZM14.7,20H12V17.3l9.44-9.45,2.71,2.71ZM25.56,9.15,22.85,6.44l2.27-2.27,2.71,2.71Z"
+                                        transform="translate(0)"></path>
+                                    <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;"
+                                        class="cls-1" width="32" height="32">
+                                    </rect>
+                                </g>
+                            </svg>
+
+                            <!-- النص -->
+                            <span class="menu-item-text ml-2 flex-1" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                إدارة الرسائل
+                            </span>
+                        </a>
+                        <!-- Dropdown Menu Start -->
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'Requests') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                <li>
+                                    <a href="{{ route('request.create') }}" class="menu-dropdown-item group"
+                                        :class="window.location.href.includes('{{ route('request.index') }}') ?
+                                            'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        رسائل عامة
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('shipments.selectCustomer') }}" class="menu-dropdown-item group"
+                                        :class="window.location.href.includes('{{ route('shipments.selectCustomer') }}') ?
+                                            'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
+                                        رسائل خاصة
+                                    </a>
+                                </li>
+
+                            </ul>
+                        </div>
+                        <!-- Dropdown Menu End -->
+                    </li>
+                    <!-- Menu Item Forms -->
+                    {{-- <li>
                         <a href="{{ route('request.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('request.index') }}') ? 'menu-item-active' :
@@ -154,7 +226,7 @@
                                 إدارة الطرود
                             </span>
                         </a>
-                    </li>
+                    </li> --}}
                     <!-- Menu Item Forms -->
 
                     <!-- Menu Item Tables -->
@@ -178,7 +250,7 @@
                         </a>
                     </li>
                     <!-- Menu Item Tables -->
-                    <li>
+                    {{-- <li>
                         <a href="{{ route('drivers.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' :
@@ -219,8 +291,8 @@
 
                             </span>
                         </a>
-                    </li>
-                    <li>
+                    </li> --}}
+                    {{-- <li>
                         <a href="{{ route('finance.branches.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
@@ -239,7 +311,7 @@
 
                             </span>
                         </a>
-                    </li>
+                    </li> --}}
 
                     <!-- Menu Item Pages -->
                     <li>

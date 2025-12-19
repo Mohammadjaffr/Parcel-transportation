@@ -154,7 +154,7 @@
         </div>
 
         <!-- الإجراءات السريعة -->
-        <div class="bg-white dark:bg-gray-800 rounded-2xl border p-6">
+        {{-- <div class="bg-white dark:bg-gray-800 rounded-2xl border p-6">
             <h3 class="text-lg font-semibold mb-4">إجراءات سريعة</h3>
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -165,7 +165,7 @@
                     📄 إقفال شهري
                 </a>
             </div>
-        </div>
+        </div> --}}
 
     </div>
 

@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 class AdminLoggerService
 {
     public static function log($action,$model = null,$modelId = null,$description = null) {
-        $adminId =  auth('sanctum')->id();
+        // $adminId =  auth('sanctum')->id();
+          $adminId = auth()->id();
         if (!$adminId) {
             return null;
         }

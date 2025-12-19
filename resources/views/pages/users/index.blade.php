@@ -13,15 +13,15 @@
 
                     <!-- البحث -->
                     <div class="flex-1 min-w-[250px]">
-                        <label class="mb-2 block text-xs text-right">البحث</label>
+                        <label class="mb-2 block text-xs text-right dark:text-white">البحث</label>
                         <input type="text" x-model="search" placeholder="أدخل نص البحث..."
-                            class="h-10 w-full rounded-lg border px-4 text-sm text-right" />
+                            class="h-10 w-full rounded-lg border px-4 text-sm text-right dark:text-white" />
                     </div>
 
                     <!-- الحالة -->
                     <div class="min-w-[180px]">
-                        <label class="mb-2 block text-xs text-right">الحالة</label>
-                        <select x-model="statusFilter" class="h-10 w-full rounded-lg border px-4 text-sm text-right">
+                        <label class="mb-2 block text-xs text-right dark:text-white">الحالة</label>
+                        <select x-model="statusFilter" class="h-10 w-full rounded-lg border px-4 text-sm text-right dark:bg-gray-700 dark:text-white">
                             <option value="all">الكل</option>
                             <option value="active">نشط</option>
                             <option value="inactive">محظور</option>
@@ -30,7 +30,7 @@
 
                     <!-- زر التطبيق -->
                     <button @click="filterNow"
-                        class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg px-6 py-2 text-sm font-medium text-white">
+                        class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg dark:text-white px-6 py-2 text-sm font-medium text-white">
                         تطبيق
                     </button>
 
@@ -46,7 +46,7 @@
 
                         <table class="min-w-full">
                             <thead>
-                                <tr class="border-b border-gray-100 dark:border-gray-800">
+                                <tr class="border-b border-gray-100 dark:border-gray-800 dark:text-white">
                                     <th class="px-5 py-3 sm:px-6 text-right">الاسم</th>
                                     <th class="px-5 py-3 sm:px-6 text-right">رقم الواتساب</th>
                                     <th class="px-5 py-3 sm:px-6 text-right">نوعه</th>
@@ -58,7 +58,7 @@
                             <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
 
                                 <template x-for="user in filteredUsers" :key="user.id">
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <tr class="hover:bg-gray-300 dark:hover:bg-gray-700">
 
                                         <td class="px-5 py-4 sm:px-6">
                                             <span class="block font-medium text-gray-800 dark:text-white"
@@ -67,7 +67,7 @@
                                                 x-text="user.whatsapp_number ?? '-'"></span>
                                         </td>
 
-                                        <td class="px-5 py-4 sm:px-6 text-gray-600 dark:text-gray-300" x-text="user.phone">
+                                        <td class="px-5 py-4 sm:px-6 text-gray-600 dark:text-gray-50" x-text="user.phone">
                                         </td>
 
                                         <td class="px-5 py-4 sm:px-6">
