@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('phone');
-            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
-            $table->enum('type', ['individual', 'company'])->default('individual');
-            $table->decimal('credit_limit', 12, 2)->default(0);
+            $table->string('whatsapp_number')->nullable();
+            $table->foreignId('branch_code')->constrained('branches')->cascadeOnDelete();
             $table->timestamps();
-            $table->unique(['phone', 'branch_id']);
+            $table->unique(['phone', 'branch_code']);
         });
     }
 

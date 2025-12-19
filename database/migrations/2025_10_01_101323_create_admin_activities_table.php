@@ -13,13 +13,12 @@ return new class extends Migration
     {
         Schema::create('admin_activities', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('action');
-            $table->string('model_type');
-            $table->unsignedBigInteger('model_id')->nullable();
-            $table->text('description')->nullable();
+            $table->string('model_name');
+            $table->string('description')->nullable();
             $table->timestamps();
-            $table->index(['admin_id', 'created_at']);
+            $table->index(['user_id','created_at']);
         });
     }
 

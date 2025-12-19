@@ -13,25 +13,24 @@ return new class extends Migration
     {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('driver_id')->nullable()->constrained('drivers');
-            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
-            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('driver_id')->nullable()->constrained('drivers');
+            $table->foreignId('sender_branch_code')->constrained()->onDelete('cascade');
+            $table->foreignId('receiver_branch_code')->constrained()->onDelete('cascade');
+            $table->foreignId('sender_customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('receiver_customer_id')->nullable()->constrained()->nullOnDelete();
             $table->string('bond_number')->unique();
-            $table->string('sender_name');
-            $table->string('sender_phone');
-            $table->string('receiver_name');
-            $table->string('receiver_phone');
-            $table->string('from_city');
-            $table->string('to_city');
             $table->string('no_gallons_honey');
             $table->string('no_honey_jars');
+            $table->enum('status', ['pending', 'in_transit', 'delivered'])->default('pending');
+            $table->enum('customer_debt_status', ['pending', 'partially_paid', 'fully_paid', 'overdue'])->default('pending');
+            $table->decimal('weight', 8, 2)->nullable();
+            $table->enum('payment_method', ['prepaid', 'cod','customer_credit']);
+            $table->decimal('total_amount', 10, 2);
+            $table->text('notes')->nullable();
+            //
             $table->string('code');
             $table->string('package_type')->nullable();
-            $table->decimal('weight', 8, 2)->nullable();
-            $table->enum('payment_method', ['prepaid', 'cod']);
-            $table->decimal('cod_amount', 10, 2)->nullable();
-            $table->string('status')->default('pending'); // pending, in_transit, delivered
-            $table->text('notes')->nullable();
+            
             $table->timestamps();
         });
     }

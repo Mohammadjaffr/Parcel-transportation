@@ -7,13 +7,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Branch extends Model
 {
-      use HasFactory;
+    use HasFactory;
 
     protected $table = 'branches';
+    protected $primaryKey = 'code';
+    protected $keyType = 'string';
+    public $incrementing = false;
 
     protected $fillable = [
         'name',
-        'region',
+        'address',
+        'city',
         'phone',
         'code',
     ];
