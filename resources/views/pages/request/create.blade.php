@@ -284,6 +284,7 @@
 
                         <!-- الحالة العامة -->
                         <div class="flex flex-wrap gap-6">
+
                             <label class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                 <input class="sr-only" type="radio" name="payment_method" value="prepaid"
                                     @change="payment_method='prepaid'"
@@ -344,7 +345,6 @@
                             <div class="text-sm text-error-600">{{ $message }}</div>
                         @enderror
 
-                        <!-- prepaid: كاش/بنك + رفع سند -->
                         <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                             x-show="payment_method === 'prepaid'" x-transition>
 
@@ -381,33 +381,74 @@
                                     </span>
                                     تحويل بنكي
                                 </label>
-
                             </div>
 
                             @error('prepaid_payment_method')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            <!-- يظهر فقط لو bank_transfer -->
                             <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     رفع سند التحويل
                                 </label>
 
-                                <input type="file" name="prepaid_attachment" accept="image/*,.pdf"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                                          @error('prepaid_attachment') border-error-500 @enderror">
+                                <label for="prepaid_attachment"
+                                    class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
+                        dark:border-gray-600 dark:bg-gray-800
+                        hover:border-brand-500 dark:hover:border-brand-500
+                        transition-colors duration-200 w-full text-center
+                        @error('prepaid_attachment') border-error-500 @enderror">
+
+                                    <!-- Icon -->
+                                    <div class="mb-[22px] flex justify-center">
+                                        <div
+                                            class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
+                                 dark:bg-gray-700 dark:text-gray-400">
+                                            <svg class="fill-current" width="29" height="28" viewBox="0 0 29 28"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                                    d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <!-- Text -->
+                                    <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                                        Drop File Here
+                                    </h4>
+
+                                    <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
+                                        اسحب الملف هنا أو اضغط للاختيار<br>
+                                        (PNG, JPG, PDF)
+                                    </span>
+
+                                    <span class="font-medium underline text-theme-sm text-brand-500">
+                                        Browse File
+                                    </span>
+
+                                    <!-- Hidden Input -->
+                                    <input id="prepaid_attachment" type="file" name="prepaid_attachment"
+                                        accept="image/*,.pdf" class="hidden" />
+                                </label>
 
                                 @error('prepaid_attachment')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
                             </div>
-
                         </div>
 
+                        <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            x-show="payment_method === 'cod'" x-transition>
+                            <div class="text-sm text-gray-700 dark:text-gray-300">
+                                سيتم اعتبار مبلغ التحصيل عند التسليم = <span class="font-semibold">إجمالي المبلغ</span>.
+                            </div>
+                        </div>
+
+
                         <!-- partial_payment -->
-                        <div class="mt-2" x-show="payment_method==='partial_payment'" x-transition>
+                        <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            x-show="payment_method==='partial_payment'" x-transition>
+
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                 المبلغ المدفوع من المرسل الآن
                             </label>
@@ -415,24 +456,112 @@
                             <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
                                 min="0.01" step="0.01" placeholder="0.00"
                                 class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                                      bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                                      focus:ring-2 focus:ring-brand-500 focus:border-brand-500
-                                      @error('partial_amount') border-error-500 @enderror">
+                      bg-white dark:bg-gray-700 text-gray-700 dark:text-white
+                      focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+                      @error('partial_amount') border-error-500 @enderror">
 
                             @error('partial_amount')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
+
+                            <div class="mt-4">
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    طريقة الدفع (للدفع الجزئي)
+                                </label>
+
+                                <div class="flex flex-wrap gap-6">
+
+                                    <label
+                                        class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
+                                        <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                            value="cash" x-model="prepaid_method">
+                                        <span
+                                            :class="prepaid_method === 'cash' ? 'border-brand-500 bg-brand-500' :
+                                                'bg-transparent border-gray-300 dark:border-gray-700'"
+                                            class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                            <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
+                                                class="w-2 h-2 bg-white rounded-full"></span>
+                                        </span>
+                                        كاش
+                                    </label>
+
+                                    <label
+                                        class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
+                                        <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                            value="bank_transfer" x-model="prepaid_method">
+                                        <span
+                                            :class="prepaid_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
+                                                'bg-transparent border-gray-300 dark:border-gray-700'"
+                                            class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                            <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
+                                                class="w-2 h-2 bg-white rounded-full"></span>
+                                        </span>
+                                        تحويل بنكي
+                                    </label>
+
+                                </div>
+
+                                <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
+                                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                        رفع سند التحويل
+                                    </label>
+
+                                    <!-- Dropzone Wrapper -->
+                                    <label for="prepaid_attachment_partial"
+                                        class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
+                            dark:border-gray-600 dark:bg-gray-800
+                            hover:border-brand-500 dark:hover:border-brand-500
+                            transition-colors duration-200 w-full text-center
+                            @error('prepaid_attachment') border-error-500 @enderror">
+
+                                        <!-- Icon -->
+                                        <div class="mb-[22px] flex justify-center">
+                                            <div
+                                                class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
+                                     dark:bg-gray-700 dark:text-gray-400">
+                                                <svg class="fill-current" width="29" height="28"
+                                                    viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
+                                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                                        d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                                            Drop File Here
+                                        </h4>
+
+                                        <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
+                                            اسحب الملف هنا أو اضغط للاختيار<br>
+                                            (PNG, JPG, PDF)
+                                        </span>
+
+                                        <span class="font-medium underline text-theme-sm text-brand-500">
+                                            Browse File
+                                        </span>
+
+                                        <!-- نفس الاسم بالضبط عشان الكنترولر يستقبله -->
+                                        <input id="prepaid_attachment_partial" type="file" name="prepaid_attachment"
+                                            accept="image/*,.pdf" class="hidden" />
+                                    </label>
+
+                                    @error('prepaid_attachment')
+                                        <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
 
+
                         <!-- customer_credit -->
-                        <div class="mt-2" x-show="payment_method==='customer_credit'" x-transition>
+                        <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            x-show="payment_method==='customer_credit'" x-transition>
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                 حالة مديونية العميل
                             </label>
                             <select name="customer_debt_status"
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                <option value="" selected>اختياري</option>
-                                <option value="pending" @selected(old('customer_debt_status') == 'pending')>قيد الانتظار</option>
+                                <option value="pending" @selected(old('customer_debt_status', 'pending') == 'pending')>قيد الانتظار</option>
                                 <option value="overdue" @selected(old('customer_debt_status') == 'overdue')>مديون</option>
                             </select>
 
@@ -443,6 +572,7 @@
 
                     </div>
                 </div>
+
 
             </div>
 
