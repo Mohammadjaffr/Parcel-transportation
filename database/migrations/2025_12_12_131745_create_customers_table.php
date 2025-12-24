@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->string('branch_code', 10);
+            $table->foreign('branch_code')->references(columns: 'code')->on('branches')->cascadeOnDelete();
             $table->string('name');
-            $table->string('phone');
+            $table->string('phone')->unique();
             $table->string('whatsapp_number')->nullable();
-            $table->foreignId('branch_code')->constrained('branches')->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['phone', 'branch_code']);
+        
         });
     }
 

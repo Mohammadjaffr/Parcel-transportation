@@ -13,13 +13,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
+            $table->string('branch_code', 10)->nullable();
+            $table->foreign('branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->string('name');
             $table->string('phone');
             $table->timestamp('phone_verified_at')->nullable();
             // $table->string('email')->unique();
             $table->string('whatsapp_number')->nullable();
-            $table->enum('type',['user','admin','super_admin'])->default('user');
+            $table->enum('type', ['user', 'admin', 'super_admin'])->default('user');
             $table->boolean('is_banned')->default(false);
             // $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

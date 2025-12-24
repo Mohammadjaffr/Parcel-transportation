@@ -47,36 +47,22 @@
 
                 <!-- المعلومات الإضافية -->
                 <div class="space-y-4">
-                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">المعلومات الإضافية</h3>
+                    {{-- <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">المعلومات الإضافية</h3> --}}
 
-                    <!-- نوع العميل -->
+                   <!-- رقم الواتساب -->
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">نوع العميل</label>
-                        <select name="type"
-                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
-                            <option value="individual" {{ old('type', $customer->type ?? '') == 'individual' ? 'selected' : '' }}>فرد</option>
-                            <option value="company" {{ old('type', $customer->type ?? '') == 'company' ? 'selected' : '' }}>شركة</option>
-                        </select>
-                        <div class="text-sm text-error-600 mt-1">
-                            @error('type')
-                                {{ $message }}
-                            @enderror
-                        </div>
-                    </div>
-
-                    <!-- حد الائتمان -->
-                    <div>
-                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">حد الائتمان</label>
-                        <input type="number" name="credit_limit" step="0.01" 
-                               value="{{ old('credit_limit', $customer->credit_limit ?? '') }}"
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">رقم الواتساب</label>
+                        <input type="text" name="whatsapp_number" value="{{ old('whatsapp_number', $customer->whatsapp_number ?? '') }}"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="أدخل حد الائتمان">
+                            placeholder="أدخل رقم الواتساب">
                         <div class="text-sm text-error-600 mt-1">
-                            @error('credit_limit')
+                            @error('whatsapp_number')
                                 {{ $message }}
                             @enderror
                         </div>
                     </div>
+
+               
                 </div>
             </div>
 

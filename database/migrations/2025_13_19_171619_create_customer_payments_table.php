@@ -13,16 +13,22 @@ return new class extends Migration
     {
         Schema::create('customer_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shipment_id')->constrained()->onDelete('cascade');
+
+            $table->foreignId('shipment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
-            $table->foreignId('branch_code')->constrained('branches')->cascadeOnDelete();
+
+            $table->string('branch_code', 10);
+            $table->foreign('branch_code')->references('code')->on('branches')->cascadeOnDelete();
+
             $table->decimal('amount', 10, 2);
             $table->date('payment_date');
             $table->enum('payment_method', ['cash', 'bank_transfer'])->default('cash');
-            $table->string('attachment_path')->nullable(); 
+            $table->string('attachment_path')->nullable();
             $table->text('notes')->nullable();
+
             $table->index(['shipment_id', 'customer_id']);
             $table->index('payment_date');
+
             $table->timestamps();
         });
     }

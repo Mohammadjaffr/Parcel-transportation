@@ -3,29 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdminActivity;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Branch;
+use App\Models\Customer;
+use App\Models\Driver;
 use App\Models\Shipment;
-use TCPDF;
+use App\Services\AdminLoggerService;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
-use App\Models\Branch;
-use App\Models\Driver;
-use App\Services\AdminLoggerService;
-use App\Models\BranchTransaction;
-use App\Models\Customer;
-use App\Models\CustomerTransaction;
+use Illuminate\Support\Facades\Validator;
+use TCPDF;
 
 class RequestController extends Controller
 {
     protected $whatsAppService;
+
     public function __construct(WhatsAppService $whatsAppService)
     {
         $this->whatsAppService = $whatsAppService;
     }
+
     /* ========== 1- عرض جميع الطردات ========== */
     public function index()
     {
-        $requests = Shipment::where('branch_id', auth()->user()->branch_id)
+        $requests = Shipment::where('sender_branch_code', auth()->user()->branch_code)
             ->latest()
             ->paginate(10);
 
@@ -36,7 +36,7 @@ class RequestController extends Controller
     public function create(Request $request)
     {
         $branches = Branch::all();
-        $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
+        $customers = Customer::where('branch_code', auth()->user()->branch_code)->get();
 
         $customer = null;
         $role = $request->query('role'); // sender | receiver
@@ -53,99 +53,95 @@ class RequestController extends Controller
         ));
     }
 
-
-    /* ========== 3- تخزين طرد جديد ========== */
     public function store(Request $request)
     {
+        dd($request->all());
         $validator = Validator::make($request->all(), [
-            'sender_name'     => 'required|string',
-            'sender_phone'    => 'required|string',
-            'from_city'       => 'required|string',
-            'receiver_name'   => 'required|string',
-            'receiver_phone'  => 'required|string',
-            'to_city'         => 'required|string',
-            'package_type'    => 'required|string',
-            'weight'          => 'nullable|numeric',
-            'payment_method'  => 'required|in:prepaid,cod',
-            'cod_amount' => 'required_if:payment_method,cod|numeric|min:0',
-            'notes'           => 'nullable|string',
-            'code'            => 'nullable|string|max:255',
-            'no_honey_jars'   => 'nullable|numeric',
-            'no_gallons_honey' => 'nullable|numeric',
-            // 'driver_id'       => 'required|exists:drivers,id',
-            'customer_id'     => 'nullable|exists:customers,id',
-        ], []);
+
+            'receiver_branch_code' => 'required|exists:branches,code',
+            'sender_branch_code' => 'required|exists:branches,code',
+
+            'sender_customer_id' => 'nullable|exists:customers,id',
+            'receiver_customer_id' => 'nullable|exists:customers,id',
+
+            'sender_name' => 'required_without:sender_customer_id|string|max:255',
+            'sender_phone' => 'required_without:sender_customer_id|string|max:50',
+
+            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
+            'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
+
+            'package_type' => 'required|string|max:255',
+            'weight' => 'nullable|numeric|min:0',
+            'total_amount' => 'nullable|numeric|min:0',
+
+            'payment_method' => 'required|in:prepaid,cod',
+            'cod_amount' => 'nullable|numeric|min:0|required_if:payment_method,cod',
+
+            'status' => 'required|in:pending,in_transit,delivered',
+
+            // 'bond_number' => 'nullable|string|max:255', // أو احذفها
+
+            'notes' => 'nullable|string',
+            'code' => 'nullable|string|max:255',
+
+            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
+            'no_honey_jars' => 'nullable|numeric|min:0',
+            'no_gallons_honey' => 'nullable|numeric|min:0',
+
+        ],
+            [
+                'receiver_branch_code.required' => 'الرجاء اختيار الجهة المستلمة.',
+                'receiver_branch_code.exists' => 'الجهة المختارة غير موجودة.',
+                'sender_branch_code.required' => 'الرجاء اختيار الجهة المستلمة.',
+                'sender_branch_code.exists' => 'الجهة المختارة غير موجودة.',
+            ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $sender = auth()->user()->branch_code; // لازم يساوي branches.code
+            $receiver = $request->receiver_branch_code;
+
+            if ($sender && $receiver && $sender === $receiver) {
+                $validator->errors()->add('receiver_branch_code', 'لا يمكن اختيار نفس جهة الإرسال.');
+            }
+        });
 
         if ($validator->fails()) {
             return $this->ValidationError($validator);
         }
 
         try {
-
             $data = $validator->validated();
-            $data['branch_id'] = auth()->user()->branch_id;
-            if ($request->customer_id) {
-                $customer = Customer::find($request->customer_id);
 
-                $debit  = $customer->transactions()->where('type', 'debit')->sum('amount');
-                $credit = $customer->transactions()->where('type', 'credit')->sum('amount');
-                $balance = $debit - $credit;
+            $data['sender_branch_code'] = auth()->user()->branch_code;
+            if (empty($data['sender_customer_id'])) {
+                $customer = Customer::firstOrCreate(
+                    ['phone' => $data['sender_phone']],
+                    [
+                        'name' => $data['sender_name'],
+                        'branch_code' => auth()->user()->branch_code,
+                    ]
+                );
 
-                if ($balance + $request->cod_amount > $customer->credit_limit) {
-                    return back()->withErrors([
-                        'cod_amount' => 'تجاوز الحد الائتماني للعميل'
-                    ]);
-                }
+                $data['sender_customer_id'] = $customer->id;
+            }
+
+            if (empty($data['receiver_customer_id'])) {
+                $customer = Customer::firstOrCreate(
+                    ['phone' => $data['receiver_phone']],
+                    [
+                        'name' => $data['receiver_name'],
+                        'branch_code' => $data['receiver_branch_code'],
+                    ]
+                );
+
+                $data['receiver_customer_id'] = $customer->id;
             }
 
             $shipment = Shipment::create($data);
 
-            /*
-        =========================================
-        |   تسجيل القيد المحاسبي للشحنات COD   |
-        =========================================
-        */
-            if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-
-                $from = $shipment->branch_id; // الفرع المرسل
-                $to = Branch::where('name', $shipment->to_city)->value('id'); // الفرع المستلم
-
-                if ($to && $to != $from) {
-
-                    // قيد واحد فقط: الفرع المستلم عليه مبلغ لصالح الفرع المرسل
-                    BranchTransaction::create([
-                        'shipment_id'    => $shipment->id,
-                        'from_branch_id' => $to,   // المستلم (عليه)
-                        'to_branch_id'   => $from, // المرسل (له)
-                        'amount'         => $shipment->cod_amount,
-                        'type'           => 'cod',
-                        'description'    => "له مبلغ من العميل {$shipment->receiver_name} على سند رقم {$shipment->bond_number}",
-                    ]);
-                }
-            }
-            if ($shipment->payment_method === 'cod' && $shipment->customer_id) {
-                CustomerTransaction::create([
-                    'customer_id' => $shipment->customer_id,
-                    'type'        => 'debit',
-                    'amount'      => $shipment->cod_amount,
-                    'description' => "سند رقم {$shipment->bond_number}",
-                ]);
-            }
-
-
-            AdminLoggerService::log(
-                'إنشاء طرد',
-                'Shipment',
-                $shipment->id,
-                "إنشاء طرد من {$shipment->from_city} إلى {$shipment->to_city} - سند {$shipment->bond_number}"
-            );
-
-            return $this->SuccessBacktoIndex(
-                'تمت الإضافة!',
-                'تم إنشاء الطرد بنجاح.'
-            );
+            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء الطرد بنجاح.');
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            dd($e->getMessage(), $e->getFile(), $e->getLine());
         }
     }
 
@@ -157,24 +153,23 @@ class RequestController extends Controller
     public function storeCustomer(Request $request)
     {
         $data = $request->validate([
-            'name'  => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
-            'role'  => 'required|in:sender,receiver',
+            'role' => 'required|in:sender,receiver',
         ]);
 
         $customer = Customer::create([
-            'name'      => $data['name'],
-            'phone'     => $data['phone'],
+            'name' => $data['name'],
+            'phone' => $data['phone'],
             'branch_id' => auth()->user()->branch_id,
-            'type'      => 'general', // مهم للمستقبل
+            'type' => 'general', // مهم للمستقبل
         ]);
 
         return redirect()->route('request.create', [
             'customer_id' => $customer->id,
-            'role'        => $data['role'],
+            'role' => $data['role'],
         ]);
     }
-
 
     /* ========== 4- عرض تفاصيل طرد واحد ========== */
     public function show($id)
@@ -190,9 +185,10 @@ class RequestController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
         $branches = Branch::all();
-        $drivers = Driver::where('status', 'active')->get();
+        // $drivers = Driver::where('status', 'active')->get();
         $customers = Customer::all();
-        return view('pages.request.edit', compact('shipment', 'branches', 'drivers', 'customers'));
+
+        return view('pages.request.edit', compact('shipment', 'branches', 'customers'));
     }
 
     /* ========== 6- تحديث الطرد ========== */
@@ -201,89 +197,63 @@ class RequestController extends Controller
         $shipment = Shipment::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'sender_name'     => 'required|string|max:255',
-            'sender_phone'    => 'required|string|max:20',
-            'from_city'       => 'required|string|max:255',
-            'receiver_name'   => 'required|string|max:255',
-            'receiver_phone'  => 'required|string|max:20',
-            'to_city'         => 'required|string|max:255',
-            'package_type'    => 'required|string|max:255',
-            'payment_method'  => 'required|in:prepaid,cod',
-            'notes'           => 'nullable|string',
-            'cod_amount'      => 'nullable|numeric',
-            'code'            => 'nullable|string|max:255',
-            'no_honey_jars'   => 'nullable|numeric',
-            'no_gallons_honey' => 'nullable|numeric',
-            // 'driver_id'       => 'required|exists:drivers,id',
-            'customer_id'     => 'nullable|exists:customers,id',
+
+            'receiver_branch_code' => 'required|exists:branches,code',
+
+            'sender_customer_id' => 'nullable|exists:customers,id',
+            'receiver_customer_id' => 'nullable|exists:customers,id',
+
+            'sender_name' => 'required_without:sender_customer_id|string|max:255',
+            'sender_phone' => 'required_without:sender_customer_id|string|max:20',
+
+            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
+            'receiver_phone' => 'required_without:receiver_customer_id|string|max:20',
+
+            'package_type' => 'nullable|string|max:255',
+            'weight' => 'nullable|numeric|min:0',
+            'total_amount' => 'required|numeric|min:0',
+
+            'payment_method' => 'required|in:prepaid,cod,customer_credit',
+            'cod_amount' => 'nullable|numeric|min:0|required_if:payment_method,cod',
+
+            'status' => 'required|in:pending,in_transit,delivered',
+            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
+
+            'notes' => 'nullable|string',
+            'code' => 'nullable|string|max:255',
+            'no_honey_jars' => 'nullable|numeric|min:0',
+            'no_gallons_honey' => 'nullable|numeric|min:0',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $sender = auth()->user()->branch_code;     // code
+            $receiver = $request->receiver_branch_code;  // code
+
+            if ($sender && $receiver && $sender === $receiver) {
+                $validator->errors()->add('receiver_branch_code', 'لا يمكن اختيار نفس جهة الإرسال.');
+            }
+        });
 
         if ($validator->fails()) {
             return $this->ValidationError($validator);
         }
 
-        try {
+        $data = $validator->validated();
 
-            // تحديث البيانات
-            $shipment->update($validator->validated());
+        // ثابت
+        $data['sender_branch_code'] = auth()->user()->branch_code;
 
-            // حذف القيود القديمة
-            BranchTransaction::where('shipment_id', $shipment->id)->delete();
+        $shipment->update($data);
 
-            /*
-        =========================================
-        |   إعادة إنشاء القيد المحاسبي الجديد  |
-        =========================================
-        */
-            if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-
-                $from = $shipment->branch_id;
-                $to = Branch::where('name', $shipment->to_city)->value('id');
-
-                if ($to && $to != $from) {
-
-                    BranchTransaction::create([
-                        'shipment_id'    => $shipment->id,
-                        'from_branch_id' => $to,   // المستلم = عليه
-                        'to_branch_id'   => $from, // المرسل = له
-                        'amount'         => $shipment->cod_amount,
-                        'type'           => 'cod',
-                        'description'    => "تحديث: مبلغ على فرع {$shipment->to_city} لسند رقم {$shipment->bond_number}",
-                    ]);
-                }
-            }
-            if ($shipment->payment_method === 'cod' && $shipment->customer_id) {
-                CustomerTransaction::create([
-                    'customer_id' => $shipment->customer_id,
-                    'type'        => 'debit',
-                    'amount'      => $shipment->cod_amount,
-                    'description' => "شحنة رقم {$shipment->bond_number}",
-                ]);
-            }
-
-            AdminLoggerService::log(
-                'تحديث طرد',
-                'Shipment',
-                $shipment->id,
-                "تحديث طرد: {$shipment->from_city} → {$shipment->to_city}"
-            );
-
-            return $this->SuccessBacktoIndex(
-                'تم التحديث!',
-                'تم تحديث الطرد بنجاح.'
-            );
-        } catch (\Exception $e) {
-            return $this->ExceptionError($e);
-        }
+        return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث الطرد بنجاح.');
     }
-
 
     /* ========== 7- حذف الطرد ========== */
     public function destroy($id)
     {
         try {
             Shipment::findOrFail($id)->delete();
-            AdminLoggerService::log('حذف طرد', 'Shipment', "تم حذف الطرد بنجاح");
+            AdminLoggerService::log('حذف طرد', 'Shipment', 'تم حذف الطرد بنجاح');
 
             return $this->SuccessBacktoIndex(
                 'تم الحذف!',
@@ -293,7 +263,6 @@ class RequestController extends Controller
             return $this->ExceptionError($e);
         }
     }
-
 
     private function ValidationError($validator)
     {
@@ -326,8 +295,6 @@ class RequestController extends Controller
             ->with('error_buttonText', 'حسناً');
     }
 
-
-
     public function invoice($id)
     {
         $shipment = Shipment::findOrFail($id);
@@ -345,11 +312,8 @@ class RequestController extends Controller
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
+        return $pdf->Output('invoice-'.$shipment->id.'.pdf', 'I');
     }
-
-
-
 
     public function printThermal($id)
     {
@@ -363,45 +327,48 @@ class RequestController extends Controller
         $html = view('shipments.thermal', compact('shipment'))->render();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('thermal-' . $shipment->id . '.pdf', 'I');
+        return $pdf->Output('thermal-'.$shipment->id.'.pdf', 'I');
     }
 
     public function adminlog()
     {
         $logs = AdminActivity::latest()->paginate(20);
+
         return view('pages.log.logs', compact('logs'));
     }
+
     public function selectCustomer()
     {
         $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
+
         return view('pages.request.select-customer', compact('customers'));
     }
-
 
     public function updateStatus(Request $request, $id)
     {
         try {
             $request->validate([
-                'status' => 'required|in:pending,in_transit,deliverd,cancelled'
+                'status' => 'required|in:pending,in_transit,deliverd,cancelled',
             ]);
 
             $shipment = Shipment::findOrFail($id);
             $shipment->update([
-                'status' => $request->status
+                'status' => $request->status,
             ]);
 
             return response()->json([
                 'success' => true,
                 'success_title' => 'تم التحديث!',
-                'success_message' => 'تم تحديث حالة الطرد بنجاح.'
+                'success_message' => 'تم تحديث حالة الطرد بنجاح.',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'error_message' => $e->getMessage()
+                'error_message' => $e->getMessage(),
             ], 500);
         }
     }
+
     public function openForSender($id)
     {
         $shipment = Shipment::findOrFail($id);
@@ -409,12 +376,15 @@ class RequestController extends Controller
 
         return $this->openInNewTab($link, 'sender', $shipment);
     }
+
     public function openForReceiver($id)
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getReceiverLink($shipment);
+
         return $this->openInNewTab($link, 'receiver', $shipment);
     }
+
     private function openInNewTab($link, $type, $shipment)
     {
         $title = $type === 'sender' ? 'المرسل' : 'المستلم';

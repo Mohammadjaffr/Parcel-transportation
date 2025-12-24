@@ -56,10 +56,10 @@
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             عدد الرمز العسل
                         </th> --}}
-                        <th scope="col"
+                        {{-- <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             السائق
-                        </th>
+                        </th> --}}
                         <th scope="col"
                             class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             حالة الدفع
@@ -97,7 +97,7 @@
                                 <div class="flex items-center justify-center space-x-2">
                                     <p
                                         class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
-                                        {{ $request->from_city }}
+                                        {{ $request->senderBranch->name ?? '-' }}
                                     </p>
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -106,7 +106,8 @@
                                     </svg>
                                     <p
                                         class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                        {{ $request->to_city }}
+                                     {{ $request->receiverBranch->name ?? '-' }}
+
                                     </p>
                                 </div>
                             </td>
@@ -127,14 +128,14 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->code }}
                             </td> --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
                                 {{ $request->driver->name ?? 'غير متاح' }}
-                            </td>
+                            </td> --}}
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')
                                     <span
                                         class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
-                                        دفع مقدم
+                                        دفع مقدا
                                     </span>
                                 @else
                                     <span
@@ -167,7 +168,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-warning-600 dark:text-warning-400">
-                                {{ $request->cod_amount ? number_format($request->cod_amount, 2) . ' ر.ي' : '0.00 ر.ي' }}
+                                {{ $request->total_amount ? number_format($request->total_amount, 2) . ' ر.ي' : '0.00 ر.ي' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex mx-5 space-x-reverse space-x-2">

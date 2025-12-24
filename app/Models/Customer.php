@@ -10,10 +10,8 @@ class Customer extends Model
     protected $fillable = [
         'name',
         'phone',
-        'branch_id',
-        'type',
-        'is_cod',
-        'credit_limit',
+        'branch_code',
+        'whatsapp_number',
     ];
         public function shipments()
     {

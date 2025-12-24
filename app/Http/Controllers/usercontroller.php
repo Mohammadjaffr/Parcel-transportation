@@ -13,11 +13,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        $currentBranch = auth()->user()->branch_id;
 
-        $users = User::with('branch')
-            ->where('branch_id', $currentBranch)
-            ->paginate(10);
+        $users = User::paginate(10);
+
+
 
         return view('pages.users.index', compact('users'));
     }
@@ -46,14 +45,14 @@ class UserController extends Controller
     {
         $user = User::with('branch')->findOrFail($id);
 
-        // جلب كل المستخدمين في نفس الفرع
         $users = User::with('branch')
-            ->where('branch_id', $user->branch_id)
+            ->where('branch_code', $user->branch_code)
             ->get();
 
-        // تمرير user + users للواجهة
         return view('pages.users.show', compact('user', 'users'));
     }
+
+
 
 
     /**

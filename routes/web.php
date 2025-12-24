@@ -71,7 +71,8 @@ Route::post('/shipments/store-customer', [RequestController::class, 'storeCustom
 
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
-
+Route::get('/customers/search', [CustomerController::class, 'search'])
+    ->name('customers.search');
 
     Route::resource('customers', CustomerController::class);
 

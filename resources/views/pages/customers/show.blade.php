@@ -18,10 +18,10 @@
                         <span class="text-sm text-gray-500 dark:text-gray-400">الهاتف:</span>
                         <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $customer->phone }}</span>
                     </div>
-                    @if($customer->cerrorit_limit)
+                    @if($customer->whatsapp_number)
                     <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">حد الائتمان:</span>
-                        <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ number_format($customer->cerrorit_limit, 2) }}ر.ي</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">رقم الواتساب:</span>
+                        <span class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ $customer->whatsapp_number }}</span>
                     </div>
                     @endif
                 </div>

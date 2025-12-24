@@ -21,11 +21,19 @@ class Branch extends Model
         'phone',
         'code',
     ];
-    
+
+    public function senderBranch()
+    {
+        return $this->belongsTo(Branch::class, 'sender_branch_code', 'code');
+    }
+
+    public function receiverBranch()
+    {
+        return $this->belongsTo(Branch::class, 'receiver_branch_code', 'code');
+    }
 
     public function users()
-{
-    return $this->hasMany(User::class);
-}
-
+    {
+        return $this->hasMany(User::class);
+    }
 }

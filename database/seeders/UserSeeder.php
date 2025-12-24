@@ -17,21 +17,24 @@ class UserSeeder extends Seeder
     {
              Branch::create([
             'name' => 'القطن',
-            'region' => 'القطن',
+            'address' => 'القطن',
             'phone' => '966500000001',
             'code' => 'QTN',
+            'city' => 'حضرموت',
         ]);
         Branch::create([
             'name' => 'عدن',
-            'region' => 'المعلا',
+            'address' => 'المعلا',
             'phone' => '966500000001',
             'code' => 'ADN',
+            'city' => 'عدن',
         ]);
         Branch::create([
             'name' => 'المكلا',
-            'region' => 'الشرج',
+            'address' => 'الشرج',
             'phone' => '966500000001',
             'code' => 'MKL',
+            'city' => 'حضرموت',
         ]);
         User::create([
             'name' => 'عوض لشرم',
@@ -40,8 +43,7 @@ class UserSeeder extends Seeder
             'phone_verified_at'=> now(),
             'password' => '12121212',
             'type' => 'admin',
-            'is_banned' => false,
-            'branch_id' => 3,
+            'branch_code' => 'QTN',
         ]);
         User::create([
             'name' => 'محمد السعدي',
@@ -50,21 +52,20 @@ class UserSeeder extends Seeder
             'phone_verified_at'=> now(),
             'password' => '12121212',
             'type' => 'admin',
-            'is_banned' => false,
-            'branch_id' => 1,
+            'branch_code' => 'ADN',
         ]);
-        Driver::create([
-            'name' => 'محمد صالح',
-            'phone' => '967780236524',
-            'city' => 'المكلا',
-            'status' => 'active',
-        ]);
-        Driver::create([
-            'name' => 'سالم علي',
-            'phone' => '967780236564',
-            'city' => 'القطن',
-            'status' => 'active',
-        ]);
+        // Driver::create([
+        //     'name' => 'محمد صالح',
+        //     'phone' => '967780236524',
+        //     'city' => 'المكلا',
+        //     'status' => 'active',
+        // ]);
+        // Driver::create([
+        //     'name' => 'سالم علي',
+        //     'phone' => '967780236564',
+        //     'city' => 'القطن',
+        //     'status' => 'active',
+        // ]);
         
    
         

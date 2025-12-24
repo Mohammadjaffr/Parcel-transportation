@@ -25,12 +25,12 @@ class User extends Authenticatable
         'whatsapp_number',
         'type',
         'is_banned',
-        'branch_id'
     ];
     public function branch()
     {
-        return $this->belongsTo(Branch::class);
+        return $this->belongsTo(Branch::class, 'branch_code', 'code');
     }
+
 
     /**
      * The attributes that should be hidden for serialization.

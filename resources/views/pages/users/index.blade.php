@@ -122,7 +122,7 @@ function userFilter() {
         search: "",
         statusFilter: "all",
 
-        users: @json($users->items()),   // ← هنا التصحيح المهم جداً
+        users: @json($users->items()),  
         filteredUsers: @json($users->items()),
 
         filterNow() {

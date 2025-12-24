@@ -26,18 +26,29 @@
 
                 <!-- المنطقة -->
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المنطقة</label>
-                    <input type="text" name="region" value="{{ old('region') }}"
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">العنوان</label>
+                    <input type="text" name="address" value="{{ old('address') }}"
                         class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
             bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
             focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="ادخل المنطقة">
-                    @error('region')
+                        placeholder="ادخل العنوان">
+                    @error('address')
                         <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <!-- الهاتف -->
+                <div>
+                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المدينه</label>
+                    <input type="text" name="city" value="{{ old('city') }}"
+                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                        placeholder="ادخل المدينه">
+                    @error('city')
+                        <div class="text-sm text-error-600 mt-1">{{ $message }}</div>
+                    @enderror
+                </div>
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
                     <input type="text" name="phone" value="{{ old('phone') }}"

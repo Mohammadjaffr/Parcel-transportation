@@ -12,7 +12,7 @@ class CustomerController extends Controller
     /** عرض عملاء الفرع */
     public function index()
     {
-        $customers = Customer::where('branch_id', auth()->user()->branch_id)
+        $customers = Customer::where('branch_code', auth()->user()->branch_code)
             ->latest()
             ->paginate(15);
 
@@ -28,16 +28,18 @@ class CustomerController extends Controller
     /** تخزين عميل */
     public function store(Request $request)
     {
+        $branchCode = auth()->user()->branch_code;
+
         $validator = Validator::make($request->all(), [
-            'name'         => 'required|string|max:255',
-            'phone'        => 'required|string|max:20|unique:customers,phone,NULL,id,branch_id,' . auth()->user()->branch_id,
-            'type'         => 'required|in:individual,company',
-            'credit_limit' => 'nullable|numeric|min:0',
+            'name'            => 'required|string|max:255',
+            'phone'           => 'required|string|max:20|unique:customers,phone,NULL,id,branch_code,' . $branchCode,
+            'whatsapp_number' => 'nullable|string|max:20',
+
         ], [
-            'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-            'credit_limit.min' => 'يجب أن يكون حد الائتمان أكبر من أو يساوي صفر',
-            'type.in' => 'يجب أن يكون النوع إما فرد أو شركة',
+            'name.required'  => 'اسم العميل مطلوب',
+            'name.max'       => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
+            'phone.required' => 'رقم الهاتف مطلوب',
+            'phone.unique'   => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
         ]);
 
         if ($validator->fails()) {
@@ -46,54 +48,45 @@ class CustomerController extends Controller
 
         try {
             $data = $validator->validated();
-            $data['branch_id'] = auth()->user()->branch_id;
+            $data['branch_code'] = $branchCode;
 
-            $customer = Customer::create($data);
+            $customer =  Customer::create($data);
 
-            AdminLoggerService::log(
-                'إنشاء عميل',
-                'Customer',
-                $customer->id,
-                "إنشاء عميل جديد: {$customer->name} - النوع: " . ($customer->type == 'individual' ? 'فرد' : 'شركة')
-            );
+            // AdminLoggerService::log(
+            //     'إنشاء عميل',
+            //     'Customer',
+            //     $customer->id,
+            //     "إنشاء عميل جديد: {$customer->name} - الفرع: {$customer->branch_code}"
+            // );
 
-            return $this->SuccessBacktoIndex(
-                'تمت الإضافة!',
-                'تم إنشاء العميل بنجاح.'
-            );
+            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء العميل بنجاح.');
         } catch (\Exception $e) {
             return $this->ExceptionError($e);
         }
     }
 
-    /** عرض كشف حساب عميل */
+    /** عرض */
     public function show($id)
     {
-        $customer = Customer::where('branch_id', auth()->user()->branch_id)
-            ->with(['transactions' => function($query) {
+        $customer = Customer::where('branch_code', auth()->user()->branch_code)
+            ->with(['transactions' => function ($query) {
                 $query->latest();
             }])
             ->findOrFail($id);
 
         $transactions = $customer->transactions()->latest()->paginate(20);
 
-        $debit = $customer->transactions()->where('type', 'debit')->sum('amount');
+        $debit  = $customer->transactions()->where('type', 'debit')->sum('amount');
         $credit = $customer->transactions()->where('type', 'credit')->sum('amount');
         $balance = $debit - $credit;
 
-        return view('pages.customers.show', compact(
-            'customer',
-            'transactions',
-            'debit',
-            'credit',
-            'balance'
-        ));
+        return view('pages.customers.show', compact('customer', 'transactions', 'debit', 'credit', 'balance'));
     }
 
     /** صفحة تعديل */
     public function edit($id)
     {
-        $customer = Customer::where('branch_id', auth()->user()->branch_id)
+        $customer = Customer::where('branch_code', auth()->user()->branch_code)
             ->findOrFail($id);
 
         return view('pages.customers.edit', compact('customer'));
@@ -102,19 +95,18 @@ class CustomerController extends Controller
     /** تحديث */
     public function update(Request $request, $id)
     {
-        $customer = Customer::where('branch_id', auth()->user()->branch_id)
+        $branchCode = auth()->user()->branch_code;
+
+        $customer = Customer::where('branch_code', $branchCode)
             ->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'         => 'required|string|max:255',
-            'phone'        => 'required|string|max:20|unique:customers,phone,' . $id . ',id,branch_id,' . auth()->user()->branch_id,
-            'type'         => 'required|in:individual,company',
-            'credit_limit' => 'nullable|numeric|min:0',
+            'name'            => 'required|string|max:255',
+            'phone' => 'required|string|max:20',
+            'whatsapp_number' => 'nullable|string|max:20',
         ], [
             'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-            'credit_limit.min' => 'يجب أن يكون حد الائتمان أكبر من أو يساوي صفر',
-            'type.in' => 'يجب أن يكون النوع إما فرد أو شركة',
+            'name.max'     => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
         ]);
 
         if ($validator->fails()) {
@@ -122,33 +114,31 @@ class CustomerController extends Controller
         }
 
         try {
-            $oldData = $customer->toArray();
-            $customer->update($validator->validated());
+            $old = $customer->toArray();
+            $validated = $validator->validated();
 
-            // تسجيل التغييرات
+            // نحمي branch_code من أي تعديل من الفورم (حتى لو أرسل قيمة)
+            unset($validated['branch_code']);
+
+            $customer->update($validated);
+
             $changes = [];
-            foreach ($validator->validated() as $key => $value) {
-                if (isset($oldData[$key]) && $oldData[$key] != $value) {
-                    $oldValue = $oldData[$key] ?? 'فارغ';
-                    $newValue = $value ?? 'فارغ';
-                    $changes[] = "$key: $oldValue → $newValue";
+            foreach ($validated as $key => $value) {
+                $oldValue = $old[$key] ?? null;
+                if ($oldValue != $value) {
+                    $changes[] = "{$key}: " . ($oldValue ?? 'فارغ') . " → " . ($value ?? 'فارغ');
                 }
             }
 
-            $typeArabic = $customer->type == 'individual' ? 'فرد' : 'شركة';
             AdminLoggerService::log(
                 'تحديث عميل',
                 'Customer',
                 $customer->id,
-                "تحديث بيانات العميل: {$customer->name}" . 
-                (count($changes) > 0 ? "\nالتغييرات: " . implode('، ', $changes) : '') .
-                "\nالنوع: $typeArabic"
+                "تحديث بيانات العميل: {$customer->name}" .
+                    (count($changes) ? "\nالتغييرات: " . implode('، ', $changes) : '')
             );
 
-            return $this->SuccessBacktoIndex(
-                'تم التحديث!',
-                'تم تحديث بيانات العميل بنجاح.'
-            );
+            return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث بيانات العميل بنجاح.');
         } catch (\Exception $e) {
             return $this->ExceptionError($e);
         }
@@ -157,19 +147,17 @@ class CustomerController extends Controller
     /** حذف */
     public function destroy($id)
     {
-        $customer = Customer::where('branch_id', auth()->user()->branch_id)
+        $customer = Customer::where('branch_code', auth()->user()->branch_code)
             ->findOrFail($id);
 
-        // التحقق إذا كان للعميل شحنات مرتبطة
-        if ($customer->shipments()->exists()) {
-            return redirect()->back()
-                ->with('error', true)
-                ->with('error_title', 'لا يمكن الحذف!')
-                ->with('error_message', 'لا يمكن حذف عميل لديه شحنات مرتبطة.')
-                ->with('error_buttonText', 'حسناً');
-        }
+        // if ($customer->()->exists()) {
+        //     return redirect()->back()
+        //         ->with('error', true)
+        //         ->with('error_title', 'لا يمكن الحذف!')
+        //         ->with('error_message', 'لا يمكن حذف عميل لديه شحنات مرتبطة.')
+        //         ->with('error_buttonText', 'حسناً');
+        // }
 
-        // التحقق إذا كان للعميل حركات مالية
         if ($customer->transactions()->exists()) {
             return redirect()->back()
                 ->with('error', true)
@@ -180,14 +168,16 @@ class CustomerController extends Controller
 
         try {
             $customerName = $customer->name;
+            $customerId = $customer->id;
+
             $customer->delete();
 
-            AdminLoggerService::log(
-                'حذف عميل',
-                'Customer',
-                $customer->id,
-                "حذف العميل: $customerName"
-            );
+            // AdminLoggerService::log(
+            //     'حذف عميل',
+            //     'Customer',
+            //     $customerId,
+            //     "حذف العميل: {$customerName}"
+            // );
 
             return redirect()->route('customers.index')
                 ->with('success', true)
@@ -199,32 +189,33 @@ class CustomerController extends Controller
         }
     }
 
-    /** البحث عن العملاء */
-    public function search(Request $request)
-    {
-        $search = $request->get('search');
+    /** البحث */
+public function search(Request $request)
+{
+    $q = trim((string) $request->get('q', ''));
 
-        $customers = Customer::where('branch_id', auth()->user()->branch_id)
-            ->when($search, function($query) use ($search) {
-                $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%$search%")
-                      ->orWhere('phone', 'like', "%$search%");
-                });
-            })
-            ->latest()
-            ->paginate(15);
-
-        return view('pages.customers.index', compact('customers', 'search'));
+    if (mb_strlen($q) < 1) {
+        return response()->json([]);
     }
 
-    /** تصدير العملاء */
+    $customers = Customer::query()
+        ->where('name', 'like', "%{$q}%")
+        ->orWhere('phone', 'like', "%{$q}%")
+        ->orderBy('name')
+        ->limit(10)
+        ->get(['id','name','phone']);
+
+    return response()->json($customers);
+}
+
+
+    /** تصدير */
     public function export()
     {
-        $customers = Customer::where('branch_id', auth()->user()->branch_id)
+        $customers = Customer::where('branch_code', auth()->user()->branch_code)
             ->latest()
             ->get();
 
-        // هنا يمكن إضافة منطق التصدير لـ Excel أو PDF
         return view('pages.customers.export', compact('customers'));
     }
 
@@ -254,11 +245,11 @@ class CustomerController extends Controller
     {
         \Log::error('Customer Controller Error: ' . $e->getMessage(), [
             'exception' => $e,
-            'user_id' => auth()->id(),
-            'branch_id' => auth()->user()->branch_id ?? null,
+            'user_id'   => auth()->id(),
+            'branch_code' => auth()->user()->branch_code ?? null,
         ]);
 
-        $message = app()->environment('production') 
+        $message = app()->environment('production')
             ? 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'
             : $e->getMessage();
 
@@ -266,6 +257,7 @@ class CustomerController extends Controller
             ->with('error', true)
             ->with('error_title', 'خطأ غير متوقع!')
             ->with('error_message', $message)
-            ->with('error_buttonText', 'حسناً');
+            ->with('error_buttonText', 'حسناً')
+            ->withInput();
     }
 }

@@ -33,9 +33,8 @@
                         <tr>
                             <th class="px-5 py-4 font-semibold">العميل</th>
                             <th class="px-5 py-4 font-semibold">الهاتف</th>
-                            <th class="px-5 py-4 font-semibold">النوع</th>
-                            <th class="px-5 py-4 font-semibold">حد الائتمان</th>
-                            <th class="px-5 py-4 font-semibold">الحالة</th>
+                            <th class="px-5 py-4 font-semibold">الفرع</th>
+                            <th class="px-5 py-4 font-semibold">رقم الوتساب</th>
                             <th class="px-5 py-4 font-semibold text-center">إجراءات</th>
                         </tr>
                     </thead>
@@ -52,7 +51,7 @@
                                     <div class="font-semibold text-gray-900 dark:text-white">
                                         {{ $customer->name }}
                                     </div>
-                                    <div class="text-xs text-gray-500">{{ $customer->type === 'company' ? 'شركة' : 'فرد' }}
+                                    <div class="text-xs text-gray-500">{{ $customer->branch_code}}
                                     </div>
                                 </td>
 
@@ -63,35 +62,24 @@
 
                                 </td>
 
-                                <!-- النوع -->
+                                <!-- الفرع -->
                                 <td class="px-5 py-4">
                                     <span
                                         class="px-3 py-1 text-xs rounded-full dark:text-white
-            {{ $customer->type === 'company' ? 'bg-brand-100 text-brand-700' : 'bg-brand-100 text-brand-400' }}">
-                                        {{ $customer->type === 'company' ? 'شركة' : 'فرد' }}
+            {{ $customer->branch_code === 'company' ? 'bg-brand-100 text-brand-700' : 'bg-brand-100 text-brand-400' }}">
+                                        {{ $customer->branch_code }}
                                     </span>
                                 </td>
 
-                                <!-- الائتمان -->
+                                <!-- رقم الوتساب -->
                                 <td class="px-5 py-4">
                                     <span class="dark:text-white">
-                                        {{ number_format($customer->cerrorit_limit ?? 0, 2) }} ر.س
+                                        {{ $customer->whatsapp_number }}
 
                                     </span>
                                 </td>
 
-                                <!-- الحالة -->
-                                <td class="px-5 py-4">
-                                    @if ($balance > 0)
-                                        <span class="px-3 py-1 text-xs rounded-full bg-error-100 text-error-700">
-                                            مدين {{ number_format($balance, 2) }}
-                                        </span>
-                                    @else
-                                        <span class="px-3 py-1 text-xs rounded-full bg-success-100 text-success-700">
-                                            دائن {{ number_format(abs($balance), 2) }}
-                                        </span>
-                                    @endif
-                                </td>
+                          
 
                                 <!-- أزرار -->
                                 <td class="px-5 py-4 text-center">

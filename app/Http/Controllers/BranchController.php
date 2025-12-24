@@ -29,12 +29,14 @@ class BranchController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name'   => 'required|string|max:255',
-            'region' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city'   => 'required|string|max:255',
             'phone'  => 'required|string|max:50',
             'code' => 'required|string|max:50|unique:branches,code',
         ], [
             'name.required'   => 'حقل اسم الفرع مطلوب.',
-            'region.required' => 'حقل المنطقة مطلوب.',
+            'address.required' => 'حقل المنطقة مطلوب.',
+            'city.required'   => 'حقل المدينة مطلوب.',
             'phone.required'  => 'حقل الهاتف مطلوب.',
             'code.required'     => 'رمز الفرع مطلوب'
         ]);
@@ -83,9 +85,10 @@ class BranchController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name'   => 'required|string|max:255',
-            'region' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city'   => 'required|string|max:255',
             'phone'  => 'required|string|max:50',
-            'code' => 'required|string|max:50|unique:branches,code',
+            'code' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -94,7 +97,7 @@ class BranchController extends Controller
 
         try {
             $branch->update($validator->validated());
-            AdminLoggerService::log('تحديث فرع', 'Branch', $branch->id, "تم تحديث بيانات الفرع بنجاح");
+            // AdminLoggerService::log('تحديث فرع', 'Branch', $branch->code, "تم تحديث بيانات الفرع بنجاح");
 
             return $this->SuccessBacktoIndex(
                 'تم التحديث!',
@@ -109,8 +112,9 @@ class BranchController extends Controller
     public function destroy($id)
     {
         try {
-            Branch::findOrFail($id)->delete();
-            AdminLoggerService::log('حذف فرع', 'Branch', $id, "تم حذف الفرع بنجاح");
+            $branch = Branch::findOrFail($id);
+            $branch->delete();
+            // AdminLoggerService::log('حذف فرع', 'Branch', $branch->code, "تم حذف الفرع بنجاح");
 
 
             return $this->SuccessBacktoIndex(

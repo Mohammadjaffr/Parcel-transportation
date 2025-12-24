@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('branch_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('shipment_id')->nullable()->constrained()->onDelete('cascade');
-            $table->unsignedBigInteger('from_branch_id'); // الفرع المرسِل / الدافع
-            $table->unsignedBigInteger('to_branch_id');   // الفرع المستلِم
+            $table->string('sender_branch_code', 10);
+            $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            $table->string('receiver_branch_code', 10);
+            $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->enum('type', ['cod', 'settlement']); // شحنة آجل / تسوية
             $table->string('description')->nullable();
