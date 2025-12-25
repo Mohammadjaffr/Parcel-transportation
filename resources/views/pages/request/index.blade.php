@@ -85,13 +85,18 @@
                                 {{ $request->bond_number }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-800 dark:text-gray-400">{{ $request->sender_name }}</div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->sender_phone }}</div>
+                                <div class="text-sm text-gray-800 dark:text-gray-400">
+                                    {{ $request->senderCustomer->name ?? '-' }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $request->senderCustomer->phone ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-800 dark:text-gray-400">{{ $request->receiver_name }}</div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">{{ $request->receiver_phone }}</div>
+                                <div class="text-sm text-gray-800 dark:text-gray-400">
+                                    {{ $request->receiverCustomer->name ?? '-' }}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    {{ $request->receiverCustomer->phone ?? '-' }}</div>
                             </td>
+
 
                             <td class="py-3">
                                 <div class="flex justify-center items-center space-x-2">
@@ -187,7 +192,7 @@
             @csrf
             @method('DELETE')
             <button type="button"
-                onclick="confirmDelete('{{ $request->id }}', '{{ $request->sender_name }}')"
+                onclick="confirmDelete('{{ $request->id }}', '{{ $request->senderCustomer->name ?? '-' }}')"
                 class="text-error-600 hover:text-error-900 dark:text-error-400 dark:hover:text-error-300">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

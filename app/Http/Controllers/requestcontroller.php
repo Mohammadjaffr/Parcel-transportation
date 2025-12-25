@@ -138,7 +138,13 @@ class RequestController extends Controller
             $data['status'] = 'pending';
 
             $partialAmount = $data['partial_amount'] ?? null;
-            unset($data['partial_amount']);
+            unset(
+                $data['partial_amount'],
+                $data['sender_name'],
+                $data['sender_phone'],
+                $data['receiver_name'],
+                $data['receiver_phone']
+            );
 
             $shipment = Shipment::create($data);
 
@@ -222,11 +228,11 @@ class RequestController extends Controller
             'sender_customer_id' => 'nullable|exists:customers,id',
             'receiver_customer_id' => 'nullable|exists:customers,id',
 
-            'sender_name' => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone' => 'required_without:sender_customer_id|string|max:20',
+            'sender_customer_id' => 'required_without:sender_customer_id|exists:customers,name',
+            'sender_customer_id' => 'required_without:sender_customer_id|string|max:20,phone',
 
-            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone' => 'required_without:receiver_customer_id|string|max:20',
+            'receiver_customer_id' => 'required_without:receiver_customer_id|exists:customers,name',
+            'receiver_customer_id' => 'required_without:receiver_customer_id|string|max:20,phone',
 
             'package_type' => 'nullable|string|max:255',
             'weight' => 'nullable|numeric|min:0',
@@ -313,7 +319,15 @@ class RequestController extends Controller
             $data['customer_debt_status'] = $data['customer_debt_status'] ?? null;
         }
 
-        unset($data['prepaid_payment_method'], $data['prepaid_attachment'], $data['partial_amount']);
+        unset(
+            $data['prepaid_payment_method'],
+            $data['prepaid_attachment'],
+            $data['partial_amount'],
+            $data['sender_name'],
+            $data['sender_phone'],
+            $data['receiver_name'],
+            $data['receiver_phone']
+        );
 
         $shipment->update($data);
 

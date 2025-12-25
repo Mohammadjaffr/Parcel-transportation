@@ -11,7 +11,7 @@
             text-align: right;
             font-size: 12px;
             color: #000;
-            margin: 50% auto; 
+            margin: 50% auto;
         }
 
         table {
@@ -208,23 +208,25 @@
                 <!-- Right column -->
                 <td style="width: 45%; text-align: right;">
                     <strong>اسم المرسل /</strong>
-                    <span class="dotted-line" style="width: 180px;">{{ $shipment->sender_name }}</span>
+                    <span class="dotted-line" style="width: 180px;">{{ $shipment->senderCustomer->name ?? '' }}</span>
                 </td>
                 <!-- Left column -->
                 <td style="width: 55%; text-align: right;">
                     <strong>جوال /</strong>
-                    <span class="dotted-line" style="width: 150px;">{{ $shipment->sender_phone }}</span>
+                    <span class="dotted-line" style="width: 150px;">{{ $shipment->senderCustomer->phone ?? '' }}</span>
                 </td>
             </tr>
 
             <tr>
                 <td style="width: 45%; text-align: right;">
                     <strong>اسم المستلم /</strong>
-                    <span class="dotted-line" style="width: 180px;">{{ $shipment->receiver_name }}</span>
+                    <span class="dotted-line"
+                        style="width: 180px;">{{ $shipment->receiverCustomer->name ?? '' }}</span>
                 </td>
                 <td style="width: 55%; text-align: right;">
                     <strong>جوال /</strong>
-                    <span class="dotted-line" style="width: 150px;">{{ $shipment->receiver_phone }}</span>
+                    <span class="dotted-line"
+                        style="width: 150px;">{{ $shipment->receiverCustomer->phone ?? '' }}</span>
                 </td>
             </tr>
         </table>
@@ -249,7 +251,7 @@
                     <span class="dotted-line" style="width: 60px;">{{ $shipment->no_honey_jars ?: '....' }}</span>
                 </td>
                 <td style="width: 55%; text-align: right;">
-                <strong>الرمز  /</strong>
+                    <strong>الرمز /</strong>
                     <span style="display:inline-block; width: 100px; text-align:center;">{{ $shipment->code }}</span>
                 </td>
             </tr>
