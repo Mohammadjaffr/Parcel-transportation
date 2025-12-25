@@ -5,23 +5,23 @@
 
     <!-- SIDEBAR HEADER -->
     <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
-        class="flex items-center gap-2 pt-8 sidebar-header pb-3">
+        class="flex gap-2 items-center pt-8 pb-3 sidebar-header">
         <a href="#">
             <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
-                <img class="dark:hidden w-40 h-40" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
+                <img class="w-40 h-40 dark:hidden" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
                     alt="Logo" />
                 {{-- Dark logo --}}
-                <img class="hidden dark:block w-12 h-12" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
+                <img class="hidden w-12 h-12 dark:block" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
                     alt="Logo" />
             </span>
 
-            <img class="logo-icon w-12 h-12" :class="sidebarToggle ? 'lg:block' : 'hidden'"
+            <img class="w-12 h-12 logo-icon" :class="sidebarToggle ? 'lg:block' : 'hidden'"
                 src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
         </a>
     </div>
     <!-- SIDEBAR HEADER -->
 
-    <div class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+    <div class="flex overflow-y-auto flex-col duration-300 ease-linear no-scrollbar">
         <!-- Sidebar Menu -->
         <nav x-data="{ selected: $persist('Dashboard') }">
             <!-- Menu Group -->
@@ -63,7 +63,7 @@
                         <!-- Dropdown Menu Start -->
                         {{-- <div class="overflow-hidden transform translate"
               :class="(selected === 'Dashboard') ? 'block' :'hidden'">
-              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                 <li>
                   <a href="index.html" class="menu-dropdown-item group"
                     :class="page === 'ecommerce' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -119,7 +119,7 @@
                     <!-- Menu Item Profile -->
                     <li>
                         <a href="#" @click.prevent="selected = (selected === 'Requests' ? '' : 'Requests')"
-                            class="menu-item group flex items-center relative"
+                            class="flex relative items-center menu-item group"
                             :class="(selected === 'Requests') || window.location.href.includes(
                                 '{{ route('request.index') }}') || window.location.href.includes(
                                 '{{ route('shipments.selectCustomer') }}') ? 'menu-item-active' : 'menu-item-inactive'">
@@ -162,7 +162,7 @@
                             </svg>
 
                             <!-- النص -->
-                            <span class="menu-item-text ml-2 flex-1" :class="sidebarToggle ? 'lg:hidden' : ''">
+                            <span class="flex-1 ml-2 menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 إدارة الرسائل
                             </span>
                         </a>
@@ -170,7 +170,7 @@
                         <div class="overflow-hidden transform translate"
                             :class="(selected === 'Requests') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
-                                class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+                                class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                                 <li>
                                     <a href="{{ route('request.create') }}" class="menu-dropdown-item group"
                                         :class="window.location.href.includes('{{ route('request.index') }}') ?
@@ -291,8 +291,8 @@
 
                             </span>
                         </a>
-                    </li> --}}
-                    {{-- <li>
+                    </li>  --}}
+                     <li>
                         <a href="{{ route('finance.branches.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
@@ -311,7 +311,7 @@
 
                             </span>
                         </a>
-                    </li> --}}
+                    </li>
 
                     <!-- Menu Item Pages -->
                     <li>
@@ -388,7 +388,7 @@
                 Charts
               </span>
 
-              <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+              <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current menu-item-arrow"
                 :class="[(selected === 'Charts') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '' ]"
                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5"
@@ -398,7 +398,7 @@
 
             <!-- Dropdown Menu Start -->
             <div class="overflow-hidden transform translate" :class="(selected === 'Charts') ? 'block' :'hidden'">
-              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                 <li>
                   <a href="line-chart.html" class="menu-dropdown-item group"
                     :class="page === 'lineChart' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -434,7 +434,7 @@
                 UI Elements
               </span>
 
-              <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+              <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current menu-item-arrow"
                 :class="[(selected === 'UIElements') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '' ]"
                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5"
@@ -444,7 +444,7 @@
 
             <!-- Dropdown Menu Start -->
             <div class="overflow-hidden transform translate" :class="(selected === 'UIElements') ? 'block' :'hidden'">
-              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                 <li>
                   <a href="alerts.html" class="menu-dropdown-item group"
                     :class="page === 'alerts' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
@@ -504,7 +504,7 @@
                 Authentication
               </span>
 
-              <svg class="menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current"
+              <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current menu-item-arrow"
                 :class="[(selected === 'Authentication') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive', sidebarToggle ? 'lg:hidden' : '' ]"
                 width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="" stroke-width="1.5"
@@ -515,7 +515,7 @@
             <!-- Dropdown Menu Start -->
             <div class="overflow-hidden transform translate"
               :class="(selected === 'Authentication') ? 'block' :'hidden'">
-              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 mt-2 menu-dropdown pl-9">
+              <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                 <li>
                   <a href="signin.html" class="menu-dropdown-item group"
                     :class="page === 'signin' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">

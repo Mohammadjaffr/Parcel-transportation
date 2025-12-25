@@ -260,6 +260,12 @@
                     <span class="dotted-line" style="width: 400px;">{{ $shipment->package_type }}</span>
                 </td>
             </tr>
+            <tr>
+                <td colspan="2" style="text-align: right;">
+                    <strong>ملاحظات /</strong>
+                    <span class="dotted-line" style="width: 400px;">{{ $shipment->notes }}</span>
+                </td>
+            </tr>
         </table>
     </div>
 
