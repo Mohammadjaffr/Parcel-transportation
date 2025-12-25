@@ -435,7 +435,7 @@ class RequestController extends Controller
     {
         try {
             $request->validate([
-                'status' => 'required|in:pending,in_transit,deliverd,cancelled',
+                'status' => 'required|in:pending,in_transit,delivered,cancelled,returned',
             ]);
 
             $shipment = Shipment::findOrFail($id);
