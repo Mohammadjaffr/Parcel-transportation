@@ -84,4 +84,9 @@ class Shipment extends Model
     {
         return $this->belongsTo(Customer::class, 'receiver_customer_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(CustomerPayment::class);
+    }
 }

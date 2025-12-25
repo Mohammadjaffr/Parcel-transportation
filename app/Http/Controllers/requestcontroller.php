@@ -105,24 +105,32 @@ class RequestController extends Controller
             $data['sender_branch_code'] = auth()->user()->branch_code;
 
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['sender_phone']],
-                    [
+                $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
+
+                if ($senderCustomer) {
+                    $senderCustomer->update(['name' => $data['sender_name']]);
+                } else {
+                    $senderCustomer = Customer::create([
+                        'phone' => $data['sender_phone'],
                         'name' => $data['sender_name'],
                         'branch_code' => auth()->user()->branch_code,
-                    ]
-                );
+                    ]);
+                }
                 $data['sender_customer_id'] = $senderCustomer->id;
             }
 
             if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['receiver_phone']],
-                    [
+                $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->first();
+
+                if ($receiverCustomer) {
+                    $receiverCustomer->update(['name' => $data['receiver_name']]);
+                } else {
+                    $receiverCustomer = Customer::create([
+                        'phone' => $data['receiver_phone'],
                         'name' => $data['receiver_name'],
                         'branch_code' => $data['receiver_branch_code'],
-                    ]
-                );
+                    ]);
+                }
                 $data['receiver_customer_id'] = $receiverCustomer->id;
             }
 
@@ -268,24 +276,32 @@ class RequestController extends Controller
         $partialAmount = $data['partial_amount'] ?? null;
 
         if (empty($data['sender_customer_id'])) {
-            $senderCustomer = Customer::firstOrCreate(
-                ['phone' => $data['sender_phone']],
-                [
+            $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
+
+            if ($senderCustomer) {
+                $senderCustomer->update(['name' => $data['sender_name']]);
+            } else {
+                $senderCustomer = Customer::create([
+                    'phone' => $data['sender_phone'],
                     'name' => $data['sender_name'],
                     'branch_code' => auth()->user()->branch_code,
-                ]
-            );
+                ]);
+            }
             $data['sender_customer_id'] = $senderCustomer->id;
         }
 
         if (empty($data['receiver_customer_id'])) {
-            $receiverCustomer = Customer::firstOrCreate(
-                ['phone' => $data['receiver_phone']],
-                [
+            $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->first();
+
+            if ($receiverCustomer) {
+                $receiverCustomer->update(['name' => $data['receiver_name']]);
+            } else {
+                $receiverCustomer = Customer::create([
+                    'phone' => $data['receiver_phone'],
                     'name' => $data['receiver_name'],
                     'branch_code' => $data['receiver_branch_code'],
-                ]
-            );
+                ]);
+            }
             $data['receiver_customer_id'] = $receiverCustomer->id;
         }
 

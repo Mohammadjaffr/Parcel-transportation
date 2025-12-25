@@ -15,7 +15,7 @@
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
                 <!-- بيانات المرسل -->
-                <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}')">
+                <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}')">
 
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
@@ -89,10 +89,44 @@
                     <!-- هاتف العميل -->
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="sender_phone" x-model="selectedPhone" @input="selectedId='"
-                            value="{{ old('sender_phone') }}"
-                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="رقم هاتف المرسل">
+                        <div class="flex gap-2" dir="ltr">
+
+                            <!-- Custom Flag Select -->
+                            <div class="relative" @click.outside="openCountry = false">
+                                <button type="button" @click="openCountry = !openCountry"
+                                    class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                    style="min-width: 100px;">
+                                    <img :src="`https://flagcdn.com/w20/${countryFlag}.png`" class="w-5 h-auto rounded-sm">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300" x-text="countryCode"></span>
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown List -->
+                                <div x-show="openCountry" x-transition
+                                    class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                                    <template x-for="country in countries" :key="country.code">
+                                        <button type="button" @click="setCountry(country.code)"
+                                            class="flex justify-between items-center px-3 py-2 w-full text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <div class="flex gap-2 items-center">
+                                                <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
+                                                    class="w-5 h-auto rounded-sm">
+                                                <span class="text-gray-700 dark:text-gray-300" x-text="country.code"></span>
+                                            </div>
+                                            <span x-show="countryCode === country.code" class="text-brand-500">✓</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <input type="text" x-model="localNumber" @input="updatePhone()"
+                                class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                placeholder="7XXXXXXXX">
+                        </div>
+                        <input type="hidden" name="sender_phone" x-model="selectedPhone">
                         @error('sender_phone')
                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                         @enderror
@@ -113,7 +147,7 @@
                 </div>
 
                 <!-- بيانات المستلم -->
-                <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}')">
+                <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}')">
 
                     <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
@@ -144,7 +178,8 @@
                             <template x-for="c in results" :key="c.id">
                                 <button type="button" @click="select(c)"
                                     class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name"></div>
+                                    <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
+                                    </div>
                                     <div class="text-xs text-gray-500" x-text="c.phone"></div>
                                 </button>
                             </template>
@@ -200,10 +235,45 @@
                     <!-- هاتف المستلم -->
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="receiver_phone" x-model="selectedPhone" @input="selectedId='"
-                            value="{{ old('receiver_phone') }}"
-                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="رقم هاتف المستلم">
+                        <div class="flex gap-2" dir="ltr">
+
+                            <!-- Custom Flag Select -->
+                            <div class="relative" @click.outside="openCountry = false">
+                                <button type="button" @click="openCountry = !openCountry"
+                                    class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                    style="min-width: 100px;">
+                                    <img :src="`https://flagcdn.com/w20/${countryFlag}.png`" class="w-5 h-auto rounded-sm">
+                                    <span class="text-sm text-gray-700 dark:text-gray-300" x-text="countryCode"></span>
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+
+                                <!-- Dropdown List -->
+                                <div x-show="openCountry" x-transition
+                                    class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                                    <template x-for="country in countries" :key="country.code">
+                                        <button type="button" @click="setCountry(country.code)"
+                                            class="flex justify-between items-center px-3 py-2 w-full text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <div class="flex gap-2 items-center">
+                                                <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
+                                                    class="w-5 h-auto rounded-sm">
+                                                <span class="text-gray-700 dark:text-gray-300"
+                                                    x-text="country.code"></span>
+                                            </div>
+                                            <span x-show="countryCode === country.code" class="text-brand-500">✓</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <input type="text" x-model="localNumber" @input="updatePhone()"
+                                class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                placeholder="7XXXXXXXX">
+                        </div>
+                        <input type="hidden" name="receiver_phone" x-model="selectedPhone">
                         @error('receiver_phone')
                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                         @enderror
@@ -567,6 +637,8 @@
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
                                 <option value="pending" @selected(old('customer_debt_status', 'pending') == 'pending')>قيد الانتظار</option>
                                 <option value="overdue" @selected(old('customer_debt_status') == 'overdue')>مديون</option>
+                                <option value="partially_paid" @selected(old('customer_debt_status') == 'partially_paid')>مدفوع جزئيا</option>
+                                <option value="fully_paid" @selected(old('customer_debt_status') == 'fully_paid')>مدفوع بالكامل</option>
                             </select>
 
                             @error('customer_debt_status')
@@ -603,7 +675,7 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('customerPicker', (url) => ({
+            Alpine.data('customerPicker', (url, initialPhone = '') => ({
                 query: '',
                 open: false,
                 loading: false,
@@ -612,6 +684,83 @@
                 selectedId: '',
                 selectedName: '',
                 selectedPhone: '',
+
+                countryCode: '+967',
+                countryFlag: 'ye',
+                localNumber: '',
+
+                openCountry: false,
+                countries: [{
+                        code: '+967',
+                        flag: 'ye'
+                    },
+                    {
+                        code: '+966',
+                        flag: 'sa'
+                    },
+                    {
+                        code: '+971',
+                        flag: 'ae'
+                    },
+                    {
+                        code: '+965',
+                        flag: 'kw'
+                    },
+                    {
+                        code: '+974',
+                        flag: 'qa'
+                    },
+                    {
+                        code: '+968',
+                        flag: 'om'
+                    }
+                ],
+
+                init() {
+                    if (initialPhone) {
+                        this.parsePhone(initialPhone);
+                    }
+                },
+
+                parsePhone(phone) {
+                    if (!phone) {
+                        this.setCountry('+967');
+                        this.localNumber = '';
+                        this.selectedPhone = '';
+                        return;
+                    }
+
+                    const found = this.countries.find(c => phone.startsWith(c.code));
+
+                    if (found) {
+                        this.countryCode = found.code;
+                        this.countryFlag = found.flag;
+                        this.localNumber = phone.substring(found.code.length);
+                    } else {
+                        this.setCountry('+967');
+                        this.localNumber = phone;
+                    }
+                    this.updateHidden();
+                },
+
+                setCountry(code) {
+                    const country = this.countries.find(c => c.code === code);
+                    if (country) {
+                        this.countryCode = country.code;
+                        this.countryFlag = country.flag;
+                    }
+                    this.updatePhone();
+                    this.openCountry = false;
+                },
+
+                updatePhone() {
+                    this.updateHidden();
+                    this.selectedId = '';
+                },
+
+                updateHidden() {
+                    this.selectedPhone = this.countryCode + this.localNumber;
+                },
 
                 async search() {
                     const q = (this.query || '').trim();
@@ -645,7 +794,8 @@
                 select(c) {
                     this.selectedId = c.id;
                     this.selectedName = c.name ?? '';
-                    this.selectedPhone = c.phone ?? '';
+                    this.parsePhone(c.phone ?? '');
+
                     this.query = this.selectedName;
                     this.open = false;
                     this.results = [];

@@ -285,24 +285,76 @@
                 </div>
                 <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->package_type }}</p>
             </div>
-            {{-- <div>
-                <div
-                    class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
-                    <div class="flex gap-3 items-center mb-3">
-                        <div class="p-2 rounded-lg bg-success-50 dark:bg-success-900/20">
-                            <svg class="w-5 h-5 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
+            <div
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
                     </div>
-                    <p
-                        class="px-2 py-0.5 font-medium rounded-full text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
-                        {{ $shipment->status }}</p>
-
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">عدد جوالين العسل</h4>
                 </div>
-            </div> --}}
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->no_gallons_honey }}</p>
+            </div>
+              <div
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">عدد قروف العسل</h4>
+                </div>
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->no_honey_jars }}</p>
+            </div>
+              <div
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">المبلغ الاجمالي</h4>
+                </div>
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->total_amount }}</p>
+            </div>
+              <div
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">الوزن</h4>
+                </div>
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->weight }}</p>
+            </div>
+              <div
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
+                        <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">طريقة الدفع</h4>
+                </div>
+                <p class="text-lg font-bold text-gray-800 dark:text-white">{{ $shipment->payment_method }}</p>
+            </div>
 
             <div x-data="{
                 status: '{{ $shipment->status }}',
@@ -416,7 +468,7 @@
 
                 <!-- وقت الإنشاء -->
                 <div
-                    class="flex gap-4 items-center p-4 bg-gray-800 rounded-xl border border-gray-200 dark:bg-gray-800/40 dark:border-gray-700">
+                    class="flex gap-4 items-center p-4 rounded-xl border border-gray-200 bg-gray-4 dark:bg-gray-800/40 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -434,9 +486,9 @@
 
                 <!-- آخر تحديث -->
                 <div
-                    class="flex gap-4 items-center p-4 bg-gray-800 rounded-xl border border-gray-200 dark:bg-gray-800/40 dark:border-gray-700">
+                    class="flex gap-4 items-center p-4 rounded-xl border border-gray-200 bg-gray- dark:bg-gray-800/40 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
-                        <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
+                        <svg class="w-6 h-6 text-brand-400 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
