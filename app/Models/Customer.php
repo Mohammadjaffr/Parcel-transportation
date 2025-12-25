@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-
     protected $fillable = [
         'name',
         'phone',
         'branch_code',
         'whatsapp_number',
     ];
-        public function shipments()
+
+    public function shipments()
     {
         return $this->hasMany(Shipment::class);
     }
@@ -22,8 +22,10 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerTransaction::class);
     }
-        public function users()
-{
-    return $this->hasMany(User::class);
-}
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+    
 }

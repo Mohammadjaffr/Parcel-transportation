@@ -78,6 +78,7 @@
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                         <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
+                            value="{{ old('sender_name') }}"
                             class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="اسم المرسل">
                         @error('sender_name')
@@ -88,7 +89,8 @@
                     <!-- هاتف العميل -->
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="sender_phone" x-model="selectedPhone" @input="selectedId=''"
+                        <input type="text" name="sender_phone" x-model="selectedPhone" @input="selectedId='"
+                            value="{{ old('sender_phone') }}"
                             class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="رقم هاتف المرسل">
                         @error('sender_phone')
@@ -162,8 +164,7 @@
                         </label>
 
                         <select name="receiver_branch_code"
-                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600"
-                            required>
+                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
                             <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>
                                 اختر الجهة
                             </option>
@@ -176,6 +177,7 @@
                                     {{ $branch->name }}
                                 </option>
                             @endforeach
+
                         </select>
 
                         @error('receiver_branch_code')
@@ -187,6 +189,7 @@
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                         <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
+                            value="{{ old('receiver_name') }}"
                             class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="اسم المستلم">
                         @error('receiver_name')
@@ -197,7 +200,8 @@
                     <!-- هاتف المستلم -->
                     <div class="mt-3">
                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                        <input type="text" name="receiver_phone" x-model="selectedPhone" @input="selectedId=''"
+                        <input type="text" name="receiver_phone" x-model="selectedPhone" @input="selectedId='"
+                            value="{{ old('receiver_phone') }}"
                             class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                             placeholder="رقم هاتف المستلم">
                         @error('receiver_phone')

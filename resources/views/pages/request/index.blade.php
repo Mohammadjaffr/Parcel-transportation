@@ -4,12 +4,12 @@
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+    <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800">
         <!-- رأس الصفحة مع زر إضافة جديد -->
-        <div class="flex flex-col xl:flex-row md:items-center  justify-between mb-6">
+        <div class="flex flex-col justify-between mb-6 xl:flex-row md:items-center">
             <a href="{{ route('request.create') }}"
-                class="mt-4 md:mt-0 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 my-4 px-4 rounded-lg inline-flex items-center">
-                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="inline-flex items-center px-4 py-2 my-4 mt-4 font-medium text-white rounded-lg md:mt-0 bg-brand-500 hover:bg-brand-600">
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                 </svg>
                 تسجيل طرد جديد
@@ -25,63 +25,63 @@
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             رقم السند
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             المرسل
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             المستلم
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             الوجهة
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             نوع الطرد
                         </th>
                         {{-- <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             عدد قروف العسل
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             عدد جوالين العسل
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             عدد الرمز العسل
                         </th> --}}
                         {{-- <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             السائق
                         </th> --}}
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             حالة الدفع
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             حالة الطرد
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             المبلغ
                         </th>
                         <th scope="col"
-                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-300">
                             الإجراءات
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                     @forelse ($requests as $request)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->bond_number }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -94,9 +94,9 @@
                             </td>
 
                             <td class="py-3">
-                                <div class="flex items-center justify-center space-x-2">
+                                <div class="flex justify-center items-center space-x-2">
                                     <p
-                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
+                                        class="px-2 py-0.5 font-medium rounded-full bg-warning-50 text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-orange-400">
                                         {{ $request->senderBranch->name ?? '-' }}
                                     </p>
                                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
@@ -105,8 +105,8 @@
                                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                     </svg>
                                     <p
-                                        class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                     {{ $request->receiverBranch->name ?? '-' }}
+                                        class="px-2 py-0.5 font-medium rounded-full bg-blue-light-50 text-theme-xs text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                        {{ $request->receiverBranch->name ?? '-' }}
 
                                     </p>
                                 </div>
@@ -116,30 +116,30 @@
                                 <div class="text-sm text-gray-800 dark:text-gray-300"></div>
                                 <div class="text-sm text-gray-500 dark:text-gray-400">→ </div>
                             </td> --}}
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->package_type }}
                             </td>
-                            {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            {{-- <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->no_honey_jars }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->no_gallons_honey }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->code }}
                             </td> --}}
-                            {{-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-gray-400">
+                            {{-- <td class="px-6 py-4 text-sm text-gray-800 whitespace-nowrap dark:text-gray-400">
                                 {{ $request->driver->name ?? 'غير متاح' }}
                             </td> --}}
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->payment_method == 'prepaid')
                                     <span
-                                        class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        class="px-2 py-0.5 font-medium rounded-full bg-success-50 text-theme-xs text-success-600 dark:bg-success-500/15 dark:text-success-500">
                                         دفع مقدا
                                     </span>
                                 @else
                                     <span
-                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                                        class="px-2 py-0.5 font-medium rounded-full bg-warning-50 text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
                                         أجل
                                     </span>
                                 @endif
@@ -147,34 +147,33 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if ($request->status == 'pending')
                                     <span
-                                        class="rounded-full bg-warning-50 px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                                        class="px-2 py-0.5 font-medium rounded-full bg-warning-50 text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
                                         قيد الانتظار
                                     </span>
                                 @elseif ($request->status == 'in_transit')
                                     <span
-                                        class="rounded-full bg-blue-light-50 px-2 py-0.5 text-theme-xs font-medium text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
-                                        قيد النقل
-                                    </span>
-                                @elseif ($request->status == 'deliverd')
+                                        class="px-2 py-0.5 font-medium rounded-full bg-blue-light-50 text-theme-xs text-blue-light-500 dark:bg-blue-light-500/15 dark:text-blue-light-500">
+                                        في الطريق </span>
+                                @elseif ($request->status == 'delivered')
                                     <span
-                                        class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+                                        class="px-2 py-0.5 font-medium rounded-full bg-success-50 text-theme-xs text-success-600 dark:bg-success-500/15 dark:text-success-500">
                                         تم التسليم
                                     </span>
                                 @elseif ($request->status == 'cancelled')
-                                    <span
-                                        class="rounded-full bg-error-50 px-2 py-0.5 text-theme-xs font-medium text-error-600 dark:bg-error-500/15 dark:text-error-500">
+                                    {{-- <span
+                                        class="px-2 py-0.5 font-medium rounded-full bg-error-50 text-theme-xs text-error-600 dark:bg-error-500/15 dark:text-error-500">
                                         ملغي
-                                    </span>
+                                    </span> --}}
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-warning-600 dark:text-warning-400">
+                            <td class="px-6 py-4 text-sm whitespace-nowrap text-warning-600 dark:text-warning-400">
                                 {{ $request->total_amount ? number_format($request->total_amount, 2) . ' ر.ي' : '0.00 ر.ي' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex mx-5 space-x-reverse space-x-2">
+                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                <div class="flex mx-5 space-x-2 space-x-reverse">
                                     <!-- زر التعديل -->
                                     <a href="{{ route('request.edit', $request->id) }}"
-                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
+                                        class="mx-2 text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                         title="تعديل">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -213,7 +212,7 @@
                                     </a>
 
                                     <a href="{{ route('request.invoice', $request->id) }}" target="_blank"
-                                        class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
+                                        class="mx-2 text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                         title="طباعة الفاتورة">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -225,7 +224,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                            <td colspan="8" class="px-6 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
                                 لا توجد طرود مسجلة حالياً.
                             </td>
                         </tr>
@@ -245,9 +244,9 @@
     <!-- نموذج تأكيد الحذف -->
     <div id="deleteModal"
         class="fixed inset-0 bg-gray-400/50 backdrop-blur-[32px] hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 m-4 max-w-md w-full">
+        <div class="p-6 m-4 w-full max-w-md bg-white rounded-lg shadow-xl dark:bg-gray-800">
             <div class="text-center">
-                <svg class="mx-auto h-12 w-12 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="mx-auto w-12 h-12 text-error-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
@@ -257,16 +256,16 @@
                         هل أنت متأكد من رغبتك في حذف هذا الطرد؟ لا يمكن التراجع عن هذا الإجراء.
                     </p>
                 </div>
-                <div class="mt-6 flex justify-center space-x-4 space-x-reverse">
+                <div class="flex justify-center mt-6 space-x-4 space-x-reverse">
                     <button type="button" onclick="hideDeleteModal()"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                        class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
                         إلغاء
                     </button>
                     <form id="deleteForm" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit"
-                            class="px-4 py-2 mx-2 text-sm font-medium text-white bg-error-500 hover:bg-error-700 rounded-lg">
+                            class="px-4 py-2 mx-2 text-sm font-medium text-white rounded-lg bg-error-500 hover:bg-error-700">
                             حذف
                         </button>
                     </form>

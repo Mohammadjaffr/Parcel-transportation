@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Branch;
-
+use Illuminate\Database\Eloquent\Model;
 
 class Shipment extends Model
 {
     use HasFactory;
- 
+
     protected $fillable = [
         'sender_branch_code',
         'receiver_branch_code',
@@ -39,6 +37,7 @@ class Shipment extends Model
             ->where('model_type', 'Shipment')
             ->latest();
     }
+
     protected static function boot()
     {
         parent::boot();
@@ -54,18 +53,18 @@ class Shipment extends Model
                 ->first();
 
             $newSeq = $lastShipment
-                ? str_pad((int)substr($lastShipment->bond_number, -3) + 1, 3, '0', STR_PAD_LEFT)
+                ? str_pad((int) substr($lastShipment->bond_number, -3) + 1, 3, '0', STR_PAD_LEFT)
                 : '001';
 
             $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
         });
     }
 
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function senderBranch()
     {
         return $this->belongsTo(Branch::class, 'sender_branch_code', 'code');

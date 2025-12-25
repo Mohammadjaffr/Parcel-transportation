@@ -130,13 +130,13 @@ class CustomerController extends Controller
                 }
             }
 
-            AdminLoggerService::log(
-                'تحديث عميل',
-                'Customer',
-                $customer->id,
-                "تحديث بيانات العميل: {$customer->name}" .
-                    (count($changes) ? "\nالتغييرات: " . implode('، ', $changes) : '')
-            );
+            // AdminLoggerService::log(
+            //     'تحديث عميل',
+            //     'Customer',
+            //     $customer->id,
+            //     "تحديث بيانات العميل: {$customer->name}" .
+            //         (count($changes) ? "\nالتغييرات: " . implode('، ', $changes) : '')
+            // );
 
             return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث بيانات العميل بنجاح.');
         } catch (\Exception $e) {

@@ -15,10 +15,10 @@
             isSuccessModalOpen = true;
         ">
     </div>
-    <div class="flex flex-col sm:flex-row gap-4 md:gap-6 flex-wrap mb-4">
+    <div class="flex flex-col flex-wrap gap-4 mb-4 sm:flex-row md:gap-6">
         <div
             class="flex flex-col items-start justify-between rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
-            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
+            <div class="flex justify-center items-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
                 <svg fill="#dc6803" width="20" height="20" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
                     <path d="M26,26V4H18v6H12v6H6V26H2v2H30V26ZM8,26V18h4v8Zm6,0V12h4V26Zm6,0V6h4V26Z"></path>
                 </svg>
@@ -48,12 +48,12 @@
     </div>
     <!-- بطاقة التفاصيل الرئيسية -->
     <div
-        class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 shadow-xl rounded-2xl p-6 border border-gray-100 dark:border-gray-700">
+        class="p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-100 shadow-xl dark:from-gray-900 dark:to-gray-800 dark:border-gray-700">
         <!-- الهيدر -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-            <div class="flex items-center gap-3">
+        <div class="flex flex-col gap-4 justify-between items-start mb-8 sm:flex-row sm:items-center">
+            <div class="flex gap-3 items-center">
 
-                <div class="p-3 bg-brand-100 dark:bg-brand-900/30 rounded-xl">
+                <div class="p-3 rounded-xl bg-brand-100 dark:bg-brand-900/30">
                     <svg class="w-8 h-8 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -63,13 +63,12 @@
                 <div>
 
                     <h2 class="text-2xl font-bold text-gray-800 dark:text-white">الطرد #{{ $shipment->id }}</h2>
-                    <div class="flex items-center gap-2 mt-1">
+                    <div class="flex gap-2 items-center mt-1">
                         @php
                             $statusText = match ($shipment->status) {
                                 'pending' => 'قيد الانتظار',
                                 'in_transit' => 'في الطريق',
-                                'deliverd' => 'تم التسليم',
-                                'cancelled' => 'ملغي',
+                                'delivered' => 'تم التسليم',
                                 default => $shipment->status,
                             };
                         @endphp
@@ -90,7 +89,7 @@
                 </div>
             </div>
             <a href="{{ route('request.invoice', $shipment->id) }}" target="_blank"
-                class="text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300 mx-2"
+                class="mx-2 text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                 title="طباعة الفاتورة">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -98,7 +97,7 @@
                 </svg>
             </a>
             <a href="{{ route('request.index') }}"
-                class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white mx-2" title="رجوع">
+                class="mx-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white" title="رجوع">
                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
@@ -107,13 +106,13 @@
         </div>
 
         <!-- شبكة المعلومات -->
-        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
             <!-- بطاقة المرسل -->
             <div
-                class="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div class="absolute top-4 left-4 flex items-center justify-center">
+                class="relative p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow-md">
+                <div class="flex absolute top-4 left-4 justify-center items-center">
                     <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
-                        class="mt-2 flex items-center justify-center bg-success-500 hover:bg-success-700 mx-2 text-white rounded-full p-2 transition-colors duration-300">
+                        class="flex justify-center items-center p-2 mx-2 mt-2 text-white rounded-full transition-colors duration-300 bg-success-500 hover:bg-success-700">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
@@ -122,7 +121,7 @@
 
                 </div>
                 <div class="pr-12">
-                    <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
+                    <div class="flex gap-2 items-center p-2 rounded-lg dark:bg-success-900/20">
                         <svg class="w-6 h-6 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -133,7 +132,7 @@
                     </div>
 
                     <div class="space-y-4">
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
 
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +145,7 @@
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->sender_name }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -158,7 +157,7 @@
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->sender_phone }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -182,10 +181,10 @@
 
             <!-- بطاقة المستلم -->
             <div
-                class="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <div class="absolute top-4 left-4 flex items-center justify-center">
+                class="relative p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow-md">
+                <div class="flex absolute top-4 left-4 justify-center items-center">
                     <a href="{{ route('whatsapp.receiver', $shipment->id) }}" target="_blank"
-                        class="mt-2 flex items-center justify-center bg-success-500 hover:bg-success-700 mx-2 text-white rounded-full p-2 transition-colors duration-300">
+                        class="flex justify-center items-center p-2 mx-2 mt-2 text-white rounded-full transition-colors duration-300 bg-success-500 hover:bg-success-700">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                             <path
                                 d="M20.52 3.48A11.78 11.78 0 0 0 12.04 0C5.48 0 .23 5.25.23 11.81c0 2.08.54 4.12 1.56 5.92L0 24l6.42-1.67a11.8 11.8 0 0 0 5.62 1.43h.01c6.56 0 11.81-5.25 11.81-11.81 0-3.16-1.23-6.13-3.34-8.24zM12.04 21.54a9.7 9.7 0 0 1-4.94-1.35l-.35-.21-3.81.99 1.02-3.7-.23-.38a9.69 9.69 0 1 1 8.31 4.65zm5.39-7.26c-.29-.15-1.7-.84-1.96-.94-.26-.09-.45-.15-.64.15-.19.29-.74.94-.91 1.13-.17.19-.34.21-.63.06-1.72-.86-2.85-1.54-3.99-3.48-.3-.52.3-.48.86-1.6.1-.21.05-.39-.03-.54-.09-.15-.64-1.54-.88-2.11-.23-.55-.47-.47-.64-.48h-.55c-.2 0-.54.08-.82.39-.29.31-1.08 1.05-1.08 2.57 0 1.51 1.11 2.97 1.26 3.18.15.21 2.19 3.35 5.31 4.7.74.32 1.32.51 1.77.65.74.23 1.41.2 1.94.12.59-.09 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.2-.55-.35z" />
@@ -197,7 +196,7 @@
                 </div>
 
                 <div class="pr-12">
-                    <div class="flex items-center gap-2 p-2  dark:bg-success-900/20 rounded-lg">
+                    <div class="flex gap-2 items-center p-2 rounded-lg dark:bg-success-900/20">
                         <svg class="w-5 h-5 text-gray-400 text-success-600" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -207,7 +206,7 @@
                         <h3 class="text-lg font-bold text-gray-800 dark:text-white">المستلم</h3>
                     </div>
                     <div class="space-y-4">
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -220,7 +219,7 @@
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->receiver_name }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -233,7 +232,7 @@
                                 <p class="font-semibold text-gray-800 dark:text-white">{{ $shipment->receiver_phone }}</p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-3">
+                        <div class="flex gap-3 items-center">
                             <div class="w-8">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
@@ -256,11 +255,11 @@
         </div>
 
         <!-- معلومات إضافية في شبكة ثلاثية -->
-        <div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 gap-4 mt-6 xl:grid-cols-3">
             <div
-                class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 bg-purple-50 rounded-lg dark:bg-purple-900/20">
                         <svg class="w-5 h-5 text-purple-500 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -273,9 +272,9 @@
             </div>
 
             <div
-                class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
                         <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -288,9 +287,9 @@
             </div>
             {{-- <div>
                 <div
-                    class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow transition-shadow duration-300">
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="p-2 bg-success-50 dark:bg-success-900/20 rounded-lg">
+                    class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm transition-shadow duration-300 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 hover:shadow">
+                    <div class="flex gap-3 items-center mb-3">
+                        <div class="p-2 rounded-lg bg-success-50 dark:bg-success-900/20">
                             <svg class="w-5 h-5 text-success-600 dark:text-success-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -299,7 +298,7 @@
                         <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">حالة الطرد</h4>
                     </div>
                     <p
-                        class="rounded-full px-2 py-0.5 text-theme-xs font-medium text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
+                        class="px-2 py-0.5 font-medium rounded-full text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
                         {{ $shipment->status }}</p>
 
                 </div>
@@ -338,9 +337,9 @@
                         });
                 }
             }"
-                class="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="p-2 bg-warning-50 dark:bg-warning-900/20 rounded-lg">
+                class="p-5 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-100 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:border-gray-700">
+                <div class="flex gap-3 items-center mb-3">
+                    <div class="p-2 rounded-lg bg-warning-50 dark:bg-warning-900/20">
                         <svg class="w-5 h-5 text-warning-600 dark:text-warning-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -350,21 +349,20 @@
                 </div>
 
                 <select x-model="status" @change="updateStatus()"
-                    class="w-full rounded-lg border-gray-300 border text-sm p-2 dark:bg-gray-900 dark:text-white">
+                    class="p-2 w-full text-sm rounded-lg border border-gray-300 dark:bg-gray-900 dark:text-white">
                     <option value="pending">قيد الانتظار</option>
                     <option value="in_transit">في الطريق</option>
-                    <option value="deliverd">تم التسليم</option>
-                    <option value="cancelled">ملغي</option>
+                    <option value="delivered">تم التسليم</option>
                 </select>
 
-                <p x-show="updating" class="text-xs text-brand-600 mt-2">جاري التحديث...</p>
+                <p x-show="updating" class="mt-2 text-xs text-brand-600">جاري التحديث...</p>
                 <div x-show="isSuccessModalOpen" x-transition.opacity
                     class="fixed inset-0 flex items-center justify-center p-5 z-[999999]" style="display:none">
 
                     <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
 
-                    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
-                        <div class="text-center py-4">
+                    <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl dark:bg-gray-900">
+                        <div class="py-4 text-center">
 
                             <h4 class="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90"
                                 x-text="successTitle">
@@ -389,19 +387,19 @@
             <!-- الملاحظات -->
             @if ($shipment->notes)
                 <div
-                    class="mt-6  dark:from-gray-800  dark:to-gray-900 rounded-2xl p-6 border border-gray-800 dark:border-gray-700 shadow-sm">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="p-2 bg-brand-50 dark:bg-brand-900/20 rounded-lg">
+                    class="p-6 mt-6 rounded-2xl border border-gray-800 shadow-sm dark:from-gray-800 dark:to-gray-900 dark:border-gray-700">
+                    <div class="flex gap-3 items-center mb-4">
+                        <div class="p-2 rounded-lg bg-brand-50 dark:bg-brand-900/20">
                             <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                             </svg>
                         </div>
-                        <h4 class="text-lg font-bold text-gray-800  dark:text-white">الملاحظات</h4>
+                        <h4 class="text-lg font-bold text-gray-800 dark:text-white">الملاحظات</h4>
                     </div>
-                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
-                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ $shipment->notes }}</p>
+                    <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-800">
+                        <p class="leading-relaxed text-gray-600 dark:text-gray-400">{{ $shipment->notes }}</p>
                     </div>
                 </div>
             @endif
@@ -410,15 +408,15 @@
 
         </div>
         <!-- معلومات الوقت -->
-        <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <div class="pt-6 mt-8 border-t border-gray-200 dark:border-gray-800">
 
-            <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">سجل الوقت</h3>
+            <h3 class="mb-4 text-lg font-bold text-gray-800 dark:text-white">سجل الوقت</h3>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <!-- وقت الإنشاء -->
                 <div
-                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-800 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    class="flex gap-4 items-center p-4 bg-gray-800 rounded-xl border border-gray-200 dark:bg-gray-800/40 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
@@ -436,7 +434,7 @@
 
                 <!-- آخر تحديث -->
                 <div
-                    class="flex items-center gap-4 p-4 rounded-xl bg-gray-800 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                    class="flex gap-4 items-center p-4 bg-gray-800 rounded-xl border border-gray-200 dark:bg-gray-800/40 dark:border-gray-700">
                     <div class="p-3 rounded-lg bg-brand-100 dark:bg-brand-900/30">
                         <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
