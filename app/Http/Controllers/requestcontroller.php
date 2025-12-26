@@ -37,7 +37,7 @@ class RequestController extends Controller
     /* ========== 2- صفحة إنشاء طرد ========== */
     public function create(Request $request)
     {
-        $branches = Branch::all();
+        $branches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
         $customers = Customer::where('branch_code', auth()->user()->branch_code)->get();
 
         $customer = null;
@@ -74,8 +74,8 @@ class RequestController extends Controller
             'weight' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'code' => 'required|string|max:255',
-            'no_honey_jars' => 'required|numeric|min:0',
-            'no_gallons_honey' => 'required|numeric|min:0',
+            'no_honey_jars' => 'nullable|numeric|min:0',
+            'no_gallons_honey' => 'nullable|numeric|min:0',
 
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
 
@@ -85,52 +85,31 @@ class RequestController extends Controller
 
             'notes' => 'nullable|string',
         ]);
-
-        $validator->after(function ($validator) use ($request) {
-            $sender = auth()->user()->branch_code;
-            $receiver = $request->receiver_branch_code;
-
-            if ($sender && $receiver && $sender === $receiver) {
-                $validator->errors()->add('receiver_branch_code', 'لا يمكن اختيار نفس جهة الإرسال.');
-            }
-        });
-
         if ($validator->fails()) {
             return $this->ValidationError($validator);
         }
-
         try {
             $data = $validator->validated();
 
             $data['sender_branch_code'] = auth()->user()->branch_code;
 
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
-
-                if ($senderCustomer) {
-                    $senderCustomer->update(['name' => $data['sender_name']]);
-                } else {
                     $senderCustomer = Customer::create([
                         'phone' => $data['sender_phone'],
                         'name' => $data['sender_name'],
                         'branch_code' => auth()->user()->branch_code,
                     ]);
-                }
+                
                 $data['sender_customer_id'] = $senderCustomer->id;
             }
 
             if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->first();
-
-                if ($receiverCustomer) {
-                    $receiverCustomer->update(['name' => $data['receiver_name']]);
-                } else {
                     $receiverCustomer = Customer::create([
                         'phone' => $data['receiver_phone'],
                         'name' => $data['receiver_name'],
-                        'branch_code' => $data['receiver_branch_code'],
+                        'branch_code' => auth()->user()->branch_code,
                     ]);
-                }
+                
                 $data['receiver_customer_id'] = $receiverCustomer->id;
             }
 
@@ -209,7 +188,7 @@ class RequestController extends Controller
     public function edit($id)
     {
         $shipment = Shipment::findOrFail($id);
-        $branches = Branch::all();
+        $branches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
         // $drivers = Driver::where('status', 'active')->get();
         $customers = Customer::all();
 
