@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
-    
     public function index()
     {
         // إحصائيات أعلى الصفحة
@@ -18,18 +17,18 @@ class DashboardController extends Controller
         // الإيرادات COD المحصّلة
         $revenueCOD = Shipment::where('payment_method', 'cod')
             ->where('status', 'deliverd')
-            ->sum('cod_amount');
+            ->sum('total_amount');
 
         // رسوم الشهور (للمخطط البياني)
         $monthlySales = Shipment::select(
-            DB::raw("MONTH(created_at) as month"),
-            DB::raw("SUM(cod_amount) as total")
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('SUM(total_amount) as total')
         )
-        ->where('payment_method', 'cod')
-        ->groupBy('month')
-        ->orderBy('month')
-        ->pluck('total', 'month')
-        ->toArray();
+            ->where('payment_method', 'cod')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
 
         // آخر 10 شحنات خلال آخر 24 ساعة
         $last24Shipments = Shipment::where('created_at', '>=', now()->subHours(24))

@@ -153,7 +153,7 @@
                                 @if ($request->status == 'pending')
                                     <span
                                         class="px-2 py-0.5 font-medium rounded-full bg-warning-50 text-theme-xs text-warning-600 dark:bg-warning-500/15 dark:text-warning-500">
-                                        قيد الانتظار
+                                          قيد الانتظار
                                     </span>
                                 @elseif ($request->status == 'in_transit')
                                     <span
