@@ -4,36 +4,65 @@
 
 @section('content')
 
-    <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800"
-        x-data="{
-            payment_method: @js(old('payment_method', $shipment->payment_method)),
-            prepaid_method: @js(old('prepaid_payment_method', 'cash')),
-            isSenderReceiverModalOpen: false,
-            isDetailsModalOpen: false,
-            isPaymentModalOpen: false
-        }">
+    <div class="p-6 bg-white rounded-lg.shadow-sm dark:bg-gray-800" x-data="{
+        payment_method: @js(old('payment_method', $shipment->payment_method)),
+        prepaid_method: @js(old('prepaid_payment_method', 'cash')),
+        isSenderReceiverModalOpen: false,
+        isDetailsModalOpen: false,
+        isPaymentModalOpen: false,
+        activeTab: 'sender_receiver'
+    }">
 
-        <form action="{{ route('request.update', $shipment->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            @method('PUT')
+        <div class="space-y-6 max-w-[1200px] mx-auto">
 
-            {{-- كروت مختصرة + أزرار فتح المودالات --}}
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {{-- ===== التابات ===== --}}
+            <div
+                class="flex overflow-x-auto items-center p-1 mb-4 bg-gray-100 rounded-2xl shadow-inner backdrop-blur-sm dark:bg-gray-800 w-fit">
+                <button type="button" @click="activeTab = 'sender_receiver'"
+                    :class="activeTab === 'sender_receiver'
+                        ?
+                        'bg-brand-500 text-white shadow-md dark:bg-brand-500.dark:text-white' :
+                        'text-gray-500 hover:text-gray-700 dark:text-gray-400'"
+                    class="px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
+                    بيانات المرسل والمستلم
+                </button>
 
-                {{-- كرت بيانات المرسل والمستلم --}}
-                <div
-                    class="flex flex-col justify-between p-4 h-full bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+                <button type="button" @click="activeTab = 'details'"
+                    :class="activeTab === 'details'
+                        ?
+                        'bg-brand-500 text-white shadow-md.dark:bg-brand-500.dark:text-white' :
+                        'text-gray-500 hover:text-gray-700.dark:text-gray-400'"
+                    class="px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
+                    تفاصيل الطرد
+                </button>
+
+                <button type="button" @click="activeTab = 'payment'"
+                    :class="activeTab === 'payment'
+                        ?
+                        'bg-brand-500 text-white shadow-md.dark:bg-brand-500.dark:text-white' :
+                        'text-gray-500 hover:text-gray-700.dark:text-gray-400'"
+                    class="px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
+                    طريقة الدفع
+                </button>
+            </div>
+
+            {{-- تبويب: المرسل/المستلم --}}
+            <div x-show="activeTab === 'sender_receiver'" x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                class="p-6 bg-gray-50 rounded-3xl border border-gray-200 shadow-sm.dark:border-gray-700 dark:bg-gray-900">
+
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 class="mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">بيانات المرسل والمستلم</h3>
 
-                        <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div class="space-y-2 text-xs text-gray-600.dark:text-gray-400">
                             <div>
                                 <span class="font-semibold">المرسل:</span>
-                                <span>{{ $shipment->sender_name }}</span>
+                                <span>{{ $shipment->senderCustomer->name ?? $shipment->sender_name }}</span>
                             </div>
                             <div>
                                 <span class="font-semibold">المستلم:</span>
-                                <span>{{ $shipment->receiver_name }}</span>
+                                <span>{{ $shipment->receiverCustomer->name ?? $shipment->receiver_name }}</span>
                             </div>
                             <div>
                                 <span class="font-semibold">من الفرع:</span>
@@ -43,22 +72,38 @@
                                 <span class="font-semibold">إلى الفرع:</span>
                                 <span>{{ $shipment->receiverBranch->name ?? '-' }}</span>
                             </div>
+                            <div>
+                                <span class="font-semibold">عدد قروف العسل:</span>
+                                <span>{{ $shipment->no_honey_jars }}</span>
+                            </div>
+                            <div>
+                                <span class="font-semibold">عدد جوالين العسل:</span>
+                                <span>{{ $shipment->no_gallons_honey }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <button type="button" @click="isSenderReceiverModalOpen = true"
-                        class="inline-flex justify-center items-center px-3 py-2 mt-4 text-xs font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                        class="inline-flex px-4 py-2 mt-4 text-xs font-bold text-white rounded-xl justify-center.items-center bg-brand-500 hover:bg-brand-600">
+                        <svg class="text-white fill-current me-1" width="16" height="16" viewBox="0 0 24 24">
+                            <path
+                                d="M5 19h1.42l9.44-9.45-1.42-1.42L5 17.58V19zm16 2H3v-4.24L16.43 3.34a.996.996 0 0 1 1.41 0l2.82 2.82c.39.39.39 1.02 0 1.41L7.24 21H21v2z" />
+                        </svg>
                         تعديل بيانات المرسل والمستلم
                     </button>
                 </div>
+            </div>
 
-                {{-- كرت تفاصيل الطرد --}}
-                <div
-                    class="flex flex-col justify-between p-4 h-full bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+            {{-- تبويب: تفاصيل الطرد --}}
+            <div x-show="activeTab === 'details'" x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                class="p-6 bg-gray-50 rounded-3xl border border-gray-200 shadow-sm.dark:border-gray-700 dark:bg-gray-900">
+
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 class="mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">تفاصيل الطرد</h3>
 
-                        <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div class="space-y-2 text-xs text-gray-600.dark:text-gray-400">
                             <div>
                                 <span class="font-semibold">الرمز:</span>
                                 <span>{{ $shipment->code }}</span>
@@ -79,22 +124,34 @@
                                 <span class="font-semibold">الحالة:</span>
                                 <span>{{ __('status.' . $shipment->status) ?? $shipment->status }}</span>
                             </div>
+                            <div>
+                                <span class="font-semibold">الملاحظات:</span>
+                                <span>{{ $shipment->notes ?: '---' }}</span>
+                            </div>
                         </div>
                     </div>
 
                     <button type="button" @click="isDetailsModalOpen = true"
-                        class="inline-flex justify-center items-center px-3 py-2 mt-4 text-xs font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                        class="inline-flex px-4 py-2 mt-4 text-xs font-bold text-white rounded-xl justify-center.items-center bg-brand-500 hover:bg-brand-600">
+                        <svg class="text-white fill-current me-1" width="16" height="16" viewBox="0 0 24 24">
+                            <path
+                                d="M5 19h1.42l9.44-9.45-1.42-1.42L5 17.58V19zm16 2H3v-4.24L16.43 3.34a.996.996 0 0 1 1.41 0l2.82 2.82c.39.39.39 1.02 0 1.41L7.24 21H21v2z" />
+                        </svg>
                         تعديل تفاصيل الطرد
                     </button>
                 </div>
+            </div>
 
-                {{-- كرت طريقة الدفع --}}
-                <div
-                    class="flex flex-col justify-between p-4 h-full bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700">
+            {{-- تبويب: طريقة الدفع --}}
+            <div x-show="activeTab === 'payment'" x-transition:enter="transition.ease-out duration-300.transform"
+                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100.translate-y-0"
+                class="p-6 bg-gray-50 rounded-3xl border border-gray-200 shadow-sm.dark:border-gray-700 dark:bg-gray-900">
+
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 class="mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">طريقة الدفع</h3>
+                        <h3 class="mb-2 text-sm font-bold text-gray-700.dark:text-gray-300">طريقة الدفع</h3>
 
-                        <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
+                        <div class="space-y-2 text-xs text-gray-600.dark:text-gray-400">
                             <div>
                                 <span class="font-semibold">طريقة الدفع:</span>
                                 <span>
@@ -120,7 +177,6 @@
                                     @endswitch
                                 </span>
                             </div>
-
                             @if ($shipment->customer_debt_status)
                                 <div>
                                     <span class="font-semibold">حالة المديونية:</span>
@@ -131,47 +187,53 @@
                     </div>
 
                     <button type="button" @click="isPaymentModalOpen = true"
-                        class="inline-flex justify-center items-center px-3 py-2 mt-4 text-xs font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                        class="inline-flex px-4 py-2 mt-4 text-xs font-bold text-white rounded-xl justify-center.items-center bg-brand-500 hover:bg-brand-600">
+                        <svg class="text-white fill-current me-1" width="16" height="16" viewBox="0 0 24 24">
+                            <path
+                                d="M5 19h1.42l9.44-9.45-1.42-1.42L5 17.58V19zm16 2H3v-4.24L16.43 3.34a.996.996 0 0 1 1.41 0l2.82 2.82c.39.39.39 1.02 0 1.41L7.24 21H21v2z" />
+                        </svg>
                         تعديل طريقة الدفع
                     </button>
                 </div>
             </div>
 
-            {{-- ====================== مودال المرسل والمستلم ====================== --}}
-            <div x-show="isSenderReceiverModalOpen"
-                x-transition
-                class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 modal z-99999"
-                style="display: none;">
+        </div>
 
-                {{-- الخلفية --}}
-                <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
-                    @click="isSenderReceiverModalOpen = false"></div>
+        {{-- ====================== مودال المرسل والمستلم ====================== --}}
+        <div x-show="isSenderReceiverModalOpen" x-transition
+            class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 z-99999 modal" style="display: none;">
 
-                {{-- الكارد --}}
-                <div class="relative w-full max-w-[600px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]"
+                @click="isSenderReceiverModalOpen = false"></div>
 
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
-                            تعديل بيانات المرسل والمستلم
-                        </h2>
-                        <button type="button" @click="isSenderReceiverModalOpen = false"
-                            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            ✕
-                        </button>
-                    </div>
+            <div class="relative w-full max-w-[600px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
+                        تعديل بيانات المرسل والمستلم
+                    </h2>
+                    <button type="button" @click="isSenderReceiverModalOpen = false"
+                        class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+
+                <form action="{{ route('request.update', $shipment->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="section" value="sender_receiver">
 
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
                         {{-- بيانات المرسل --}}
-                        <div class="space-y-4"
-                            x-data="customerPicker(
-                                '{{ route('customers.search') }}',
-                                @js([
-                                    'id' => old('sender_customer_id', $shipment->sender_customer_id),
-                                    'name' => old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name),
-                                    'phone' => old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone),
-                                ])
-                            )">
+                        <div class="space-y-4" x-data="customerPicker(
+                            '{{ route('customers.search') }}',
+                            @js([
+    'id' => old('sender_customer_id', $shipment->sender_customer_id),
+    'name' => old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name),
+    'phone' => old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone),
+])
+                        )">
 
                             <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
@@ -182,10 +244,9 @@
                                 </label>
 
                                 <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                    @keydown.escape="open=false" placeholder="اكتب اسم العميل أو رقمه..."
+                                    @keydown.escape="open = false" placeholder="اكتب اسم العميل أو رقمه..."
                                     class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
 
-                                {{-- Dropdown --}}
                                 <div x-show="open" x-transition
                                     class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
 
@@ -210,13 +271,13 @@
                                 </div>
                             </div>
 
-                            {{-- sender_branch_code ثابت من المستخدم --}}
-                            <div class="mt-3">
+                            {{-- الجهة \ من --}}
+                            {{-- <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الجهة \ من
                                 </label>
                                 <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
-                                    class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-400 bg-gray-100 rounded-lg border border-gray-200 dark:text-gray-400 dark:bg-gray-700 dark:border-gray-600"
                                     disabled>
 
                                 <input type="hidden" name="sender_branch_code"
@@ -225,15 +286,13 @@
                                 @error('sender_branch_code')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
-                            </div>
+                            </div> --}}
 
-                            {{-- sender_customer_id --}}
                             <input type="hidden" name="sender_customer_id" x-model="selectedId">
                             @error('sender_customer_id')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            {{-- اسم المرسل --}}
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الاسم
@@ -246,20 +305,61 @@
                                 @enderror
                             </div>
 
-                            {{-- هاتف المرسل --}}
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الهاتف
                                 </label>
-                                <input type="text" name="sender_phone" x-model="selectedPhone" @input="selectedId=''"
-                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                                    placeholder="رقم هاتف المرسل">
+
+                                <div class="flex gap-3">
+                                    {{-- اختيار كود الدولة --}}
+                                    <div class="relative" @click.outside="openCountry = false">
+                                        <button type="button" @click="openCountry = !openCountry"
+                                            class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                            style="min-width: 110px;">
+                                            <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
+                                                class="w-5 h-auto rounded-sm">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300"
+                                                x-text="countryCode"></span>
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+
+                                        <div x-show="openCountry" x-transition
+                                            class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-44 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                                            <template x-for="country in countries" :key="country.code">
+                                                <button type="button" @click="setCountry(country.code)"
+                                                    class="flex justify-between items-center px-3 py-2 w-full text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <div class="flex gap-2 items-center">
+                                                        <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
+                                                            class="w-5 h-auto rounded-sm">
+                                                        <span class="text-gray-700 dark:text-gray-300"
+                                                            x-text="country.code"></span>
+                                                    </div>
+                                                    <span x-show="countryCode === country.code"
+                                                        class="text-brand-500">✓</span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    {{-- رقم الجوال بدون كود الدولة --}}
+                                    <input type="text" x-model="localNumber" @input="updatePhone()"
+                                        class="flex-1 px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                        placeholder="رقم هاتف المرسل بدون كود">
+                                </div>
+
+                                {{-- هذا الذي يُرسل للباك إند --}}
+                                <input type="hidden" name="sender_phone" :value="selectedPhone">
+
                                 @error('sender_phone')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            {{-- عدد قروف العسل --}}
+
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     عدد قروف العسل
@@ -275,29 +375,27 @@
                         </div>
 
                         {{-- بيانات المستلم --}}
-                        <div class="space-y-4"
-                            x-data="customerPicker(
-                                '{{ route('customers.search') }}',
-                                @js([
-                                    'id' => old('receiver_customer_id', $shipment->receiver_customer_id),
-                                    'name' => old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name),
-                                    'phone' => old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone),
-                                ])
-                            )">
+                        <div class="space-y-4" x-data="customerPicker(
+                            '{{ route('customers.search') }}',
+                            @js([
+    'id' => old('receiver_customer_id', $shipment->receiver_customer_id),
+    'name' => old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name),
+    'phone' => old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone),
+])
+                        )">
 
                             <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
-                            {{-- البحث عن المستلم --}}
                             <div class="relative mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     بحث عن مستلم (اسم أو رقم)
                                 </label>
 
-                                <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                    @keydown.escape="open=false" placeholder="اكتب اسم المستلم أو رقمه..."
+                                <input type="text" x-model="query" @input.debounce.350ms="search()"
+                                    @focus="open = true" @keydown.escape="open=false"
+                                    placeholder="اكتب اسم المستلم أو رقمه..."
                                     class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
 
-                                {{-- Dropdown --}}
                                 <div x-show="open" x-transition
                                     class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
 
@@ -322,20 +420,18 @@
                                 </div>
                             </div>
 
-                            {{-- receiver_customer_id --}}
                             <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                             @error('receiver_customer_id')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            {{-- فرع المستلم --}}
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الجهة إلى
                                 </label>
 
                                 <select name="receiver_branch_code"
-                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600"
+                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-300 dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600"
                                     required>
                                     <option value=""
                                         {{ old('receiver_branch_code', $shipment->receiver_branch_code) ? '' : 'selected' }}
@@ -345,9 +441,7 @@
 
                                     @foreach ($branches as $branch)
                                         @continue($branch->code === auth()->user()->branch_code)
-
-                                        <option value="{{ $branch->code }}"
-                                            {{ old('receiver_branch_code', $shipment->receiver_branch_code) == $branch->code ? 'selected' : '' }}>
+                                        <option value="{{ $branch->code }}" @selected(old('receiver_branch_code', $shipment->receiver_branch_code) == $branch->code)>
                                             {{ $branch->name }}
                                         </option>
                                     @endforeach
@@ -358,7 +452,6 @@
                                 @enderror
                             </div>
 
-                            {{-- اسم المستلم --}}
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الاسم
@@ -371,20 +464,61 @@
                                 @enderror
                             </div>
 
-                            {{-- هاتف المستلم --}}
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     الهاتف
                                 </label>
-                                <input type="text" name="receiver_phone" x-model="selectedPhone" @input="selectedId=''"
-                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                                    placeholder="رقم هاتف المستلم">
+
+                                <div class="flex gap-3">
+                                    {{-- اختيار كود الدولة --}}
+                                    <div class="relative" @click.outside="openCountry = false">
+                                        <button type="button" @click="openCountry = !openCountry"
+                                            class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                            style="min-width: 110px;">
+                                            <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
+                                                class="w-5 h-auto rounded-sm">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300"
+                                                x-text="countryCode"></span>
+                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+
+                                        <div x-show="openCountry" x-transition
+                                            class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-44 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                                            <template x-for="country in countries" :key="country.code">
+                                                <button type="button" @click="setCountry(country.code)"
+                                                    class="flex justify-between items-center px-3 py-2 w-full text-sm text-left hover:bg-gray-50 dark:hover:bg-gray-700">
+                                                    <div class="flex gap-2 items-center">
+                                                        <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
+                                                            class="w-5 h-auto rounded-sm">
+                                                        <span class="text-gray-700 dark:text-gray-300"
+                                                            x-text="country.code"></span>
+                                                    </div>
+                                                    <span x-show="countryCode === country.code"
+                                                        class="text-brand-500">✓</span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    {{-- رقم الجوال بدون كود الدولة --}}
+                                    <input type="text" x-model="localNumber" @input="updatePhone()"
+                                        class="flex-1 px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                        placeholder="رقم هاتف المستلم بدون كود">
+                                </div>
+
+                                {{-- هذا الذي يُرسل للباك إند --}}
+                                <input type="hidden" name="receiver_phone" :value="selectedPhone">
+
                                 @error('receiver_phone')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            {{-- عدد جوالين العسل --}}
+
                             <div class="mt-3">
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     عدد جوالين العسل
@@ -405,36 +539,47 @@
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
                             إغلاق
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ====================== مودال تفاصيل الطرد ====================== --}}
-            <div x-show="isDetailsModalOpen"
-                x-transition
-                class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 modal z-99999"
-                style="display: none;">
-
-                <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
-                    @click="isDetailsModalOpen = false"></div>
-
-                <div class="relative w-full max-w-[600px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
-
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
-                            تعديل تفاصيل الطرد
-                        </h2>
-                        <button type="button" @click="isDetailsModalOpen = false"
-                            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            ✕
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                            حفظ التعديلات
                         </button>
                     </div>
+                </form>
+            </div>
+        </div>
+
+
+        {{-- ====================== مودال تفاصيل الطرد ====================== --}}
+        <div x-show="isDetailsModalOpen" x-transition
+            class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 z-99999 modal"
+            style="display: none;">
+
+            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]"
+                @click="isDetailsModalOpen = false"></div>
+
+            <div class="relative w-full max-w-[600px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
+                        تعديل تفاصيل الطرد
+                    </h2>
+                    <button type="button" @click="isDetailsModalOpen = false"
+                        class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+
+                <form action="{{ route('request.update', $shipment->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="section" value="details">
 
                     <div class="grid grid-cols-1 gap-4 w-full xl:grid-cols-2">
 
-                        {{-- الرمز --}}
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                الرمز
+                            </label>
                             <input type="text" name="code" value="{{ old('code', $shipment->code) }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                                 placeholder="اكتب الرمز">
@@ -443,33 +588,35 @@
                             @enderror
                         </div>
 
-                        {{-- رقم السند (للعرض فقط) --}}
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
-                                السند</label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                رقم السند
+                            </label>
                             <input type="text" value="{{ $shipment->bond_number }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-400 bg-gray-100 rounded-lg border border-gray-200 dark:text-gray-400 dark:bg-gray-700 dark:border-gray-600"
                                 disabled>
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">لا يمكن تعديل رقم السند بعد الإنشاء</p>
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                لا يمكن تعديل رقم السند بعد الإنشاء
+                            </p>
                         </div>
 
-                        {{-- نوع الطرد --}}
                         <div class="mt-3 xl:col-span-2">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
-                                الطرد</label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                نوع الطرد
+                            </label>
                             <input type="text" name="package_type"
                                 value="{{ old('package_type', $shipment->package_type) }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
                                 placeholder="مثال: كرتون / شنطة / ...">
                             @error('package_type')
-                                <div class="mt-1 textsm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        {{-- الوزن --}}
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الوزن
-                                (كجم)</label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                الوزن (كجم)
+                            </label>
                             <input type="number" name="weight" value="{{ old('weight', $shipment->weight) }}"
                                 step="0.01" min="0"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
@@ -479,10 +626,10 @@
                             @enderror
                         </div>
 
-                        {{-- إجمالي المبلغ --}}
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm text-gray-700 font.medium dark:text-gray-400">إجمالي
-                                المبلغ</label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                إجمالي المبلغ
+                            </label>
                             <input type="number" name="total_amount"
                                 value="{{ old('total_amount', $shipment->total_amount) }}" step="0.01" min="0"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
@@ -492,21 +639,35 @@
                             @enderror
                         </div>
 
-                        {{-- حالة الطلب --}}
                         <div class="mt-3 xl:col-span-2">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                 حالة الطلب
                             </label>
                             <select name="status"
-                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                <option value="pending" @selected(old('status', $shipment->status) == 'pending')>قيد الانتظار
+                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-300 dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
+                                <option value="pending" @selected(old('status', $shipment->status) == 'pending')>
+                                    قيد الانتظار
                                 </option>
-                                <option value="in_transit" @selected(old('status', $shipment->status) == 'in_transit')>قيد
-                                    الشحن</option>
-                                <option value="delivered" @selected(old('status', $shipment->status) == 'delivered')>تم
-                                    التسليم</option>
+                                <option value="in_transit" @selected(old('status', $shipment->status) == 'in_transit')>
+                                    قيد الشحن
+                                </option>
+                                <option value="delivered" @selected(old('status', $shipment->status) == 'delivered')>
+                                    تم التسليم
+                                </option>
                             </select>
                             @error('status')
+                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mt-3 xl:col-span-2">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                الملاحظات
+                            </label>
+                            <textarea name="notes" rows="4"
+                                class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                placeholder="اكتب ملاحظاتك...">{{ old('notes', $shipment->notes) }}</textarea>
+                            @error('notes')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
                         </div>
@@ -517,93 +678,113 @@
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
                             إغلاق
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ====================== مودال طريقة الدفع ====================== --}}
-            <div x-show="isPaymentModalOpen"
-                x-transition
-                class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 modal z-99999"
-                style="display: none;">
-
-                <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
-                    @click="isPaymentModalOpen = false"></div>
-
-                <div
-                    class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
-                            تعديل طريقة الدفع
-                        </h2>
-                        <button type="button" @click="isPaymentModalOpen = false"
-                            class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            ✕
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                            حفظ التعديلات
                         </button>
                     </div>
+                </form>
+            </div>
+        </div>
+
+
+        {{-- ====================== مودال طريقة الدفع ====================== --}}
+        <div x-show="isPaymentModalOpen" x-transition
+            class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 z-99999 modal"
+            style="display: none;">
+
+            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]"
+                @click="isPaymentModalOpen = false"></div>
+
+            <div
+                class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-base font-bold text-gray-800 dark:text-gray-100">
+                        تعديل طريقة الدفع
+                    </h2>
+                    <button type="button" @click="isPaymentModalOpen = false"
+                        class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                        ✕
+                    </button>
+                </div>
+
+                <form action="{{ route('request.update', $shipment->id) }}" method="POST"
+                    enctype="multipart/form-data">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="section" value="payment">
 
                     <div class="mt-2 md:col-span-2">
                         <h3 class="my-6 mb-3 text-sm font-bold text-gray-700 dark:text-gray-400">طريقة الدفع</h3>
 
                         <div class="flex flex-col gap-4">
 
-                            {{-- الحالة العامة --}}
+                            {{-- أنواع الدفع --}}
                             <div class="flex flex-wrap gap-6">
 
+                                {{-- دفع مقدم --}}
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="prepaid"
-                                        @change="payment_method='prepaid'"
-                                        {{ old('payment_method', $shipment->payment_method) == 'prepaid' ? 'checked' : '' }}>
+                                        x-model="payment_method">
                                     <span
-                                        :class="payment_method === 'prepaid' ? 'border-brand-500 bg-brand-500' :
+                                        :class="payment_method === 'prepaid'
+                                            ?
+                                            'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                         <span :class="payment_method === 'prepaid' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     دفع مقدم
                                 </label>
 
+                                {{-- COD --}}
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="cod"
-                                        @change="payment_method='cod'"
-                                        {{ old('payment_method', $shipment->payment_method) == 'cod' ? 'checked' : '' }}>
+                                        x-model="payment_method">
                                     <span
-                                        :class="payment_method === 'cod' ? 'border-brand-500 bg-brand-500' :
+                                        :class="payment_method === 'cod'
+                                            ?
+                                            'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                         <span :class="payment_method === 'cod' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     دفع عند التسليم (COD)
                                 </label>
 
+                                {{-- دفع جزئي --}}
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="partial_payment"
-                                        @change="payment_method='partial_payment'"
-                                        {{ old('payment_method', $shipment->payment_method) == 'partial_payment' ? 'checked' : '' }}>
+                                        x-model="payment_method">
                                     <span
-                                        :class="payment_method === 'partial_payment' ? 'border-brand-500 bg-brand-500' :
+                                        :class="payment_method === 'partial_payment'
+                                            ?
+                                            'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                         <span :class="payment_method === 'partial_payment' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     دفع جزئي (المرسل يدفع جزء)
                                 </label>
 
+                                {{-- آجل على حساب العميل --}}
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
-                                        @change="payment_method='customer_credit'"
-                                        {{ old('payment_method', $shipment->payment_method) == 'customer_credit' ? 'checked' : '' }}>
+                                        x-model="payment_method">
                                     <span
-                                        :class="payment_method === 'customer_credit' ? 'border-brand-500 bg-brand-500' :
+                                        :class="payment_method === 'customer_credit'
+                                            ?
+                                            'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                         <span :class="payment_method === 'customer_credit' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
@@ -615,7 +796,7 @@
                                 <div class="text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            {{-- prepaid --}}
+                            {{-- دفع مقدم --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -623,29 +804,33 @@
                                 </label>
 
                                 <div class="flex flex-wrap gap-6">
-
+                                    {{-- كاش --}}
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                        <input class="sr-only" type="radio" name="prepaid_payment_method" value="cash"
-                                            x-model="prepaid_method">
+                                        <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                            value="cash" x-model="prepaid_method">
                                         <span
-                                            :class="prepaid_method === 'cash' ? 'border-brand-500 bg-brand-500' :
+                                            :class="prepaid_method === 'cash'
+                                                ?
+                                                'border-brand-500 bg-brand-500' :
                                                 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                            class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                            class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                             <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
                                                 class="w-2 h-2 bg-white rounded-full"></span>
                                         </span>
                                         كاش
                                     </label>
 
+                                    {{-- تحويل بنكي --}}
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                         <input class="sr-only" type="radio" name="prepaid_payment_method"
                                             value="bank_transfer" x-model="prepaid_method">
                                         <span
-                                            :class="prepaid_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
+                                            :class="prepaid_method === 'bank_transfer'
+                                                ? 'border-brand-500 bg-brand-500' :
                                                 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                            class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                            class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                             <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
                                                 class="w-2 h-2 bg-white rounded-full"></span>
                                         </span>
@@ -657,22 +842,18 @@
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
 
+                                {{-- رفع سند التحويل للدفع المقدم --}}
                                 <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
                                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                         رفع سند التحويل
                                     </label>
 
                                     <label for="prepaid_attachment"
-                                        class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                                            dark:border-gray-600 dark:bg-gray-800
-                                            hover:border-brand-500 dark:hover:border-brand-500
-                                            transition-colors.duration-200 w-full text-center
-                                            @error('prepaid_attachment') border-error-500 @enderror">
+                                        class="flex flex-col items-center justify-center w-full p-6 text-center transition-colors duration-200 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-brand-500 @error('prepaid_attachment') border-error-500 @enderror">
 
-                                        <div class="mb-[22px] flex.justify-center">
+                                        <div class="flex justify-center mb-[22px]">
                                             <div
-                                                class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                                     dark:bg-gray-700 dark:text-gray-400">
+                                                class="flex items-center justify-center w-[68px] h-[68px] text-gray-700 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-400">
                                                 <svg class="fill-current" width="29" height="28"
                                                     viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -681,7 +862,7 @@
                                             </div>
                                         </div>
 
-                                        <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                                        <h4 class="mb-2 font-semibold text-gray-800 dark:text-white/90">
                                             Drop File Here
                                         </h4>
 
@@ -705,7 +886,7 @@
                             </div>
 
                             {{-- COD --}}
-                            <div class="p-4 mt-2 border-gray-200 rounded-xl.border dark:border-gray-700"
+                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'cod'" x-transition>
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
                                     سيتم اعتبار مبلغ التحصيل عند التسليم =
@@ -713,9 +894,9 @@
                                 </div>
                             </div>
 
-                            {{-- partial_payment --}}
+                            {{-- دفع جزئي --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method==='partial_payment'" x-transition>
+                                x-show="payment_method === 'partial_payment'" x-transition>
 
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     المبلغ المدفوع من المرسل الآن
@@ -723,10 +904,7 @@
 
                                 <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
                                     min="0.01" step="0.01" placeholder="0.00"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                                          bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                                          focus:ring-2 focus:ring-brand-500 focus:border-brand-500
-                                          @error('partial_amount') border-error-500 @enderror">
+                                    class="w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white dark:border-gray-400 @error('partial_amount') border-error-500 @enderror">
 
                                 @error('partial_amount')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
@@ -738,53 +916,53 @@
                                     </label>
 
                                     <div class="flex flex-wrap gap-6">
-
+                                        {{-- كاش --}}
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                             <input class="sr-only" type="radio" name="prepaid_payment_method"
                                                 value="cash" x-model="prepaid_method">
                                             <span
-                                                :class="prepaid_method === 'cash' ? 'border-brand-500 bg-brand-500' :
+                                                :class="prepaid_method === 'cash'
+                                                    ?
+                                                    'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
+                                                class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                                 <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
                                             كاش
                                         </label>
 
+                                        {{-- تحويل بنكي --}}
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                             <input class="sr-only" type="radio" name="prepaid_payment_method"
                                                 value="bank_transfer" x-model="prepaid_method">
                                             <span
-                                                :class="prepaid_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
+                                                :class="prepaid_method === 'bank_transfer'
+                                                    ?
+                                                    'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex h-5 w-5 items-center justify-center rounded-full.border-[1.25px]">
+                                                class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
                                                 <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
                                             تحويل بنكي
                                         </label>
-
                                     </div>
 
+                                    {{-- رفع سند للدفع الجزئي --}}
                                     <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
                                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                             رفع سند التحويل
                                         </label>
 
                                         <label for="prepaid_attachment_partial"
-                                            class="cursor-pointer flex flex.col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                                                dark:border-gray-600.dark:bg-gray-800
-                                                hover:border-brand-500 dark:hover:border-brand-500
-                                                transition-colors duration-200 w-full.text-center
-                                                @error('prepaid_attachment') border-error-500 @enderror">
+                                            class="flex flex-col items-center justify-center w-full p-6 text-center transition-colors.duration-200 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-brand-500 @error('prepaid_attachment') border-error-500 @enderror">
 
-                                            <div class="mb-[22px] flex justify-center">
+                                            <div class="flex justify-center mb-[22px]">
                                                 <div
-                                                    class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                                         dark:bg-gray-700 dark:text-gray-400">
+                                                    class="flex items-center justify-center w-[68px] h-[68px] text-gray-700 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-400">
                                                     <svg class="fill-current" width="29" height="28"
                                                         viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
                                                         <path fill-rule="evenodd" clip-rule="evenodd"
@@ -793,8 +971,7 @@
                                                 </div>
                                             </div>
 
-                                            <h4
-                                                class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                                            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white/90">
                                                 Drop File Here
                                             </h4>
 
@@ -818,26 +995,26 @@
                                 </div>
                             </div>
 
-                            {{-- customer_credit --}}
+                            {{-- آجل --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method==='customer_credit'" x-transition>
+                                x-show="payment_method === 'customer_credit'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700.dark:text-gray-400">
                                     حالة مديونية العميل
                                 </label>
                                 <select name="customer_debt_status"
-                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                    <option value="pending"
-                                        @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'pending')>
-                                        قيد الانتظار</option>
-                                    <option value="partially_paid"
-                                        @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'partially_paid')>
-                                        مدفوع جزئياً</option>
-                                    <option value="fully_paid"
-                                        @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'fully_paid')>
-                                        مدفوع بالكامل</option>
-                                    <option value="overdue"
-                                        @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'overdue')>
-                                        مديون</option>
+                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-300 dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
+                                    <option value="pending" @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'pending')>
+                                        قيد الانتظار
+                                    </option>
+                                    <option value="partially_paid" @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'partially_paid')>
+                                        مدفوع جزئياً
+                                    </option>
+                                    <option value="fully_paid" @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'fully_paid')>
+                                        مدفوع بالكامل
+                                    </option>
+                                    <option value="overdue" @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'overdue')>
+                                        مديون
+                                    </option>
                                 </select>
 
                                 @error('customer_debt_status')
@@ -852,39 +1029,23 @@
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
                             إغلاق
                         </button>
+                        <button type="submit"
+                            class="px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600">
+                            حفظ التعديلات
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
+        </div>
 
-            {{-- الملاحظات --}}
-            <div class="mt-6">
-                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
-                <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
-                    class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent border-gray-300 resize-none rounded-lg.border hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">{{ old('notes', $shipment->notes) }}</textarea>
-                @error('notes')
-                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                @enderror
-            </div>
 
-            {{-- الأزرار --}}
-            <div class="flex gap-3 mt-6">
-                <button type="submit"
-                    class="px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto">
-                    تحديث الطرد
-                </button>
 
-                <a href="{{ route('request.index') }}"
-                    class="px-4 py-2 w-full font-medium text-center text-gray-800 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white md:w-auto">
-                    رجوع للقائمة
-                </a>
-            </div>
-
-        </form>
     </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('customerPicker', (url, initial = null) => ({
+                
                 query: '',
                 open: false,
                 loading: false,
@@ -894,13 +1055,88 @@
                 selectedName: '',
                 selectedPhone: '',
 
+                countryCode: '+967',
+                countryFlag: 'ye',
+                localNumber: '',
+                openCountry: false,
+
+                countries: [{
+                        code: '+967',
+                        flag: 'ye'
+                    },
+                    {
+                        code: '+966',
+                        flag: 'sa'
+                    },
+                    {
+                        code: '+971',
+                        flag: 'ae'
+                    },
+                    {
+                        code: '+965',
+                        flag: 'kw'
+                    },
+                    {
+                        code: '+974',
+                        flag: 'qa'
+                    },
+                    {
+                        code: '+968',
+                        flag: 'om'
+                    },
+                ],
+
                 init() {
-                    if (initial) {
+                    if (initial && typeof initial === 'object') {
                         this.selectedId = initial.id ?? '';
                         this.selectedName = initial.name ?? '';
-                        this.selectedPhone = initial.phone ?? '';
+                        const phone = initial.phone ?? '';
+
+                        this.parsePhone(phone);
                         this.query = this.selectedName;
                     }
+                },
+                parsePhone(phone) {
+                    if (!phone) {
+                        this.setCountry('+967');
+                        this.localNumber = '';
+                        this.selectedPhone = '';
+                        return;
+                    }
+
+                    const found = this.countries.find(c => phone.startsWith(c.code));
+
+                    if (found) {
+                        this.countryCode = found.code;
+                        this.countryFlag = found.flag;
+                        this.localNumber = phone.substring(found.code.length);
+                    } else {
+                        this.setCountry('+967');
+                        this.localNumber = phone;
+                    }
+
+                    this.updateHidden();
+                },
+
+                setCountry(code) {
+                    const country = this.countries.find(c => c.code === code);
+                    if (country) {
+                        this.countryCode = country.code;
+                        this.countryFlag = country.flag;
+                    }
+                    this.updatePhone();
+                    this.openCountry = false;
+                },
+
+                updatePhone() {
+                    this.updateHidden();
+                    this.selectedId = '';
+                },
+
+                updateHidden() {
+                    this.selectedPhone = (this.localNumber || '').trim() ?
+                        this.countryCode + this.localNumber.trim() :
+                        '';
                 },
 
                 async search() {
@@ -918,8 +1154,8 @@
                     try {
                         const res = await fetch(`${url}?q=${encodeURIComponent(q)}`, {
                             headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
                         });
 
                         if (!res.ok) throw new Error('Search failed');
@@ -935,13 +1171,15 @@
                 select(c) {
                     this.selectedId = c.id;
                     this.selectedName = c.name ?? '';
-                    this.selectedPhone = c.phone ?? '';
+                    this.parsePhone(c.phone ?? '');
+
                     this.query = this.selectedName;
                     this.open = false;
                     this.results = [];
-                }
+                },
             }));
         });
     </script>
+
 
 @endsection

@@ -1,17 +1,16 @@
 <?php
 
-use App\Http\Controllers\DriverController;
-use App\Http\Controllers\ReportController;
-use App\Models\AdminActivity;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Requestcontroller;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DriverController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
 //     return view('dashboard');
@@ -29,20 +28,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', UserController::class);
     Route::resource('branch', BranchController::class);
-    Route::resource('request', Requestcontroller::class);
-    Route::patch('/request/{id}/status', [RequestController::class, 'updateStatus'])
+    Route::resource('request', ShipmentController::class);
+    Route::patch('/request/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('request.updateStatus');
 
-        
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
         ->name('system-settings.auto-assign.update');
     Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
 
-    Route::get('/whatsapp/sender/{id}', [Requestcontroller::class, 'openForSender'])
+    Route::get('/whatsapp/sender/{id}', [ShipmentController::class, 'openForSender'])
         ->name('whatsapp.sender');
 
-    Route::get('/admin/logs', [RequestController::class, 'adminlog'])
+    Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])
         ->name('request.adminlog');
     Route::resource('drivers', DriverController::class);
     Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])
@@ -50,29 +48,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/drivers/{id}/shipments/print', [DriverController::class, 'printShipments'])
         ->name('drivers.shipments.print');
 
-
+    Route::resource('shipments', ShipmentController::class);
     Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
 
     Route::get('/reports/revenue/pdf', [ReportController::class, 'exportRevenuePDF'])
         ->name('reports.revenue.pdf');
 
-    Route::get('/whatsapp/receiver/{id}', [Requestcontroller::class, 'openForReceiver'])
+    Route::get('/whatsapp/receiver/{id}', [ShipmentController::class, 'openForReceiver'])
         ->name('whatsapp.receiver');
 
-    Route::get('/request/{id}/invoice', [RequestController::class, 'invoice'])->name('request.invoice');
-    Route::get('/shipments/select-customer', [RequestController::class, 'selectCustomer'])
-    ->name('shipments.selectCustomer');
+    Route::get('/request/{id}/invoice', [ShipmentController::class, 'invoice'])->name('request.invoice');
+    Route::get('/shipments/select-customer', [ShipmentController::class, 'selectCustomer'])
+        ->name('shipments.selectCustomer');
 
-    Route::get('/shipments/create-customer', [RequestController::class, 'createCustomer'])
-    ->name('shipments.createCustomer');
+    Route::get('/shipments/create-customer', [ShipmentController::class, 'createCustomer'])
+        ->name('shipments.createCustomer');
 
-Route::post('/shipments/store-customer', [RequestController::class, 'storeCustomer'])
-    ->name('shipments.storeCustomer');
+    Route::post('/shipments/store-customer', [ShipmentController::class, 'storeCustomer'])
+        ->name('shipments.storeCustomer');
 
     Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
         ->name('system-settings.auto-assign.get');
-Route::get('/customers/search', [CustomerController::class, 'search'])
-    ->name('customers.search');
+    Route::get('/customers/search', [CustomerController::class, 'search'])
+        ->name('customers.search');
 
     Route::resource('customers', CustomerController::class);
 
@@ -90,10 +88,6 @@ Route::get('/customers/search', [CustomerController::class, 'search'])
 
     Route::get('/api/branches/{branch}/balance', [BranchFinanceController::class, 'apiBranchBalance'])
         ->name('api.branch.balance');
-
-
-
-
 
     // Dashboard النظام
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -126,10 +120,9 @@ Route::get('/customers/search', [CustomerController::class, 'search'])
     Route::get('/reports/monthly/closing/pdf', [ReportController::class, 'monthlyClosingPDF'])
         ->name('reports.monthly.closing.pdf');
 
-
-Route::get('/reports/revenue', [ReportController::class, 'dashboard'])
-    ->name('reports.revenue');
+    Route::get('/reports/revenue', [ReportController::class, 'dashboard'])
+        ->name('reports.revenue');
 
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';
