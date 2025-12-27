@@ -4,14 +4,15 @@
 
 @section('content')
 
-    <div class="p-6 bg-white rounded-lg.shadow-sm dark:bg-gray-800" x-data="{
+    <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800" x-data="{
         payment_method: @js(old('payment_method', $shipment->payment_method)),
         prepaid_method: @js(old('prepaid_payment_method', 'cash')),
-        isSenderReceiverModalOpen: false,
-        isDetailsModalOpen: false,
-        isPaymentModalOpen: false,
+        isSenderReceiverModalOpen: @js($errors->has('sender_name') || $errors->has('sender_phone') || $errors->has('sender_customer_id') || $errors->has('sender_branch_code') || $errors->has('receiver_name') || $errors->has('receiver_phone') || $errors->has('receiver_customer_id') || $errors->has('receiver_branch_code') || $errors->has('no_honey_jars') || $errors->has('no_gallons_honey')),
+        isDetailsModalOpen: @js($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes')),
+        isPaymentModalOpen: @js($errors->has('payment_method') || $errors->has('partial_amount') || $errors->has('prepaid_payment_method') || $errors->has('prepaid_attachment') || $errors->has('customer_debt_status')),
         activeTab: 'sender_receiver'
     }">
+
 
         <div class="space-y-6 max-w-[1200px] mx-auto">
 
@@ -733,7 +734,7 @@
                                             ?
                                             'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                        class="flex justify-center items-center w-5 h-5 rounded-full border">
                                         <span :class="payment_method === 'prepaid' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
@@ -750,7 +751,7 @@
                                             ?
                                             'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                        class="flex justify-center items-center w-5 h-5 rounded-full border">
                                         <span :class="payment_method === 'cod' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
@@ -767,7 +768,7 @@
                                             ?
                                             'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                        class="flex justify-center items-center w-5 h-5 rounded-full border">
                                         <span :class="payment_method === 'partial_payment' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
@@ -784,7 +785,7 @@
                                             ?
                                             'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                        class="flex justify-center items-center w-5 h-5 rounded-full border">
                                         <span :class="payment_method === 'customer_credit' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
@@ -814,7 +815,7 @@
                                                 ?
                                                 'border-brand-500 bg-brand-500' :
                                                 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                            class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                            class="flex justify-center items-center w-5 h-5 rounded-full border">
                                             <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
                                                 class="w-2 h-2 bg-white rounded-full"></span>
                                         </span>
@@ -828,9 +829,10 @@
                                             value="bank_transfer" x-model="prepaid_method">
                                         <span
                                             :class="prepaid_method === 'bank_transfer'
-                                                ? 'border-brand-500 bg-brand-500' :
+                                                ?
+                                                'border-brand-500 bg-brand-500' :
                                                 'bg-transparent border-gray-300 dark:border-gray-700'"
-                                            class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                            class="flex justify-center items-center w-5 h-5 rounded-full border">
                                             <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
                                                 class="w-2 h-2 bg-white rounded-full"></span>
                                         </span>
@@ -926,7 +928,7 @@
                                                     ?
                                                     'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                                class="flex justify-center items-center w-5 h-5 rounded-full border">
                                                 <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
@@ -943,7 +945,7 @@
                                                     ?
                                                     'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex items-center justify-center w-5 h-5 border rounded-full border-[1.25px]">
+                                                class="flex justify-center items-center w-5 h-5 rounded-full border">
                                                 <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
@@ -1041,11 +1043,25 @@
 
 
     </div>
+    @if (
+        $errors->has('payment_method') ||
+            $errors->has('partial_amount') ||
+            $errors->has('prepaid_attachment') ||
+            $errors->has('prepaid_payment_method') ||
+            $errors->has('customer_debt_status'))
+        <script>
+            document.addEventListener('alpine:init', () => {
+                setTimeout(() => {
+                    window.isPaymentModalOpen = true;
+                }, 50);
+            });
+        </script>
+    @endif
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('customerPicker', (url, initial = null) => ({
-                
+
                 query: '',
                 open: false,
                 loading: false,
