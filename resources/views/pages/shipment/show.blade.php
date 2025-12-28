@@ -83,7 +83,7 @@
 
                     <div class="hidden w-px h-8 bg-gray-200 dark:bg-gray-700 md:block"></div>
 
-                    <a href="{{ route('request.invoice', $shipment->id) }}" target="_blank"
+                    <a href="{{ route('shipment.invoice', $shipment->id) }}" target="_blank"
                         class="flex gap-2 items-center px-4 py-2 text-sm font-medium text-gray-700 rounded-lg border border-gray-300 dark:text-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-700">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -93,7 +93,7 @@
                         طباعة
                     </a>
 
-                    <a href="{{ route('request.edit', $shipment->id) }}"
+                    <a href="{{ route('shipment.edit', $shipment->id) }}"
                         class="flex gap-2 items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -260,7 +260,7 @@
                             updating: false,
                             updateStatus() {
                                 this.updating = true;
-                                fetch('{{ route('request.updateStatus', $shipment->id) }}', {
+                                fetch('{{ route('shipment.updateStatus', $shipment->id) }}', {
                                         method: 'PATCH',
                                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                                         body: JSON.stringify({ status: this.status })

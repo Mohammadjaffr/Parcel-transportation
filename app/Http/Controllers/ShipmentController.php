@@ -405,6 +405,50 @@ class ShipmentController extends Controller
         }
     }
 
+    public function updatePaymentMethod(Request $request, $id){
+        $shipment = Shipment::findOrFail($id);
+        // dd($shipment);
+        if($shipment->status == 'delivered' || $shipment->status == 'in_transit'){
+            return $this->SuccessBacktoIndex('حدث خطا', 'لا يمكنك تعديل الطرد في حال تم أرساله او تم استلامه');
+        }
+        $validator = Validator::make($request->all(), [
+            'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
+            'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
+            'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'partial_amount' => 'nullable|numeric|min:1',
+            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
+        ]);
+        if($validator->fails()){
+            return $this->ValidationError($validator);
+        }
+        $data = $validator->validated();
+        if(in_array($data['payment_method'], ['prepaid', 'partial_payment']) && $data['prepaid_payment_method'] === 'bank_transfer' && !$request->hasFile('prepaid_attachment')){
+            return $this->ExceptionError('في حالة التحويل البنكي، يجب إرفاق سند الدفع.');
+        }
+        $paymentType=$data['prepaid_payment_method'] ?? 'cash';
+        $paidAmount=null;
+        $attachment=$data['prepaid_attachment']?? null;
+
+        $shipment->payments()->delete();
+        $shipment->update([
+            'payment_method' => $data['payment_method'],
+        ]);
+        $shipment = Shipment::findOrFail($id);
+        $this->shipmentPaymentService->handlePaymentForNewShipment(
+                $shipment,
+                $paymentType,
+                $paidAmount,
+                $attachment
+        );
+        return $this->SuccessBacktoIndex(
+            'تمت التحديث!',
+            'تم تحديث بيانات الدفع بنجاح.'
+        );
+        
+
+
+    }
+
     /* ========== 7- حذف الطرد ========== */
     public function destroy($id)
     {
@@ -436,7 +480,7 @@ class ShipmentController extends Controller
 
     private function SuccessBacktoIndex($title, $msg)
     {
-        return redirect()->route('request.index')
+        return redirect()->route('shipment.index')
             ->with('success', true)
             ->with('success_title', $title)
             ->with('success_message', $msg)
@@ -448,7 +492,7 @@ class ShipmentController extends Controller
         return redirect()->back()
             ->with('error', true)
             ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e->getMessage())
+            ->with('error_message', $e)
             ->with('error_buttonText', 'حسناً');
     }
 

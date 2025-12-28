@@ -219,7 +219,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('request.update', $shipment->id) }}" method="POST">
+                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="sender_receiver">
@@ -570,7 +570,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('request.update', $shipment->id) }}" method="POST">
+                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="details">
@@ -710,7 +710,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('request.update', $shipment->id) }}" method="POST"
+                <form action="{{ route('shipment.updatePaymentMethod', $shipment->id) }}" method="POST"
                     enctype="multipart/form-data">
                     @csrf
                     @method('PUT')

@@ -7,7 +7,7 @@
     <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800">
         <!-- رأس الصفحة مع زر إضافة جديد -->
         <div class="flex flex-col justify-between mb-6 xl:flex-row md:items-center">
-            <a href="{{ route('request.create') }}"
+            <a href="{{ route('shipment.create') }}"
                 class="inline-flex items-center px-4 py-2 my-4 mt-4 font-medium text-white rounded-lg md:mt-0 bg-brand-500 hover:bg-brand-600">
                 <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -177,7 +177,7 @@
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex mx-5 space-x-2 space-x-reverse">
                                     <!-- زر التعديل -->
-                                    <a href="{{ route('request.edit', $request->id) }}"
+                                    <a href="{{ route('shipment.edit', $request->id) }}"
                                         class="mx-2 text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                         title="تعديل">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,7 +205,7 @@
 
 
                                     <!-- زر العرض -->
-                                    <a href="{{ route('request.show', $request->id) }}"
+                                    <a href="{{ route('shipment.show', $request->id) }}"
                                         class="text-success-600 hover:text-success-900 dark:text-success-400 dark:hover:text-success-300"
                                         title="عرض التفاصيل">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +216,7 @@
                                         </svg>
                                     </a>
 
-                                    <a href="{{ route('request.invoice', $request->id) }}" target="_blank"
+                                    <a href="{{ route('shipment.invoice', $request->id) }}" target="_blank"
                                         class="mx-2 text-brand-600 hover:text-brand-900 dark:text-brand-400 dark:hover:text-brand-300"
                                         title="طباعة الفاتورة">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

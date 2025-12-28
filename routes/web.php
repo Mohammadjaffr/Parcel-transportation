@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
+    Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class,'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
 
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])

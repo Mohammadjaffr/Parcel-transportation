@@ -8,7 +8,7 @@
         prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}'
     }">
 
-        <form action="{{ route('request.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('shipment.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <!-- الشبكة الرئيسية -->
