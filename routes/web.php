@@ -28,9 +28,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', UserController::class);
     Route::resource('branch', BranchController::class);
-    Route::resource('request', ShipmentController::class);
-    Route::patch('/request/{id}/status', [ShipmentController::class, 'updateStatus'])
-        ->name('request.updateStatus');
+    Route::resource('shipment', ShipmentController::class);
+    Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
+        ->name('shipment.updateStatus');
 
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
@@ -41,7 +41,7 @@ Route::middleware('auth')->group(function () {
         ->name('whatsapp.sender');
 
     Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])
-        ->name('request.adminlog');
+        ->name('shipment.adminlog');
     Route::resource('drivers', DriverController::class);
     Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])
         ->name('drivers.shipments');
@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/whatsapp/receiver/{id}', [ShipmentController::class, 'openForReceiver'])
         ->name('whatsapp.receiver');
 
-    Route::get('/request/{id}/invoice', [ShipmentController::class, 'invoice'])->name('request.invoice');
+    Route::get('/shipment/{id}/invoice', [ShipmentController::class, 'invoice'])->name('shipment.invoice');
     Route::get('/shipments/select-customer', [ShipmentController::class, 'selectCustomer'])
         ->name('shipments.selectCustomer');
 

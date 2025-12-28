@@ -14,7 +14,7 @@ class CustomerController extends Controller
     {
         $customers = Customer::where('branch_code', auth()->user()->branch_code)
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
 
         return view('pages.customers.index', compact('customers'));
     }

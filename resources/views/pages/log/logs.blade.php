@@ -60,7 +60,7 @@
 
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         @if($log->model_id)
-                        <a href="{{ route('request.show', $log->model_id) }}"
+                        <a href="{{ route('shipment.show', $log->model_id) }}"
                             class="text-success-600 hover:text-success-500 dark:text-success-400 dark:hover:text-success-300">
                             عرض الطرد
                         </a>

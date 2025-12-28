@@ -118,23 +118,23 @@
                     </li>
                     <!-- Menu Item Profile -->
                     <li>
-                        <a href="#" @click.prevent="selected = (selected === 'Requests' ? '' : 'Requests')"
+                        <a href="#" @click.prevent="selected = (selected === 'shipments' ? '' : 'shipments')"
                             class="flex relative items-center menu-item group"
-                            :class="(selected === 'Requests') || window.location.href.includes(
-                                '{{ route('request.index') }}') || window.location.href.includes(
+                            :class="(selected === 'shipments') || window.location.href.includes(
+                                '{{ route('shipment.index') }}') || window.location.href.includes(
                                 '{{ route('shipments.selectCustomer') }}') ? 'menu-item-active' : 'menu-item-inactive'">
 
                             <!-- السهم المطلق في أقصى اليسار -->
                             <svg class="absolute left-4 transition-transform duration-300"
-                                :class="(selected === 'Requests') ? 'rotate-180' : ''" width="20" height="20"
+                                :class="(selected === 'shipments') ? 'rotate-180' : ''" width="20" height="20"
                                 viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
                             <!-- الأيقونة مع هامش لترك مساحة للسهم -->
-                            <svg :class="(selected === 'Requests') || window.location.href.includes(
-                                    '{{ route('request.index') }}') || window.location.href.includes(
+                            <svg :class="(selected === 'shipments') || window.location.href.includes(
+                                    '{{ route('shipment.index') }}') || window.location.href.includes(
                                     '{{ route('shipments.selectCustomer') }}') ? 'menu-item-icon-active' :
                                 'menu-item-icon-inactive'"
                                 class="ml-10" fill="#dc6803" width="30" height="30" viewBox="0 0 32 32"
@@ -149,7 +149,7 @@
                                             }
                                         </style>
                                     </defs>
-                                    <title>request</title>
+                                    <title>shipment</title>
                                     <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"
                                         transform="translate(0)"></path>
                                     <path
@@ -168,12 +168,12 @@
                         </a>
                         <!-- Dropdown Menu Start -->
                         <div class="overflow-hidden transform translate"
-                            :class="(selected === 'Requests') ? 'block' : 'hidden'">
+                            :class="(selected === 'shipments') ? 'block' : 'hidden'">
                             <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
                                 class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                                 <li>
-                                    <a href="{{ route('request.create') }}" class="menu-dropdown-item group"
-                                        :class="window.location.href.includes('{{ route('request.index') }}') ?
+                                    <a href="{{ route('shipment.create') }}" class="menu-dropdown-item group"
+                                        :class="window.location.href.includes('{{ route('shipment.index') }}') ?
                                             'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
                                         رسائل عامة
                                     </a>
@@ -192,12 +192,12 @@
                     </li>
                     <!-- Menu Item Forms -->
                     {{-- <li>
-                        <a href="{{ route('request.index') }}"
+                        <a href="{{ route('shipment.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('request.index') }}') ? 'menu-item-active' :
+                            :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
-                            <svg :class="window.location.href.includes('{{ route('request.index') }}') ? 'menu-item-icon-active' :
+                            <svg :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-icon-active' :
                                 'menu-item-icon-inactive'"
                                 fill="#dc6803" width="30" height="30" viewBox="0 0 32 32" id="icon"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -211,7 +211,7 @@
                                             }
                                         </style>
                                     </defs>
-                                    <title>request</title>
+                                    <title>shipment</title>
                                     <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"
                                         transform="translate(0)"></path>
                                     <path
@@ -231,9 +231,9 @@
 
                     <!-- Menu Item Tables -->
                     <li>
-                        <a href="{{ route('request.adminlog') }}"
+                        <a href="{{ route('shipment.adminlog') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('request.adminlog') }}') ? 'menu-item-active' :
+                            :class="window.location.href.includes('{{ route('shipment.adminlog') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
                             <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24"

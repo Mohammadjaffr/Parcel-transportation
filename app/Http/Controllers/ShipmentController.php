@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\AdminActivity;
 use App\Models\Branch;
 use App\Models\Customer;
-use App\Models\Driver;
 use App\Models\Shipment;
 use App\Services\AdminLoggerService;
 use App\Services\ShipmentPaymentService;
@@ -31,7 +30,7 @@ class ShipmentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('pages.request.index', compact('requests'));
+        return view('pages.shipment.index', compact('requests'));
     }
 
     /* ========== 2- صفحة إنشاء طرد ========== */
@@ -47,7 +46,7 @@ class ShipmentController extends Controller
             $customer = Customer::findOrFail($request->customer_id);
         }
 
-        return view('pages.request.create', compact(
+        return view('pages.shipment.create', compact(
             'branches',
             'customers',
             'customer',
@@ -143,7 +142,6 @@ class ShipmentController extends Controller
             );
 
             return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء الطرد بنجاح.');
-
         } catch (\Exception $e) {
             dd('خطأ أثناء الإنشاء', $e->getMessage(), $e->getFile(), $e->getLine());
         }
@@ -151,7 +149,7 @@ class ShipmentController extends Controller
 
     public function createCustomer()
     {
-        return view('pages.request.customer.create');
+        return view('pages.shipment.customer.create');
     }
 
     public function storeCustomer(Request $request)
@@ -181,7 +179,7 @@ class ShipmentController extends Controller
         $shipment = Shipment::findOrFail($id);
         $countrequests = Shipment::count();
 
-        return view('pages.request.show', compact('shipment', 'countrequests'));
+        return view('pages.shipment.show', compact('shipment', 'countrequests'));
     }
 
     /* ========== 5- صفحة تعديل الطرد ========== */
@@ -192,7 +190,7 @@ class ShipmentController extends Controller
         // $drivers = Driver::where('status', 'active')->get();
         $customers = Customer::all();
 
-        return view('pages.request.edit', compact('shipment', 'branches', 'customers'));
+        return view('pages.shipment.edit', compact('shipment', 'branches', 'customers'));
     }
 
     /* ========== 6- تحديث الطرد ========== */
@@ -283,7 +281,6 @@ class ShipmentController extends Controller
                 'تمت التحديث!',
                 'تم تحديث بيانات المرسل والمستلم بنجاح.'
             );
-
         } elseif ($section === 'details') {
 
             $rules = [
@@ -467,12 +464,12 @@ class ShipmentController extends Controller
         $pdf->setRTL(true);
         $pdf->SetFont('dejavusans', '', 12);
 
-        $html = view('pages.request.invoice', compact('shipment'))->render();
+        $html = view('pages.shipment.invoice', compact('shipment'))->render();
 
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('invoice-'.$shipment->id.'.pdf', 'I');
+        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
     }
 
     public function printThermal($id)
@@ -484,10 +481,10 @@ class ShipmentController extends Controller
         $pdf->SetFont('aealarabiya', '', 12);
         $pdf->AddPage();
 
-        $html = view('pages.request.thermal', compact('shipment'))->render();
+        $html = view('pages.shipment.thermal', compact('shipment'))->render();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('thermal-'.$shipment->id.'.pdf', 'I');
+        return $pdf->Output('thermal-' . $shipment->id . '.pdf', 'I');
     }
 
     public function adminlog()
@@ -501,7 +498,7 @@ class ShipmentController extends Controller
     {
         $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
 
-        return view('pages.request.select-customer', compact('customers'));
+        return view('pages.shipment.select-customer', compact('customers'));
     }
 
     public function updateStatus(Request $request, $id)
