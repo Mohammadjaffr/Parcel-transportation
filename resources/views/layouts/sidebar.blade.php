@@ -116,117 +116,30 @@
                             </span>
                         </a>
                     </li>
-                    <!-- Menu Item Profile -->
-                    <li>
-                        <a href="#" @click.prevent="selected = (selected === 'shipments' ? '' : 'shipments')"
-                            class="flex relative items-center menu-item group"
-                            :class="(selected === 'shipments') || window.location.href.includes(
-                                '{{ route('shipment.index') }}') || window.location.href.includes(
-                                '{{ route('shipments.selectCustomer') }}') ? 'menu-item-active' : 'menu-item-inactive'">
-
-                            <!-- السهم المطلق في أقصى اليسار -->
-                            <svg class="absolute left-4 transition-transform duration-300"
-                                :class="(selected === 'shipments') ? 'rotate-180' : ''" width="20" height="20"
-                                viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke="currentColor"
-                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-
-                            <!-- الأيقونة مع هامش لترك مساحة للسهم -->
-                            <svg :class="(selected === 'shipments') || window.location.href.includes(
-                                    '{{ route('shipment.index') }}') || window.location.href.includes(
-                                    '{{ route('shipments.selectCustomer') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                class="ml-10" fill="#dc6803" width="30" height="30" viewBox="0 0 32 32"
-                                id="icon" xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                <g id="SVGRepo_iconCarrier">
-                                    <defs>
-                                        <style>
-                                            .cls-1 {
-                                                fill: none;
-                                            }
-                                        </style>
-                                    </defs>
-                                    <title>shipment</title>
-                                    <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"
-                                        transform="translate(0)"></path>
-                                    <path
-                                        d="M29.54,5.76l-3.3-3.3a1.6,1.6,0,0,0-2.24,0l-14,14V22h5.53l14-14a1.6,1.6,0,0,0,0-2.24ZM14.7,20H12V17.3l9.44-9.45,2.71,2.71ZM25.56,9.15,22.85,6.44l2.27-2.27,2.71,2.71Z"
-                                        transform="translate(0)"></path>
-                                    <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;"
-                                        class="cls-1" width="32" height="32">
-                                    </rect>
-                                </g>
-                            </svg>
-
-                            <!-- النص -->
-                            <span class="flex-1 ml-2 menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                إدارة الرسائل
-                            </span>
-                        </a>
-                        <!-- Dropdown Menu Start -->
-                        <div class="overflow-hidden transform translate"
-                            :class="(selected === 'shipments') ? 'block' : 'hidden'">
-                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
-                                class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
-                                <li>
-                                    <a href="{{ route('shipment.create') }}" class="menu-dropdown-item group"
-                                        :class="window.location.href.includes('{{ route('shipment.index') }}') ?
-                                            'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        رسائل عامة
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('shipments.selectCustomer') }}" class="menu-dropdown-item group"
-                                        :class="window.location.href.includes('{{ route('shipments.selectCustomer') }}') ?
-                                            'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'">
-                                        رسائل خاصة
-                                    </a>
-                                </li>
-
-                            </ul>
-                        </div>
-                        <!-- Dropdown Menu End -->
-                    </li>
+                
                     <!-- Menu Item Forms -->
-                    {{-- <li>
-                        <a href="{{ route('shipment.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-active' :
-                                'menu-item-inactive'">
+                  <li>
+    <a href="{{ route('shipment.index') }}"
+        @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
+        :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-active' :
+            'menu-item-inactive'">
 
-                            <svg :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                fill="#dc6803" width="30" height="30" viewBox="0 0 32 32" id="icon"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                <g id="SVGRepo_iconCarrier">
-                                    <defs>
-                                        <style>
-                                            .cls-1 {
-                                                fill: none;
-                                            }
-                                        </style>
-                                    </defs>
-                                    <title>shipment</title>
-                                    <path d="M22,22v6H6V4H16V2H6A2,2,0,0,0,4,4V28a2,2,0,0,0,2,2H22a2,2,0,0,0,2-2V22Z"
-                                        transform="translate(0)"></path>
-                                    <path
-                                        d="M29.54,5.76l-3.3-3.3a1.6,1.6,0,0,0-2.24,0l-14,14V22h5.53l14-14a1.6,1.6,0,0,0,0-2.24ZM14.7,20H12V17.3l9.44-9.45,2.71,2.71ZM25.56,9.15,22.85,6.44l2.27-2.27,2.71,2.71Z"
-                                        transform="translate(0)"></path>
-                                    <rect id="_Transparent_Rectangle_" data-name="&lt;Transparent Rectangle&gt;"
-                                        class="cls-1" width="32" height="32">
-                                    </rect>
-                                </g>
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                إدارة الطرود
-                            </span>
-                        </a>
-                    </li> --}}
+        <svg :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-icon-active' :
+            'menu-item-icon-inactive'"
+            fill="currentColor" width="30" height="30" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <g id="SVGRepo_iconCarrier">
+                <path d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+        </svg>
+        
+        <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+            إدارة الطرود
+        </span>
+    </a>
+</li>
                     <!-- Menu Item Forms -->
 
                     <!-- Menu Item Tables -->

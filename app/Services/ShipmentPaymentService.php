@@ -50,7 +50,7 @@ class ShipmentPaymentService
         }
     }
 
-    
+
     private function handlePrepaidPayment(Shipment $shipment, string $paymentType, ?UploadedFile $attachment): void
     {
         DB::transaction(function () use ($shipment, $paymentType, $attachment) {
@@ -69,7 +69,7 @@ class ShipmentPaymentService
         });
     }
 
-   
+
     private function handlePartialPayment(Shipment $shipment, float $paidAmount, string $paymentType, ?UploadedFile $attachment): void
     {
         if ($paidAmount >= $shipment->total_amount) {
@@ -98,25 +98,46 @@ class ShipmentPaymentService
         $shipment->save();
     }
 
+    // private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes): void
+    // {
+    //     $paymentData = [
+    //         'shipment_id' => $shipment->id,
+    //         'customer_id' => $customerId,
+    //         'branch_code' => $branchCode,
+    //         'amount' => $amount,
+    //         'payment_method' => $paymentType,
+    //         'payment_date' => now(),
+    //         'notes' => $notes,
+    //         'attachment_path' => null, 
+    //     ];
+
+
+    //     if ($paymentType === 'bank_transfer' && $attachment) {
+
+    //         $paymentData['attachment_path'] = $this->imageService->saveImage($attachment, 'payment_attachments');
+    //     }
+
+    //     CustomerPayment::create($paymentData);
+    // }
     private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes): void
     {
-        $paymentData = [
+        $searchKey = [
             'shipment_id' => $shipment->id,
-            'customer_id' => $customerId,
-            'branch_code' => $branchCode,
-            'amount' => $amount,
-            'payment_method' => $paymentType,
-            'payment_date' => now(),
-            'notes' => $notes,
-            'attachment_path' => null, 
         ];
 
-        
-        if ($paymentType === 'bank_transfer' && $attachment) {
+        $paymentData = [
+            'customer_id'    => $customerId,
+            'branch_code'    => $branchCode,
+            'amount'         => $amount,
+            'payment_method' => $paymentType,
+            'payment_date'   => now(),
+            'notes'          => $notes,
+        ];
 
+        if ($paymentType === 'bank_transfer' && $attachment) {
             $paymentData['attachment_path'] = $this->imageService->saveImage($attachment, 'payment_attachments');
         }
 
-        CustomerPayment::create($paymentData);
+        CustomerPayment::updateOrCreate($searchKey, $paymentData);
     }
 }

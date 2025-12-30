@@ -405,50 +405,50 @@ class ShipmentController extends Controller
         }
     }
 
-    public function updatePaymentMethod(Request $request, $id){
+    public function updatePaymentMethod(Request $request, $id)
+    {
         $shipment = Shipment::findOrFail($id);
-        // dd($shipment);
-        if($shipment->status == 'delivered' || $shipment->status == 'in_transit'){
-            return $this->SuccessBacktoIndex('حدث خطا', 'لا يمكنك تعديل الطرد في حال تم أرساله او تم استلامه');
-        }
+
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
+            'partial_amount' => 'nullable|numeric|min:1',
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
             'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
-            'partial_amount' => 'nullable|numeric|min:1',
-            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
         ]);
-        if($validator->fails()){
+
+        $validator->after(function ($validator) use ($request, $shipment) {
+            if ($request->payment_method === 'partial_payment') {
+                $partial = (float) $request->partial_amount;
+                $total = (float) $shipment->total_amount;
+
+                if ($partial >= $total) {
+                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من المبلغ الإجمالي للشحنة.');
+                }
+            }
+        });
+
+        if ($validator->fails()) {
             return $this->ValidationError($validator);
         }
+
         $data = $validator->validated();
-        if(in_array($data['payment_method'], ['prepaid', 'partial_payment']) && $data['prepaid_payment_method'] === 'bank_transfer' && !$request->hasFile('prepaid_attachment')){
-            return $this->ExceptionError('في حالة التحويل البنكي، يجب إرفاق سند الدفع.');
+
+        $paidAmount = ($data['payment_method'] === 'partial_payment') ? (float)$data['partial_amount'] : null;
+
+        $shipment->update(['payment_method' => $data['payment_method']]);
+        $paymentMethod = $data['payment_method'];
+        if (in_array($paymentMethod, ['cod', 'customer_credit'])) {
+            $shipment->payments()->delete();
         }
-        $paymentType=$data['prepaid_payment_method'] ?? 'cash';
-        $paidAmount=null;
-        $attachment=$data['prepaid_attachment']?? null;
-
-        $shipment->payments()->delete();
-        $shipment->update([
-            'payment_method' => $data['payment_method'],
-        ]);
-        $shipment = Shipment::findOrFail($id);
         $this->shipmentPaymentService->handlePaymentForNewShipment(
-                $shipment,
-                $paymentType,
-                $paidAmount,
-                $attachment
+            $shipment,
+            $data['prepaid_payment_method'] ?? 'cash',
+            $paidAmount,
+            $request->file('prepaid_attachment')
         );
-        return $this->SuccessBacktoIndex(
-            'تمت التحديث!',
-            'تم تحديث بيانات الدفع بنجاح.'
-        );
-        
 
-
+        return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.');
     }
-
     /* ========== 7- حذف الطرد ========== */
     public function destroy($id)
     {
@@ -520,15 +520,21 @@ class ShipmentController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
 
-        $pdf = new TCPDF('P', 'mm', [80, 300], true, 'UTF-8', false);
+        $pdf = new \TCPDF('L', 'mm', [70, 100], true, 'UTF-8', false);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->SetMargins(2, 2, 2);
+        $pdf->SetAutoPageBreak(false, 0);
         $pdf->setRTL(true);
-        $pdf->SetFont('aealarabiya', '', 12);
+        $pdf->SetFont('dejavusans', '', 10);
+
         $pdf->AddPage();
 
         $html = view('pages.shipment.thermal', compact('shipment'))->render();
+
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('thermal-' . $shipment->id . '.pdf', 'I');
+        return $pdf->Output('Sticker-' . $shipment->bond_number . '.pdf', 'I');
     }
 
     public function adminlog()
