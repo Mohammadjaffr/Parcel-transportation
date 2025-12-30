@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('receiver_branch_code', 10);
             $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->foreignId('sender_customer_id')->nullable()->constrained('customers')->nullOnDelete();
+            $table->foreignId('shipment_package_id')->nullable()->constrained('shipment_packages')->nullOnDelete();
             $table->foreignId('receiver_customer_id')->nullable()->constrained('customers')->nullOnDelete();
             $table->string('bond_number')->unique();
             $table->string('no_gallons_honey');

@@ -55,6 +55,10 @@ class Shipment extends Model
             $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
         });
     }
+    public function package()
+    {
+        return $this->belongsTo(ShipmentPackage::class, 'shipment_package_id');
+    }
 
     public function user()
     {

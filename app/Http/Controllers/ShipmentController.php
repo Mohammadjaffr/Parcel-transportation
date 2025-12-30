@@ -73,8 +73,8 @@ class ShipmentController extends Controller
             'weight' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
             'code' => 'required|string|max:255',
-            'no_honey_jars' => 'nullable|numeric|min:0',
-            'no_gallons_honey' => 'nullable|numeric|min:0',
+            'no_honey_jars' => 'required|numeric|min:0',
+            'no_gallons_honey' => 'required|numeric|min:0',
 
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
 

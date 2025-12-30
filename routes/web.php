@@ -8,6 +8,7 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentPackagesController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -31,9 +32,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
-    Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class,'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
-Route::get('/shipments/{id}/thermal', [ShipmentController::class, 'printThermal'])
-    ->name('shipment.printThermal');
+    Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class, 'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
+    Route::get('/shipments/{id}/thermal', [ShipmentController::class, 'printThermal'])
+        ->name('shipment.printThermal');
 
     Route::resource('systems', SystemSettingsController::class);
     Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
@@ -126,6 +127,8 @@ Route::get('/shipments/{id}/thermal', [ShipmentController::class, 'printThermal'
     Route::get('/reports/revenue', [ReportController::class, 'dashboard'])
         ->name('reports.revenue');
 
+    Route::resource('shipmentpackage',ShipmentPackagesController::class);
+    Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

@@ -16,26 +16,25 @@
     }">
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          
-                <div @click="filterStatus = 'all'"
-                    :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
-                    class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
-                    <div
-                        class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                    </div>
-                    <div class="mt-3">
-                        <span
-                            class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي
-                            الطرود</span>
-                        <h4 class="text-xl font-black dark:text-white">{{ $requests->count() }}</h4>
-                    </div>
 
+            <div @click="filterStatus = 'all'"
+                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
+                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
                 </div>
-      
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي
+                        الطرود</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $requests->count() }}</h4>
+                </div>
+
+            </div>
+
 
 
             <div @click="filterStatus = 'pending'"
@@ -150,18 +149,15 @@
                                     </span>
                                 </td>
 
-                                <td class="py-5 px-6 border-y dark:border-gray-800/50">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-sm font-black text-gray-900 dark:text-white">{{ $request->senderCustomer->name ?? '-' }}</span>
-                                        <span class="text-xs font-bold text-gray-400 mt-0.5">←
-                                            {{ $request->receiverCustomer->name ?? '-' }}</span>
-                                    </div>
-                                </td>
 
                                 <td
                                     class="py-5 px-6 border-y dark:border-gray-800/50 text-center text-[10px] font-black uppercase text-gray-500">
-                                    {{ $request->senderBranch->name ?? '-' }} ➔
+                                    {{ $request->senderCustomer->name ?? '-' }} ⇠
+                                    {{ $request->receiverCustomer->name ?? '-' }}
+                                </td>
+                                <td
+                                    class="py-5 px-6 border-y dark:border-gray-800/50 text-center text-[10px] font-black uppercase text-gray-500">
+                                    {{ $request->senderBranch->name ?? '-' }} ⇠
                                     {{ $request->receiverBranch->name ?? '-' }}
                                 </td>
 

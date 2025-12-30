@@ -116,30 +116,54 @@
                             </span>
                         </a>
                     </li>
-                
+
                     <!-- Menu Item Forms -->
                   <li>
     <a href="{{ route('shipment.index') }}"
-        @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-        :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-active' :
-            'menu-item-inactive'">
+       class="menu-item group {{ request()->routeIs('shipment.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
-        <svg :class="window.location.href.includes('{{ route('shipment.index') }}') ? 'menu-item-icon-active' :
-            'menu-item-icon-inactive'"
-            fill="currentColor" width="30" height="30" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg">
-            <g id="SVGRepo_iconCarrier">
-                <path d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg
+            class="{{ request()->routeIs('shipment.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+            fill="currentColor" width="30" height="30" viewBox="0 0 24 24">
+            <g>
+                <path d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+                <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
             </g>
         </svg>
-        
+
         <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
             إدارة الطرود
         </span>
     </a>
 </li>
+
+<li>
+    <a href="{{ route('shipmentpackage.index') }}"
+       class="menu-item group {{ request()->routeIs('shipmentpackage.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
+
+        <svg
+            class="{{ request()->routeIs('shipmentpackage.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+            fill="none" width="30" height="30" viewBox="0 0 24 24">
+            <g>
+                <path d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+                <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+            </g>
+        </svg>
+
+        <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+            توزيع الشحنات
+        </span>
+    </a>
+</li>
+
                     <!-- Menu Item Forms -->
 
                     <!-- Menu Item Tables -->
@@ -205,7 +229,7 @@
                             </span>
                         </a>
                     </li>  --}}
-                     <li>
+                    <li>
                         <a href="{{ route('finance.branches.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
                             :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
