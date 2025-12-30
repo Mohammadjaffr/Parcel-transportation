@@ -23,141 +23,119 @@
             background-color: #fff;
             font-family: 'aealarabiya', 'dejavusans', sans-serif;
             direction: rtl;
-            overflow: hidden;
         }
 
         .sticker-card {
             width: 100mm;
             height: 70mm;
-            padding: 3mm 4mm;
+            padding: 2.5mm 3.5mm;
             position: relative;
         }
 
-        /* الهيدر: اللوجو والبيانات الأساسية */
+        /* ================= الهيدر ================= */
         .header-table {
             width: 100%;
-            border-bottom: 2px solid #fb6514;
-            margin-bottom: 3mm;
+            border-bottom: 1.2px solid #fb6514;
+            margin-bottom: 1.5mm;
+        }
+
+        .company-cell {
+            width: 35mm;
+            text-align: right;
+            vertical-align: middle;
+            font-size: 6.8pt;
+            line-height: 1.25;
+            color: #333;
+        }
+
+        .header-title {
+            font-size: 10pt;
+            font-weight: bold;
+        }
+
+        .header-subtitle {
+            font-size: 7.5pt;
+            margin-top: 0.5mm;
+        }
+
+        .header-extra {
+            font-size: 6.5pt;
+            margin-top: 0.3mm;
+        }
+
+        .header-phones {
+            font-size: 6.5pt;
+            margin-top: 0.3mm;
+            font-weight: bold;
         }
 
         .logo-cell {
-            width: 18mm;
-            vertical-align: middle;
-            padding-bottom: 1mm;
-        }
-
-        .brand-cell {
+            width: 28mm;
             text-align: center;
             vertical-align: middle;
         }
 
-        .contact-cell {
-            width: 42mm;
-            text-align: right;
-            vertical-align: middle;
-            font-size: 7.5pt;
-            font-weight: bold;
-            line-height: 1.3;
-            color: #333;
-        }
-
-        .brand-title {
-            color: #fb6514;
-            font-size: 19pt;
-            font-weight: 900;
-            margin: 0;
-            line-height: 1;
+        .logo-cell img {
+            width: 14mm;
         }
 
         .date-text {
-            font-size: 9pt;
+            font-size: 7pt;
             color: #666;
             font-weight: bold;
-            margin-top: 1mm;
+            margin-top: 0.8mm;
         }
 
-        /* منطقة البيانات: توزيع أفقي Label بجانب Value */
+        .branch-cell {
+            width: 35mm;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 6.8pt;
+            font-weight: bold;
+            line-height: 1.25;
+            color: #333;
+        }
+
+        .branch-name {
+            margin-bottom: 0.6mm;
+        }
+
+        /* =============== جداول البيانات =============== */
         .info-grid {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2mm;
+            margin-bottom: 1.2mm;
         }
 
         .info-grid td {
-            padding: 2.5mm 0;
+            padding: 0.7mm 0;
             border-bottom: 1px solid #f1f1f1;
             vertical-align: middle;
         }
 
         .label {
-            width: 25mm;
-            font-size: 10pt;
+            font-size: 7pt;
             font-weight: bold;
             color: #fb6514;
+            white-space: nowrap;
         }
 
         .value {
-            font-size: 13pt;
-            font-weight: 900;
-            color: #000;
-        }
-
-        /* منطقة الوجهة والرمز: صف واحد عرضي مدمج */
-        .horizontal-footer {
-            display: table;
-            width: 100%;
-            /* background: #f9f9f9; border: 1.2pt solid #fb6514; border-radius: 2.5mm; */
-            position: absolute;
-            bottom: 8mm;
-            left: 4mm;
-            right: 4mm;
-            width: calc(100% - 8mm);
-        }
-
-        .footer-item {
-            display: table-cell;
-            vertical-align: middle;
-            padding: 2mm;
-            text-align: center;
-        }
-
-        /* .dest-box { width: 65%; border-left: 1pt solid #fb6514; text-align: right; padding-right: 3mm; } */
-        .dest-text {
-            font-size: 13pt;
-            font-weight: 900;
-            color: #000;
-        }
-
-        .code-box-small {
-            font-size: 16pt;
-            font-weight: 900;
-            color: #fff;
-            background: #000;
-            padding: 1mm 4mm;
-            border-radius: 1.5mm;
-        }
-
-        /* شريط الإدارة السفلي */
-        .admin-footer {
-            position: absolute;
-            bottom: 2mm;
-            left: 4mm;
-            right: 4mm;
-            background: #000;
-            color: #fff;
-            text-align: center;
-            padding: 1.2mm;
-            border-radius: 1mm;
             font-size: 8.5pt;
-            font-weight: bold;
+            font-weight: 900;
+            color: #000;
         }
 
-        .hint {
+        .value-small {
             font-size: 7.5pt;
-            color: #888;
+            font-weight: 700;
+        }
+
+        .admin-text {
+            font-size: 6.8pt;
             font-weight: bold;
-            display: block;
-            margin-bottom: 0.5mm;
+            text-align: center;
+            margin-top: 2rem;
         }
     </style>
 </head>
@@ -165,57 +143,87 @@
 <body>
 
     <div class="sticker-card">
+
+        {{-- =============== الهيدر =============== --}}
         <table class="header-table">
             <tr>
-                  <td class="contact-cell">
-                {{-- <span class="logo-cell"><img src="{{ public_path('images/new.svg') }}" style="width: 15mm;"></span> --}}
-                    فرع {{ $shipment->senderBranch->name }}<br>
-                    للتواصل:<br>
-                    781216757 - 730831802<br>
-                    773136727 - 781989021
-                    <br>
-                    الى جميع المحافظات ودول الخليج
-                    الفرع الرئيسي / حضرموت - القطن - المرقدة
+                <!-- يمين: معلومات الشركة -->
+                <td class="company-cell">
+                    <div class="header-title">الزاجل</div>
+                    <div class="header-subtitle">للنقل والشحن السريع</div>
+                    <div class="header-extra">الى جميع المحافظات ودول الخليج</div>
+                    <div class="header-extra">الفرع الرئيسي / حضرموت - القطن - المرقدة</div>
+                    <div class="header-phones">
+                        للتواصل / 781216757 - 730831802<br>
+                        773136727 - 781989021
+                    </div>
                 </td>
-                <td class="brand-cell">
-                    <div class="brand-title">الـزاجـل</div>
-                    <div class="date-text">تاريخ السند: {{ $shipment->created_at->format('Y-m-d') }}</div>
+
+                <!-- منتصف: اللوجو + التاريخ -->
+                <td class="logo-cell">
+                    <img src="{{ public_path('images/new.svg') }}" alt="Logo">
+                   
                 </td>
-              
+
+                <!-- يسار: فرع المرسل -->
+                <td class="branch-cell">
+                    <div class="branch-name">
+                        فرع {{ $shipment->senderBranch->name ?? '........' }}
+                        - {{ $shipment->senderBranch->address ?? '' }}
+                    </div>
+                    <div>
+                        {{ $shipment->senderBranch->phone ?? '' }}
+                    </div>
+                </td>
             </tr>
         </table>
 
+        {{-- ========== بيانات السند (رقم + مبلغ + نوع + رمز) ========== --}}
+   
         <table class="info-grid">
             <tr>
-                <td class="label">رقم السند:</td>
-                <td class="value">#{{ $shipment->bond_number }}</td>
-            </tr>
-            <tr>
-                <td class="label">نوع الشحنة:</td>
-                <td class="value">{{ $shipment->package_type }}</td>
-            </tr>
-            <tr>
-                <td class="label">رمز الشحنة:</td>
+                <td style="width: 18%;">
+                    <span class="label">رقم السند:</span>
+                </td>
+                <td style="width: 32%;">
+                    <span class="value">#{{ $shipment->bond_number }}</span>
+                </td>
 
-                <td class="value">{{ $shipment->code }}</td>
+                   <td><span class="label">نوع الشحنة:</span></td>
+                <td><span class="value-small">{{ $shipment->package_type }}</span></td>
+            </tr>
+
+            <tr>
+            
+
+                <td><span class="label">رمز الشحنة:</span></td>
+                <td><span class="value">{{ $shipment->code }}</span></td>
+                 <td><span class="label">التاريخ:</span></td>
+                <td><span class="value">{{ $shipment->created_at->format('Y-m-d') }}</span></td>
             </tr>
         </table>
 
-        <div class="horizontal-footer">
-            <div class="footer-item dest-box">
-                <span class="hint">الوجهة المقصودة:</span>
-                <div class="dest-text">
-                    <span style="color: #fb6514; ">من</span>
+        
 
-                    {{ $shipment->senderBranch->name }}
-                    <span style="color: #fb6514; ">الى</span>
-                    {{ $shipment->receiverBranch->name }}
-                </div>
-            </div>
-            <div class="footer-item">
-                <div>أرقام الإدارة العامة: 781216757 - 773136727 - 730831802</div>
+        {{-- ========== من / إلى الفروع ========== --}}
+        <table class="info-grid">
+            <tr>
+                <td style="width: 18%;"><span class="label">من فرع:</span></td>
+                <td style="width: 32%;">
+                    <span class="value-small">{{ $shipment->senderBranch->name ?? '...' }}</span>
+                </td>
 
-            </div>
+                <td style="width: 18%;"><span class="label">إلى فرع:</span></td>
+                <td style="width: 32%;">
+                    <span class="value-small">{{ $shipment->receiverBranch->name ?? '...' }}</span>
+                </td>
+            </tr>
+        </table>
+
+        {{-- ========== أرقام الإدارة العامة ========== --}}
+        <div class="admin-text">
+            أرقام الإدارة العامة لجميع الفروع:
+            781216757 - 773136727 - 774996316 - 773374176
         </div>
 
     </div>

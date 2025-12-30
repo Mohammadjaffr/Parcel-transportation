@@ -1,119 +1,118 @@
 @extends('layouts.app')
 @section('title', 'إدارة المستخدمين')
-@section('Breadcrumb', 'إدارة المستخدمين')
 
 @section('content')
 
-    <div x-data="userFilter()" class="space-y-5 sm:space-y-6">
+    <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
 
-        <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-            <div class="px-5 py-4 sm:px-6 sm:py-5">
-
-                <div class="flex flex-col sm:flex-row gap-4 items-end">
-
-                    <!-- البحث -->
-                    <div class="flex-1 min-w-[250px]">
-                        <label class="mb-2 block text-xs text-right dark:text-white">البحث</label>
-                        <input type="text" x-model="search" placeholder="أدخل نص البحث..."
-                            class="h-10 w-full rounded-lg border px-4 text-sm text-right dark:text-white" />
-                    </div>
-
-                    <!-- الحالة -->
-                    <div class="min-w-[180px]">
-                        <label class="mb-2 block text-xs text-right dark:text-white">الحالة</label>
-                        <select x-model="statusFilter" class="h-10 w-full rounded-lg border px-4 text-sm text-right dark:bg-gray-700 dark:text-white">
-                            <option value="all">الكل</option>
-                            <option value="active">نشط</option>
-                            <option value="inactive">محظور</option>
-                        </select>
-                    </div>
-
-                    <!-- زر التطبيق -->
-                    <button @click="filterNow"
-                        class="bg-brand-500 hover:bg-brand-600 h-10 rounded-lg dark:text-white px-6 py-2 text-sm font-medium text-white">
-                        تطبيق
-                    </button>
-
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+            <div @click="statusFilter = 'all'; filterNow()" 
+                 :class="statusFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
+                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                 </div>
-
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي المستخدمين</span>
+                    <h4 class="text-xl font-black dark:text-white" x-text="users.length"></h4>
+                </div>
             </div>
 
-            <div class="p-5 border-t border-gray-100 dark:border-gray-800 sm:p-6">
-
-                <div
-                    class="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                    <div class="max-w-full overflow-x-auto">
-
-                        <table class="min-w-full">
-                            <thead>
-                                <tr class="border-b border-gray-100 dark:border-gray-800 dark:text-white">
-                                    <th class="px-5 py-3 sm:px-6 text-right">الاسم</th>
-                                    <th class="px-5 py-3 sm:px-6 text-right">رقم الواتساب</th>
-                                    <th class="px-5 py-3 sm:px-6 text-right">نوعه</th>
-                                    <th class="px-5 py-3 sm:px-6 text-right">الحظر</th>
-                                    <th class="px-5 py-3 sm:px-6 text-center">الإجراءات</th>
-                                </tr>
-                            </thead>
-
-                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-
-                                <template x-for="user in filteredUsers" :key="user.id">
-                                    <tr class="hover:bg-gray-300 dark:hover:bg-gray-700">
-
-                                        <td class="px-5 py-4 sm:px-6">
-                                            <span class="block font-medium text-gray-800 dark:text-white"
-                                                x-text="user.name"></span>
-                                            <span class="block text-gray-500 text-xs"
-                                                x-text="user.whatsapp_number ?? '-'"></span>
-                                        </td>
-
-                                        <td class="px-5 py-4 sm:px-6 text-gray-600 dark:text-gray-50" x-text="user.phone">
-                                        </td>
-
-                                        <td class="px-5 py-4 sm:px-6">
-                                            <span
-                                                class="rounded-full bg-success-50 px-2 py-0.5 text-theme-xs font-medium 
-                                                     text-success-700 dark:bg-success-500/15 dark:text-success-400"
-                                                x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'">
-                                            </span>
-                                        </td>
-
-                                        <td class="px-5 py-4 sm:px-6">
-                                            <span x-show="user.is_banned == 1"
-                                                class="rounded-full bg-success-50 text-success-600 px-2 py-0.5 text-theme-xs font-medium">
-                                                نشط
-                                            </span>
-                                            <span x-show="user.is_banned == 0"
-                                                class="rounded-full bg-error-50 text-error-600 px-2 py-0.5 text-theme-xs font-medium">
-                                                محظور
-                                            </span>
-                                        </td>
-
-                                        <td class="px-5 py-4 sm:px-6 text-center">
-                                            <a :href="'/users/' + user.id"
-                                                class="text-brand-500 hover:text-brand-700 text-sm">
-                                                عرض
-                                            </a>
-                                        </td>
-
-                                    </tr>
-                                </template>
-
-                                <tr x-show="filteredUsers.length === 0">
-                                    <td colspan="6" class="text-center py-6 text-gray-500 dark:text-gray-400">
-                                        لا يوجد نتائج مطابقة
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-
-                    </div>
+            <div @click="statusFilter = 'active'; filterNow()" 
+                 :class="statusFilter === 'active' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100'"
+                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04M12 21.48V22" /></svg>
                 </div>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">نشط حالياً</span>
+                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 1).length"></h4>
+                </div>
+            </div>
 
+            <div @click="statusFilter = 'inactive'; filterNow()" 
+                 :class="statusFilter === 'inactive' ? 'border-error-500 ring-2 ring-error-500/20' : 'border-gray-100'"
+                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                </div>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">حسابات محظورة</span>
+                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
+                </div>
             </div>
         </div>
 
+        <div class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
+            <div class="relative group ">
+                <input type="text" 
+                       x-model="search"
+                       @input.debounce.300ms="filterNow"
+                       placeholder="ابحث بالاسم أو رقم الهاتف..." 
+                       class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div class="overflow-x-auto px-4 pb-4">
+                <table class="w-full border-separate border-spacing-y-3 text-right">
+                    <thead>
+                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                            <th class="py-4 px-6">المستخدم</th>
+                            <th class="py-4 px-6">الهاتف</th>
+                            <th class="py-4 px-6 text-center">نوع الحساب</th>
+                            <th class="py-4 px-6 text-center">الحالة</th>
+                            <th class="py-4 px-6 text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y-0">
+                        <template x-for="user in filteredUsers" :key="user.id">
+                            <tr class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-md transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-800">
+                                
+                                <td class="py-5 px-6 first:rounded-r-2xl border-y border-r dark:border-gray-800/50">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-black text-gray-900 dark:text-white" x-text="user.name"></span>
+                                        <span class="text-[10px] font-bold text-gray-400" x-text="user.whatsapp_number ?? '-'"></span>
+                                    </div>
+                                </td>
+
+                                <td class="py-5 px-6 border-y dark:border-gray-800/50">
+                                    <span class="text-sm font-bold text-gray-600 dark:text-gray-400" x-text="user.phone"></span>
+                                </td>
+
+                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                    <span :class="user.type === 'admin' ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10' : 'bg-gray-50 text-gray-600 dark:bg-gray-700'"
+                                          class="px-3 py-1 rounded-lg text-[10px] font-black uppercase"
+                                          x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
+                                </td>
+
+                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                    <span :class="user.is_banned == 1 ? 'bg-success-50 text-success-600' : 'bg-error-50 text-error-600'"
+                                          class="px-3 py-1 rounded-lg text-[10px] font-black uppercase">
+                                        <span x-text="user.is_banned == 1 ? 'نشط' : 'محظور'"></span>
+                                    </span>
+                                </td>
+
+                                <td class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
+                                    <a :href="'/users/' + user.id" class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </a>
+                                </td>
+                            </tr>
+                        </template>
+
+                        <tr x-show="filteredUsers.length === 0">
+                            <td colspan="5" class="py-20 text-center">
+                                <div class="text-gray-400 italic">لا توجد نتائج تطابق بحثك حالياً..</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -121,23 +120,23 @@ function userFilter() {
     return {
         search: "",
         statusFilter: "all",
-
+        // جلب البيانات من Laravel وتحويلها لـ JSON
         users: @json($users->items()),  
-        filteredUsers: @json($users->items()),
+        filteredUsers: [],
+
+        init() {
+            this.filteredUsers = this.users;
+        },
 
         filterNow() {
-
             this.filteredUsers = this.users.filter(user => {
+                const matchesSearch = this.search === "" || 
+                                    user.name.toLowerCase().includes(this.search.toLowerCase()) || 
+                                    (user.phone && user.phone.includes(this.search));
 
-                let matchesSearch =
-                    this.search === "" ||
-                    user.name.includes(this.search) ||
-                    (user.phone && user.phone.includes(this.search));
-
-                let matchesStatus =
-                    this.statusFilter === "all" ||
-                    (this.statusFilter === "active" && user.is_banned == 1) ||
-                    (this.statusFilter === "inactive" && user.is_banned == 0);
+                const matchesStatus = this.statusFilter === "all" || 
+                                    (this.statusFilter === "active" && user.is_banned == 1) || 
+                                    (this.statusFilter === "inactive" && user.is_banned == 0);
 
                 return matchesSearch && matchesStatus;
             });
@@ -145,6 +144,4 @@ function userFilter() {
     }
 }
 </script>
-
-
 @endsection

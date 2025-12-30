@@ -90,7 +90,7 @@
                     <h3 class="text-lg font-bold text-gray-800 dark:text-white">
                         الطرود خلال <span class="text-brand-500">24</span> ساعة
                     </h3>
-                    <a href="{{ route('request.index') }}"
+                    <a href="{{ route('shipment.index') }}"
                         class="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300">
                         عرض الكل &larr;
                     </a>
@@ -173,7 +173,7 @@
                                         </div>
                                     </td>
                                     <td class="px-3 py-4 text-sm text-left">
-                                        <a href="{{ route('request.show', $shipment->id) }}"
+                                        <a href="{{ route('shipment.show', $shipment->id) }}"
                                             class="p-2 text-gray-500 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                                             title="عرض التفاصيل">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor"
