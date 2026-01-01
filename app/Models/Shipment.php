@@ -11,6 +11,7 @@ class Shipment extends Model
 
     protected $fillable = [
         'sender_branch_code',
+        'created_branch_code', 
         'receiver_branch_code',
         'sender_customer_id',
         'receiver_customer_id',

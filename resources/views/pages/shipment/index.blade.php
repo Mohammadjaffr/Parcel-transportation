@@ -15,7 +15,7 @@
         }
     }">
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-6">
 
             <div @click="filterStatus = 'all'"
                 :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
@@ -238,4 +238,5 @@
             @endif
         </div>
     </div>
+    
 @endsection

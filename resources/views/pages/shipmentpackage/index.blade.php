@@ -215,7 +215,7 @@
                                                 class="w-6 h-6 rounded-lg border-gray-300 text-brand-500 focus:ring-brand-500/20 transition-all">
                                             <div class="flex flex-col">
                                                 <span
-                                                    class="text-sm font-black text-gray-900 dark:text-white">#{{ $shipment->bond_number }}</span>
+                                                    class="text-sm font-black text-gray-900 dark:text-white">المرسل : {{ $shipment->senderCustomer->name }}</span>
                                                 <span
                                                     class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">الوجهة:
                                                     {{ $shipment->receiverBranch->name }}</span>

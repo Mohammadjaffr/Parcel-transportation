@@ -26,12 +26,16 @@ class ShipmentController extends Controller
     /* ========== 1- عرض جميع الطردات ========== */
     public function index()
     {
-        $requests = Shipment::where('sender_branch_code', auth()->user()->branch_code)
+        $branchCode = auth()->user()->branch_code;
+
+        $requests = Shipment::where('created_branch_code', $branchCode)
             ->latest()
             ->paginate(10);
 
         return view('pages.shipment.index', compact('requests'));
     }
+
+
 
     /* ========== 2- صفحة إنشاء طرد ========== */
     public function create(Request $request)
@@ -54,98 +58,141 @@ class ShipmentController extends Controller
         ));
     }
 
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
+   public function store(Request $request)
+{
+    $entryType = $request->input('entry_type', 'sender'); // sender أو receiver
 
-            'receiver_branch_code' => 'required|exists:branches,code',
+    $rules = [
+        'sender_customer_id'   => 'nullable|exists:customers,id',
+        'receiver_customer_id' => 'nullable|exists:customers,id',
 
-            'sender_customer_id' => 'nullable|exists:customers,id',
-            'receiver_customer_id' => 'nullable|exists:customers,id',
+        'sender_name'   => 'required_without:sender_customer_id|string|max:255',
+        'sender_phone'  => 'required_without:sender_customer_id|string|max:50',
 
-            'sender_name' => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone' => 'required_without:sender_customer_id|string|max:50',
+        'receiver_name'  => 'required_without:receiver_customer_id|string|max:255',
+        'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
 
-            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
+        'package_type'      => 'required|string|max:255',
+        'weight'            => 'nullable|numeric|min:0',
+        'total_amount'      => 'required|numeric|min:0',
+        'code'              => 'required|string|max:255',
+        'no_honey_jars'     => 'nullable|numeric|min:0',
+        'no_gallons_honey'  => 'nullable|numeric|min:0',
 
-            'package_type' => 'required|string|max:255',
-            'weight' => 'nullable|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
-            'code' => 'required|string|max:255',
-            'no_honey_jars' => 'required|numeric|min:0',
-            'no_gallons_honey' => 'required|numeric|min:0',
+        'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
 
-            'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
+        'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
+        'prepaid_attachment'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+        'partial_amount'         => 'nullable|numeric|min:0.01',
 
-            'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
-            'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
-            'partial_amount' => 'nullable|numeric|min:0.01',
+        'customer_debt_status'   => 'nullable|in:pending,partially_paid,fully_paid,overdue',
+        'notes'                  => 'nullable|string',
+    ];
 
-            'notes' => 'nullable|string',
-        ]);
-        if ($validator->fails()) {
-            return $this->ValidationError($validator);
-        }
-        try {
-            $data = $validator->validated();
-
-            $data['sender_branch_code'] = auth()->user()->branch_code;
-
-            if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::create([
-                    'phone' => $data['sender_phone'],
-                    'name' => $data['sender_name'],
-                    'branch_code' => auth()->user()->branch_code,
-                ]);
-
-                $data['sender_customer_id'] = $senderCustomer->id;
-            }
-
-            if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::create([
-                    'phone' => $data['receiver_phone'],
-                    'name' => $data['receiver_name'],
-                    'branch_code' => auth()->user()->branch_code,
-                ]);
-
-                $data['receiver_customer_id'] = $receiverCustomer->id;
-            }
-
-            $data['customer_debt_status'] = null;
-            $data['status'] = 'pending';
-
-            $partialAmount = $data['partial_amount'] ?? null;
-            unset(
-                $data['partial_amount'],
-                $data['sender_name'],
-                $data['sender_phone'],
-                $data['receiver_name'],
-                $data['receiver_phone']
-            );
-
-            $shipment = Shipment::create($data);
-
-            $paymentType = $request->prepaid_payment_method ?? 'cash';
-            $paidAmount = null;
-            $attachment = $request->file('prepaid_attachment');
-
-            if ($shipment->payment_method === 'partial_payment') {
-                $paidAmount = $partialAmount ? (float) $partialAmount : null;
-            }
-
-            $this->shipmentPaymentService->handlePaymentForNewShipment(
-                $shipment,
-                $paymentType,
-                $paidAmount,
-                $attachment
-            );
-
-            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء الطرد بنجاح.');
-        } catch (\Exception $e) {
-            dd('خطأ أثناء الإنشاء', $e->getMessage(), $e->getFile(), $e->getLine());
-        }
+    if ($entryType === 'sender') {
+        $rules['receiver_branch_code'] = 'required|exists:branches,code';
+    } else {
+        $rules['sender_branch_code'] = 'required|exists:branches,code';
     }
+
+    $validator = Validator::make($request->all(), $rules);
+
+    if ($validator->fails()) {
+        return $this->ValidationError($validator);
+    }
+
+    try {
+        $data = $validator->validated();
+
+        $currentBranchCode = auth()->user()->branch_code;
+
+        if ($entryType === 'sender') {
+            $data['sender_branch_code'] = $currentBranchCode;
+        } else {
+            $data['receiver_branch_code'] = $currentBranchCode;
+        }
+
+        $data['created_branch_code'] = $currentBranchCode;
+
+        /* ================= إنشاء / ربط العملاء ================= */
+
+        // المرسل
+        if (empty($data['sender_customer_id'])) {
+            $senderCustomer = Customer::create([
+                'phone'       => $data['sender_phone'],
+                'name'        => $data['sender_name'],
+                'branch_code' => $data['sender_branch_code'], // هنا لن يحصل undefined
+            ]);
+
+            $data['sender_customer_id'] = $senderCustomer->id;
+        }
+
+        // المستلم
+        if (empty($data['receiver_customer_id'])) {
+            $receiverCustomer = Customer::create([
+                'phone'       => $data['receiver_phone'],
+                'name'        => $data['receiver_name'],
+                'branch_code' => $data['receiver_branch_code'],
+            ]);
+
+            $data['receiver_customer_id'] = $receiverCustomer->id;
+        }
+
+        /* ================= حالات إضافية ================= */
+
+        // حالة مديونية العميل
+        if ($data['payment_method'] === 'customer_credit') {
+            $data['customer_debt_status'] = $data['customer_debt_status'] ?? 'pending';
+        } else {
+            $data['customer_debt_status'] = null;
+        }
+
+        $data['status'] = 'pending';
+
+        // حفظ مبلغ الدفع الجزئي مؤقتاً قبل الحذف
+        $partialAmount = $data['partial_amount'] ?? null;
+
+        // هذه القيم لا نريد تخزينها في جدول الشحنات
+        unset(
+            $data['partial_amount'],
+            $data['sender_name'],
+            $data['sender_phone'],
+            $data['receiver_name'],
+            $data['receiver_phone']
+        );
+
+        /* ================= إنشاء الشحنة ================= */
+
+        $shipment = Shipment::create($data);
+
+        /* ================= معالجة الدفع ================= */
+
+        $paymentType = $request->prepaid_payment_method ?? 'cash';
+        $paidAmount  = null;
+        $attachment  = $request->file('prepaid_attachment');
+
+        if ($shipment->payment_method === 'partial_payment') {
+            $paidAmount = $partialAmount ? (float) $partialAmount : null;
+        } elseif ($shipment->payment_method === 'prepaid') {
+            $paidAmount = (float) $shipment->total_amount;
+        } else {
+            // COD أو customer_credit → لا يوجد مبلغ مدفوع الآن
+            $paidAmount = null;
+        }
+
+        $this->shipmentPaymentService->handlePaymentForNewShipment(
+            $shipment,
+            $paymentType,
+            $paidAmount,
+            $attachment
+        );
+
+        return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء الطرد بنجاح.');
+    } catch (\Exception $e) {
+        dd('خطأ أثناء الإنشاء', $e->getMessage(), $e->getFile(), $e->getLine());
+    }
+}
+
 
     public function createCustomer()
     {
