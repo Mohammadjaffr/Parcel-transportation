@@ -3,6 +3,7 @@
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerFinanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\ProfileController;
@@ -78,6 +79,12 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('customers', CustomerController::class);
 
+    // مالية العملاء
+    Route::get('/finance/customers', [CustomerFinanceController::class, 'index'])->name('finance.customers.index');
+    Route::get('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'createSettlement'])->name('finance.customers.settle');
+    Route::post('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'storeSettlement'])->name('finance.customers.storeSettlement');
+
+    // مالية الفروع
     Route::get('/finance/branches', [BranchFinanceController::class, 'index'])
         ->name('finance.branches.index');
 
@@ -127,8 +134,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/revenue', [ReportController::class, 'dashboard'])
         ->name('reports.revenue');
 
-    Route::resource('shipmentpackage',ShipmentPackagesController::class);
+    Route::resource('shipmentpackage', ShipmentPackagesController::class);
     Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

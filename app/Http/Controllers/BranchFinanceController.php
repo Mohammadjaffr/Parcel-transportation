@@ -10,12 +10,12 @@ class BranchFinanceController extends Controller
 {
   public function index()
 {
-    $currentBranchId = auth()->user()->branch_id;
+    $currentBranchCode = auth()->user()->branch_code;
 
-    $counterparties = $this->calculateBranchCounterparties($currentBranchId);
+    $counterparties = $this->calculateBranchCounterparties($currentBranchCode);
 
-    $branchesSummary = collect($counterparties)->map(function ($row) use ($currentBranchId) {
-        $summary = $this->calculateBranchSummary($row['branch']->id);
+    $branchesSummary = collect($counterparties)->map(function ($row) use ($currentBranchCode) {
+        $summary = $this->calculateBranchSummary($row['branch']->code);
 
         return [
             'branch' => $row['branch'],
@@ -33,21 +33,21 @@ class BranchFinanceController extends Controller
     /**
      * صفحة: تقرير تفصيلي لفرع محدد
      */
-    public function show($branchId)
+    public function show($branchCode)
     {
-        $branch = Branch::findOrFail($branchId);
+        $branch = Branch::findOrFail($branchCode);
 
-        $summary = $this->calculateBranchSummary($branchId);
+        $summary = $this->calculateBranchSummary($branchCode);
 
         // كل الحركات المتعلقة بهذا الفرع
         $transactions = BranchTransaction::with(['fromBranch', 'toBranch', 'shipment'])
-            ->where('from_branch_id', $branchId)
-            ->orWhere('to_branch_id', $branchId)
+            ->where('sender_branch_code', $branchCode)
+            ->orWhere('receiver_branch_code', $branchCode)
             ->latest()
             ->paginate(20);
 
         // ملخص حسب الفرع المقابل
-        $byCounterparty = $this->calculateBranchCounterparties($branchId);
+        $byCounterparty = $this->calculateBranchCounterparties($branchCode);
 
         return view('pages.finance.branches.show', compact(
             'branch',
@@ -60,16 +60,16 @@ class BranchFinanceController extends Controller
     /**
      * صفحة فورم التسوية بين فرعين
      */
-    public function createSettlement()
+    public function createSettlement(Request $request)
     {
-        $currentBranchId = auth()->user()->branch_id;
+        $currentBranchCode = $request->query('branch_code', auth()->user()->branch_code);
 
         // احسب صافي التعامل مع كل الفروع
-        $counterparties = $this->calculateBranchCounterparties($currentBranchId);
+        $counterparties = $this->calculateBranchCounterparties($currentBranchCode);
 
-        // الفروع التي على الفرع الحالي دين لها
+        // الفروع التي على الفرع الحالي دين لها (Liability -> Net < 0)
         $branchesOwed = array_filter($counterparties, function ($item) {
-            return $item['net'] < 0; // سالب = الفرع الحالي عليه مبلغ
+            return $item['net'] < 0; 
         });
 
         if (empty($branchesOwed)) {
@@ -78,7 +78,7 @@ class BranchFinanceController extends Controller
 
         return view('pages.finance.settlements.create', [
             'branchesOwed' => $branchesOwed,
-            'currentBranchId' => $currentBranchId
+            'currentBranchId' => $currentBranchCode
         ]);
     }
 
@@ -89,8 +89,8 @@ class BranchFinanceController extends Controller
     public function storeSettlement(Request $request)
     {
         $data = $request->validate([
-            'from_branch_id' => 'required|different:to_branch_id|exists:branches,id',
-            'to_branch_id'   => 'required|exists:branches,id',
+            'sender_branch_code' => 'required|different:receiver_branch_code|exists:branches,code',
+            'receiver_branch_code'   => 'required|exists:branches,code',
             'amount'         => 'required|numeric|min:0.01',
             'description'    => 'nullable|string|max:255',
         ]);
@@ -98,17 +98,18 @@ class BranchFinanceController extends Controller
         // ============================
         // 1) تحقق من أن الفرع الحالي عليه دين للفرع الآخر
         // ============================
-        $currentBranchId = $data['from_branch_id'];
+        $currentBranchId = $data['sender_branch_code'];
         $counterparties = $this->calculateBranchCounterparties($currentBranchId);
 
-        if (!isset($counterparties[$data['to_branch_id']])) {
-            return back()->withErrors(['to_branch_id' => 'لا يوجد تعامل مالي بين الفرعين.']);
+        if (!isset($counterparties[$data['receiver_branch_code']])) {
+            return back()->withErrors(['receiver_branch_code' => 'لا يوجد تعامل مالي بين الفرعين.']);
         }
 
-        $net = $counterparties[$data['to_branch_id']]['net'];
+        $net = $counterparties[$data['receiver_branch_code']]['net'];
 
+        // Liability is Negative. So if Net >= 0, I don't owe them.
         if ($net >= 0) {
-            return back()->withErrors(['to_branch_id' => 'ليس عليك أي مبلغ لهذا الفرع.']);
+            return back()->withErrors(['receiver_branch_code' => 'ليس عليك أي مبلغ لهذا الفرع.']);
         }
 
         $maxAmount = abs($net);
@@ -122,14 +123,14 @@ class BranchFinanceController extends Controller
         // ============================
         BranchTransaction::create([
             'shipment_id'    => null,
-            'from_branch_id' => $data['from_branch_id'], // الفرع الدافع
-            'to_branch_id'   => $data['to_branch_id'],   // الفرع المستلم
+            'sender_branch_code' => $data['sender_branch_code'], // الفرع الدافع
+            'receiver_branch_code'   => $data['receiver_branch_code'],   // الفرع المستلم
             'amount'         => $data['amount'],
             'type'           => 'settlement',
             'description'    => $data['description'] ?? 'تصفية يدوية بين الفروع',
         ]);
 
-        return redirect()->route('finance.branches.show', $data['from_branch_id'])
+        return redirect()->route('finance.branches.show', $data['sender_branch_code'])
             ->with('success', 'تم تسجيل التسوية المالية بنجاح.');
     }
 
@@ -154,8 +155,8 @@ class BranchFinanceController extends Controller
      */
     private function calculateBranchSummary($branchId)
     {
-        $transactions = BranchTransaction::where('from_branch_id', $branchId)
-            ->orWhere('to_branch_id', $branchId)
+        $transactions = BranchTransaction::where('sender_branch_code', $branchId)
+            ->orWhere('receiver_branch_code', $branchId)
             ->get();
 
         $totalCod = 0;
@@ -168,12 +169,12 @@ class BranchFinanceController extends Controller
             if ($t->type === 'cod') {
 
     // هذا الفرع عليه المبلغ
-    if ($t->from_branch_id == $branchId) {
+    if ($t->sender_branch_code == $branchId) {
         $net -= $t->amount;
     }
 
     // هذا الفرع له المبلغ
-    if ($t->to_branch_id == $branchId) {
+    if ($t->receiver_branch_code == $branchId) {
         $net += $t->amount;
         $totalCod += $t->amount;
     }
@@ -181,14 +182,14 @@ class BranchFinanceController extends Controller
 
             } elseif ($t->type === 'settlement') {
                 // تسوية:
-                // إذا هذا الفرع دافع (from) => دفع للآخر => يقل ما للفرع / يزيد ما عليه
-                if ($t->from_branch_id == $branchId) {
-                    $net -= $t->amount;
+                // إذا هذا الفرع دافع (from) -> دفع للآخر -> يقل ما عليه (Liability decreases -> Net increases towards 0)
+                if ($t->sender_branch_code == $branchId) {
+                    $net += $t->amount;
                     $totalSettleOut += $t->amount;
                 }
-                // إذا هذا الفرع مستلم (to) => استلم => يزيد ما له
-                if ($t->to_branch_id == $branchId) {
-                    $net += $t->amount;
+                // إذا هذا الفرع مستلم (to) -> استلم -> يقل ما له (Asset decreases -> Net decreases towards 0)
+                if ($t->receiver_branch_code == $branchId) {
+                    $net -= $t->amount;
                     $totalSettleIn += $t->amount;
                 }
             }
@@ -208,38 +209,44 @@ class BranchFinanceController extends Controller
     private function calculateBranchCounterparties($branchId)
     {
         $transactions = BranchTransaction::with(['fromBranch', 'toBranch'])
-            ->where('from_branch_id', $branchId)
-            ->orWhere('to_branch_id', $branchId)
+            ->where('sender_branch_code', $branchId)
+            ->orWhere('receiver_branch_code', $branchId)
             ->get();
 
         $result = [];
 
         foreach ($transactions as $t) {
-            $otherId = $t->from_branch_id == $branchId ? $t->to_branch_id : $t->from_branch_id;
+            $otherId = $t->sender_branch_code == $branchId ? $t->receiver_branch_code : $t->sender_branch_code;
 
             if (!isset($result[$otherId])) {
                 $result[$otherId] = [
-                    'branch' => $t->from_branch_id == $branchId ? $t->toBranch : $t->fromBranch,
+                    'branch' => $t->sender_branch_code == $branchId ? $t->toBranch : $t->fromBranch,
                     'net'    => 0,
                 ];
             }
 
-            // نفس منطق الحساب: موجب = الآخر مديون لهذا الفرع
+            // Standard Convention:
+            // Net > 0: Asset (They Owe Me)
+            // Net < 0: Liability (I Owe Them)
+
             if ($t->type === 'cod') {
-                if ($t->from_branch_id == $branchId) {
-                    $result[$otherId]['net'] += $t->amount;
-                } else {
+                // Sender = Collector (Debtor). Receiver = Sent Goods (Creditor).
+                
+                if ($t->sender_branch_code == $branchId) {
+                    // I Collected -> I Owe -> Liability -> Decrease Net
                     $result[$otherId]['net'] -= $t->amount;
+                } else {
+                    // They Collected -> They Owe Me -> Asset -> Increase Net
+                    $result[$otherId]['net'] += $t->amount;
                 }
             } elseif ($t->type === 'settlement') {
+                // Sender = Payer. Receiver = Payee.
 
-                // الفرع الحالي دفع → يقل الدين
-                if ($t->from_branch_id == $branchId) {
+                if ($t->sender_branch_code == $branchId) {
+                    // I Paid -> My Liability Decreases (Net Increases toward 0) or Prepaid Asset Increases 
                     $result[$otherId]['net'] += $t->amount;
-                }
-
-                // الفرع الحالي استلم → يقل المبلغ له
-                else {
+                } else {
+                    // They Paid -> My Asset Decreases (Net Decreases toward 0) or Liability Increases
                     $result[$otherId]['net'] -= $t->amount;
                 }
             }

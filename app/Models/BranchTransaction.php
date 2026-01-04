@@ -8,8 +8,8 @@ class BranchTransaction extends Model
 {
  protected $fillable = [
         'shipment_id',
-        'from_branch_id',
-        'to_branch_id',
+        'sender_branch_code',
+        'receiver_branch_code',
         'amount',
         'type',
         'description',
@@ -22,11 +22,11 @@ class BranchTransaction extends Model
 
     public function fromBranch()
     {
-        return $this->belongsTo(Branch::class, 'from_branch_id');
+        return $this->belongsTo(Branch::class, 'sender_branch_code');
     }
 
     public function toBranch()
     {
-        return $this->belongsTo(Branch::class, 'to_branch_id');
+        return $this->belongsTo(Branch::class, 'receiver_branch_code');
     }
 }

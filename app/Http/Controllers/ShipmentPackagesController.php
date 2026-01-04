@@ -13,15 +13,32 @@ class ShipmentPackagesController extends Controller
      */
     public function index()
     {
-        $pendingShipments = Shipment::where('sender_branch_code', auth()->user()->branch_code)
+        $branchCode = auth()->user()->branch_code;
+
+        $pendingShipments = Shipment::where('sender_branch_code', $branchCode)
             ->where('status', 'pending')
-            ->whereNull('shipment_package_id') // سيعمل هذا السطر بنجاح بعد الـ Migration
+            ->whereNull('shipment_package_id')
             ->get();
 
-        $packages = ShipmentPackage::withCount('shipments')->latest()->paginate(10);
+        $packages = ShipmentPackage::whereHas('shipments', function ($query) use ($branchCode) {
+            $query->where('sender_branch_code', $branchCode);
+        })
+            ->with([
+                'shipments' => function ($query) use ($branchCode) {
+                    $query->where('sender_branch_code', $branchCode);
+                }
+            ])
+            ->withCount([
+                'shipments as shipments_count' => function ($query) use ($branchCode) {
+                    $query->where('sender_branch_code', $branchCode);
+                }
+            ])
+            ->latest()
+            ->paginate(10);
 
         return view('pages.shipmentpackage.index', compact('pendingShipments', 'packages'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -91,7 +108,7 @@ class ShipmentPackagesController extends Controller
         $package = ShipmentPackage::with(['shipments.senderCustomer', 'shipments.receiverCustomer', 'shipments.receiverBranch', 'shipments.senderBranch'])
             ->findOrFail($id);
 
-        $pdf = new \TCPDF('L', 'mm', 'A4', true, 'UTF-8', false); 
+        $pdf = new \TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
         $pdf->SetMargins(10, 10, 10);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);

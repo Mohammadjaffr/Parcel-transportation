@@ -45,7 +45,20 @@ class ShipmentPaymentService
 
             case 'cod':
                 $shipment->customer_debt_status = 'pending';
-                $shipment->save();
+                $shipment->update(); // Ensure it saves
+
+                // If the shipment is being marked as delivered, we create the Branch Transaction
+                // Logic: Receiver Branch collects Money -> Owes Sender Branch
+                if ($shipment->status === 'delivered') {
+                   \App\Models\BranchTransaction::create([
+                        'shipment_id'        => $shipment->id,
+                        'sender_branch_code' => $shipment->receiver_branch_code, // Who pays (Collected money)
+                        'receiver_branch_code' => $shipment->sender_branch_code, // Who gets credited (Sent goods)
+                        'amount'             => $shipment->total_amount,
+                        'type'               => 'cod',
+                        'description'        => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
+                   ]);
+                }
                 break;
         }
     }
@@ -96,6 +109,15 @@ class ShipmentPaymentService
     {
         $shipment->customer_debt_status = 'pending';
         $shipment->save();
+
+        // Create Debit Transaction for Customer (He owes us money)
+        \App\Models\CustomerTransaction::create([
+            'customer_id' => $shipment->sender_customer_id, // Usually sender pays
+            'shipment_id' => $shipment->id,
+            'amount'      => $shipment->total_amount,
+            'type'        => 'debit',
+            'description' => 'رسوم شحنة رقم ' . $shipment->tracking_number,
+        ]);
     }
 
     // private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes): void

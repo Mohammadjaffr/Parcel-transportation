@@ -210,7 +210,7 @@ class ShipmentController extends Controller
         $customer = Customer::create([
             'name' => $data['name'],
             'phone' => $data['phone'],
-            'branch_id' => auth()->user()->branch_id,
+            'branch_code' => auth()->user()->branch_code,
             'type' => 'general', // مهم للمستقبل
         ]);
 
@@ -593,7 +593,7 @@ class ShipmentController extends Controller
 
     public function selectCustomer()
     {
-        $customers = Customer::where('branch_id', auth()->user()->branch_id)->get();
+        $customers = Customer::where('branch_code', auth()->user()->branch_code)->get();
 
         return view('pages.shipment.select-customer', compact('customers'));
     }
@@ -609,6 +609,12 @@ class ShipmentController extends Controller
             $shipment->update([
                 'status' => $request->status,
             ]);
+
+            // If status changed to delivered, we might need to record financial transactions (e.g. COD)
+            if ($request->status === 'delivered' && $shipment->payment_method === 'cod') {
+                $paymentService = app(\App\Services\ShipmentPaymentService::class);
+                $paymentService->handlePaymentForNewShipment($shipment, 'cod'); 
+            }
 
             return response()->json([
                 'success' => true,
