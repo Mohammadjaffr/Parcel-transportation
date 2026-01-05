@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('receiver_branch_code', 10);
             $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
-            $table->enum('type', ['cod', 'settlement']); // شحنة آجل / تسوية
+            $table->enum('type', ['cod', 'settlement','partial_payment']); // شحنة آجل / تسوية
             $table->string('description')->nullable();
             $table->timestamps();
         });

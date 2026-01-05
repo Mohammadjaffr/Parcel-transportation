@@ -40,7 +40,7 @@
             }" action="{{ route('shipment.store') }}"
                 method="POST" enctype="multipart/form-data">
                 @csrf
-<input type="hidden" name="entry_type" value="sender">
+                <input type="hidden" name="entry_type" value="sender">
 
                 <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
@@ -151,7 +151,8 @@
                                                     <span class="text-gray-700 dark:text-gray-300"
                                                         x-text="country.code"></span>
                                                 </div>
-                                                <span x-show="countryCode === country.code" class="text-brand-500">✓</span>
+                                                <span x-show="countryCode === country.code"
+                                                    class="text-brand-500">✓</span>
                                             </button>
                                         </template>
                                     </div>
@@ -719,19 +720,15 @@
             </form>
 
             {{-- =================== التاب الثاني: مستلم الطرد) =================== --}}
-      <form x-show="activeTab === 'group'"
-      x-cloak
-      x-data="{
-        payment_method: '{{ old('payment_method', 'prepaid') }}',
-        prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}'
-      }"
-      action="{{ route('shipment.store') }}"
-      method="POST"
-      enctype="multipart/form-data">
-    @csrf
+            <form x-show="activeTab === 'group'" x-cloak x-data="{
+                payment_method: '{{ old('payment_method', 'prepaid') }}',
+                prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}'
+            }" action="{{ route('shipment.store') }}"
+                method="POST" enctype="multipart/form-data">
+                @csrf
 
-    {{-- مهم جداً: هذا اللي يحدد أن هذا التاب (مستلم) --}}
-    <input type="hidden" name="entry_type" value="receiver">
+                {{-- مهم جداً: هذا اللي يحدد أن هذا التاب (مستلم) --}}
+                <input type="hidden" name="entry_type" value="receiver">
 
                 <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
@@ -1138,10 +1135,10 @@
                                         <span :class="payment_method === 'partial_payment' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
-                                    دفع جزئي (المرسل يدفع جزء)
+                                    دفع جزئي (على المستلم يدفع الباقي)
                                 </label>
 
-                                <label
+                                {{-- <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
                                         @change="payment_method='customer_credit'"
@@ -1154,7 +1151,7 @@
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     آجل على حساب العميل
-                                </label>
+                                </label> --}}
                             </div>
 
                             @error('payment_method')

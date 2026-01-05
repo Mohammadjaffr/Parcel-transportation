@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Shipment;
+use App\Models\BranchTransaction;
 use App\Models\CustomerPayment;
+use App\Models\Shipment;
 use Illuminate\Http\UploadedFile; // <-- استيراد UploadedFile
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -50,19 +51,18 @@ class ShipmentPaymentService
                 // If the shipment is being marked as delivered, we create the Branch Transaction
                 // Logic: Receiver Branch collects Money -> Owes Sender Branch
                 if ($shipment->status === 'delivered') {
-                   \App\Models\BranchTransaction::create([
-                        'shipment_id'        => $shipment->id,
+                    \App\Models\BranchTransaction::create([
+                        'shipment_id' => $shipment->id,
                         'sender_branch_code' => $shipment->receiver_branch_code, // Who pays (Collected money)
                         'receiver_branch_code' => $shipment->sender_branch_code, // Who gets credited (Sent goods)
-                        'amount'             => $shipment->total_amount,
-                        'type'               => 'cod',
-                        'description'        => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
-                   ]);
+                        'amount' => $shipment->total_amount,
+                        'type' => 'cod',
+                        'description' => 'تحصيل مبلغ شحنة رقم '.$shipment->tracking_number,
+                    ]);
                 }
                 break;
         }
     }
-
 
     private function handlePrepaidPayment(Shipment $shipment, string $paymentType, ?UploadedFile $attachment): void
     {
@@ -74,14 +74,13 @@ class ShipmentPaymentService
                 $shipment->total_amount,
                 $paymentType,
                 $attachment,
-                'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number
+                'دفعة مقدمة تلقائية للشحنة رقم '.$shipment->bond_number
             );
 
             $shipment->customer_debt_status = 'fully_paid';
             $shipment->save();
         });
     }
-
 
     private function handlePartialPayment(Shipment $shipment, float $paidAmount, string $paymentType, ?UploadedFile $attachment): void
     {
@@ -97,11 +96,21 @@ class ShipmentPaymentService
                 $paidAmount,
                 $paymentType,
                 $attachment,
-                'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number
+                'دفعة جزئية تلقائية للشحنة رقم '.$shipment->bond_number
             );
 
             $shipment->customer_debt_status = 'partially_paid';
             $shipment->save();
+            // $collectorBranch = $shipment->sender_branch_code;
+            // $otherBranch     = $shipment->receiver_branch_code;
+            // BranchTransaction::create([
+            //     'shipment_id'          => $shipment->id,
+            //     'sender_branch_code'   => $collectorBranch,
+            //     'receiver_branch_code' => $otherBranch,
+            //     'amount'               => $paidAmount,
+            //     'type'                 => 'partial_payment',
+            //     'description'          => 'سداد جزئي للشحنة رقم ' . $shipment->tracking_number,
+            // ]);
         });
     }
 
@@ -114,9 +123,9 @@ class ShipmentPaymentService
         \App\Models\CustomerTransaction::create([
             'customer_id' => $shipment->sender_customer_id, // Usually sender pays
             'shipment_id' => $shipment->id,
-            'amount'      => $shipment->total_amount,
-            'type'        => 'debit',
-            'description' => 'رسوم شحنة رقم ' . $shipment->tracking_number,
+            'amount' => $shipment->total_amount,
+            'type' => 'debit',
+            'description' => 'رسوم شحنة رقم '.$shipment->tracking_number,
         ]);
     }
 
@@ -130,9 +139,8 @@ class ShipmentPaymentService
     //         'payment_method' => $paymentType,
     //         'payment_date' => now(),
     //         'notes' => $notes,
-    //         'attachment_path' => null, 
+    //         'attachment_path' => null,
     //     ];
-
 
     //     if ($paymentType === 'bank_transfer' && $attachment) {
 
@@ -148,12 +156,12 @@ class ShipmentPaymentService
         ];
 
         $paymentData = [
-            'customer_id'    => $customerId,
-            'branch_code'    => $branchCode,
-            'amount'         => $amount,
+            'customer_id' => $customerId,
+            'branch_code' => $branchCode,
+            'amount' => $amount,
             'payment_method' => $paymentType,
-            'payment_date'   => now(),
-            'notes'          => $notes,
+            'payment_date' => now(),
+            'notes' => $notes,
         ];
 
         if ($paymentType === 'bank_transfer' && $attachment) {
@@ -161,5 +169,25 @@ class ShipmentPaymentService
         }
 
         CustomerPayment::updateOrCreate($searchKey, $paymentData);
+    }
+
+    public function createCodBranchTransactionOnDelivery(Shipment $shipment): void
+    {
+        $totalPaid = $shipment->customerPayments()->sum('amount');
+
+        $outstanding = max($shipment->total_amount - $totalPaid, 0);
+
+        if ($outstanding <= 0) {
+            return;
+        }
+
+        BranchTransaction::create([
+            'shipment_id' => $shipment->id,
+            'sender_branch_code' => $shipment->receiver_branch_code, 
+            'receiver_branch_code' => $shipment->sender_branch_code,   
+            'amount' => $outstanding,
+            'type' => 'cod',
+            'description' => 'تحصيل مبلغ شحنة رقم '.$shipment->tracking_number,
+        ]);
     }
 }

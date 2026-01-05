@@ -90,4 +90,9 @@ class Shipment extends Model
     {
         return $this->hasMany(CustomerPayment::class);
     }
+    public function customerPayments()
+{
+    return $this->hasMany(CustomerPayment::class);
+}
+
 }
