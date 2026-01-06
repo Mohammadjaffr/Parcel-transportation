@@ -1123,7 +1123,7 @@
                                     دفع عند التسليم (COD)
                                 </label>
 
-                                <label
+                                {{-- <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="partial_payment"
                                         @change="payment_method='partial_payment'"
@@ -1136,7 +1136,7 @@
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     دفع جزئي (على المستلم يدفع الباقي)
-                                </label>
+                                </label> --}}
 
                                 {{-- <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -1158,14 +1158,14 @@
                                 <div class="text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            {{-- <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
 
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     طريقة الدفع (للدفع المقدم)
                                 </label>
 
-                                <div class="flex flex-wrap gap-6">
+                                {{-- <div class="flex flex-wrap gap-6">
 
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -1194,7 +1194,7 @@
                                         </span>
                                         تحويل بنكي
                                     </label>
-                                </div>
+                                </div> --}}
 
                                 @error('prepaid_payment_method')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
@@ -1207,10 +1207,10 @@
 
                                     <label for="prepaid_attachment"
                                         class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                        dark:border-gray-600 dark:bg-gray-800
-                        hover:border-brand-500 dark:hover:border-brand-500
-                        transition-colors duration-200 w-full text-center
-                        @error('prepaid_attachment') border-error-500 @enderror">
+                                        dark:border-gray-600 dark:bg-gray-800
+                                        hover:border-brand-500 dark:hover:border-brand-500
+                                        transition-colors duration-200 w-full text-center
+                                        @error('prepaid_attachment') border-error-500 @enderror">
 
                                         <!-- Icon -->
                                         <div class="mb-[22px] flex justify-center">
@@ -1248,13 +1248,14 @@
                                         <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                     @enderror
                                 </div>
-                            </div>
+                            {{-- </div> --}}
 
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'cod'" x-transition>
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
-                                    سيتم اعتبار مبلغ التحصيل عند التسليم = <span class="font-semibold">إجمالي
-                                        المبلغ</span>.
+                                    سيتم اعتبار مبلغ التحصيل  = <span class="font-semibold">إجمالي
+                                        المبلغ
+                                    </span>.
                                 </div>
                             </div>
 

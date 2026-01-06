@@ -51,9 +51,8 @@
 
         <div
             class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-             <div class="relative group w-full">
+            <div class="relative group w-full">
                 <input type="text" x-model="search" placeholder="ابحث برقم التتبع، اسم السائق..."
-
                     class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
                 <div
                     class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
@@ -214,12 +213,11 @@
                                                 @change="selectedCount = $el.checked ? selectedCount + 1 : selectedCount - 1"
                                                 class="w-6 h-6 rounded-lg border-gray-300 text-brand-500 focus:ring-brand-500/20 transition-all">
                                             <div class="flex flex-col">
-                                                 <span
-                                                        class="text-sm font-black text-gray-900 dark:text-white">
-                                                        رقم السند : #{{ $shipment->bond_number }}</span>
-                                                <span
-                                                    class="text-sm font-black text-gray-900 dark:text-white">المرسل : {{ $shipment->senderCustomer->name }}</span>
-                                                   
+                                                <span class="text-sm font-black text-gray-900 dark:text-white">
+                                                    رقم السند : #{{ $shipment->bond_number }}</span>
+                                                <span class="text-sm font-black text-gray-900 dark:text-white">المرسل :
+                                                    {{ $shipment->senderCustomer->name }}</span>
+
                                                 <span
                                                     class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">الوجهة:
                                                     {{ $shipment->receiverBranch->name }}</span>

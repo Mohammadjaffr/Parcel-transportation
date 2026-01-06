@@ -72,8 +72,6 @@
                             'pending' => 'قيد الانتظار',
                             'in_transit' => 'في الطريق',
                             'delivered' => 'تم التسليم',
-                            'cancelled' => 'ملغي',
-                            'returned' => 'مرتجع',
                         ];
                     @endphp
                     <span
@@ -292,8 +290,9 @@
                             <div class="relative">
                                 <select x-model="status" @change="updateStatus()" :disabled="updating"
                                     class="py-3 pr-10 pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 appearance-none cursor-pointer focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-900 dark:border-gray-500 dark:text-white dark:focus:ring-brand-500 dark:focus:border-brand-500 disabled:opacity-50">
-                                    <option value="pending">قيد الانتظار</option>
-                                    <option value="in_transit">في الطريق</option>
+                                    <option value="">اختر الحالة</option>
+                                    {{-- <option value="pending">قيد الانتظار</option> --}}
+                                    {{-- <option value="in_transit">في الطريق</option> --}}
                                     <option value="delivered">تم التسليم</option>
                                     {{-- <option value="cancelled">ملغي</option>
                             <option value="returned">مرتجع</option> --}}
@@ -327,7 +326,7 @@
                 <div
                     class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <h3 class="mb-5 text-lg font-bold text-gray-900 dark:text-white">تفاصيل الشحنة</h3>
-                    <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
+                    <div class="grid grid-cols-2 gap-6 xl:grid-cols-3">
                         <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-700">
                             <div class="mb-1 text-xs text-gray-500 dark:text-gray-400">الوزن</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $shipment->weight }} <span

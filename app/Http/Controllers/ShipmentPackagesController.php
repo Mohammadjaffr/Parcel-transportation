@@ -26,19 +26,18 @@ class ShipmentPackagesController extends Controller
             ->with([
                 'shipments' => function ($query) use ($branchCode) {
                     $query->where('sender_branch_code', $branchCode);
-                }
+                },
             ])
             ->withCount([
                 'shipments as shipments_count' => function ($query) use ($branchCode) {
                     $query->where('sender_branch_code', $branchCode);
-                }
+                },
             ])
             ->latest()
             ->paginate(10);
 
         return view('pages.shipmentpackage.index', compact('pendingShipments', 'packages'));
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -54,21 +53,21 @@ class ShipmentPackagesController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'driver_name'     => 'required|string|max:255',
-            'driver_phone'    => 'required|string|max:20',
-            'selected_ids'    => 'required|array|min:1',
+            'driver_name' => 'required|string|max:255',
+            'driver_phone' => 'required|string|max:20',
+            'selected_ids' => 'required|array|min:1',
         ]);
 
         try {
             $package = ShipmentPackage::create([
-                'driver_name'     => $request->driver_name,
-                'driver_phone'    => $request->driver_phone,
+                'driver_name' => $request->driver_name,
+                'driver_phone' => $request->driver_phone,
             ]);
 
             Shipment::whereIn('id', $request->selected_ids)
                 ->update([
                     'shipment_package_id' => $package->id,
-                    'status' => 'in_transit'
+                    'status' => 'in_transit',
                 ]);
 
             return $this->SuccessBacktoIndex('تمت الرحلة!', 'تم إنشاء رحلة الشحن وربط الطرود بنجاح.');
@@ -103,6 +102,7 @@ class ShipmentPackagesController extends Controller
     {
         //
     }
+
     public function printManifest($id)
     {
         $package = ShipmentPackage::with(['shipments.senderCustomer', 'shipments.receiverCustomer', 'shipments.receiverBranch', 'shipments.senderBranch'])
@@ -120,8 +120,9 @@ class ShipmentPackagesController extends Controller
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('Manifest-' . $package->tracking_number . '.pdf', 'I');
+        return $pdf->Output('Manifest-'.$package->tracking_number.'.pdf', 'I');
     }
+
     private function ValidationError($validator)
     {
         $firstError = $validator->errors()->first();

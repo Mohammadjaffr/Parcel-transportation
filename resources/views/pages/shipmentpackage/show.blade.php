@@ -17,11 +17,11 @@
     <div class="space-y-6 font-outfit" dir="rtl">
 
         <div
-            class="bg-white dark:bg-white/[0.03] p-6 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm">
+            class="bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div class="flex items-center gap-5">
                     <div
-                        class="w-16 h-16 bg-brand-500 rounded-3xl flex items-center justify-center text-white shadow-xl shadow-brand-500/20">
+                        class="w-16 h-16 bg-brand-500 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-brand-500/20">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -33,9 +33,28 @@
                         <div class="flex items-center gap-3">
                             <h2 class="text-2xl font-black text-gray-900 dark:text-white">رحلة رقم:
                                 #{{ $package->tracking_number }}</h2>
+                                      @php
+                        $statusColors = [
+                            'pending' =>
+                                'bg-warning-50 text-warning-500 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
+                            'in_transit' =>
+                                'bg-blue-50 text-blue-500 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+                            'delivered' =>
+                                'bg-success-50 text-success-500 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
+                            'cancelled' =>
+                                'bg-error-50 text-error-500 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20',
+                            'returned' =>
+                                'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
+                        ];
+                        $statusText = [
+                            'pending' => 'قيد الانتظار',
+                            'in_transit' => 'في الطريق',
+                            'delivered' => 'تم التسليم',
+                        ];
+                    @endphp
                             <span
-                                class="px-3 py-1 bg-success-50 text-success-500 rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse">في
-                                الطريق</span>
+                
+                                class="px-3 py-1 {{ $statusColors[$package->shipments->first()->status] }} rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse">{{ $statusText[$package->shipments->first()->status] }}</span>
                         </div>
                         <p class="text-gray-500 font-bold text-sm mt-1 uppercase tracking-tighter">تاريخ الإنشاء:
                             {{ $package->created_at->format('Y-m-d H:i') }}</p>

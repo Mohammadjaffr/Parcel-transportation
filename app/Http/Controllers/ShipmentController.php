@@ -24,15 +24,23 @@ class ShipmentController extends Controller
     }
 
     /* ========== 1- عرض جميع الطردات ========== */
-    public function index()
+    public function index(Request $request)
     {
         $branchCode = auth()->user()->branch_code;
+        $type = $request->query('type', 'outgoing');
 
-        $requests = Shipment::where('created_branch_code', $branchCode)
-            ->latest()
-            ->paginate(10);
+        $query = Shipment::query();
 
-        return view('pages.shipment.index', compact('requests'));
+        if ($type === 'incoming') {
+            $query->where('receiver_branch_code', $branchCode);
+        } else {
+            // Default: Outgoing (Sent FROM this branch, regardless of who created it)
+            $query->where('sender_branch_code', $branchCode);
+        }
+
+        $requests = $query->latest()->paginate(10);
+
+        return view('pages.shipment.index', compact('requests', 'type'));
     }
 
     /* ========== 2- صفحة إنشاء طرد ========== */
@@ -145,7 +153,13 @@ class ShipmentController extends Controller
                 $data['customer_debt_status'] = null;
             }
 
-            $data['status'] = 'pending';
+            // $data['status'] = 'pending';
+            if ($data['payment_method'] === 'prepaid') {
+                $data['status'] = 'delivered';
+            } else {
+                $data['status'] = 'pending';
+            }
+
 
             // حفظ مبلغ الدفع الجزئي مؤقتاً قبل الحذف
             $partialAmount = $data['partial_amount'] ?? null;
@@ -558,7 +572,7 @@ class ShipmentController extends Controller
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('invoice-'.$shipment->id.'.pdf', 'I');
+        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
     }
 
     public function printThermal($id)
@@ -579,7 +593,7 @@ class ShipmentController extends Controller
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('Sticker-'.$shipment->bond_number.'.pdf', 'I');
+        return $pdf->Output('Sticker-' . $shipment->bond_number . '.pdf', 'I');
     }
 
     public function adminlog()

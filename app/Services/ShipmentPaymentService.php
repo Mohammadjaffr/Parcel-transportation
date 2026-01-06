@@ -57,7 +57,7 @@ class ShipmentPaymentService
                         'receiver_branch_code' => $shipment->sender_branch_code, // Who gets credited (Sent goods)
                         'amount' => $shipment->total_amount,
                         'type' => 'cod',
-                        'description' => 'تحصيل مبلغ شحنة رقم '.$shipment->tracking_number,
+                        'description' => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
                     ]);
                 }
                 break;
@@ -74,7 +74,7 @@ class ShipmentPaymentService
                 $shipment->total_amount,
                 $paymentType,
                 $attachment,
-                'دفعة مقدمة تلقائية للشحنة رقم '.$shipment->bond_number
+                'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number
             );
 
             $shipment->customer_debt_status = 'fully_paid';
@@ -96,7 +96,7 @@ class ShipmentPaymentService
                 $paidAmount,
                 $paymentType,
                 $attachment,
-                'دفعة جزئية تلقائية للشحنة رقم '.$shipment->bond_number
+                'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number
             );
 
             $shipment->customer_debt_status = 'partially_paid';
@@ -125,7 +125,7 @@ class ShipmentPaymentService
             'shipment_id' => $shipment->id,
             'amount' => $shipment->total_amount,
             'type' => 'debit',
-            'description' => 'رسوم شحنة رقم '.$shipment->tracking_number,
+            'description' => 'رسوم شحنة رقم ' . $shipment->tracking_number,
         ]);
     }
 
@@ -183,11 +183,11 @@ class ShipmentPaymentService
 
         BranchTransaction::create([
             'shipment_id' => $shipment->id,
-            'sender_branch_code' => $shipment->receiver_branch_code, 
-            'receiver_branch_code' => $shipment->sender_branch_code,   
+            'sender_branch_code' => $shipment->receiver_branch_code,
+            'receiver_branch_code' => $shipment->sender_branch_code,
             'amount' => $outstanding,
             'type' => 'cod',
-            'description' => 'تحصيل مبلغ شحنة رقم '.$shipment->tracking_number,
+            'description' => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
         ]);
     }
 }

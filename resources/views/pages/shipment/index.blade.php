@@ -15,6 +15,18 @@
         }
     }">
 
+        {{-- Tabs --}}
+        <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6 w-fit">
+            <a href="{{ route('shipment.index', ['type' => 'outgoing']) }}"
+                class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all {{ request('type', 'outgoing') == 'outgoing' ? 'bg-white dark:bg-gray-700 text-brand-500 shadow-sm ring-1 ring-gray-200 dark:ring-gray-600' : 'text-gray-500 hover:text-gray-700' }}">
+                الطرود الصادرة (من فرعنا)
+            </a>
+            <a href="{{ route('shipment.index', ['type' => 'incoming']) }}"
+                class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all {{ request('type') == 'incoming' ? 'bg-white dark:bg-gray-700 text-brand-500 shadow-sm ring-1 ring-gray-200 dark:ring-gray-600' : 'text-gray-500 hover:text-gray-700' }}">
+                الطرود الواردة (إلى فرعنا)
+            </a>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-6">
 
             <div @click="filterStatus = 'all'"
@@ -223,7 +235,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-20 text-center text-gray-400 italic">لا توجد طرود حالياً..
+                                <td colspan="7" class="py-20 text-center text-gray-400 italic">
+                                    {{ $type === 'incoming' ? 'لا توجد طرود واردة حالياً..' : 'لا توجد طرود صادرة حالياً..' }}
                                 </td>
                             </tr>
                         @endforelse
@@ -238,5 +251,5 @@
             @endif
         </div>
     </div>
-    
+
 @endsection
