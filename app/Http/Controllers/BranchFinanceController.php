@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class BranchFinanceController extends Controller
 {
+    /**
+     * صفحة: ملخص كل الفروع
+     */
     public function index()
     {
         $currentBranchCode = auth()->user()->branch_code;
@@ -39,10 +42,33 @@ class BranchFinanceController extends Controller
         $summary = $this->calculateBranchSummary($branchCode);
 
         $transactions = BranchTransaction::with(['fromBranch', 'toBranch', 'shipment'])
-            ->where('sender_branch_code', $branchCode)
-            ->orWhere('receiver_branch_code', $branchCode)
+            ->where(function ($q) use ($branchCode) {
+                $q->where('sender_branch_code', $branchCode)
+                    ->orWhere('receiver_branch_code', $branchCode);
+            })
             ->latest()
             ->paginate(20);
+
+        $sentCod = BranchTransaction::with(['toBranch', 'shipment'])
+            ->where('type', 'cod')
+            ->where('sender_branch_code', $branchCode)
+            ->latest()
+            ->get();
+
+        $receivedCod = BranchTransaction::with(['fromBranch', 'shipment'])
+            ->where('type', 'cod')
+            ->where('receiver_branch_code', $branchCode)
+            ->latest()
+            ->get();
+
+        $settlements = BranchTransaction::with(['fromBranch', 'toBranch'])
+            ->where('type', 'settlement')
+            ->where(function ($q) use ($branchCode) {
+                $q->where('sender_branch_code', $branchCode)
+                    ->orWhere('receiver_branch_code', $branchCode);
+            })
+            ->latest()
+            ->get();
 
         $byCounterparty = $this->calculateBranchCounterparties($branchCode);
 
@@ -50,7 +76,10 @@ class BranchFinanceController extends Controller
             'branch',
             'summary',
             'transactions',
-            'byCounterparty'
+            'byCounterparty',
+            'sentCod',
+            'receivedCod',
+            'settlements'
         ));
     }
 
@@ -112,14 +141,13 @@ class BranchFinanceController extends Controller
 
         BranchTransaction::create([
             'shipment_id'          => null,
-            'sender_branch_code'   => $data['sender_branch_code'],   // الفرع الدافع
-            'receiver_branch_code' => $data['receiver_branch_code'], // الفرع المستلم
+            'sender_branch_code'   => $data['sender_branch_code'],
+            'receiver_branch_code' => $data['receiver_branch_code'],
             'amount'               => $data['amount'],
             'type'                 => 'settlement',
             'description'          => $data['description'] ?? 'تصفية يدوية بين الفروع',
         ]);
 
-        // ✅ نرجع لنفس تقرير الفرع الذي دفع (الفرع الحالي)
         return $this->SuccessBacktoShow(
             $data['sender_branch_code'],
             'تمت عمل التسوية!',
@@ -169,7 +197,6 @@ class BranchFinanceController extends Controller
                     $net      += $t->amount;
                     $totalCod += $t->amount;
                 }
-
             } elseif ($t->type === 'settlement') {
 
                 if ($t->sender_branch_code == $branchId) {
@@ -223,7 +250,6 @@ class BranchFinanceController extends Controller
                 } else {
                     $result[$otherId]['net'] += $t->amount;
                 }
-
             } elseif ($t->type === 'settlement') {
 
                 if ($t->sender_branch_code == $branchId) {

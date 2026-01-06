@@ -11,7 +11,7 @@ class Shipment extends Model
 
     protected $fillable = [
         'sender_branch_code',
-        'created_branch_code', 
+        'created_branch_code',
         'receiver_branch_code',
         'sender_customer_id',
         'receiver_customer_id',
@@ -41,10 +41,14 @@ class Shipment extends Model
 
         static::creating(function ($shipment) {
 
-            $branchCode = $shipment->sender_branch_code ?? 'XXX';
+            $branchCode = $shipment->created_branch_code
+                ?? $shipment->sender_branch_code
+                ?? $shipment->receiver_branch_code
+                ?? 'XXX';
+
             $date = now()->format('Ymd');
 
-            $lastShipment = Shipment::where('sender_branch_code', $branchCode)
+            $lastShipment = Shipment::where('created_branch_code', $branchCode)
                 ->whereDate('created_at', today())
                 ->latest('id')
                 ->first();
@@ -56,6 +60,7 @@ class Shipment extends Model
             $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
         });
     }
+
     public function package()
     {
         return $this->belongsTo(ShipmentPackage::class, 'shipment_package_id');
@@ -91,8 +96,7 @@ class Shipment extends Model
         return $this->hasMany(CustomerPayment::class);
     }
     public function customerPayments()
-{
-    return $this->hasMany(CustomerPayment::class);
-}
-
+    {
+        return $this->hasMany(CustomerPayment::class);
+    }
 }

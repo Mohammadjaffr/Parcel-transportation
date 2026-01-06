@@ -3,9 +3,10 @@
 @section('Breadcrumb', 'التقارير المالية للفروع')
 
 @section('content')
- <x-modals.success-modal />
+    <x-modals.success-modal />
     <x-modals.error-modal />
-    <div class="p-8 space-y-10 max-w-full mx-auto font-outfit"
+
+    <div class="p-8 space-y-10 max-w-full mx-auto.font-outfit"
          x-data="{
             search: '',
             normalize(text) {
@@ -45,11 +46,11 @@
 
         {{-- البحث --}}
         <div
-            class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl my-4 border border-gray-100 dark:border-gray-800 shadow-theme-sm">
+            class="w-full bg-white dark:bg.white/[0.03] p-6 rounded-2xl my-4 border border-gray-100 dark:border-gray-800 shadow-theme-sm">
             <div class="relative group w-full">
                 <input type="text" x-model="search"
-                       placeholder="ابحث باسم الفرع، كود الفرع، أو قيمة الرصيد..."
-                       class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
+                      .placeholder="ابحث باسم الفرع، كود الفرع، أو قيمة الرصيد..."
+                       class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50.dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
                 <div
                     class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +65,7 @@
         <div
             class="bg-white dark:bg-gray-dark rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden transition-all duration-300">
             <div class="px-8 py-6 border-b border-gray-50 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/40">
-                <h3 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white flex.items-center gap-2">
                     <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -171,7 +172,7 @@
                                         </span>
                                     @elseif ($net < 0)
                                         <span
-                                            class="inline-flex.items-center px-4 py-1.5 rounded-xl text-[10px] font-black bg-error-500 text-white shadow-lg shadow-error-500/20 uppercase tracking-tighter">
+                                            class="inline-flex items-center px-4 py-1.5 rounded-xl text-[10px] font-black bg-error-500 text-white shadow-lg shadow-error-500/20 uppercase tracking-tighter">
                                             علينا {{ number_format(abs($net), 2) }}
                                         </span>
                                     @else

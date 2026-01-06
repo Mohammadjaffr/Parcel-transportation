@@ -457,7 +457,6 @@ class ShipmentController extends Controller
             );
         } else {
             return $this->ExceptionError(
-                'حدث خطأ!',
                 'حدث خطأ أثناء تحديث بيانات الدفع.'
             );
         }
@@ -520,7 +519,7 @@ class ShipmentController extends Controller
                 'تم حذف الطرد بنجاح.'
             );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return $this->ExceptionError($e->getMessage());
         }
     }
 

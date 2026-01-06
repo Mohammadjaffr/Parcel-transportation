@@ -677,7 +677,7 @@
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='customer_credit'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    حالة مديونية العميل
+                                    حالة مديونية العميل 
                                 </label>
                                 <select name="customer_debt_status"
                                     class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
