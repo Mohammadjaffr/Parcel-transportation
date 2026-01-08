@@ -2,7 +2,8 @@
 @section('title', 'تسجيل طرد جديد')
 @section('Breadcrumb', 'تسجيل طرد جديد')
 @section('content')
-
+    <x-modals.success-modal />
+    <x-modals.error-modal />
     <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800">
         <div x-data="{ activeTab: 'single' }">
 
@@ -36,8 +37,9 @@
             {{-- =================== التاب الأول: مرسل الطرد =================== --}}
             <form x-show="activeTab === 'single'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
-                prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}'
-            }" action="{{ route('shipment.store') }}"
+                prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
+                isSubmitting: false
+            }" action="{{ route('shipment.store') }}" @submit="isSubmitting = true"
                 method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="entry_type" value="sender">
@@ -46,7 +48,7 @@
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
                     <!-- بيانات المرسل -->
-                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}')">
+                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
@@ -102,7 +104,7 @@
                         </div>
 
                         <!-- نخزن ID العميل الحقيقي -->
-                        <input type="hidden" name="sender_customer_id" x-model="selectedId">
+                        <input type="hidden" name="sender_customer_id" c x-model="selectedId">
                         @error('sender_customer_id')
                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                         @enderror
@@ -183,7 +185,7 @@
                     </div>
 
                     <!-- بيانات المستلم -->
-                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}')">
+                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
@@ -710,9 +712,20 @@
 
                 <!-- زر التسجيل -->
                 <div class="mt-6">
-                    <button type="submit"
-                        class="px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto">
-                        تسجيل الطرد
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
+                        <span x-show="!isSubmitting">تسجيل الطرد</span>
+                        <span x-show="isSubmitting" class="flex gap-2 items-center">
+                            <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            جاري التسجيل...
+                        </span>
                     </button>
                 </div>
 
@@ -722,8 +735,9 @@
             {{-- =================== التاب الثاني: مستلم الطرد) =================== --}}
             <form x-show="activeTab === 'group'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
-                prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}'
-            }" action="{{ route('shipment.store') }}"
+                prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
+                isSubmitting: false
+            }" action="{{ route('shipment.store') }}" @submit="isSubmitting = true"
                 method="POST" enctype="multipart/form-data">
                 @csrf
 
@@ -734,7 +748,7 @@
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
                     <!-- بيانات المرسل -->
-                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}')">
+                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
@@ -888,7 +902,7 @@
                     </div>
 
                     <!-- بيانات المستلم -->
-                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}')">
+                    <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
@@ -1405,9 +1419,20 @@
 
                 <!-- زر التسجيل -->
                 <div class="mt-6">
-                    <button type="submit"
-                        class="px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto">
-                        تسجيل الطرد
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
+                        <span x-show="!isSubmitting">تسجيل الطرد</span>
+                        <span x-show="isSubmitting" class="flex gap-2 items-center">
+                            <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            جاري التسجيل...
+                        </span>
                     </button>
                 </div>
 
@@ -1419,14 +1444,14 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('customerPicker', (url, initialPhone = '') => ({
+            Alpine.data('customerPicker', (url, initialPhone = '', initialName = '', initialId = '') => ({
                 query: '',
                 open: false,
                 loading: false,
                 results: [],
 
-                selectedId: '',
-                selectedName: '',
+                selectedId: initialId,
+                selectedName: initialName,
                 selectedPhone: '',
 
                 countryCode: '+967',

@@ -3,110 +3,116 @@
 @section('Breadcrumb', 'تعديل الفرع')
 @section('content')
 
-<x-modals.success-modal />
-<x-modals.error-modal />
+    <x-modals.success-modal />
+    <x-modals.error-modal />
 
-<div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
+    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6">
 
-    <form action="{{ route('branch.update', $branch->code) }}" method="POST">
-        @csrf
-        @method('PUT')
+        <form action="{{ route('branch.update', $branch->code) }}" method="POST" x-data="{ isSubmitting: false }"
+            @submit="isSubmitting = true">
+            @csrf
+            @method('PUT')
 
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2">
 
-            <div class="space-y-4 w-full md:col-span-2">
-                <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات الفرع</h3>
+                <div class="space-y-4 w-full md:col-span-2">
+                    <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات الفرع</h3>
 
-                <!-- اسم الفرع -->
-                <div class="mt-3">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">اسم الفرع</label>
-                    <input type="text" name="name" value="{{ old('name', $branch->name) }}"
-                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
-                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
-                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="اسم الفرع">
-                    <div class="text-sm text-error-600 mt-1">
-                        @error('name')
-                            {{ $message }}
-                        @enderror
+                    <!-- اسم الفرع -->
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">اسم الفرع</label>
+                        <input type="text" name="name" value="{{ old('name', $branch->name) }}" class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="اسم الفرع">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('name')
+                                {{ $message }}
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <!-- المدينه -->
-                <div class="mt-3">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المدينه</label>
-                    <input type="text" name="city" value="{{ old('city', $branch->city) }}"
-                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
-                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
-                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="ادخل المدينه">
-                    <div class="text-sm text-error-600 mt-1">
-                        @error('city')
-                            {{ $message }}
-                        @enderror
+                    <!-- المدينه -->
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">المدينه</label>
+                        <input type="text" name="city" value="{{ old('city', $branch->city) }}" class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="ادخل المدينه">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('city')
+                                {{ $message }}
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
-                <!-- الهاتف -->
-                <div class="mt-3">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">العنوان</label>
-                    <input type="text" name="address" value="{{ old('address', $branch->address) }}"
-                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
-                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
-                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="ادخل العنوان">
-                    <div class="text-sm text-error-600 mt-1">
-                        @error('address')
-                            {{ $message }}
-                        @enderror
+                    <!-- الهاتف -->
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">العنوان</label>
+                        <input type="text" name="address" value="{{ old('address', $branch->address) }}" class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="ادخل العنوان">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('address')
+                                {{ $message }}
+                            @enderror
+                        </div>
                     </div>
-                </div>
-                <div class="mt-3">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                    <input type="text" name="phone" value="{{ old('phone', $branch->phone) }}"
-                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
-                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
-                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="رقم هاتف الفرع">
-                    <div class="text-sm text-error-600 mt-1">
-                        @error('phone')
-                            {{ $message }}
-                        @enderror
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
+                        <input type="text" name="phone" value="{{ old('phone', $branch->phone) }}" class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="رقم هاتف الفرع">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('phone')
+                                {{ $message }}
+                            @enderror
+                        </div>
                     </div>
-                </div>
-                <!-- رمز الفرع -->
-                <div class="mt-3">
-                    <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">رمز الفرع</label>
-                    <input type="text" name="code" value="{{ old('code', $branch->code) }}"
-                        class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
-                        bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
-                        focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
-                        placeholder="رمز الفرع">
-                    <div class="text-sm text-error-600 mt-1">
-                        @error('code')
-                            {{ $message }}
-                        @enderror
+                    <!-- رمز الفرع -->
+                    <div class="mt-3">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">رمز الفرع</label>
+                        <input type="text" name="code" value="{{ old('code', $branch->code) }}" class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300
+                            bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs
+                            focus:ring-brand-500 focus:border-brand-500 dark:border-gray-600 dark:text-white"
+                            placeholder="رمز الفرع">
+                        <div class="text-sm text-error-600 mt-1">
+                            @error('code')
+                                {{ $message }}
+                            @enderror
+                        </div>
                     </div>
-                </div>
 
+                </div>
             </div>
-        </div>
 
-        <!-- الأزرار -->
-        <div class="mt-6 flex flex-col md:flex-row gap-4">
-            <button type="submit"
-                class="bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto">
-                تحديث الفرع
-            </button>
+            <!-- الأزرار -->
+            <div class="mt-6 flex flex-col md:flex-row gap-4">
+                <button type="submit" :disabled="isSubmitting"
+                    class="flex justify-center items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
+                    <span x-show="!isSubmitting">تحديث الفرع</span>
+                    <span x-show="isSubmitting" class="flex gap-2 items-center">
+                        <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                        جاري التحديث...
+                    </span>
+                </button>
 
-            <a href="{{ route('branch.index') }}"
-                class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600
-                text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto text-center">
-                رجوع للقائمة
-            </a>
-        </div>
-    </form>
+                <a href="{{ route('branch.index') }}" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600
+                    text-gray-800 dark:text-white font-medium py-2 px-4 rounded-lg w-full md:w-auto text-center">
+                    رجوع للقائمة
+                </a>
+            </div>
+        </form>
 
-</div>
+    </div>
 
 @endsection

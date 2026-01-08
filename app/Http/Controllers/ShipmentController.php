@@ -12,10 +12,12 @@ use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use TCPDF;
+use App\Classes\WebResponseClass;
 
 class ShipmentController extends Controller
 {
     protected $whatsAppService;
+    protected $shipmentPaymentService;
 
     public function __construct(WhatsAppService $whatsAppService, ShipmentPaymentService $shipmentPaymentService)
     {
@@ -26,7 +28,9 @@ class ShipmentController extends Controller
     /* ========== 1- عرض جميع الطردات ========== */
     public function index(Request $request)
     {
-        $branchCode = auth()->user()->branch_code;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
         $type = $request->query('type', 'outgoing');
 
         $query = Shipment::query();
@@ -46,8 +50,10 @@ class ShipmentController extends Controller
     /* ========== 2- صفحة إنشاء طرد ========== */
     public function create(Request $request)
     {
-        $branches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
-        $customers = Customer::where('branch_code', auth()->user()->branch_code)->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branches = Branch::where('code', '!=', $user->branch_code)->get();
+        $customers = Customer::where('branch_code', $user->branch_code)->get();
 
         $customer = null;
         $role = $request->query('role'); // sender | receiver
@@ -104,13 +110,15 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
             $data = $validator->validated();
 
-            $currentBranchCode = auth()->user()->branch_code;
+            /** @var \App\Models\User $user */
+            $user = auth()->user();
+            $currentBranchCode = $user->branch_code;
 
             if ($entryType === 'sender') {
                 $data['sender_branch_code'] = $currentBranchCode;
@@ -124,22 +132,30 @@ class ShipmentController extends Controller
 
             // المرسل
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::create([
-                    'phone' => $data['sender_phone'],
-                    'name' => $data['sender_name'],
-                    'branch_code' => $data['sender_branch_code'], // هنا لن يحصل undefined
-                ]);
+                $senderCustomer = Customer::firstOrCreate(
+                    [
+                        'phone' => $data['sender_phone'],
+                        'branch_code' => $data['sender_branch_code']
+                    ],
+                    [
+                        'name' => $data['sender_name']
+                    ]
+                );
 
                 $data['sender_customer_id'] = $senderCustomer->id;
             }
 
             // المستلم
             if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::create([
-                    'phone' => $data['receiver_phone'],
-                    'name' => $data['receiver_name'],
-                    'branch_code' => $data['receiver_branch_code'],
-                ]);
+                $receiverCustomer = Customer::firstOrCreate(
+                    [
+                        'phone' => $data['receiver_phone'],
+                        'branch_code' => $data['receiver_branch_code']
+                    ],
+                    [
+                        'name' => $data['receiver_name']
+                    ]
+                );
 
                 $data['receiver_customer_id'] = $receiverCustomer->id;
             }
@@ -199,9 +215,14 @@ class ShipmentController extends Controller
                 $attachment
             );
 
-            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء الطرد بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تمت الإضافة!',
+                'تم إنشاء الطرد بنجاح.',
+                'حسناً',
+                'shipment.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -244,7 +265,9 @@ class ShipmentController extends Controller
     public function edit($id)
     {
         $shipment = Shipment::findOrFail($id);
-        $branches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branches = Branch::where('code', '!=', $user->branch_code)->get();
         // $drivers = Driver::where('status', 'active')->get();
         $customers = Customer::all();
 
@@ -284,7 +307,9 @@ class ShipmentController extends Controller
 
             // التحقق من أن فرع الإرسال != فرع الاستقبال
             $validator->after(function ($validator) use ($request, $shipment) {
-                $sender = auth()->user()->branch_code;                        // من المستخدم
+                /** @var \App\Models\User $user */
+                $user = auth()->user();
+                $sender = $user->branch_code;                        // من المستخدم
                 $receiver = $request->receiver_branch_code ?? $shipment->receiver_branch_code;
 
                 if ($sender && $receiver && $sender === $receiver) {
@@ -293,7 +318,7 @@ class ShipmentController extends Controller
             });
 
             if ($validator->fails()) {
-                return $this->ValidationError($validator);
+                return WebResponseClass::sendValidationError($validator);
             }
 
             $data = $validator->validated();
@@ -335,9 +360,11 @@ class ShipmentController extends Controller
 
             $shipment->update($data);
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تمت التحديث!',
-                'تم تحديث بيانات المرسل والمستلم بنجاح.'
+                'تم تحديث بيانات المرسل والمستلم بنجاح.',
+                'حسناً',
+                'shipment.index'
             );
         } elseif ($section === 'details') {
 
@@ -353,16 +380,18 @@ class ShipmentController extends Controller
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
-                return $this->ValidationError($validator);
+                return WebResponseClass::sendValidationError($validator);
             }
 
             $data = $validator->validated();
 
             $shipment->update($data);
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تمت التحديث!',
-                'تم تحديث تفاصيل الطرد بنجاح.'
+                'تم تحديث تفاصيل الطرد بنجاح.',
+                'حسناً',
+                'shipment.index'
             );
         } elseif ($section === 'payment') {
 
@@ -411,7 +440,7 @@ class ShipmentController extends Controller
             });
 
             if ($validator->fails()) {
-                return $this->ValidationError($validator);
+                return WebResponseClass::sendValidationError($validator);
             }
 
             $data = $validator->validated();
@@ -451,12 +480,14 @@ class ShipmentController extends Controller
                 $attachment
             );
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تمت التحديث!',
-                'تم تحديث بيانات الدفع بنجاح.'
+                'تم تحديث بيانات الدفع بنجاح.',
+                'حسناً',
+                'shipment.index'
             );
         } else {
-            return $this->ExceptionError(
+            return WebResponseClass::sendError(
                 'حدث خطأ أثناء تحديث بيانات الدفع.'
             );
         }
@@ -485,7 +516,7 @@ class ShipmentController extends Controller
         });
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+                return WebResponseClass::sendValidationError($validator);
         }
 
         $data = $validator->validated();
@@ -504,7 +535,7 @@ class ShipmentController extends Controller
             $request->file('prepaid_attachment')
         );
 
-        return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.');
+        return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.', 'حسناً', 'shipment.index');
     }
 
     /* ========== 7- حذف الطرد ========== */
@@ -514,45 +545,18 @@ class ShipmentController extends Controller
             Shipment::findOrFail($id)->delete();
             AdminLoggerService::log('حذف طرد', 'Shipment', 'تم حذف الطرد بنجاح');
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تم الحذف!',
-                'تم حذف الطرد بنجاح.'
+                'تم حذف الطرد بنجاح.',
+                'حسناً',
+                'shipment.index'
             );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e->getMessage());
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
-    private function ValidationError($validator)
-    {
-        $firstError = $validator->errors()->first();
 
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'حدث خطأ!')
-            ->with('error_message', $firstError)
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
-
-    private function SuccessBacktoIndex($title, $msg)
-    {
-        return redirect()->route('shipment.index')
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
-
-    private function ExceptionError($e)
-    {
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e)
-            ->with('error_buttonText', 'حسناً');
-    }
 
     public function invoice($id)
     {
@@ -604,7 +608,9 @@ class ShipmentController extends Controller
 
     public function selectCustomer()
     {
-        $customers = Customer::where('branch_code', auth()->user()->branch_code)->get();
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customers = Customer::where('branch_code', $user->branch_code)->get();
 
         return view('pages.shipment.select-customer', compact('customers'));
     }

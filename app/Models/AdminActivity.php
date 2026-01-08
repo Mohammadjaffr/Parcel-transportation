@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class AdminActivity extends Model
 {
     protected $fillable = [
-        'admin_id',
+        'user_id',
         'action',
-        'model_type',
+        'model_name',
         'description',
-        'model_id',
+        // 'model_id', // Currently missing in DB
     ];
     protected $casts = [
         'created_at' => 'datetime:Y-m-d H:i:s',
@@ -20,7 +20,7 @@ class AdminActivity extends Model
 
     public function admin()
     {
-        return $this->belongsTo(User::class, 'admin_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
 }

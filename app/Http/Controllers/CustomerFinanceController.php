@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Classes\WebResponseClass;
 
 class CustomerFinanceController extends Controller
 {
@@ -14,7 +15,9 @@ class CustomerFinanceController extends Controller
      */
     public function index()
     {
-        $branchCode = auth()->user()->branch_code;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
 
         $balanceSubquery = CustomerTransaction::selectRaw("COALESCE(SUM(CASE WHEN type = 'debit' THEN amount ELSE -amount END), 0)")
             ->whereColumn('customer_id', 'customers.id');
@@ -39,7 +42,9 @@ class CustomerFinanceController extends Controller
      */
     public function createSettlement(Customer $customer)
     {
-        if ($customer->branch_code !== auth()->user()->branch_code) {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        if ($customer->branch_code !== $user->branch_code) {
            abort(403);
         }
         $debit = $customer->transactions()->where('type', 'debit')->sum('amount');
@@ -54,7 +59,9 @@ class CustomerFinanceController extends Controller
      */
     public function storeSettlement(Request $request, Customer $customer)
     {
-         if ($customer->branch_code !== auth()->user()->branch_code) {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+         if ($customer->branch_code !== $user->branch_code) {
            abort(403);
         }
 
@@ -70,7 +77,11 @@ class CustomerFinanceController extends Controller
             'description' => $request->notes ?? 'تسوية حساب / دفعة نقدية',
         ]);
 
-        return redirect()->route('finance.customers.index')
-            ->with('success', 'تم تسجيل الدفعة بنجاح.');
+        return WebResponseClass::sendResponse(
+            'تم تسجيل الدفعة!',
+            'تم تسجيل الدفعة بنجاح.',
+            'حسناً',
+            'finance.customers.index'
+        );
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Driver;
 use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Classes\WebResponseClass;
 
 class DriverController extends Controller
 {
@@ -39,7 +40,9 @@ class DriverController extends Controller
             'city.required' => 'مدينة السائق مطلوبة',
         ]);
 
-        if ($validator->fails()) return $this->ValidationError($validator);
+        if ($validator->fails()){
+            return WebResponseClass::sendValidationError($validator);
+        } 
 
         try {
             $driver = Driver::create($validator->validated());
@@ -51,9 +54,14 @@ class DriverController extends Controller
                 "تم إضافة السائق {$driver->name}"
             );
 
-            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم حفظ السائق بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تمت الإضافة!',
+                'تم حفظ السائق بنجاح.',
+                'حسناً',
+                'drivers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -83,7 +91,9 @@ class DriverController extends Controller
             'status' => 'required|in:active,inactive'
         ]);
 
-        if ($validator->fails()) return $this->ValidationError($validator);
+        if ($validator->fails()){
+            return WebResponseClass::sendValidationError($validator);
+        } 
 
         try {
             $driver->update($validator->validated());
@@ -95,9 +105,14 @@ class DriverController extends Controller
                 "تحديث بيانات السائق {$driver->name}"
             );
 
-            return $this->SuccessBacktoIndex('تم التحديث!', 'تم تعديل بيانات السائق بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تعديل بيانات السائق بنجاح.',
+                'حسناً',
+                'drivers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -115,9 +130,14 @@ class DriverController extends Controller
                 "تم حذف السائق"
             );
 
-            return $this->SuccessBacktoIndex('تم الحذف!', 'تم حذف السائق بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تم الحذف!',
+                'تم حذف السائق بنجاح.',
+                'حسناً',
+                'drivers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
     public function shipments($id)
@@ -151,32 +171,5 @@ class DriverController extends Controller
 
     /* ========== دوال مساعدة  ========== */
 
-    private function ValidationError($validator)
-    {
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'خطأ في البيانات!')
-            ->with('error_message', $validator->errors()->first())
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
 
-    private function SuccessBacktoIndex($title, $msg)
-    {
-        return redirect()->route('drivers.index')
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
-
-    private function ExceptionError($e)
-    {
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e->getMessage())
-            ->with('error_buttonText', 'حسناً');
-    }
 }

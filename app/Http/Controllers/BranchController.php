@@ -6,6 +6,7 @@ use App\Models\Branch;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Services\AdminLoggerService;
+use App\Classes\WebResponseClass;
 
 
 class BranchController extends Controller
@@ -42,7 +43,7 @@ class BranchController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
@@ -55,12 +56,14 @@ class BranchController extends Controller
             );
 
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تمت الإضافة!',
-                'تم إضافة الفرع بنجاح.'
+                'تم إضافة الفرع بنجاح.',
+                'حسناً',
+                'branch.index'
             );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -92,19 +95,21 @@ class BranchController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
             $branch->update($validator->validated());
             // AdminLoggerService::log('تحديث فرع', 'Branch', $branch->code, "تم تحديث بيانات الفرع بنجاح");
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تم التحديث!',
-                'تم تحديث بيانات الفرع بنجاح.'
+                'تم تحديث بيانات الفرع بنجاح.',
+                'حسناً',
+                'branch.index'
             );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -117,43 +122,17 @@ class BranchController extends Controller
             // AdminLoggerService::log('حذف فرع', 'Branch', $branch->code, "تم حذف الفرع بنجاح");
 
 
-            return $this->SuccessBacktoIndex(
+            return WebResponseClass::sendResponse(
                 'تم الحذف!',
-                'تم حذف الفرع بنجاح.'
+                'تم حذف الفرع بنجاح.',
+                'حسناً',
+                'branch.index'
             );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
 
-    /* ========== دوال إعادة الاستخدام ========== */
-    private function ValidationError($validator)
-    {
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'حدث خطأ!')
-            ->with('error_message', $validator->errors()->first())
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
 
-    private function SuccessBacktoIndex($title, $msg)
-    {
-        return redirect()->route('branch.index')
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
-
-    private function ExceptionError($e)
-    {
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e->getMessage())
-            ->with('error_buttonText', 'حسناً');
-    }
 }

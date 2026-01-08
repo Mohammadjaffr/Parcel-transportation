@@ -12,7 +12,7 @@ class WhatsAppService
         $formattedPhone = $this->formatPhone($phone);
         $encodedMessage = urlencode($message);
         
-        return "https://web.whatsapp.com/send?phone={$formattedPhone}&text={$encodedMessage}";
+        return "whatsapp://send?phone={$formattedPhone}&text={$encodedMessage}";
     }
     
     private function formatPhone($phone)

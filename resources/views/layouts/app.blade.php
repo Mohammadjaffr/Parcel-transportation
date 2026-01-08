@@ -56,6 +56,7 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
                 @include('layouts.Breadcrumb')
                 <!-- ===== Breadcrumb End -->
                 @yield('content')
+                <x-modals.warning-modal />
             </main>
 
             <!-- ===== Main Content End ===== -->

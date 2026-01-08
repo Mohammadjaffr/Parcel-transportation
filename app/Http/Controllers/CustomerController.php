@@ -6,13 +6,16 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Services\AdminLoggerService;
 use Illuminate\Support\Facades\Validator;
+use App\Classes\WebResponseClass;
 
 class CustomerController extends Controller
 {
     /** عرض عملاء الفرع */
     public function index()
     {
-        $customers = Customer::where('branch_code', auth()->user()->branch_code)
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customers = Customer::where('branch_code', $user->branch_code)
             ->latest()
             ->paginate(10);
 
@@ -28,7 +31,9 @@ class CustomerController extends Controller
     /** تخزين عميل */
     public function store(Request $request)
     {
-        $branchCode = auth()->user()->branch_code;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
 
         $validator = Validator::make($request->all(), [
             'name'            => 'required|string|max:255',
@@ -43,7 +48,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
@@ -59,16 +64,23 @@ class CustomerController extends Controller
             //     "إنشاء عميل جديد: {$customer->name} - الفرع: {$customer->branch_code}"
             // );
 
-            return $this->SuccessBacktoIndex('تمت الإضافة!', 'تم إنشاء العميل بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تمت الإضافة!',
+                'تم إنشاء العميل بنجاح.',
+                'حسناً',
+                'customers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
     /** عرض */
     public function show($id)
     {
-        $customer = Customer::where('branch_code', auth()->user()->branch_code)
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customer = Customer::where('branch_code', $user->branch_code)
             ->with(['transactions' => function ($query) {
                 $query->latest();
             }])
@@ -86,7 +98,9 @@ class CustomerController extends Controller
     /** صفحة تعديل */
     public function edit($id)
     {
-        $customer = Customer::where('branch_code', auth()->user()->branch_code)
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customer = Customer::where('branch_code', $user->branch_code)
             ->findOrFail($id);
 
         return view('pages.customers.edit', compact('customer'));
@@ -95,7 +109,9 @@ class CustomerController extends Controller
     /** تحديث */
     public function update(Request $request, $id)
     {
-        $branchCode = auth()->user()->branch_code;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
 
         $customer = Customer::where('branch_code', $branchCode)
             ->findOrFail($id);
@@ -110,7 +126,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->ValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
@@ -138,16 +154,23 @@ class CustomerController extends Controller
             //         (count($changes) ? "\nالتغييرات: " . implode('، ', $changes) : '')
             // );
 
-            return $this->SuccessBacktoIndex('تم التحديث!', 'تم تحديث بيانات العميل بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات العميل بنجاح.',
+                'حسناً',
+                'customers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
     /** حذف */
     public function destroy($id)
     {
-        $customer = Customer::where('branch_code', auth()->user()->branch_code)
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customer = Customer::where('branch_code', $user->branch_code)
             ->findOrFail($id);
 
         // if ($customer->()->exists()) {
@@ -159,11 +182,10 @@ class CustomerController extends Controller
         // }
 
         if ($customer->transactions()->exists()) {
-            return redirect()->back()
-                ->with('error', true)
-                ->with('error_title', 'لا يمكن الحذف!')
-                ->with('error_message', 'لا يمكن حذف عميل لديه حركات مالية.')
-                ->with('error_buttonText', 'حسناً');
+            return WebResponseClass::sendError(
+                'لا يمكن حذف عميل لديه حركات مالية.',
+                'لا يمكن الحذف!'
+            );
         }
 
         try {
@@ -179,13 +201,14 @@ class CustomerController extends Controller
             //     "حذف العميل: {$customerName}"
             // );
 
-            return redirect()->route('customers.index')
-                ->with('success', true)
-                ->with('success_title', 'تم الحذف!')
-                ->with('success_message', 'تم حذف العميل بنجاح.')
-                ->with('success_buttonText', 'حسناً');
+            return WebResponseClass::sendResponse(
+                'تم الحذف!',
+                'تم حذف العميل بنجاح.',
+                'حسناً',
+                'customers.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e);
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -212,52 +235,14 @@ public function search(Request $request)
     /** تصدير */
     public function export()
     {
-        $customers = Customer::where('branch_code', auth()->user()->branch_code)
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $customers = Customer::where('branch_code', $user->branch_code)
             ->latest()
             ->get();
 
         return view('pages.customers.export', compact('customers'));
     }
 
-    private function ValidationError($validator)
-    {
-        $firstError = $validator->errors()->first();
 
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'حدث خطأ!')
-            ->with('error_message', $firstError)
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
-
-    private function SuccessBacktoIndex($title, $msg)
-    {
-        return redirect()->route('customers.index')
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
-
-    private function ExceptionError($e)
-    {
-        \Log::error('Customer Controller Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'user_id'   => auth()->id(),
-            'branch_code' => auth()->user()->branch_code ?? null,
-        ]);
-
-        $message = app()->environment('production')
-            ? 'حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.'
-            : $e->getMessage();
-
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $message)
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
 }

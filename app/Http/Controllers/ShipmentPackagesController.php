@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use Illuminate\Http\Request;
+use App\Classes\WebResponseClass;
 
 class ShipmentPackagesController extends Controller
 {
@@ -13,7 +14,9 @@ class ShipmentPackagesController extends Controller
      */
     public function index()
     {
-        $branchCode = auth()->user()->branch_code;
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
 
         $pendingShipments = Shipment::where('sender_branch_code', $branchCode)
             ->where('status', 'pending')
@@ -70,9 +73,14 @@ class ShipmentPackagesController extends Controller
                     'status' => 'in_transit',
                 ]);
 
-            return $this->SuccessBacktoIndex('تمت الرحلة!', 'تم إنشاء رحلة الشحن وربط الطرود بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تمت الرحلة!',
+                'تم إنشاء رحلة الشحن وربط الطرود بنجاح.',
+                'حسناً',
+                'shipmentpackage.index'
+            );
         } catch (\Exception $e) {
-            return $this->ExceptionError($e->getMessage());
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -123,34 +131,5 @@ class ShipmentPackagesController extends Controller
         return $pdf->Output('Manifest-'.$package->tracking_number.'.pdf', 'I');
     }
 
-    private function ValidationError($validator)
-    {
-        $firstError = $validator->errors()->first();
 
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'حدث خطأ!')
-            ->with('error_message', $firstError)
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
-
-    private function SuccessBacktoIndex($title, $msg)
-    {
-        return redirect()->route('shipmentpackage.index')
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
-
-    private function ExceptionError($e)
-    {
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e)
-            ->with('error_buttonText', 'حسناً');
-    }
 }

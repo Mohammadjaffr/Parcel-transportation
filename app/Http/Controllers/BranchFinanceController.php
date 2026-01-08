@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\BranchTransaction;
+use App\Classes\WebResponseClass;
 use Illuminate\Http\Request;
 
 class BranchFinanceController extends Controller
@@ -148,10 +149,12 @@ class BranchFinanceController extends Controller
             'description'          => $data['description'] ?? 'تصفية يدوية بين الفروع',
         ]);
 
-        return $this->SuccessBacktoShow(
-            $data['sender_branch_code'],
+        return WebResponseClass::sendResponse(
             'تمت عمل التسوية!',
-            'تم عمل التسوية بنجاح.'
+            'تم عمل التسوية بنجاح.',
+            'حسناً',
+            'finance.branches.show',
+            $data['sender_branch_code']
         );
     }
 
@@ -265,34 +268,5 @@ class BranchFinanceController extends Controller
 
     // ====== رسائل مساعدة ======
 
-    private function SuccessBacktoShow(string $branchCode, string $title, string $msg)
-    {
-        return redirect()->route('finance.branches.show', $branchCode)
-            ->with('success', true)
-            ->with('success_title', $title)
-            ->with('success_message', $msg)
-            ->with('success_buttonText', 'حسناً');
-    }
 
-    private function ValidationError($validator)
-    {
-        $firstError = $validator->errors()->first();
-
-        return redirect()->back()
-            ->withErrors($validator)
-            ->with('error', true)
-            ->with('error_title', 'حدث خطأ!')
-            ->with('error_message', $firstError)
-            ->with('error_buttonText', 'حسناً')
-            ->withInput();
-    }
-
-    private function ExceptionError($e)
-    {
-        return redirect()->back()
-            ->with('error', true)
-            ->with('error_title', 'خطأ غير متوقع!')
-            ->with('error_message', $e->getMessage())
-            ->with('error_buttonText', 'حسناً');
-    }
 }

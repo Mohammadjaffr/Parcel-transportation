@@ -15,11 +15,11 @@ class AdminLoggerService
         }
 
         return AdminActivity::create([
-            'admin_id' => $adminId,
+            'user_id' => $adminId,
             'action' => $action,
-            'model_type' => $model,
-            'description' => $description,
-            'model_id' => $modelId,
+            'model_name' => $model,
+            'description' => $description . " (ID: $modelId)",
+            // 'model_id' => $modelId, // Column missing in DB
         ]);
     }
 

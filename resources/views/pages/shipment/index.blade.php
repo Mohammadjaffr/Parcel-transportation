@@ -6,14 +6,14 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-        search: '',
-        filterStatus: 'all',
-        showRow(status, bond, sender, receiver) {
-            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-            return matchesSearch && matchesStatus;
-        }
-    }">
+                        search: '',
+                        filterStatus: 'all',
+                        showRow(status, bond, sender, receiver) {
+                            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+                            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+                            return matchesSearch && matchesStatus;
+                        }
+                    }">
 
         {{-- Tabs --}}
         <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6 w-fit">
@@ -27,11 +27,13 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 md:gap-6">
+        <div class="flex gap-6">
 
             <div @click="filterStatus = 'all'"
+                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'" <div
+                @click="filterStatus = 'all'"
                 :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +53,7 @@
 
             <div @click="filterStatus = 'pending'"
                 :class="filterStatus === 'pending' ? 'border-warning-500 ring-2 ring-warning-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,10 +68,9 @@
                 </div>
             </div>
 
-            <div @click="filterStatus = 'in_transit'"
-                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                    'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                                    'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +88,7 @@
 
             <div @click="filterStatus = 'delivered'"
                 :class="filterStatus === 'delivered' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,8 +211,7 @@
                                     </span>
                                 </td>
 
-                                <td
-                                    class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
+                                <td class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
                                     <div class="flex items-center justify-center gap-1">
                                         <a href="{{ route('shipment.show', $request->id) }}"
                                             class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all">
