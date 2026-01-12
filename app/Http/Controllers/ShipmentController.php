@@ -95,6 +95,7 @@ class ShipmentController extends Controller
 
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
             'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'prepaid_reference' => 'nullable|string|max:255',
             'partial_amount' => 'nullable|numeric|min:0.01',
 
             'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
@@ -212,7 +213,8 @@ class ShipmentController extends Controller
                 $shipment,
                 $paymentType,
                 $paidAmount,
-                $attachment
+                $attachment,
+                $request->prepaid_reference
             );
 
             return WebResponseClass::sendResponse(
@@ -399,6 +401,7 @@ class ShipmentController extends Controller
                 'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
                 'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
                 'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+                'prepaid_reference' => 'nullable|string|max:255',
                 'partial_amount' => 'nullable|numeric|min:0.01',
                 'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
             ];
@@ -477,7 +480,8 @@ class ShipmentController extends Controller
                 $shipment,
                 $paymentType,
                 $paidAmount,
-                $attachment
+                $attachment,
+                $request->prepaid_reference
             );
 
             return WebResponseClass::sendResponse(
@@ -502,6 +506,7 @@ class ShipmentController extends Controller
             'partial_amount' => 'nullable|numeric|min:1',
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
             'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
+            'prepaid_reference' => 'nullable|string|max:255',
         ]);
 
         $validator->after(function ($validator) use ($request, $shipment) {
@@ -532,7 +537,8 @@ class ShipmentController extends Controller
             $shipment,
             $data['prepaid_payment_method'] ?? 'cash',
             $paidAmount,
-            $request->file('prepaid_attachment')
+            $request->file('prepaid_attachment'),
+            $request->prepaid_reference
         );
 
         return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.', 'حسناً', 'shipment.index');

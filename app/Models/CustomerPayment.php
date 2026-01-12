@@ -19,6 +19,7 @@ class CustomerPayment extends Model
         'payment_date',
         'payment_method',
         'attachment_path',
+        'reference_number',
         'notes',
     ];
 

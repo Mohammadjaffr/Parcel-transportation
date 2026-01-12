@@ -548,13 +548,25 @@
                                         </span>
 
                                         <!-- Hidden Input -->
-                                        <input id="prepaid_attachment" type="file" name="prepaid_attachment"
+                                        <input id="prepaid_attachment" type="file" :name="payment_method === 'prepaid' ? 'prepaid_attachment' : ''"
                                             accept="image/*,.pdf" class="hidden" />
                                     </label>
 
                                     @error('prepaid_attachment')
                                         <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                     @enderror
+
+                                    <div class="mt-4">
+                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                          رقم  الايداع
+                                        </label>
+                                        <input type="text" :name="payment_method === 'prepaid' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
+                                            placeholder="أدخل رقم السند أو التحويل"
+                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                        @error('prepaid_reference')
+                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
 
@@ -670,6 +682,18 @@
                                         @error('prepaid_attachment')
                                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                         @enderror
+
+                                        <div class="mt-4">
+                                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                رقم السند / رقم التحويل / رقم الإيداع
+                                            </label>
+                                            <input type="text" :name="payment_method === 'partial_payment' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
+                                                placeholder="أدخل رقم السند أو التحويل"
+                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                            @error('prepaid_reference')
+                                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1261,6 +1285,18 @@
                                     @error('prepaid_attachment')
                                         <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                     @enderror
+
+                                    <div class="mt-4">
+                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                            رقم السند / رقم التحويل / رقم الإيداع
+                                        </label>
+                                        <input type="text" name="prepaid_reference" value="{{ old('prepaid_reference') }}"
+                                            placeholder="أدخل رقم السند أو التحويل"
+                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                        @error('prepaid_reference')
+                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             {{-- </div> --}}
 
@@ -1377,6 +1413,18 @@
                                         @error('prepaid_attachment')
                                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                         @enderror
+
+                                        <div class="mt-4">
+                                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                رقم السند / رقم التحويل / رقم الإيداع
+                                            </label>
+                                            <input type="text" name="prepaid_reference" value="{{ old('prepaid_reference') }}"
+                                                placeholder="أدخل رقم السند أو التحويل"
+                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                            @error('prepaid_reference')
+                                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
                             </div>

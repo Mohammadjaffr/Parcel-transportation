@@ -21,23 +21,26 @@ class ShipmentPaymentService
         $this->imageService = $imageService;
     }
 
-    public function handlePaymentForNewShipment(Shipment $shipment, string $paymentType, ?float $paidAmount = null, ?UploadedFile $attachment = null): void
+    public function handlePaymentForNewShipment(Shipment $shipment, string $paymentType, ?float $paidAmount = null, ?UploadedFile $attachment = null, ?string $referenceNumber = null): void
     {
 
-        if ($paymentType === 'bank_transfer' && is_null($attachment)) {
-            throw new InvalidArgumentException('في حالة التحويل البنكي، يجب إرفاق سند الدفع.');
+        if ($paymentType === 'bank_transfer') {
+            $hasExistingAttachment = $shipment->customerPayments()->where('payment_method', 'bank_transfer')->whereNotNull('attachment_path')->exists();
+            if (!$hasExistingAttachment && is_null($attachment)) {
+                throw new InvalidArgumentException('في حالة التحويل البنكي، يجب إرفاق سند الدفع.');
+            }
         }
 
         switch ($shipment->payment_method) {
             case 'prepaid':
-                $this->handlePrepaidPayment($shipment, $paymentType, $attachment);
+                $this->handlePrepaidPayment($shipment, $paymentType, $attachment, $referenceNumber);
                 break;
 
             case 'partial_payment':
                 if (is_null($paidAmount) || $paidAmount <= 0) {
                     throw new InvalidArgumentException('في حالة الدفع الجزئي، يجب إرسال المبلغ المدفوع.');
                 }
-                $this->handlePartialPayment($shipment, $paidAmount, $paymentType, $attachment);
+                $this->handlePartialPayment($shipment, $paidAmount, $paymentType, $attachment, $referenceNumber);
                 break;
 
             case 'customer_credit':
@@ -64,9 +67,9 @@ class ShipmentPaymentService
         }
     }
 
-    private function handlePrepaidPayment(Shipment $shipment, string $paymentType, ?UploadedFile $attachment): void
+    private function handlePrepaidPayment(Shipment $shipment, string $paymentType, ?UploadedFile $attachment, ?string $referenceNumber = null): void
     {
-        DB::transaction(function () use ($shipment, $paymentType, $attachment) {
+        DB::transaction(function () use ($shipment, $paymentType, $attachment, $referenceNumber) {
             $this->createCustomerPaymentRecord(
                 $shipment,
                 $shipment->sender_customer_id,
@@ -74,7 +77,8 @@ class ShipmentPaymentService
                 $shipment->total_amount,
                 $paymentType,
                 $attachment,
-                'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number
+                'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number,
+                $referenceNumber
             );
 
             $shipment->customer_debt_status = 'fully_paid';
@@ -82,13 +86,13 @@ class ShipmentPaymentService
         });
     }
 
-    private function handlePartialPayment(Shipment $shipment, float $paidAmount, string $paymentType, ?UploadedFile $attachment): void
+    private function handlePartialPayment(Shipment $shipment, float $paidAmount, string $paymentType, ?UploadedFile $attachment, ?string $referenceNumber = null): void
     {
         if ($paidAmount >= $shipment->total_amount) {
             throw new InvalidArgumentException('المبلغ المدفوع جزئيًا يجب أن يكون أقل من المبلغ الإجمالي.');
         }
 
-        DB::transaction(function () use ($shipment, $paidAmount, $paymentType, $attachment) {
+        DB::transaction(function () use ($shipment, $paidAmount, $paymentType, $attachment, $referenceNumber) {
             $this->createCustomerPaymentRecord(
                 $shipment,
                 $shipment->sender_customer_id,
@@ -96,7 +100,8 @@ class ShipmentPaymentService
                 $paidAmount,
                 $paymentType,
                 $attachment,
-                'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number
+                'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number,
+                $referenceNumber
             );
 
             $shipment->customer_debt_status = 'partially_paid';
@@ -149,7 +154,7 @@ class ShipmentPaymentService
 
     //     CustomerPayment::create($paymentData);
     // }
-    private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes): void
+    private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes, ?string $referenceNumber = null): void
     {
         $searchKey = [
             'shipment_id' => $shipment->id,
@@ -162,6 +167,7 @@ class ShipmentPaymentService
             'payment_method' => $paymentType,
             'payment_date' => now(),
             'notes' => $notes,
+            'reference_number' => $referenceNumber,
         ];
 
         if ($paymentType === 'bank_transfer' && $attachment) {

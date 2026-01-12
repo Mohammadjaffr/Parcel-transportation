@@ -24,6 +24,7 @@ return new class extends Migration
             $table->date('payment_date');
             $table->enum('payment_method', ['cash', 'bank_transfer'])->default('cash');
             $table->string('attachment_path')->nullable();
+            $table->string('reference_number')->nullable();
             $table->text('notes')->nullable();
 
             $table->index(['shipment_id', 'customer_id']);
