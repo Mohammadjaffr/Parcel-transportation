@@ -5,15 +5,11 @@
 @endsection
 
 @section('content')
-
+ 
     <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
         @include('pages.users.edit-user-modal')
-        
-        @if(session('success'))
-            <div class="p-4 mb-4 text-sm text-success-700 bg-success-50 rounded-2xl dark:bg-success-900/10 dark:text-success-500 border border-success-100 dark:border-success-500/20" role="alert">
-                <span class="font-bold">تم بنجاح!</span> {{ session('success') }}
-            </div>
-        @endif
+   <x-modals.success-modal />
+    <x-modals.error-modal />
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="statusFilter = 'all'; filterNow()" 

@@ -83,7 +83,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/customers', [CustomerFinanceController::class, 'index'])->name('finance.customers.index');
     Route::get('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'createSettlement'])->name('finance.customers.settle');
     Route::post('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'storeSettlement'])->name('finance.customers.storeSettlement');
-
+// صفحة عرض تفاصيل العميل
+Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, 'show'])
+    ->name('finance.customers.show');
     // مالية الفروع
     Route::get('/finance/branches', [BranchFinanceController::class, 'index'])
         ->name('finance.branches.index');

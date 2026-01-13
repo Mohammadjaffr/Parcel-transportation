@@ -7,10 +7,21 @@
     <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800" x-data="{
         payment_method: @js(old('payment_method', $shipment->payment_method)),
         prepaid_method: @js(old('prepaid_payment_method', 'cash')),
+    
         isSenderReceiverModalOpen: @js($errors->has('sender_name') || $errors->has('sender_phone') || $errors->has('sender_customer_id') || $errors->has('sender_branch_code') || $errors->has('receiver_name') || $errors->has('receiver_phone') || $errors->has('receiver_customer_id') || $errors->has('receiver_branch_code') || $errors->has('no_honey_jars') || $errors->has('no_gallons_honey')),
+    
         isDetailsModalOpen: @js($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes')),
-        isPaymentModalOpen: @js($errors->has('payment_method') || $errors->has('partial_amount') || $errors->has('prepaid_payment_method') || $errors->has('prepaid_attachment') || $errors->has('customer_debt_status')),
-        activeTab: 'sender_receiver'
+    
+        isPaymentModalOpen: @js(
+    $errors->has('payment_method') ||
+        $errors->has('partial_amount') ||
+        $errors->has('prepaid_payment_method') ||
+        $errors->has('prepaid_reference') || // ✅ مهم جدًا
+        $errors->has('prepaid_attachment') ||
+        $errors->has('customer_debt_status'),
+),
+    
+        activeTab: @js($errors->has('payment_method') || $errors->has('partial_amount') || $errors->has('prepaid_payment_method') || $errors->has('prepaid_reference') || $errors->has('prepaid_attachment') || $errors->has('customer_debt_status') ? 'payment' : ($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes') ? 'details' : 'sender_receiver'))
     }">
 
 
@@ -219,7 +230,8 @@
                     </button>
                 </div>
 
-                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }"
+                    @submit="isSubmitting = true">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="sender_receiver">
@@ -244,8 +256,9 @@
                                     بحث عن عميل (اسم أو رقم)
                                 </label>
 
-                                <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                    @keydown.escape="open = false" placeholder="اكتب اسم العميل أو رقمه..."
+                                <input type="text" x-model="query" @input.debounce.350ms="search()"
+                                    @focus="open = true" @keydown.escape="open = false"
+                                    placeholder="اكتب اسم العميل أو رقمه..."
                                     class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
 
                                 <div x-show="open" x-transition
@@ -546,8 +559,8 @@
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
@@ -581,7 +594,8 @@
                     </button>
                 </div>
 
-                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }"
+                    @submit="isSubmitting = true">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="details">
@@ -696,8 +710,8 @@
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
@@ -712,6 +726,7 @@
 
 
         {{-- ====================== مودال طريقة الدفع ====================== --}}
+        {{-- ====================== مودال طريقة الدفع (بعد التعديل) ====================== --}}
         <div x-show="isPaymentModalOpen" x-transition
             class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 z-99999 modal"
             style="display: none;">
@@ -733,7 +748,18 @@
                 </div>
 
                 <form action="{{ route('shipment.updatePaymentMethod', $shipment->id) }}" method="POST"
-                    enctype="multipart/form-data" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                    enctype="multipart/form-data" x-data="{
+                        isSubmitting: false,
+                        payment_method: @js(old('payment_method', $shipment->payment_method)),
+                        prepaid_method: @js(old('prepaid_payment_method', 'cash'))
+                    }"
+                    x-effect="
+                if (!['prepaid','partial_payment'].includes(payment_method)) {
+                    prepaid_method = 'cash';
+                }
+            "
+                    @submit="isSubmitting = true">
+
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="section" value="payment">
@@ -797,7 +823,7 @@
                                     دفع جزئي (المرسل يدفع جزء)
                                 </label>
 
-                                {{-- آجل على حساب العميل --}}
+                                {{-- آجل --}}
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
@@ -819,9 +845,11 @@
                                 <div class="text-sm text-error-600">{{ $message }}</div>
                             @enderror
 
-                            {{-- دفع مقدم --}}
+
+                            {{-- =============== prepaid =============== --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
+
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     طريقة الدفع (للدفع المقدم)
                                 </label>
@@ -830,7 +858,10 @@
                                     {{-- كاش --}}
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                        <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                        <input class="sr-only" type="radio"
+                                            :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
+                                                'prepaid_payment_method' : null)"
+                                            :disabled="!['prepaid', 'partial_payment'].includes(payment_method)"
                                             value="cash" x-model="prepaid_method">
                                         <span
                                             :class="prepaid_method === 'cash'
@@ -847,7 +878,10 @@
                                     {{-- تحويل بنكي --}}
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                        <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                        <input class="sr-only" type="radio"
+                                            :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
+                                                'prepaid_payment_method' : null)"
+                                            :disabled="!['prepaid', 'partial_payment'].includes(payment_method)"
                                             value="bank_transfer" x-model="prepaid_method">
                                         <span
                                             :class="prepaid_method === 'bank_transfer'
@@ -866,62 +900,25 @@
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
 
-                                {{-- رفع سند التحويل للدفع المقدم --}}
+                                {{-- رقم الإيداع عند التحويل البنكي --}}
                                 <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
                                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        رفع سند التحويل
+                                        رقم الإيداع
                                     </label>
 
-                                    <label for="prepaid_attachment"
-                                        class="flex flex-col items-center justify-center w-full p-6 text-center transition-colors duration-200 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-brand-500 @error('prepaid_attachment') border-error-500 @enderror">
+                                    <input type="text" name="prepaid_reference"
+                                        value="{{ old('prepaid_reference') }}" placeholder="أدخل رقم السند أو التحويل"
+                                        class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
 
-                                        <div class="flex justify-center mb-[22px]">
-                                            <div
-                                                class="flex items-center justify-center w-[68px] h-[68px] text-gray-700 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-400">
-                                                <svg class="fill-current" width="29" height="28"
-                                                    viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                        d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        <h4 class="mb-2 font-semibold text-gray-800 dark:text-white/90">
-                                            Drop File Here
-                                        </h4>
-
-                                        <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                            اسحب الملف هنا أو اضغط للاختيار<br>
-                                            (PNG, JPG, PDF)
-                                        </span>
-
-                                        <span class="font-medium underline text-theme-sm text-brand-500">
-                                            Browse File
-                                        </span>
-
-                                        <input id="prepaid_attachment" type="file" :name="payment_method === 'prepaid' ? 'prepaid_attachment' : ''"
-                                            accept="image/*,.pdf" class="hidden" />
-                                    </label>
-
-                                    @error('prepaid_attachment')
+                                    @error('prepaid_reference')
                                         <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                     @enderror
-
-                                    <div class="mt-4">
-                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رقم الايداع
-                                        </label>
-                                        <input type="text" :name="payment_method === 'prepaid' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
-                                            placeholder="أدخل رقم السند أو التحويل"
-                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
-                                        @error('prepaid_reference')
-                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                        @enderror
-                                    </div>
                                 </div>
+
                             </div>
 
-                            {{-- COD --}}
+
+                            {{-- =============== COD =============== --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'cod'" x-transition>
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
@@ -930,7 +927,8 @@
                                 </div>
                             </div>
 
-                            {{-- دفع جزئي --}}
+
+                            {{-- =============== partial_payment =============== --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'partial_payment'" x-transition>
 
@@ -938,7 +936,9 @@
                                     المبلغ المدفوع من المرسل الآن
                                 </label>
 
-                                <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
+                                <input type="number"
+                                    :name="payment_method === 'partial_payment' ? 'partial_amount' : null"
+                                    :disabled="payment_method !== 'partial_payment'" value="{{ old('partial_amount') }}"
                                     min="0.01" step="0.01" placeholder="0.00"
                                     class="w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-700 dark:text-white dark:border-gray-400 @error('partial_amount') border-error-500 @enderror">
 
@@ -955,7 +955,10 @@
                                         {{-- كاش --}}
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                            <input class="sr-only" type="radio"
+                                                :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
+                                                    'prepaid_payment_method' : null)"
+                                                :disabled="!['prepaid', 'partial_payment'].includes(payment_method)"
                                                 value="cash" x-model="prepaid_method">
                                             <span
                                                 :class="prepaid_method === 'cash'
@@ -972,7 +975,10 @@
                                         {{-- تحويل بنكي --}}
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
+                                            <input class="sr-only" type="radio"
+                                                :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
+                                                    'prepaid_payment_method' : null)"
+                                                :disabled="!['prepaid', 'partial_payment'].includes(payment_method)"
                                                 value="bank_transfer" x-model="prepaid_method">
                                             <span
                                                 :class="prepaid_method === 'bank_transfer'
@@ -987,70 +993,44 @@
                                         </label>
                                     </div>
 
-                                    {{-- رفع سند للدفع الجزئي --}}
+                                    {{-- رقم الإيداع عند التحويل البنكي --}}
                                     <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
                                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رفع سند التحويل
+                                            رقم السند / رقم التحويل / رقم الإيداع
                                         </label>
 
-                                        <label for="prepaid_attachment_partial"
-                                            class="flex flex-col items-center justify-center w-full p-6 text-center transition-colors.duration-200 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-brand-500 @error('prepaid_attachment') border-error-500 @enderror">
+                                        <input type="text"
+                                            :name="(['prepaid', 'partial_payment'].includes(payment_method) &&
+                                                prepaid_method === 'bank_transfer') ?
+                                            'prepaid_reference' : null"
+                                            :disabled="!(['prepaid', 'partial_payment'].includes(payment_method) &&
+                                                prepaid_method === 'bank_transfer')"
+                                            value="{{ old('prepaid_reference') }}"
+                                            placeholder="أدخل رقم السند أو التحويل"
+                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
 
-                                            <div class="flex justify-center mb-[22px]">
-                                                <div
-                                                    class="flex items-center justify-center w-[68px] h-[68px] text-gray-700 bg-gray-200 rounded-full dark:bg-gray-700 dark:text-gray-400">
-                                                    <svg class="fill-current" width="29" height="28"
-                                                        viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                        <path fill-rule="evenodd" clip-rule="evenodd"
-                                                            d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-
-                                            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white/90">
-                                                Drop File Here
-                                            </h4>
-
-                                            <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                                اسحب الملف هنا أو اضغط للاختيار<br>
-                                                (PNG, JPG, PDF)
-                                            </span>
-
-                                            <span class="font-medium underline text-theme-sm text-brand-500">
-                                                Browse File
-                                            </span>
-
-                                            <input id="prepaid_attachment_partial" type="file"
-                                                :name="payment_method === 'partial_payment' ? 'prepaid_attachment' : ''" accept="image/*,.pdf" class="hidden" />
-                                        </label>
-
-                                        @error('prepaid_attachment')
+                                        @error('prepaid_reference')
                                             <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                         @enderror
 
-                                        <div class="mt-4">
-                                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                رقم السند / رقم التحويل / رقم الإيداع
-                                            </label>
-                                            <input type="text" :name="payment_method === 'partial_payment' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
-                                                placeholder="أدخل رقم السند أو التحويل"
-                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
-                                            @error('prepaid_reference')
-                                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                            @enderror
-                                        </div>
+                                        <input type="file" name="prepaid_attachment" class="hidden" disabled>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- آجل --}}
+
+                            {{-- =============== customer_credit =============== --}}
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'customer_credit'" x-transition>
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700.dark:text-gray-400">
+
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     حالة مديونية العميل
                                 </label>
-                                <select name="customer_debt_status"
+
+                                <select :name="payment_method === 'customer_credit' ? 'customer_debt_status' : null"
+                                    :disabled="payment_method !== 'customer_credit'"
                                     class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-300 dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
+
                                     <option value="pending" @selected(old('customer_debt_status', $shipment->customer_debt_status) == 'pending')>
                                         قيد الانتظار
                                     </option>
@@ -1069,6 +1049,7 @@
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
                             </div>
+
                         </div>
                     </div>
 
@@ -1077,14 +1058,15 @@
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
                             إغلاق
                         </button>
+
                         <button type="submit" :disabled="isSubmitting"
                             class="flex justify-center items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">حفظ التعديلات</span>
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                        stroke-width="4"></circle>
+                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                        stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor"
                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                     </path>
@@ -1093,6 +1075,7 @@
                             </span>
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>

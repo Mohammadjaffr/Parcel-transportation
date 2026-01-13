@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Classes\WebResponseClass;
 
 class UserController extends Controller
 {
@@ -52,7 +53,7 @@ class UserController extends Controller
             'branch_code' => Auth::user()->branch_code,
         ]);
 
-        return redirect()->route('users.index')->with('success', 'تم إنشاء المستخدم بنجاح');
+        return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
     }
 
     /**

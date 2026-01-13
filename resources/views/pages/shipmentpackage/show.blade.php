@@ -33,27 +33,26 @@
                         <div class="flex items-center gap-3">
                             <h2 class="text-2xl font-black text-gray-900 dark:text-white">رحلة رقم:
                                 #{{ $package->tracking_number }}</h2>
-                                      @php
-                        $statusColors = [
-                            'pending' =>
-                                'bg-warning-50 text-warning-500 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
-                            'in_transit' =>
-                                'bg-blue-50 text-blue-500 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
-                            'delivered' =>
-                                'bg-success-50 text-success-500 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
-                            'cancelled' =>
-                                'bg-error-50 text-error-500 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20',
-                            'returned' =>
-                                'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
-                        ];
-                        $statusText = [
-                            'pending' => 'قيد الانتظار',
-                            'in_transit' => 'في الطريق',
-                            'delivered' => 'تم التسليم',
-                        ];
-                    @endphp
+                            @php
+                                $statusColors = [
+                                    'pending' =>
+                                        'bg-warning-50 text-warning-500 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
+                                    'in_transit' =>
+                                        'bg-blue-50 text-blue-500 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+                                    'delivered' =>
+                                        'bg-success-50 text-success-500 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
+                                    'cancelled' =>
+                                        'bg-error-50 text-error-500 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20',
+                                    'returned' =>
+                                        'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
+                                ];
+                                $statusText = [
+                                    'pending' => 'قيد الانتظار',
+                                    'in_transit' => 'في الطريق',
+                                    'delivered' => 'تم التسليم',
+                                ];
+                            @endphp
                             <span
-                
                                 class="px-3 py-1 {{ $statusColors[$package->shipments->first()->status] }} rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse">{{ $statusText[$package->shipments->first()->status] }}</span>
                         </div>
                         <p class="text-gray-500 font-bold text-sm mt-1 uppercase tracking-tighter">تاريخ الإنشاء:
@@ -123,7 +122,7 @@
                             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
                     طباعة كشف الحمولة للفرع
-                    </a>
+                </a>
                 <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
                     class="h-12 px-6 bg-brand-500 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,9 +131,9 @@
                     </svg>
                     طباعة كشف الحمولة لسائق
                 </a>
-                
+
             </div>
-          
+
 
             <div
                 class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
@@ -147,6 +146,7 @@
                                 <th class="py-4 px-6 text-center">الوجهة</th>
                                 <th class="py-4 px-6 text-center">النوع</th>
                                 <th class="py-4 px-6 text-left">التكلفة</th>
+                                <th class="py-4 px-6 text-left">الحالة</th>
                                 <th class="py-4 px-6 text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -182,6 +182,24 @@
                                         <span class="text-base font-black text-gray-900 dark:text-white">
                                             {{ number_format($shipment->total_amount) }}
                                             <small class="text-[10px] font-bold text-gray-400 mr-0.5 uppercase">ر.ي</small>
+                                        </span>
+                                    </td>
+                                    <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                        @php
+                                            $colors = [
+                                                'pending' => 'bg-warning-500 shadow-warning-500/20',
+                                                'in_transit' => 'bg-blue-light-500 shadow-blue-500/20',
+                                                'delivered' => 'bg-success-500 shadow-success-500/20',
+                                            ];
+                                            $labels = [
+                                                'pending' => 'قيد الانتظار',
+                                                'in_transit' => 'في الطريق',
+                                                'delivered' => 'تم التسليم',
+                                            ];
+                                        @endphp
+                                        <span
+                                            class="px-3 py-1 rounded-lg text-[10px] font-black text-white uppercase shadow-lg {{ $colors[$shipment->status] ?? 'bg-gray-500' }}">
+                                            {{ $labels[$shipment->status] ?? $shipment->status }}
                                         </span>
                                     </td>
 
