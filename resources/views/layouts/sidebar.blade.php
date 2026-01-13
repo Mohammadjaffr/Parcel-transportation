@@ -1,67 +1,64 @@
 <aside :class="sidebarToggle ? 'translate-x-0 lg:w-[90px]' : 'translate-x-full'"
-    class="sidebar fixed right-0 top-0 z-40 flex h-screen w-[290px] flex-col overflow-y-hidden border-l border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black duration-300 ease-in-out transition-transform lg:static lg:translate-x-0"
-    @click.outside="sidebarToggle = false">
+  class="sidebar fixed right-0 top-0 z-40 flex h-screen w-[290px] flex-col overflow-y-hidden border-l border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-black duration-300 ease-in-out transition-transform lg:static lg:translate-x-0"
+  @click.outside="sidebarToggle = false">
 
 
-    <!-- SIDEBAR HEADER -->
-    <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
-        class="flex gap-2 items-center pt-8 pb-3 sidebar-header">
-        <a href="#">
-            <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
-                <img class="w-40 h-40 dark:hidden" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
-                    alt="Logo" />
-                {{-- Dark logo --}}
-                <img class="hidden w-12 h-12 dark:block" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
-                    alt="Logo" />
-            </span>
+  <!-- SIDEBAR HEADER -->
+  <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
+    class="flex gap-2 items-center  sidebar-header">
+    <a href="#">
+      <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
+        <img width="150" height="150" class=" h-auto dark:hidden"
+          src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
+        {{-- Dark logo --}}
+        <img width="200" height="200" class="hidden dark:block"
+          src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
+      </span>
 
-            <img class="w-12 h-12 logo-icon" :class="sidebarToggle ? 'lg:block' : 'hidden'"
-                src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
-        </a>
-    </div>
-    <!-- SIDEBAR HEADER -->
+      <img class="w-12 h-12 logo-icon" :class="sidebarToggle ? 'lg:block' : 'hidden'"
+        src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
+    </a>
+  </div>
+  <!-- SIDEBAR HEADER -->
 
-    <div class="flex overflow-y-auto flex-col duration-300 ease-linear no-scrollbar">
-        <!-- Sidebar Menu -->
-        <nav x-data="{ selected: $persist('Dashboard') }">
-            <!-- Menu Group -->
-            <div>
-                <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
-                    <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
-                        القائمة الرئيسية
-                    </span>
+  <div class="flex overflow-y-auto flex-col duration-300 ease-linear no-scrollbar">
+    <!-- Sidebar Menu -->
+    <nav x-data="{ selected: $persist('Dashboard') }">
+      <!-- Menu Group -->
+      <div>
+        <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
+          {{-- <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
+            القائمة الرئيسية
+          </span> --}}
 
-                    <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'"
-                        class="mx-auto fill-current menu-group-icon" width="24" height="24" viewBox="0 0 24 24"
-                        fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" clip-rule="evenodd"
-                            d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
-                            fill="" />
-                    </svg>
-                </h3>
+          <svg :class="sidebarToggle ? 'lg:block hidden' : 'hidden'" class="mx-auto fill-current menu-group-icon"
+            width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M5.99915 10.2451C6.96564 10.2451 7.74915 11.0286 7.74915 11.9951V12.0051C7.74915 12.9716 6.96564 13.7551 5.99915 13.7551C5.03265 13.7551 4.24915 12.9716 4.24915 12.0051V11.9951C4.24915 11.0286 5.03265 10.2451 5.99915 10.2451ZM17.9991 10.2451C18.9656 10.2451 19.7491 11.0286 19.7491 11.9951V12.0051C19.7491 12.9716 18.9656 13.7551 17.9991 13.7551C17.0326 13.7551 16.2491 12.9716 16.2491 12.0051V11.9951C16.2491 11.0286 17.0326 10.2451 17.9991 10.2451ZM13.7491 11.9951C13.7491 11.0286 12.9656 10.2451 11.9991 10.2451C11.0326 10.2451 10.2491 11.0286 10.2491 11.9951V12.0051C10.2491 12.9716 11.0326 13.7551 11.9991 13.7551C12.9656 13.7551 13.7491 12.9716 13.7491 12.0051V11.9951Z"
+              fill="" />
+          </svg>
+        </h3>
 
-                <ul class="flex flex-col gap-4 mb-6">
-                    <!-- Menu Item Dashboard -->
-                    <li>
-                        <a href="{{ route('dashboard.index') }}" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('dashboard.index') }}') ?
+        <ul class="flex flex-col gap-4 mb-6">
+          <!-- Menu Item Dashboard -->
+          <li>
+            <a href="{{ route('dashboard.index') }}" class="menu-item group" :class="window.location.href.includes('{{ route('dashboard.index') }}') ?
                                 'menu-item-active' : 'menu-item-inactive'">
-                            <svg :class="window.location.href.includes('{{ route('dashboard.index') }}') ?
-                                'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z"
-                                    fill="" />
-                            </svg>
+              <svg :class="window.location.href.includes('{{ route('dashboard.index') }}') ?
+                                'menu-item-icon-active' : 'menu-item-icon-inactive'" width="24" height="24"
+                viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M5.5 3.25C4.25736 3.25 3.25 4.25736 3.25 5.5V8.99998C3.25 10.2426 4.25736 11.25 5.5 11.25H9C10.2426 11.25 11.25 10.2426 11.25 8.99998V5.5C11.25 4.25736 10.2426 3.25 9 3.25H5.5ZM4.75 5.5C4.75 5.08579 5.08579 4.75 5.5 4.75H9C9.41421 4.75 9.75 5.08579 9.75 5.5V8.99998C9.75 9.41419 9.41421 9.74998 9 9.74998H5.5C5.08579 9.74998 4.75 9.41419 4.75 8.99998V5.5ZM5.5 12.75C4.25736 12.75 3.25 13.7574 3.25 15V18.5C3.25 19.7426 4.25736 20.75 5.5 20.75H9C10.2426 20.75 11.25 19.7427 11.25 18.5V15C11.25 13.7574 10.2426 12.75 9 12.75H5.5ZM4.75 15C4.75 14.5858 5.08579 14.25 5.5 14.25H9C9.41421 14.25 9.75 14.5858 9.75 15V18.5C9.75 18.9142 9.41421 19.25 9 19.25H5.5C5.08579 19.25 4.75 18.9142 4.75 18.5V15ZM12.75 5.5C12.75 4.25736 13.7574 3.25 15 3.25H18.5C19.7426 3.25 20.75 4.25736 20.75 5.5V8.99998C20.75 10.2426 19.7426 11.25 18.5 11.25H15C13.7574 11.25 12.75 10.2426 12.75 8.99998V5.5ZM15 4.75C14.5858 4.75 14.25 5.08579 14.25 5.5V8.99998C14.25 9.41419 14.5858 9.74998 15 9.74998H18.5C18.9142 9.74998 19.25 9.41419 19.25 8.99998V5.5C19.25 5.08579 18.9142 4.75 18.5 4.75H15ZM15 12.75C13.7574 12.75 12.75 13.7574 12.75 15V18.5C12.75 19.7426 13.7574 20.75 15 20.75H18.5C19.7426 20.75 20.75 19.7427 20.75 18.5V15C20.75 13.7574 19.7426 12.75 18.5 12.75H15ZM14.25 15C14.25 14.5858 14.5858 14.25 15 14.25H18.5C18.9142 14.25 19.25 14.5858 19.25 15V18.5C19.25 18.9142 18.9142 19.25 18.5 19.25H15C14.5858 19.25 14.25 18.9142 14.25 18.5V15Z"
+                  fill="" />
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                الصفحة الرئيسية
-                            </span>
-                        </a>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                الصفحة الرئيسية
+              </span>
+            </a>
 
-                        <!-- Dropdown Menu Start -->
-                        {{-- <div class="overflow-hidden transform translate"
+            <!-- Dropdown Menu Start -->
+            {{-- <div class="overflow-hidden transform translate"
               :class="(selected === 'Dashboard') ? 'block' :'hidden'">
               <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'" class="flex flex-col gap-1 pl-9 mt-2 menu-dropdown">
                 <li>
@@ -72,231 +69,215 @@
                 </li>
               </ul>
             </div> --}}
-                        <!-- Dropdown Menu End -->
+            <!-- Dropdown Menu End -->
 
-                    </li>
-                    <!-- Menu Item Dashboard -->
+          </li>
+          <!-- Menu Item Dashboard -->
 
-                    <!-- Menu Item Calendar -->
-                    <li>
-                        <a href="{{ route('users.index') }}" @click="selected = (selected === 'users' ? '':'users')"
-                            class="menu-item group"
-                            :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-active' :
+          <!-- Menu Item Calendar -->
+          @if(Auth::user()->type != 'user')
+          <li>
+            <a href="{{ route('users.index') }}" @click="selected = (selected === 'users' ? '':'users')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
-                            <svg :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd"
-                                    d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
-                                    fill="" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                ادارة المستخدمين
-                            </span>
-                        </a>
-                    </li>
-                    <!-- Menu Item Calendar -->
+              <svg :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-icon-active' :
+                                'menu-item-icon-inactive'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
+                  fill="" />
+              </svg>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                ادارة المستخدمين
+              </span>
+            </a>
+          </li>
+          @endif
+          <!-- Menu Item Calendar -->
 
-                    <!-- Menu Item Profile -->
-                    <li>
-                        <a href="{{ route('branch.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
+          <!-- Menu Item Profile -->
+          <li>
+            <a href="{{ route('branch.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
-                            <svg :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" width="24" height="24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-                            </svg>
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                إدارة الافرع
-                            </span>
-                        </a>
-                    </li>
+              <svg :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-icon-active' :
+                                'menu-item-icon-inactive'" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+              </svg>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                إدارة الافرع
+              </span>
+            </a>
+          </li>
 
-                    <!-- Menu Item Forms -->
-                    <li>
-                        <a href="{{ route('shipment.index') }}"
-                            class="menu-item group {{ request()->routeIs('shipment.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
+          <!-- Menu Item Forms -->
+          <li>
+            <a href="{{ route('shipment.index') }}"
+              class="menu-item group {{ request()->routeIs('shipment.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
-                            <svg class="{{ request()->routeIs('shipment.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                fill="currentColor" width="30" height="30" viewBox="0 0 24 24">
-                                <g>
-                                    <path
-                                        d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" fill="none" />
-                                    <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </g>
-                            </svg>
+              <svg
+                class="{{ request()->routeIs('shipment.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                fill="currentColor" width="30" height="30" viewBox="0 0 24 24">
+                <g>
+                  <path
+                    d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                  <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </g>
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                إدارة الطرود
-                            </span>
-                        </a>
-                    </li>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                إدارة الطرود
+              </span>
+            </a>
+          </li>
 
-                    <li>
-                        <a href="{{ route('shipmentpackage.index') }}"
-                            class="menu-item group {{ request()->routeIs('shipmentpackage.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
+          <li>
+            <a href="{{ route('shipmentpackage.index') }}"
+              class="menu-item group {{ request()->routeIs('shipmentpackage.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
-                            <svg class="{{ request()->routeIs('shipmentpackage.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                fill="none" width="30" height="30" viewBox="0 0 24 24">
-                                <g>
-                                    <path
-                                        d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </g>
-                            </svg>
+              <svg
+                class="{{ request()->routeIs('shipmentpackage.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                fill="none" width="30" height="30" viewBox="0 0 24 24">
+                <g>
+                  <path
+                    d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                  <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round" />
+                </g>
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                توزيع الشحنات
-                            </span>
-                        </a>
-                    </li>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                توزيع الشحنات
+              </span>
+            </a>
+          </li>
 
-                    <!-- Menu Item Forms -->
+          <!-- Menu Item Forms -->
 
-                    <!-- Menu Item Tables -->
-                    <li>
-                        <a href="{{ route('shipment.adminlog') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('shipment.adminlog') }}') ? 'menu-item-active' :
+          <!-- Menu Item Tables -->
+          <li>
+            <a href="{{ route('shipment.adminlog') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('shipment.adminlog') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
-                            <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M20 6H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-1 10H5c-.55 0-1-.45-1-1V9c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1z" />
-                                <circle cx="8.5" cy="11.5" r="1.5" />
-                                <circle cx="15.5" cy="11.5" r="1.5" />
-                                <path d="M8 15h8v1.5c0 .83-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5V15z" />
-                            </svg>
+              <svg fill="currentColor" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M20 6H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-1 10H5c-.55 0-1-.45-1-1V9c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1z" />
+                <circle cx="8.5" cy="11.5" r="1.5" />
+                <circle cx="15.5" cy="11.5" r="1.5" />
+                <path d="M8 15h8v1.5c0 .83-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5V15z" />
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                عرض السجلات </span>
-                        </a>
-                    </li>
-                    <!-- Menu Item Tables -->
-                    {{-- <li>
-                        <a href="{{ route('drivers.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' :
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                عرض السجلات </span>
+            </a>
+          </li>
+          <!-- Menu Item Tables -->
+          {{-- <li>
+            <a href="{{ route('drivers.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('drivers.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                                <g id="SVGRepo_iconCarrier">
-                                    <path
-                                        d="M22.875 8.625L21.75 9L21 10.5L19.1776 4.4253C18.9238 3.57933 18.1452 3 17.2619 3H6.73806C5.85484 3 5.0762 3.57934 4.82241 4.4253L3 10.5L2.25 9L1.125 8.625"
-                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                    <path
-                                        d="M1.5 19.468V21C1.5 21.3978 1.65804 21.7794 1.93934 22.0607C2.22064 22.342 2.60218 22.5 3 22.5C3.39782 22.5 3.77936 22.342 4.06066 22.0607C4.34196 21.7794 4.5 21.3978 4.5 21V19.555"
-                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                    <path
-                                        d="M22.5 19.468V21C22.5 21.3978 22.342 21.7794 22.0607 22.0607C21.7794 22.342 21.3978 22.5 21 22.5C20.6022 22.5 20.2206 22.342 19.9393 22.0607C19.658 21.7794 19.5 21.3978 19.5 21V19.5766"
-                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                    <path
-                                        d="M2.75 10.5H12H21.25C21.7804 10.5 22.2891 10.7299 22.6642 11.139C23.0393 11.5482 23.25 12.1032 23.25 12.6818V18.4091C23.25 18.6984 23.1446 18.9759 22.9571 19.1805C22.7696 19.3851 22.5152 19.5 22.25 19.5H1.75C1.48478 19.5 1.23043 19.3851 1.04289 19.1805C0.855357 18.9759 0.75 18.6984 0.75 18.4091V12.6818C0.75 12.1032 0.960714 11.5482 1.33579 11.139C1.71086 10.7299 2.21957 10.5 2.75 10.5Z"
-                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round"></path>
-                                    <path d="M0.75 14.25H5L6.125 16.5" stroke="currentColor" stroke-width="1.5"
-                                        stroke-linecap="round" stroke-linejoin="round"></path>
-                                    <path d="M14.25 16.5H9.75" stroke="currentColor" stroke-width="1.5"
-                                        stroke-linecap="round" stroke-linejoin="round"></path>
-                                    <path d="M23.25 14.25H19L17.875 16.5" stroke="currentColor" stroke-width="1.5"
-                                        stroke-linecap="round" stroke-linejoin="round"></path>
-                                </g>
-                            </svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path
+                    d="M22.875 8.625L21.75 9L21 10.5L19.1776 4.4253C18.9238 3.57933 18.1452 3 17.2619 3H6.73806C5.85484 3 5.0762 3.57934 4.82241 4.4253L3 10.5L2.25 9L1.125 8.625"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path
+                    d="M1.5 19.468V21C1.5 21.3978 1.65804 21.7794 1.93934 22.0607C2.22064 22.342 2.60218 22.5 3 22.5C3.39782 22.5 3.77936 22.342 4.06066 22.0607C4.34196 21.7794 4.5 21.3978 4.5 21V19.555"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path
+                    d="M22.5 19.468V21C22.5 21.3978 22.342 21.7794 22.0607 22.0607C21.7794 22.342 21.3978 22.5 21 22.5C20.6022 22.5 20.2206 22.342 19.9393 22.0607C19.658 21.7794 19.5 21.3978 19.5 21V19.5766"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path
+                    d="M2.75 10.5H12H21.25C21.7804 10.5 22.2891 10.7299 22.6642 11.139C23.0393 11.5482 23.25 12.1032 23.25 12.6818V18.4091C23.25 18.6984 23.1446 18.9759 22.9571 19.1805C22.7696 19.3851 22.5152 19.5 22.25 19.5H1.75C1.48478 19.5 1.23043 19.3851 1.04289 19.1805C0.855357 18.9759 0.75 18.6984 0.75 18.4091V12.6818C0.75 12.1032 0.960714 11.5482 1.33579 11.139C1.71086 10.7299 2.21957 10.5 2.75 10.5Z"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                  <path d="M0.75 14.25H5L6.125 16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                  <path d="M14.25 16.5H9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                  <path d="M23.25 14.25H19L17.875 16.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                    stroke-linejoin="round"></path>
+                </g>
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                ادارة السائقين
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                ادارة السائقين
 
-                            </span>
-                        </a>
-                    </li>  --}}
-                    <li>
-                        <a href="{{ route('finance.branches.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
+              </span>
+            </a>
+          </li> --}}
+          <li>
+            <a href="{{ route('finance.branches.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
                                 'menu-item-active' :
                                 'menu-item-inactive'">
-                            <svg :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
-                                'menu-item-icon-active' : 'menu-item-icon-inactive'"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" width="24" height="24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                            </svg>
+              <svg :class="window.location.href.includes('{{ route('finance.branches.index') }}') ?
+                                'menu-item-icon-active' : 'menu-item-icon-inactive'" xmlns="http://www.w3.org/2000/svg"
+                fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                ادارة المالية
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                ادارة المالية
 
-                            </span>
-                        </a>
-                    </li>
+              </span>
+            </a>
+          </li>
 
-                    <!-- Menu Item Pages -->
-                    <li>
-                        <a href="{{ route('reports.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('reports.index') }}') ? 'menu-item-active' :
+          <!-- Menu Item Pages -->
+          <li>
+            <a href="{{ route('reports.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('reports.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
-                            <svg :class="window.location.href.includes('{{ route('reports.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" width="24" height="24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-                            </svg>
+              <svg :class="window.location.href.includes('{{ route('reports.index') }}') ? 'menu-item-icon-active' :
+                                'menu-item-icon-inactive'" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                إلتقارير
-                            </span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('customers.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('customers.index') }}') ? 'menu-item-active' :
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                إلتقارير
+              </span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('customers.index') }}" @click="selected = (selected === 'Profile' ? '':'Profile')"
+              class="menu-item group" :class="window.location.href.includes('{{ route('customers.index') }}') ? 'menu-item-active' :
                                 'menu-item-inactive'">
 
-                            <svg :class="window.location.href.includes('{{ route('customers.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" width="24" height="24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
-                            </svg>
+              <svg :class="window.location.href.includes('{{ route('customers.index') }}') ? 'menu-item-icon-active' :
+                                'menu-item-icon-inactive'" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" />
+              </svg>
 
-                            <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                العملاء
-                            </span>
-                        </a>
-                    </li>
-                    <!-- Menu Item Pages -->
-                </ul>
-            </div>
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                العملاء
+              </span>
+            </a>
+          </li>
+          <!-- Menu Item Pages -->
+        </ul>
+      </div>
 
-            <!-- Others Group -->
-            {{-- <div>
+      <!-- Others Group -->
+      {{-- <div>
         <h3 class="mb-4 text-xs uppercase leading-[20px] text-gray-400">
           <span class="menu-group-title" :class="sidebarToggle ? 'lg:hidden' : ''">
             others
@@ -474,7 +455,7 @@
           <!-- Menu Item Authentication -->
         </ul>
       </div> --}}
-        </nav>
-        <!-- Sidebar Menu -->
-    </div>
+    </nav>
+    <!-- Sidebar Menu -->
+  </div>
 </aside>

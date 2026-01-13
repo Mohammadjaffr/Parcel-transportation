@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use GPBMetadata\Google\Api\Auth;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -35,7 +35,24 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|unique:users,phone',
+            'whatsapp_number' => 'nullable|string',
+            'password' => 'required|string|min:6',
+        ]);
+       
+        User::create([
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'whatsapp_number' => $request->whatsapp_number,
+            'password' => $request->password,
+            'type' => 'user', // Default type
+            'is_banned' => false,
+            'branch_code' => Auth::user()->branch_code,
+        ]);
+
+        return redirect()->route('users.index')->with('success', 'تم إنشاء المستخدم بنجاح');
     }
 
     /**
@@ -60,7 +77,9 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        
+        return response()->json($user);
     }
 
     /**
@@ -68,7 +87,32 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|unique:users,phone,' . $id,
+            'whatsapp_number' => 'nullable|string',
+            'type' => 'required|in:user,admin,super_admin',
+            'password' => 'nullable|string|min:6',
+            'is_banned' => 'nullable|boolean',
+        ]);
+
+        $data = [
+            'name' => $request->name,
+            'phone' => $request->phone,
+            'whatsapp_number' => $request->whatsapp_number,
+            'type' => $request->type,
+            'is_banned' => $request->has('is_banned') ? (bool) $request->is_banned : false,
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = $request->password;
+        }
+
+        $user->update($data);
+
+        return redirect()->route('users.index')->with('success', 'تم تحديث بيانات المستخدم بنجاح');
     }
 
     /**

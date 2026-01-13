@@ -17,65 +17,75 @@
     <div class="grid grid-cols-1 gap-6 mb-6 xl:grid-cols-1">
 
         {{-- ===== بطاقات الإحصائيات ===== --}}
-        <div class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="flex gap-6 mb-6">
 
             {{-- بطاقة: المسجلة اليوم --}}
-            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
-                <div class="flex justify-center items-center w-12 h-12 bg-gray-100 rounded-lg dark:bg-gray-800">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        class="text-brand-500 dark:text-brand-400" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="14" rx="2"></rect>
-                        <path d="M3 10h18"></path>
+            <div
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                 </div>
-                <div class="mt-4">
-                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">عدد الطرود المسجلة اليوم</span>
-                    <h4 class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ $todayShipments }}</h4>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">المسجلة
+                        اليوم</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $todayShipments }}</h4>
                 </div>
             </div>
 
             {{-- بطاقة: في الطريق --}}
-            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
-                <div class="flex justify-center items-center w-12 h-12 rounded-lg bg-warning-50 dark:bg-warning-500/10">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24"
-                        class="text-warning-600 dark:text-warning-400" stroke="currentColor" stroke-width="2">
-                        <path d="M3 13l2.3-6a2 2 0 0 1 1.9-1.4h10.6a2 2 0 0 1 1.9 1.4l2.3 6"></path>
-                        <circle cx="7" cy="17" r="2"></circle>
-                        <circle cx="17" cy="17" r="2"></circle>
+            <div
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <div class="mt-4">
-                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">عدد الطرود في الطريق</span>
-                    <h4 class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ $inTransit }}</h4>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">في
+                        الطريق</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $inTransit }}</h4>
                 </div>
             </div>
 
             {{-- بطاقة: المستلمة --}}
-            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
-                <div class="flex justify-center items-center w-12 h-12 rounded-lg bg-success-50 dark:bg-success-500/10">
-                    <svg fill="none" width="24" height="24" viewBox="0 0 24 24"
-                        class="text-success-600 dark:text-success-400" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"></polyline>
+            <div
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <div class="mt-4">
-                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">عدد الطرود التي تم استلامها</span>
-                    <h4 class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ $delivered }}</h4>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">تم
+                        التسليم</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $delivered }}</h4>
                 </div>
             </div>
 
             {{-- بطاقة: الإيرادات --}}
-            <div class="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] shadow-sm">
-                <div class="flex justify-center items-center w-12 h-12 bg-blue-50 rounded-lg dark:bg-blue-500/10">
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24"
-                        class="text-blue-600 dark:text-blue-400" stroke="currentColor" stroke-width="2">
-                        <path d="M12 1v22M5 6h14M5 18h14"></path>
+            <div
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.67 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.407-2.67-1" />
                     </svg>
                 </div>
-                <div class="mt-4">
-                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">إيرادات COD المحصلة</span>
-                    <h4 class="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($revenueCOD, 2) }}
-                        <span class="text-base font-normal text-gray-500 dark:text-gray-400">ر.ي</span></h4>
+                <div class="mt-3">
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إيرادات
+                        COD</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ number_format($revenueCOD, 2) }}
+                        <small class="text-[10px] font-bold text-gray-400 mr-0.5">ر.ي</small>
+                    </h4>
                 </div>
             </div>
 
@@ -161,8 +171,8 @@
                                                 class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded dark:bg-gray-700 dark:text-gray-300">
                                                 {{ $shipment->senderBranch->name ?? $shipment->sender_branch_code }}
                                             </span>
-                                            <svg class="w-3 h-3 text-gray-400 rtl:rotate-180" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3 text-gray-400 rtl:rotate-180" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                                             </svg>
@@ -176,8 +186,7 @@
                                         <a href="{{ route('shipment.show', $shipment->id) }}"
                                             class="p-2 text-gray-500 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
                                             title="عرض التفاصيل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -230,7 +239,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const options = {
                 chart: {
                     type: "bar",
@@ -305,7 +314,7 @@
                 tooltip: {
                     theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
                     y: {
-                        formatter: function(val) {
+                        formatter: function (val) {
                             return val + " ر.ي";
                         }
                     }

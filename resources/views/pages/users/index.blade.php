@@ -1,9 +1,19 @@
 @extends('layouts.app')
 @section('title', 'إدارة المستخدمين')
+@section('addButton')
+  @include('pages.users.create-user-modal')
+@endsection
 
 @section('content')
 
     <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
+        @include('pages.users.edit-user-modal')
+        
+        @if(session('success'))
+            <div class="p-4 mb-4 text-sm text-success-700 bg-success-50 rounded-2xl dark:bg-success-900/10 dark:text-success-500 border border-success-100 dark:border-success-500/20" role="alert">
+                <span class="font-bold">تم بنجاح!</span> {{ session('success') }}
+            </div>
+        @endif
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="statusFilter = 'all'; filterNow()" 
@@ -26,7 +36,7 @@
                 </div>
                 <div class="mt-3">
                     <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">نشط حالياً</span>
-                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 1).length"></h4>
+                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
                 </div>
             </div>
 
@@ -38,7 +48,7 @@
                 </div>
                 <div class="mt-3">
                     <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">حسابات محظورة</span>
-                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
+                    <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 1).length"></h4>
                 </div>
             </div>
         </div>
@@ -90,16 +100,33 @@
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
-                                    <span :class="user.is_banned == 1 ? 'bg-success-50 text-success-600' : 'bg-error-50 text-error-600'"
+                                    <span :class="user.is_banned == 0 ? 'bg-success-50 text-success-600' : 'bg-error-50 text-error-600'"
                                           class="px-3 py-1 rounded-lg text-[10px] font-black uppercase">
-                                        <span x-text="user.is_banned == 1 ? 'نشط' : 'محظور'"></span>
+                                        <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
                                     </span>
                                 </td>
 
                                 <td class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
-                                    <a :href="'/users/' + user.id" class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                    </a>
+                                    <div class="flex items-center justify-center gap-2">
+                                        {{-- <a :href="'/users/' + user.id" class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        </a> --}}
+                                        <button @click="openEditModal(user.id)" 
+                                                :disabled="isFetching == user.id"
+                                                class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all disabled:opacity-50">
+                                            <template x-if="isFetching == user.id">
+                                                <svg class="animate-spin h-5 w-5 text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </template>
+                                            <template x-if="isFetching != user.id">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                </svg>
+                                            </template>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -123,9 +150,77 @@ function userFilter() {
         // جلب البيانات من Laravel وتحويلها لـ JSON
         users: @json($users->items()),  
         filteredUsers: [],
+        editModalOpen: false,
+        isUpdating: false,
+        isFetching: null,
+        countries: [
+            { name: 'Yemen', code: 'YE', dial_code: '967' }
+        ],
+        editUser: {
+            id: null,
+            name: '',
+            phone: '',
+            whatsapp_number: '',
+            type: '',
+            phone_local: '',
+            phone_country: null,
+            whatsapp_local: '',
+            whatsapp_country: null,
+            password: ''
+        },
 
         init() {
             this.filteredUsers = this.users;
+            this.editUser.phone_country = this.countries[0];
+            this.editUser.whatsapp_country = this.countries[0];
+        },
+
+        parsePhoneNumber(fullNumber) {
+            if (!fullNumber) return { country: this.countries[0], local: '' };
+            
+            // Try to match dial code
+            for (let country of this.countries) {
+                if (fullNumber.startsWith(country.dial_code)) {
+                    return {
+                        country: country,
+                        local: fullNumber.substring(country.dial_code.length)
+                    };
+                }
+            }
+            return { country: this.countries[0], local: fullNumber };
+        },
+
+        async openEditModal(userId) {
+            this.isFetching = userId;
+            try {
+                const response = await fetch(`/users/${userId}/edit`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                // Parse numbers
+                const parsedPhone = this.parsePhoneNumber(data.phone);
+                const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
+
+                this.editUser = { 
+                    ...data,
+                    phone_local: parsedPhone.local,
+                    phone_country: parsedPhone.country,
+                    whatsapp_local: parsedWhatsapp.local,
+                    whatsapp_country: parsedWhatsapp.country,
+                    password: '' // Clear password field
+                };
+                
+                this.editModalOpen = true;
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                alert("حدث خطأ أثناء جلب بيانات المستخدم");
+            } finally {
+                this.isFetching = null;
+            }
         },
 
         filterNow() {
@@ -135,8 +230,8 @@ function userFilter() {
                                     (user.phone && user.phone.includes(this.search));
 
                 const matchesStatus = this.statusFilter === "all" || 
-                                    (this.statusFilter === "active" && user.is_banned == 1) || 
-                                    (this.statusFilter === "inactive" && user.is_banned == 0);
+                                    (this.statusFilter === "active" && user.is_banned == 0) || 
+                                    (this.statusFilter === "inactive" && user.is_banned == 1);
 
                 return matchesSearch && matchesStatus;
             });

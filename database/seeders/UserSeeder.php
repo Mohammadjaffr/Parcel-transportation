@@ -42,6 +42,15 @@ class UserSeeder extends Seeder
             'whatsapp_number' => '966500000001',
             'phone_verified_at'=> now(),
             'password' => '12121212',
+            'type' => 'super_admin',
+            'branch_code' => 'QTN',
+        ]);
+        User::create([
+            'name' => 'عوض لشرم',
+            'phone' => '967780236553',
+            'whatsapp_number' => '966500000001',
+            'phone_verified_at'=> now(),
+            'password' => '12121212',
             'type' => 'admin',
             'branch_code' => 'QTN',
         ]);

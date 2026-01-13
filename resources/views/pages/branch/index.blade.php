@@ -28,8 +28,8 @@
                     </svg>
                 </div>
             </div>
-
-            <div class="flex md:justify-end w-full">
+            @if (Auth::user()->type == 'super_admin')
+                <div class="flex md:justify-end w-full">
                 <a href="{{ route('branch.create') }}"
                     class="h-12 px-8 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl transition-all shadow-lg shadow-brand-500/20 active:scale-95 text-sm font-bold w-full md:w-auto">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -39,6 +39,8 @@
                     إضافة فرع جديد
                 </a>
             </div>
+            @endif
+            
         </div>
 
         <div

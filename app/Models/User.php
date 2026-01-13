@@ -25,6 +25,7 @@ class User extends Authenticatable
         'whatsapp_number',
         'type',
         'is_banned',
+        'branch_code',
     ];
     public function branch()
     {
@@ -52,6 +53,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_banned' => 'boolean',
         ];
     }
 
