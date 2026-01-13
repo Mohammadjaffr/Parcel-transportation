@@ -175,7 +175,7 @@
                         </button>
                     </div>
 
-                    <div class="p-8 space-y-6">
+                    <div class="p-8 space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             {{-- <div
                                 class="md:col-span-2 p-4 bg-brand-50 dark:bg-brand-500/10 rounded-2xl border border-dashed border-brand-200 text-center">

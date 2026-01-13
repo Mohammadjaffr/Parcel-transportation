@@ -154,7 +154,7 @@ class BranchFinanceController extends Controller
             'تم عمل التسوية بنجاح.',
             'حسناً',
             'finance.branches.show',
-            $data['sender_branch_code']
+            ['branch' => $data['sender_branch_code']]
         );
     }
 

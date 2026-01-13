@@ -116,15 +116,25 @@
             <div class="flex justify-between items-center px-4 my-4">
                 <h3 class="text-lg font-black text-gray-900 dark:text-white uppercase tracking-widest">قائمة الطرود الملحقة
                 </h3>
+                <a href="{{ route('shipmentpackage.printD', $package->id) }}" target="_blank"
+                    class="h-12 px-6 bg-success-500 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    طباعة كشف الحمولة للفرع
+                    </a>
                 <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
                     class="h-12 px-6 bg-brand-500 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all active:scale-95 flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                     </svg>
-                    طباعة كشف الحمولة
+                    طباعة كشف الحمولة لسائق
                 </a>
+                
             </div>
+          
 
             <div
                 class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">

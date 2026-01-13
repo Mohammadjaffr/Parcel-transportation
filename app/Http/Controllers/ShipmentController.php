@@ -74,33 +74,34 @@ class ShipmentController extends Controller
     {
         $entryType = $request->input('entry_type', 'sender'); // sender أو receiver
 
-        $rules = [
-            'sender_customer_id' => 'nullable|exists:customers,id',
-            'receiver_customer_id' => 'nullable|exists:customers,id',
+      $rules = [
+    'sender_customer_id'   => 'nullable|exists:customers,id',
+    'receiver_customer_id' => 'nullable|exists:customers,id',
 
-            'sender_name' => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone' => 'required_without:sender_customer_id|string|max:50',
+    'sender_name'   => 'required_without:sender_customer_id|string|max:255',
+    'sender_phone'  => 'required_without:sender_customer_id|string|max:50',
 
-            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
+    'receiver_name'  => 'required_without:receiver_customer_id|string|max:255',
+    'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
 
-            'package_type' => 'required|string|max:255',
-            'weight' => 'nullable|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
-            'code' => 'required|string|max:255',
-            'no_honey_jars' => 'nullable|numeric|min:0',
-            'no_gallons_honey' => 'nullable|numeric|min:0',
+    'package_type' => 'required|string|max:255',
+    'weight'       => 'nullable|numeric|min:0',
+    'total_amount' => 'required|numeric|min:0',
 
-            'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
+    'code'              => 'nullable|string|max:255',
+    'no_honey_jars'     => 'nullable|numeric|min:0',
+    'no_gallons_honey'  => 'nullable|numeric|min:0',
 
-            'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
-            'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
-            'prepaid_reference' => 'nullable|string|max:255',
-            'partial_amount' => 'nullable|numeric|min:0.01',
+    'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
 
-            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
-            'notes' => 'nullable|string',
-        ];
+    'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
+    'prepaid_reference'      => 'required_if:prepaid_payment_method,bank_transfer|max:255',
+
+    'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
+
+    'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
+    'notes' => 'nullable|string',
+];
 
         if ($entryType === 'sender') {
             $rules['receiver_branch_code'] = 'required|exists:branches,code';
@@ -172,7 +173,7 @@ class ShipmentController extends Controller
 
             // $data['status'] = 'pending';
             if ($data['payment_method'] === 'prepaid') {
-                $data['status'] = 'delivered';
+                $data['status'] = 'pending';
             } else {
                 $data['status'] = 'pending';
             }
@@ -183,7 +184,6 @@ class ShipmentController extends Controller
 
             // هذه القيم لا نريد تخزينها في جدول الشحنات
             unset(
-                $data['partial_amount'],
                 $data['sender_name'],
                 $data['sender_phone'],
                 $data['receiver_name'],
@@ -198,7 +198,7 @@ class ShipmentController extends Controller
 
             $paymentType = $request->prepaid_payment_method ?? 'cash';
             $paidAmount = null;
-            $attachment = $request->file('prepaid_attachment');
+            // $attachment = $request->file('prepaid_attachment');
 
             if ($shipment->payment_method === 'partial_payment') {
                 $paidAmount = $partialAmount ? (float) $partialAmount : null;
@@ -213,7 +213,6 @@ class ShipmentController extends Controller
                 $shipment,
                 $paymentType,
                 $paidAmount,
-                $attachment,
                 $request->prepaid_reference
             );
 
@@ -371,7 +370,7 @@ class ShipmentController extends Controller
         } elseif ($section === 'details') {
 
             $rules = [
-                'code' => 'required|string|max:255',
+                'code' => 'nullable|string|max:255',
                 'package_type' => 'nullable|string|max:255',
                 'weight' => 'nullable|numeric|min:0',
                 'total_amount' => 'required|numeric|min:0',
@@ -402,7 +401,7 @@ class ShipmentController extends Controller
                 'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
                 'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
                 'prepaid_reference' => 'nullable|string|max:255',
-                'partial_amount' => 'nullable|numeric|min:0.01',
+                'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
                 'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
             ];
 
@@ -462,7 +461,6 @@ class ShipmentController extends Controller
             unset(
                 $data['prepaid_payment_method'],
                 $data['prepaid_attachment'],
-                $data['partial_amount']
             );
 
             $shipment->update($data);
@@ -503,7 +501,7 @@ class ShipmentController extends Controller
 
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
-            'partial_amount' => 'nullable|numeric|min:1',
+            'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
             'prepaid_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'prepaid_reference' => 'nullable|string|max:255',
@@ -521,7 +519,7 @@ class ShipmentController extends Controller
         });
 
         if ($validator->fails()) {
-                return WebResponseClass::sendValidationError($validator);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         $data = $validator->validated();

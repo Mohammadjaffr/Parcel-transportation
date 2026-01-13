@@ -8,7 +8,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 class WebResponseClass
 {
-    public static function sendResponse($title, $message,$buttonText='حسناً',$route=null)
+    public static function sendResponse($title, $message,$buttonText='حسناً',$route=null,$parameters=[])
     {
         if($route== null){
             return redirect()->back()
@@ -18,7 +18,7 @@ class WebResponseClass
             ->with('success_buttonText', $buttonText);
         }
 
-         return redirect()->route($route)
+         return redirect()->route($route,$parameters)
             ->with('success', true)
             ->with('success_title',$title)
             ->with('success_message', $message)

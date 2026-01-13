@@ -5,27 +5,27 @@
     <x-modals.success-modal />
     <x-modals.error-modal />
     <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800">
-        <div x-data="{ activeTab: 'single' }">
+        <div x-data="{ activeTab: 'sender' }">
 
             {{-- شريط التابات --}}
             <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
                 <nav class="flex gap-2">
 
                     {{-- التاب الأول --}}
-                    <button type="button" @click="activeTab = 'single'"
-                        :class="activeTab === 'single'
+                    <button type="button" @click="activeTab = 'sender'"
+                        :class="activeTab === 'sender'
                             ?
-                            'border-b-2 border-brand-500 text-brand-600 dark:text-brand-400' :
+                            'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
                             'border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                         class="px-4 py-2 text-sm font-medium">
                         مرسل الطرد
                     </button>
 
                     {{-- التاب الثاني --}}
-                    <button type="button" @click="activeTab = 'group'"
-                        :class="activeTab === 'group'
+                    <button type="button" @click="activeTab = 'receiver'"
+                        :class="activeTab === 'receiver'
                             ?
-                            'border-b-2 border-brand-500 text-brand-600 dark:text-brand-400' :
+                            'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
                             'border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                         class="px-4 py-2 text-sm font-medium">
                         مستلم الطرد
@@ -35,14 +35,33 @@
             </div>
 
             {{-- =================== التاب الأول: مرسل الطرد =================== --}}
-            <form x-show="activeTab === 'single'" x-cloak x-data="{
+            <form x-show="activeTab === 'sender'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
+            
+                // prepaid
                 prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
+                prepaid_reference: '{{ old('prepaid_reference') }}',
+            
+                // partial
+                partial_amount: '{{ old('partial_amount') }}',
+                partial_method: '{{ old('partial_payment_method', 'cash') }}',
+                partial_reference: '{{ old('partial_reference') }}',
+            
                 isSubmitting: false
-            }" action="{{ route('shipment.store') }}" @submit="isSubmitting = true"
-                method="POST" enctype="multipart/form-data">
+            }"
+                x-effect="
+        if (payment_method !== 'partial_payment') partial_amount = '';
+        if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
+
+        // نظف حقول المقدم/الجزئي حسب الحالة حتى لا تُرسل بالغلط
+        if (payment_method !== 'prepaid') prepaid_reference = '';
+        if (payment_method !== 'partial_payment') partial_reference = '';
+      "
+                action="{{ route('shipment.store') }}" @submit="isSubmitting = true" method="POST">
+
                 @csrf
                 <input type="hidden" name="entry_type" value="sender">
+                <input type="hidden" name="active_tab" value="sender">
 
                 <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
@@ -60,7 +79,7 @@
 
                             <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
                                 @keydown.escape="open=false" placeholder="اكتب اسم العميل أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
 
                             <!-- Dropdown -->
                             <div x-show="open" x-transition
@@ -99,14 +118,14 @@
                             <input type="hidden" name="sender_branch_code" value="{{ auth()->user()->branch_code }}">
 
                             @error('sender_branch_code')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- نخزن ID العميل الحقيقي -->
-                        <input type="hidden" name="sender_customer_id" c x-model="selectedId">
+                        <input type="hidden" name="sender_customer_id" x-model="selectedId">
                         @error('sender_customer_id')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
                         <!-- اسم العميل -->
@@ -114,22 +133,22 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('sender_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="اسم المرسل">
                             @error('sender_name')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- هاتف العميل -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                            <div class="flex gap-2" dir="ltr">
 
-                                <!-- Custom Flag Select -->
+                            <div class="flex gap-2" dir="ltr">
+                                <!-- Custom Flag Select (كما هو عندك) -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -141,7 +160,6 @@
                                         </svg>
                                     </button>
 
-                                    <!-- Dropdown List -->
                                     <div x-show="openCountry" x-transition
                                         class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                         <template x-for="country in countries" :key="country.code">
@@ -161,12 +179,13 @@
                                 </div>
 
                                 <input type="text" x-model="localNumber" @input="updatePhone()"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
+
                             <input type="hidden" name="sender_phone" x-model="selectedPhone">
                             @error('sender_phone')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -175,13 +194,12 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
                             <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0">
                             @error('no_honey_jars')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
 
                     <!-- بيانات المستلم -->
@@ -197,9 +215,8 @@
 
                             <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
                                 @keydown.escape="open=false" placeholder="اكتب اسم المستلم أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
 
-                            <!-- Dropdown -->
                             <div x-show="open" x-transition
                                 class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
 
@@ -227,34 +244,30 @@
                         <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                         @error('receiver_customer_id')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
                         <!-- فرع المستلم -->
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                الجهة إلى
-                            </label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                                إلى</label>
 
                             <select name="receiver_branch_code"
-                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>
-                                    اختر الجهة
+                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
+                                <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>اختر الجهة
                                 </option>
 
                                 @foreach ($branches as $branch)
                                     @continue($branch->code === auth()->user()->branch_code)
-
                                     <option value="{{ $branch->code }}"
                                         {{ old('receiver_branch_code') == $branch->code ? 'selected' : '' }}>
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach
-
                             </select>
 
                             @error('receiver_branch_code')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -263,22 +276,21 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('receiver_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="اسم المستلم">
                             @error('receiver_name')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <!-- هاتف المستلم -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
-                            <div class="flex gap-2" dir="ltr">
 
-                                <!-- Custom Flag Select -->
+                            <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -291,7 +303,6 @@
                                         </svg>
                                     </button>
 
-                                    <!-- Dropdown List -->
                                     <div x-show="openCountry" x-transition
                                         class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                         <template x-for="country in countries" :key="country.code">
@@ -311,12 +322,13 @@
                                 </div>
 
                                 <input type="text" x-model="localNumber" @input="updatePhone()"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
+
                             <input type="hidden" name="receiver_phone" x-model="selectedPhone">
                             @error('receiver_phone')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -325,29 +337,13 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
                             <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0">
                             @error('no_gallons_honey')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
-                </div>
-
-                <!-- حقول عامة -->
-                <div class="grid grid-cols-1 gap-4 mt-6 w-full xl:grid-cols-2">
-
-                    <div class="mt-3">
-                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
-                        <input type="text" name="code" value="{{ old('code') }}"
-                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="اكتب الرمز">
-                        @error('code')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-
                 </div>
 
                 <!-- تفاصيل الطرد -->
@@ -359,22 +355,10 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
                                 الطرد</label>
                             <input type="text" name="package_type" value="{{ old('package_type') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="مثال: كرتون / شنطة / ...">
                             @error('package_type')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الوزن
-                                (كجم)</label>
-                            <input type="number" name="weight" value="{{ old('weight') }}" step="0.01"
-                                min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                                placeholder="0.00">
-                            @error('weight')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -383,16 +367,15 @@
                                 المبلغ</label>
                             <input type="number" name="total_amount" value="{{ old('total_amount') }}" step="0.01"
                                 min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0.00">
                             @error('total_amount')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
 
-                    <!-- طريقة الدفع -->
+                    <!-- طريقة الدفع (بعد التعديل الصحيح) -->
                     <div class="mt-2 md:col-span-2">
                         <h3 class="my-6 mb-3 text-sm font-bold text-gray-700 dark:text-gray-400">طريقة الدفع</h3>
 
@@ -400,7 +383,6 @@
 
                             <!-- الحالة العامة -->
                             <div class="flex flex-wrap gap-6">
-
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="prepaid"
@@ -463,9 +445,11 @@
                             </div>
 
                             @error('payment_method')
-                                <div class="text-sm text-error-600">{{ $message }}</div>
+                                <div class="text-sm text-error-500">{{ $message }}</div>
                             @enderror
 
+
+                            <!-- prepaid -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
 
@@ -474,7 +458,6 @@
                                 </label>
 
                                 <div class="flex flex-wrap gap-6">
-
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                         <input class="sr-only" type="radio" name="prepaid_payment_method"
@@ -505,71 +488,27 @@
                                 </div>
 
                                 @error('prepaid_payment_method')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
-                                <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        رفع سند التحويل
-                                    </label>
-
-                                    <label for="prepaid_attachment"
-                                        class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                        dark:border-gray-600 dark:bg-gray-800
-                        hover:border-brand-500 dark:hover:border-brand-500
-                        transition-colors duration-200 w-full text-center
-                        @error('prepaid_attachment') border-error-500 @enderror">
-
-                                        <!-- Icon -->
-                                        <div class="mb-[22px] flex justify-center">
-                                            <div
-                                                class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                 dark:bg-gray-700 dark:text-gray-400">
-                                                <svg class="fill-current" width="29" height="28"
-                                                    viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                        d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        <!-- Text -->
-                                        <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                                            Drop File Here
-                                        </h4>
-
-                                        <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                            اسحب الملف هنا أو اضغط للاختيار<br>
-                                            (PNG, JPG, PDF)
-                                        </span>
-
-                                        <span class="font-medium underline text-theme-sm text-brand-500">
-                                            Browse File
-                                        </span>
-
-                                        <!-- Hidden Input -->
-                                        <input id="prepaid_attachment" type="file" :name="payment_method === 'prepaid' ? 'prepaid_attachment' : ''"
-                                            accept="image/*,.pdf" class="hidden" />
-                                    </label>
-
-                                    @error('prepaid_attachment')
-                                        <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                    @enderror
-
+                                <!-- مهم: x-if حتى لا يرسل الحقل لو مخفي -->
+                                <template x-if="prepaid_method === 'bank_transfer'">
                                     <div class="mt-4">
                                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                          رقم  الايداع
+                                            رقم الإيداع
                                         </label>
-                                        <input type="text" :name="payment_method === 'prepaid' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
-                                            placeholder="أدخل رقم السند أو التحويل"
-                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                        <input type="text" name="prepaid_reference" x-model="prepaid_reference"
+                                            placeholder="أدخل رقم الإيداع"
+                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
                                         @error('prepaid_reference')
-                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                         @enderror
                                     </div>
-                                </div>
+                                </template>
                             </div>
 
+
+                            <!-- cod -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'cod'" x-transition>
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
@@ -587,15 +526,17 @@
                                     المبلغ المدفوع من المرسل الآن
                                 </label>
 
-                                <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
-                                    min="0.01" step="0.01" placeholder="0.00"
+                                <input type="number" name="partial_amount" x-model="partial_amount"
+                                    :disabled="payment_method !== 'partial_payment'"
+                                    :required="payment_method === 'partial_payment'" min="0.01" step="0.01"
+                                    placeholder="0.00"
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                      bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                      focus:ring-2 focus:ring-brand-500 focus:border-brand-500
-                      @error('partial_amount') border-error-500 @enderror">
+                                  bg-white dark:bg-gray-700 text-gray-700 dark:text-white
+                                  focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+                                  @error('partial_amount') border-error-500 @enderror">
 
                                 @error('partial_amount')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
                                 <div class="mt-4">
@@ -604,16 +545,15 @@
                                     </label>
 
                                     <div class="flex flex-wrap gap-6">
-
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
-                                                value="cash" x-model="prepaid_method">
+                                            <input class="sr-only" type="radio" name="partial_payment_method"
+                                                value="cash" x-model="partial_method">
                                             <span
-                                                :class="prepaid_method === 'cash' ? 'border-brand-500 bg-brand-500' :
+                                                :class="partial_method === 'cash' ? 'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
                                                 class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                                <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
+                                                <span :class="partial_method === 'cash' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
                                             كاش
@@ -621,80 +561,38 @@
 
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
-                                                value="bank_transfer" x-model="prepaid_method">
+                                            <input class="sr-only" type="radio" name="partial_payment_method"
+                                                value="bank_transfer" x-model="partial_method">
                                             <span
-                                                :class="prepaid_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
+                                                :class="partial_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
                                                     'bg-transparent border-gray-300 dark:border-gray-700'"
                                                 class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                                <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
+                                                <span :class="partial_method === 'bank_transfer' ? 'block' : 'hidden'"
                                                     class="w-2 h-2 bg-white rounded-full"></span>
                                             </span>
                                             تحويل بنكي
                                         </label>
-
                                     </div>
 
-                                    <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رفع سند التحويل
-                                        </label>
+                                    @error('partial_payment_method')
+                                        <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                    @enderror
 
-                                        <!-- Dropzone Wrapper -->
-                                        <label for="prepaid_attachment_partial"
-                                            class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                            dark:border-gray-600 dark:bg-gray-800
-                            hover:border-brand-500 dark:hover:border-brand-500
-                            transition-colors duration-200 w-full text-center
-                            @error('prepaid_attachment') border-error-500 @enderror">
-
-                                            <!-- Icon -->
-                                            <div class="mb-[22px] flex justify-center">
-                                                <div
-                                                    class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                     dark:bg-gray-700 dark:text-gray-400">
-                                                    <svg class="fill-current" width="29" height="28"
-                                                        viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                        <path fill-rule="evenodd" clip-rule="evenodd"
-                                                            d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-
-                                            <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                                                Drop File Here
-                                            </h4>
-
-                                            <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                                اسحب الملف هنا أو اضغط للاختيار<br>
-                                                (PNG, JPG, PDF)
-                                            </span>
-
-                                            <span class="font-medium underline text-theme-sm text-brand-500">
-                                                Browse File
-                                            </span>
-
-                                            <!-- نفس الاسم بالضبط عشان الكنترولر يستقبله -->
-                                            <input id="prepaid_attachment_partial" type="file"
-                                                name="prepaid_attachment" accept="image/*,.pdf" class="hidden" />
-                                        </label>
-
-                                        @error('prepaid_attachment')
-                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                        @enderror
-
+                                    <!-- مهم: x-if حتى لا يرسل الحقل لو مخفي -->
+                                    <template x-if="partial_method === 'bank_transfer'">
                                         <div class="mt-4">
-                                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                رقم السند / رقم التحويل / رقم الإيداع
+                                            <label
+                                                class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                                رقم الإيداع
                                             </label>
-                                            <input type="text" :name="payment_method === 'partial_payment' ? 'prepaid_reference' : ''" value="{{ old('prepaid_reference') }}"
-                                                placeholder="أدخل رقم السند أو التحويل"
-                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
-                                            @error('prepaid_reference')
-                                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                            <input type="text" name="partial_reference" x-model="partial_reference"
+                                                placeholder="أدخل رقم الإيداع"
+                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
+                                            @error('partial_reference')
+                                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                    </div>
+                                    </template>
                                 </div>
                             </div>
 
@@ -703,10 +601,10 @@
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='customer_credit'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    حالة مديونية العميل 
+                                    حالة مديونية العميل
                                 </label>
                                 <select name="customer_debt_status"
-                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
+                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
                                     <option value="pending" @selected(old('customer_debt_status', 'pending') == 'pending')>قيد الانتظار</option>
                                     <option value="overdue" @selected(old('customer_debt_status') == 'overdue')>مديون</option>
                                     <option value="partially_paid" @selected(old('customer_debt_status') == 'partially_paid')>مدفوع جزئيا</option>
@@ -714,30 +612,28 @@
                                 </select>
 
                                 @error('customer_debt_status')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
                             </div>
 
                         </div>
                     </div>
-
-
                 </div>
 
                 <!-- الملاحظات -->
                 <div class="mt-6">
                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
-                        class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">{{ old('notes') }}</textarea>
+                        class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">{{ old('notes') }}</textarea>
                     @error('notes')
-                        <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                        <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <!-- زر التسجيل -->
                 <div class="mt-6">
                     <button type="submit" :disabled="isSubmitting"
-                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
+                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
                         <span x-show="!isSubmitting">تسجيل الطرد</span>
                         <span x-show="isSubmitting" class="flex gap-2 items-center">
                             <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -752,21 +648,31 @@
                         </span>
                     </button>
                 </div>
-
-
             </form>
 
+
+
             {{-- =================== التاب الثاني: مستلم الطرد) =================== --}}
-            <form x-show="activeTab === 'group'" x-cloak x-data="{
+            <form x-show="activeTab === 'receiver'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
                 prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
+                partial_amount: '{{ old('partial_amount') }}',
+                prepaid_reference: '{{ old('prepaid_reference') }}',
                 isSubmitting: false
-            }" action="{{ route('shipment.store') }}" @submit="isSubmitting = true"
-                method="POST" enctype="multipart/form-data">
+            }"
+                x-effect="
+        // تنظيف القيم حسب طريقة الدفع
+        if (payment_method !== 'partial_payment') partial_amount = '';
+        if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
+        if (payment_method !== 'prepaid' && payment_method !== 'partial_payment') prepaid_reference = '';
+    "
+                action="{{ route('shipment.store') }}" @submit="isSubmitting = true" method="POST"
+                enctype="multipart/form-data">
                 @csrf
 
                 {{-- مهم جداً: هذا اللي يحدد أن هذا التاب (مستلم) --}}
                 <input type="hidden" name="entry_type" value="receiver">
+                <input type="hidden" name="active_tab" value="receiver">
 
                 <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
@@ -784,12 +690,11 @@
 
                             <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
                                 @keydown.escape="open=false" placeholder="اكتب اسم العميل أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
 
                             <!-- Dropdown -->
                             <div x-show="open" x-transition
                                 class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
@@ -816,37 +721,29 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة \
                                 من</label>
 
-                            {{-- <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
-                                disabled>
-
-                            <input type="hidden" name="sender_branch_code" value="{{ auth()->user()->branch_code }}"> --}}
                             <select name="sender_branch_code"
-                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                <option value="" {{ old('sender_branch_code') ? '' : 'selected' }}>
-                                    اختر الجهة
+                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
+                                <option value="" {{ old('sender_branch_code') ? '' : 'selected' }}>اختر الجهة
                                 </option>
 
                                 @foreach ($branches as $branch)
                                     @continue($branch->code === auth()->user()->branch_code)
-
                                     <option value="{{ $branch->code }}"
                                         {{ old('sender_branch_code') == $branch->code ? 'selected' : '' }}>
                                         {{ $branch->name }}
                                     </option>
                                 @endforeach
-
                             </select>
+
                             @error('sender_branch_code')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
 
                         <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="sender_customer_id" x-model="selectedId">
                         @error('sender_customer_id')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
                         <!-- اسم العميل -->
@@ -854,10 +751,10 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('sender_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="اسم المرسل">
                             @error('sender_name')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -865,11 +762,10 @@
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
                             <div class="flex gap-2" dir="ltr">
-
                                 <!-- Custom Flag Select -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -902,12 +798,13 @@
                                 </div>
 
                                 <input type="text" x-model="localNumber" @input="updatePhone()"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
+
                             <input type="hidden" name="sender_phone" x-model="selectedPhone">
                             @error('sender_phone')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -916,13 +813,12 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
                             <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0">
                             @error('no_honey_jars')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
 
                     <!-- بيانات المستلم -->
@@ -938,12 +834,11 @@
 
                             <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
                                 @keydown.escape="open=false" placeholder="اكتب اسم المستلم أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
 
                             <!-- Dropdown -->
                             <div x-show="open" x-transition
                                 class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
@@ -968,23 +863,21 @@
                         <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                         @error('receiver_customer_id')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
                         <!-- فرع المستلم -->
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                الجهة إلى
-                            </label>
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                                إلى</label>
+
                             <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
                                 disabled>
-
                             <input type="hidden" name="receiver_branch_code" value="{{ auth()->user()->branch_code }}">
 
-
                             @error('receiver_branch_code')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -993,10 +886,10 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('receiver_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="اسم المستلم">
                             @error('receiver_name')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -1004,11 +897,10 @@
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
                             <div class="flex gap-2" dir="ltr">
-
                                 <!-- Custom Flag Select -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-600 hover:border-brand-500 focus:border-brand-500"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -1041,12 +933,13 @@
                                 </div>
 
                                 <input type="text" x-model="localNumber" @input="updatePhone()"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
+
                             <input type="hidden" name="receiver_phone" x-model="selectedPhone">
                             @error('receiver_phone')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -1055,29 +948,13 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
                             <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0">
                             @error('no_gallons_honey')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
-                </div>
-
-                <!-- حقول عامة -->
-                <div class="grid grid-cols-1 gap-4 mt-6 w-full xl:grid-cols-2">
-
-                    <div class="mt-3">
-                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الرمز</label>
-                        <input type="text" name="code" value="{{ old('code') }}"
-                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                            placeholder="اكتب الرمز">
-                        @error('code')
-                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                        @enderror
-                    </div>
-
                 </div>
 
                 <!-- تفاصيل الطرد -->
@@ -1089,37 +966,36 @@
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
                                 الطرد</label>
                             <input type="text" name="package_type" value="{{ old('package_type') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="مثال: كرتون / شنطة / ...">
                             @error('package_type')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <div class="mt-3">
+                        {{-- <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الوزن
                                 (كجم)</label>
                             <input type="number" name="weight" value="{{ old('weight') }}" step="0.01"
                                 min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0.00">
                             @error('weight')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> --}}
 
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
                                 المبلغ</label>
                             <input type="number" name="total_amount" value="{{ old('total_amount') }}" step="0.01"
                                 min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="0.00">
                             @error('total_amount')
-                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
                     </div>
 
                     <!-- طريقة الدفع -->
@@ -1130,7 +1006,6 @@
 
                             <!-- الحالة العامة -->
                             <div class="flex flex-wrap gap-6">
-
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method" value="prepaid"
@@ -1160,51 +1035,29 @@
                                     </span>
                                     دفع عند التسليم (COD)
                                 </label>
-
-                                {{-- <label
-                                    class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                    <input class="sr-only" type="radio" name="payment_method" value="partial_payment"
-                                        @change="payment_method='partial_payment'"
-                                        {{ old('payment_method') == 'partial_payment' ? 'checked' : '' }}>
-                                    <span
-                                        :class="payment_method === 'partial_payment' ? 'border-brand-500 bg-brand-500' :
-                                            'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                        <span :class="payment_method === 'partial_payment' ? 'block' : 'hidden'"
-                                            class="w-2 h-2 bg-white rounded-full"></span>
-                                    </span>
-                                    دفع جزئي (على المستلم يدفع الباقي)
-                                </label> --}}
-
-                                {{-- <label
-                                    class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                    <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
-                                        @change="payment_method='customer_credit'"
-                                        {{ old('payment_method') == 'customer_credit' ? 'checked' : '' }}>
-                                    <span
-                                        :class="payment_method === 'customer_credit' ? 'border-brand-500 bg-brand-500' :
-                                            'bg-transparent border-gray-300 dark:border-gray-700'"
-                                        class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                        <span :class="payment_method === 'customer_credit' ? 'block' : 'hidden'"
-                                            class="w-2 h-2 bg-white rounded-full"></span>
-                                    </span>
-                                    آجل على حساب العميل
-                                </label> --}}
                             </div>
 
                             @error('payment_method')
-                                <div class="text-sm text-error-600">{{ $message }}</div>
+                                <div class="text-sm text-error-500">{{ $message }}</div>
                             @enderror
 
-                            {{-- <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            <!-- cod -->
+                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                                x-show="payment_method === 'cod'" x-transition>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">
+                                    سيتم اعتبار مبلغ التحصيل = <span class="font-semibold">إجمالي المبلغ</span>.
+                                </div>
+                            </div>
+
+                            <!-- prepaid (مفتوح دائماً عندما prepaid) -->
+                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
 
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     طريقة الدفع (للدفع المقدم)
                                 </label>
 
-                                {{-- <div class="flex flex-wrap gap-6">
-
+                                <div class="flex flex-wrap gap-6">
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                         <input class="sr-only" type="radio" name="prepaid_payment_method"
@@ -1232,29 +1085,27 @@
                                         </span>
                                         تحويل بنكي
                                     </label>
-                                </div> --}}
+                                </div>
 
                                 @error('prepaid_payment_method')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
                                 <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    {{-- <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                         رفع سند التحويل
                                     </label>
 
                                     <label for="prepaid_attachment"
                                         class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                                        dark:border-gray-600 dark:bg-gray-800
-                                        hover:border-brand-500 dark:hover:border-brand-500
-                                        transition-colors duration-200 w-full text-center
-                                        @error('prepaid_attachment') border-error-500 @enderror">
+                                dark:border-gray-500 dark:bg-gray-800 hover:border-brand-500 dark:hover:border-brand-500
+                                transition-colors duration-200 w-full text-center
+                                @error('prepaid_attachment') border-error-500 @enderror">
 
-                                        <!-- Icon -->
                                         <div class="mb-[22px] flex justify-center">
                                             <div
                                                 class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                 dark:bg-gray-700 dark:text-gray-400">
+                                    dark:bg-gray-700 dark:text-gray-400">
                                                 <svg class="fill-current" width="29" height="28"
                                                     viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
                                                     <path fill-rule="evenodd" clip-rule="evenodd"
@@ -1263,7 +1114,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Text -->
                                         <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
                                             Drop File Here
                                         </h4>
@@ -1273,202 +1123,48 @@
                                             (PNG, JPG, PDF)
                                         </span>
 
-                                        <span class="font-medium underline text-theme-sm text-brand-500">
-                                            Browse File
-                                        </span>
+                                        <span class="font-medium underline text-theme-sm text-brand-500">Browse File</span>
 
-                                        <!-- Hidden Input -->
                                         <input id="prepaid_attachment" type="file" name="prepaid_attachment"
                                             accept="image/*,.pdf" class="hidden" />
-                                    </label>
+                                    </label> --}}
 
                                     @error('prepaid_attachment')
-                                        <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                        <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                     @enderror
 
                                     <div class="mt-4">
                                         <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                             رقم السند / رقم التحويل / رقم الإيداع
                                         </label>
-                                        <input type="text" name="prepaid_reference" value="{{ old('prepaid_reference') }}"
+                                        <input type="text" name="prepaid_reference" x-model="prepaid_reference"
                                             placeholder="أدخل رقم السند أو التحويل"
-                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
                                         @error('prepaid_reference')
-                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                         @enderror
                                     </div>
                                 </div>
-                            {{-- </div> --}}
-
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method === 'cod'" x-transition>
-                                <div class="text-sm text-gray-700 dark:text-gray-300">
-                                    سيتم اعتبار مبلغ التحصيل  = <span class="font-semibold">إجمالي
-                                        المبلغ
-                                    </span>.
-                                </div>
-                            </div>
-
-
-                            <!-- partial_payment -->
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method==='partial_payment'" x-transition>
-
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    المبلغ المدفوع من المرسل الآن
-                                </label>
-
-                                <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
-                                    min="0.01" step="0.01" placeholder="0.00"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                      bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                      focus:ring-2 focus:ring-brand-500 focus:border-brand-500
-                      @error('partial_amount') border-error-500 @enderror">
-
-                                @error('partial_amount')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                @enderror
-
-                                <div class="mt-4">
-                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        طريقة الدفع (للدفع الجزئي)
-                                    </label>
-
-                                    <div class="flex flex-wrap gap-6">
-
-                                        <label
-                                            class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
-                                                value="cash" x-model="prepaid_method">
-                                            <span
-                                                :class="prepaid_method === 'cash' ? 'border-brand-500 bg-brand-500' :
-                                                    'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                                <span :class="prepaid_method === 'cash' ? 'block' : 'hidden'"
-                                                    class="w-2 h-2 bg-white rounded-full"></span>
-                                            </span>
-                                            كاش
-                                        </label>
-
-                                        <label
-                                            class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                            <input class="sr-only" type="radio" name="prepaid_payment_method"
-                                                value="bank_transfer" x-model="prepaid_method">
-                                            <span
-                                                :class="prepaid_method === 'bank_transfer' ? 'border-brand-500 bg-brand-500' :
-                                                    'bg-transparent border-gray-300 dark:border-gray-700'"
-                                                class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                                <span :class="prepaid_method === 'bank_transfer' ? 'block' : 'hidden'"
-                                                    class="w-2 h-2 bg-white rounded-full"></span>
-                                            </span>
-                                            تحويل بنكي
-                                        </label>
-
-                                    </div>
-
-                                    <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رفع سند التحويل
-                                        </label>
-
-                                        <!-- Dropzone Wrapper -->
-                                        <label for="prepaid_attachment_partial"
-                                            class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                            dark:border-gray-600 dark:bg-gray-800
-                            hover:border-brand-500 dark:hover:border-brand-500
-                            transition-colors duration-200 w-full text-center
-                            @error('prepaid_attachment') border-error-500 @enderror">
-
-                                            <!-- Icon -->
-                                            <div class="mb-[22px] flex justify-center">
-                                                <div
-                                                    class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                     dark:bg-gray-700 dark:text-gray-400">
-                                                    <svg class="fill-current" width="29" height="28"
-                                                        viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                        <path fill-rule="evenodd" clip-rule="evenodd"
-                                                            d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                    </svg>
-                                                </div>
-                                            </div>
-
-                                            <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                                                Drop File Here
-                                            </h4>
-
-                                            <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                                اسحب الملف هنا أو اضغط للاختيار<br>
-                                                (PNG, JPG, PDF)
-                                            </span>
-
-                                            <span class="font-medium underline text-theme-sm text-brand-500">
-                                                Browse File
-                                            </span>
-
-                                            <!-- نفس الاسم بالضبط عشان الكنترولر يستقبله -->
-                                            <input id="prepaid_attachment_partial" type="file"
-                                                name="prepaid_attachment" accept="image/*,.pdf" class="hidden" />
-                                        </label>
-
-                                        @error('prepaid_attachment')
-                                            <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                        @enderror
-
-                                        <div class="mt-4">
-                                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                رقم السند / رقم التحويل / رقم الإيداع
-                                            </label>
-                                            <input type="text" name="prepaid_reference" value="{{ old('prepaid_reference') }}"
-                                                placeholder="أدخل رقم السند أو التحويل"
-                                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
-                                            @error('prepaid_reference')
-                                                <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- customer_credit -->
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method==='customer_credit'" x-transition>
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    حالة مديونية العميل
-                                </label>
-                                <select name="customer_debt_status"
-                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-600">
-                                    <option value="pending" @selected(old('customer_debt_status', 'pending') == 'pending')>قيد الانتظار</option>
-                                    <option value="overdue" @selected(old('customer_debt_status') == 'overdue')>مديون</option>
-                                    <option value="partially_paid" @selected(old('customer_debt_status') == 'partially_paid')>مدفوع جزئيا</option>
-                                    <option value="fully_paid" @selected(old('customer_debt_status') == 'fully_paid')>مدفوع بالكامل</option>
-                                </select>
-
-                                @error('customer_debt_status')
-                                    <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
-                                @enderror
                             </div>
 
                         </div>
                     </div>
-
-
                 </div>
 
                 <!-- الملاحظات -->
                 <div class="mt-6">
                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
-                        class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">{{ old('notes') }}</textarea>
+                        class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">{{ old('notes') }}</textarea>
                     @error('notes')
-                        <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
+                        <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <!-- زر التسجيل -->
                 <div class="mt-6">
                     <button type="submit" :disabled="isSubmitting"
-                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-600 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
+                        class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
                         <span x-show="!isSubmitting">تسجيل الطرد</span>
                         <span x-show="isSubmitting" class="flex gap-2 items-center">
                             <svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -1483,9 +1179,8 @@
                         </span>
                     </button>
                 </div>
-
-
             </form>
+
 
         </div>
     </div>

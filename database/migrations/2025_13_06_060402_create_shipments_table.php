@@ -28,10 +28,11 @@ return new class extends Migration
             $table->enum('customer_debt_status', ['pending', 'partially_paid', 'fully_paid', 'overdue'])->nullable()->default('pending');
             $table->decimal('weight', 8, 2)->nullable();
             $table->enum('payment_method', ['prepaid', 'cod', 'customer_credit', 'partial_payment'])->default('prepaid');
+            $table->decimal('partial_amount', 10, 2)->nullable()->default(0);
             $table->decimal('total_amount', 10, 2);
             $table->text('notes')->nullable();
             $table->string('created_branch_code', 10);
-            $table->string('code');
+            $table->string('code')->nullable();
             $table->string('package_type')->nullable();
             $table->timestamps();
         });

@@ -135,7 +135,15 @@ Route::middleware('auth')->group(function () {
         ->name('reports.revenue');
 
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
-    Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
+    Route::get(
+        '/shipmentpackage/print/{id}',
+        [ShipmentPackagesController::class, 'printManifest']
+    )->name('shipmentpackage.print');
+
+    Route::get(
+        '/shipmentpackage/print-driver/{id}',
+        [ShipmentPackagesController::class, 'printManifestD']
+    )->name('shipmentpackage.printD');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

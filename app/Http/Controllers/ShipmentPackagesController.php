@@ -128,8 +128,25 @@ class ShipmentPackagesController extends Controller
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('Manifest-'.$package->tracking_number.'.pdf', 'I');
+        return $pdf->Output('Manifest-' . $package->tracking_number . '.pdf', 'I');
     }
+    public function printManifestD($id)
+    {
+        $package = ShipmentPackage::with(['shipments.senderCustomer', 'shipments.receiverCustomer', 'shipments.receiverBranch', 'shipments.senderBranch'])
+            ->findOrFail($id);
 
+        $pdf = new \TCPDF('L', 'mm', 'A4', true, 'UTF-8', false);
+        $pdf->SetMargins(10, 10, 10);
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        $pdf->setRTL(true);
+        $pdf->SetFont('dejavusans', '', 10);
 
+        $html = view('pages.shipmentpackage.manifest_driver_pdf', compact('package'))->render();
+
+        $pdf->AddPage();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        return $pdf->Output('Manifest-' . $package->tracking_number . '.pdf', 'I');
+    }
 }

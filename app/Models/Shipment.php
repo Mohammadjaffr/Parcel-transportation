@@ -17,6 +17,7 @@ class Shipment extends Model
         'receiver_customer_id',
         'customer_debt_status',
         'total_amount',
+        'partial_amount',
         'package_type',
         'weight',
         'payment_method',

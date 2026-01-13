@@ -5,42 +5,37 @@ namespace App\Services;
 use App\Models\BranchTransaction;
 use App\Models\CustomerPayment;
 use App\Models\Shipment;
-use Illuminate\Http\UploadedFile; // <-- استيراد UploadedFile
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class ShipmentPaymentService
 {
     /**
-     * @var ImageService
+     * معالجة الدفع عند إنشاء شحنة جديدة
      */
-    protected $imageService;
+    public function handlePaymentForNewShipment(
+        Shipment $shipment,
+        string $paymentType,
+        ?float $paidAmount = null,
+        ?string $referenceNumber = null
+    ): void {
 
-    public function __construct(ImageService $imageService)
-    {
-        $this->imageService = $imageService;
-    }
-
-    public function handlePaymentForNewShipment(Shipment $shipment, string $paymentType, ?float $paidAmount = null, ?UploadedFile $attachment = null, ?string $referenceNumber = null): void
-    {
-
-        if ($paymentType === 'bank_transfer') {
-            $hasExistingAttachment = $shipment->customerPayments()->where('payment_method', 'bank_transfer')->whereNotNull('attachment_path')->exists();
-            if (!$hasExistingAttachment && is_null($attachment)) {
-                throw new InvalidArgumentException('في حالة التحويل البنكي، يجب إرفاق سند الدفع.');
-            }
+        // ✅ إذا تحويل بنكي => لازم رقم الإيداع فقط
+        if ($paymentType === 'bank_transfer' && empty($referenceNumber)) {
+            throw new InvalidArgumentException('في حالة التحويل البنكي، يجب إدخال رقم الإيداع.');
         }
 
         switch ($shipment->payment_method) {
+
             case 'prepaid':
-                $this->handlePrepaidPayment($shipment, $paymentType, $attachment, $referenceNumber);
+                $this->handlePrepaidPayment($shipment, $paymentType, $referenceNumber);
                 break;
 
             case 'partial_payment':
                 if (is_null($paidAmount) || $paidAmount <= 0) {
                     throw new InvalidArgumentException('في حالة الدفع الجزئي، يجب إرسال المبلغ المدفوع.');
                 }
-                $this->handlePartialPayment($shipment, $paidAmount, $paymentType, $attachment, $referenceNumber);
+                $this->handlePartialPayment($shipment, $paidAmount, $paymentType, $referenceNumber);
                 break;
 
             case 'customer_credit':
@@ -49,34 +44,36 @@ class ShipmentPaymentService
 
             case 'cod':
                 $shipment->customer_debt_status = 'pending';
-                $shipment->update(); // Ensure it saves
+                $shipment->save();
 
-                // If the shipment is being marked as delivered, we create the Branch Transaction
-                // Logic: Receiver Branch collects Money -> Owes Sender Branch
+                // عند التسليم فقط يتم إنشاء حركة الفروع (إذا كان عندك منطق التسليم هنا)
                 if ($shipment->status === 'delivered') {
-                    \App\Models\BranchTransaction::create([
-                        'shipment_id' => $shipment->id,
-                        'sender_branch_code' => $shipment->receiver_branch_code, // Who pays (Collected money)
-                        'receiver_branch_code' => $shipment->sender_branch_code, // Who gets credited (Sent goods)
-                        'amount' => $shipment->total_amount,
-                        'type' => 'cod',
-                        'description' => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
+                    BranchTransaction::create([
+                        'shipment_id'          => $shipment->id,
+                        'sender_branch_code'   => $shipment->receiver_branch_code, // الفرع الذي استلم المبلغ
+                        'receiver_branch_code' => $shipment->sender_branch_code,   // الفرع صاحب الشحنة
+                        'amount'               => $shipment->total_amount,
+                        'type'                 => 'cod',
+                        'description'          => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
                     ]);
                 }
                 break;
         }
     }
 
-    private function handlePrepaidPayment(Shipment $shipment, string $paymentType, ?UploadedFile $attachment, ?string $referenceNumber = null): void
-    {
-        DB::transaction(function () use ($shipment, $paymentType, $attachment, $referenceNumber) {
+    private function handlePrepaidPayment(
+        Shipment $shipment,
+        string $paymentType,
+        ?string $referenceNumber = null
+    ): void {
+        DB::transaction(function () use ($shipment, $paymentType, $referenceNumber) {
+
             $this->createCustomerPaymentRecord(
                 $shipment,
                 $shipment->sender_customer_id,
                 $shipment->sender_branch_code,
                 $shipment->total_amount,
                 $paymentType,
-                $attachment,
                 'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number,
                 $referenceNumber
             );
@@ -86,36 +83,31 @@ class ShipmentPaymentService
         });
     }
 
-    private function handlePartialPayment(Shipment $shipment, float $paidAmount, string $paymentType, ?UploadedFile $attachment, ?string $referenceNumber = null): void
-    {
+    private function handlePartialPayment(
+        Shipment $shipment,
+        float $paidAmount,
+        string $paymentType,
+        ?string $referenceNumber = null
+    ): void {
+
         if ($paidAmount >= $shipment->total_amount) {
             throw new InvalidArgumentException('المبلغ المدفوع جزئيًا يجب أن يكون أقل من المبلغ الإجمالي.');
         }
 
-        DB::transaction(function () use ($shipment, $paidAmount, $paymentType, $attachment, $referenceNumber) {
+        DB::transaction(function () use ($shipment, $paidAmount, $paymentType, $referenceNumber) {
+
             $this->createCustomerPaymentRecord(
                 $shipment,
                 $shipment->sender_customer_id,
                 $shipment->sender_branch_code,
                 $paidAmount,
                 $paymentType,
-                $attachment,
                 'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number,
                 $referenceNumber
             );
 
             $shipment->customer_debt_status = 'partially_paid';
             $shipment->save();
-            // $collectorBranch = $shipment->sender_branch_code;
-            // $otherBranch     = $shipment->receiver_branch_code;
-            // BranchTransaction::create([
-            //     'shipment_id'          => $shipment->id,
-            //     'sender_branch_code'   => $collectorBranch,
-            //     'receiver_branch_code' => $otherBranch,
-            //     'amount'               => $paidAmount,
-            //     'type'                 => 'partial_payment',
-            //     'description'          => 'سداد جزئي للشحنة رقم ' . $shipment->tracking_number,
-            // ]);
         });
     }
 
@@ -124,76 +116,58 @@ class ShipmentPaymentService
         $shipment->customer_debt_status = 'pending';
         $shipment->save();
 
-        // Create Debit Transaction for Customer (He owes us money)
         \App\Models\CustomerTransaction::create([
-            'customer_id' => $shipment->sender_customer_id, // Usually sender pays
-            'shipment_id' => $shipment->id,
-            'amount' => $shipment->total_amount,
-            'type' => 'debit',
-            'description' => 'رسوم شحنة رقم ' . $shipment->tracking_number,
+            'customer_id'  => $shipment->sender_customer_id,
+            'shipment_id'  => $shipment->id,
+            'amount'       => $shipment->total_amount,
+            'type'         => 'debit',
+            'description'  => 'رسوم شحنة رقم ' . $shipment->tracking_number,
         ]);
     }
 
-    // private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes): void
-    // {
-    //     $paymentData = [
-    //         'shipment_id' => $shipment->id,
-    //         'customer_id' => $customerId,
-    //         'branch_code' => $branchCode,
-    //         'amount' => $amount,
-    //         'payment_method' => $paymentType,
-    //         'payment_date' => now(),
-    //         'notes' => $notes,
-    //         'attachment_path' => null,
-    //     ];
+    private function createCustomerPaymentRecord(
+        Shipment $shipment,
+        int $customerId,
+        string $branchCode,
+        float $amount,
+        string $paymentType,
+        string $notes,
+        ?string $referenceNumber = null
+    ): void {
 
-    //     if ($paymentType === 'bank_transfer' && $attachment) {
-
-    //         $paymentData['attachment_path'] = $this->imageService->saveImage($attachment, 'payment_attachments');
-    //     }
-
-    //     CustomerPayment::create($paymentData);
-    // }
-    private function createCustomerPaymentRecord(Shipment $shipment, int $customerId, string $branchCode, float $amount, string $paymentType, ?UploadedFile $attachment, string $notes, ?string $referenceNumber = null): void
-    {
-        $searchKey = [
-            'shipment_id' => $shipment->id,
-        ];
-
-        $paymentData = [
-            'customer_id' => $customerId,
-            'branch_code' => $branchCode,
-            'amount' => $amount,
-            'payment_method' => $paymentType,
-            'payment_date' => now(),
-            'notes' => $notes,
-            'reference_number' => $referenceNumber,
-        ];
-
-        if ($paymentType === 'bank_transfer' && $attachment) {
-            $paymentData['attachment_path'] = $this->imageService->saveImage($attachment, 'payment_attachments');
+        //  إذا تحويل بنكي => لازم رقم الإيداع
+        if ($paymentType === 'bank_transfer' && empty($referenceNumber)) {
+            throw new InvalidArgumentException('في حالة التحويل البنكي، يجب إدخال رقم الإيداع.');
         }
 
-        CustomerPayment::updateOrCreate($searchKey, $paymentData);
+        CustomerPayment::updateOrCreate(
+            ['shipment_id' => $shipment->id],
+            [
+                'customer_id'      => $customerId,
+                'branch_code'      => $branchCode,
+                'amount'           => $amount,
+                'payment_method'   => $paymentType,
+                'payment_date'     => now(),
+                'notes'            => $notes,
+                'reference_number' => $referenceNumber,
+            ]
+        );
     }
 
     public function createCodBranchTransactionOnDelivery(Shipment $shipment): void
     {
         $totalPaid = $shipment->customerPayments()->sum('amount');
-
         $outstanding = max($shipment->total_amount - $totalPaid, 0);
 
-        if ($outstanding <= 0) {
-            return;
-        }
+        if ($outstanding <= 0) return;
 
         BranchTransaction::create([
-            'shipment_id' => $shipment->id,
-            'sender_branch_code' => $shipment->receiver_branch_code,
+            'shipment_id'          => $shipment->id,
+            'sender_branch_code'   => $shipment->receiver_branch_code,
             'receiver_branch_code' => $shipment->sender_branch_code,
-            'amount' => $outstanding,
-            'type' => 'cod',
-            'description' => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
+            'amount'               => $outstanding,
+            'type'                 => 'cod',
+            'description'          => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
         ]);
     }
 }
