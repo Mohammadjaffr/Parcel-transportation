@@ -2,7 +2,11 @@
 @section('title', 'كشف حساب: ' . $customer->name)
 
 @section('content')
-    <div class="p-4 md:p-6 lg:p-8 bg-[#F8F9FC] dark:bg-gray-950 min-h-screen font-outfit" dir="rtl">
+    <div class="p-4 md:p-6 lg:p-8 bg-[#F8F9FC] dark:bg-gray-950 min-h-screen font-outfit" dir="rtl" x-data="customerRegistry()">
+        @include('pages.customers.edit-customer-modal')
+        <x-modals.success-modal />
+        <x-modals.error-modal />
+
         <div class="max-w-[1400px] mx-auto space-y-4">
             <div class="lg:col-span-8 grid grid-cols-1 xl:grid-cols-3 gap-4 my-4">
                 <div
@@ -80,14 +84,23 @@
                         </svg>
                         العودة للعملاء
                     </a>
-                    <a href="{{ route('customers.edit', $customer->id) }}"
-                        class="h-11 px-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-brand-500/20 text-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                    <button @click="openEditModal({{ $customer->id }})"
+                        :disabled="isFetching == {{ $customer->id }}"
+                        class="h-11 px-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-brand-500/20 text-sm disabled:opacity-75">
+                        <template x-if="isFetching == {{ $customer->id }}">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </template>
+                        <template x-if="isFetching != {{ $customer->id }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </template>
                         تعديل البيانات
-                    </a>
+                    </button>
                 </div>
             </div>
 
@@ -292,3 +305,81 @@
         }
     </style>
 @endsection
+
+@section('script')
+<script>
+function customerRegistry() {
+    return {
+        editModalOpen: false,
+        isUpdating: false,
+        isFetching: null,
+        countries: [
+            { name: 'Yemen', code: 'YE', dial_code: '967' }
+        ],
+        editCustomer: {
+             id: null,
+             name: '',
+             phone: '',
+             whatsapp_number: '',
+             phone_local: '',
+             phone_country: null,
+             whatsapp_local: '',
+             whatsapp_country: null
+        },
+
+        init() {
+            this.editCustomer.phone_country = this.countries[0];
+            this.editCustomer.whatsapp_country = this.countries[0];
+        },
+
+        parsePhoneNumber(fullNumber) {
+            if (!fullNumber) return { country: this.countries[0], local: '' };
+            
+            // Try to match dial code
+            for (let country of this.countries) {
+                if (fullNumber.startsWith(country.dial_code)) {
+                    return {
+                        country: country,
+                        local: fullNumber.substring(country.dial_code.length)
+                    };
+                }
+            }
+            return { country: this.countries[0], local: fullNumber };
+        },
+
+        async openEditModal(customerId) {
+            this.isFetching = customerId;
+            try {
+                const response = await fetch(`/customers/${customerId}/edit`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                
+                // Parse numbers
+                const parsedPhone = this.parsePhoneNumber(data.phone);
+                const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
+
+                this.editCustomer = { 
+                    ...data,
+                    phone_local: parsedPhone.local,
+                    phone_country: parsedPhone.country,
+                    whatsapp_local: parsedWhatsapp.local,
+                    whatsapp_country: parsedWhatsapp.country
+                };
+                
+                this.editModalOpen = true;
+            } catch (error) {
+                console.error("Error fetching customer data:", error);
+                alert("حدث خطأ أثناء جلب بيانات العميل");
+            } finally {
+                this.isFetching = null;
+            }
+        }
+    }
+}
+</script>
+@endsection
+

@@ -48,7 +48,7 @@ class CustomerController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
+            return WebResponseClass::sendValidationError($validator)->with('isModalOpen', true);
         }
 
         try {
@@ -102,6 +102,10 @@ class CustomerController extends Controller
         $user = auth()->user();
         $customer = Customer::where('branch_code', $user->branch_code)
             ->findOrFail($id);
+ 
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json($customer);
+        }
 
         return view('pages.customers.edit', compact('customer'));
     }
@@ -157,8 +161,7 @@ class CustomerController extends Controller
             return WebResponseClass::sendResponse(
                 'تم التحديث!',
                 'تم تحديث بيانات العميل بنجاح.',
-                'حسناً',
-                'customers.index'
+                'حسناً'
             );
         } catch (\Exception $e) {
             return WebResponseClass::sendExceptionError($e);
