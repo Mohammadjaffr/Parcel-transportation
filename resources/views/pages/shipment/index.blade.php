@@ -6,14 +6,14 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                        search: '',
-                        filterStatus: 'all',
-                        showRow(status, bond, sender, receiver) {
-                            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-                            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-                            return matchesSearch && matchesStatus;
-                        }
-                    }">
+                            search: '',
+                            filterStatus: 'all',
+                            showRow(status, bond, sender, receiver) {
+                                const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+                                const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+                                return matchesSearch && matchesStatus;
+                            }
+                        }">
 
         {{-- Tabs --}}
         <div class="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6 w-fit">
@@ -30,8 +30,6 @@
         <div class="flex gap-6">
 
             <div @click="filterStatus = 'all'"
-                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'" <div
-                @click="filterStatus = 'all'"
                 :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
@@ -69,7 +67,7 @@
             </div>
 
             <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                                    'border-gray-100'"
+                                        'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">

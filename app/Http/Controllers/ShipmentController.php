@@ -26,18 +26,25 @@ class ShipmentController extends Controller
     }
 
     /* ========== 1- عرض جميع الطردات ========== */
-public function index(Request $request)
-{
-    /** @var \App\Models\User $user */
-    $user = auth()->user();
-    $branchCode = $user->branch_code;
+    public function index(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
+        $type = $request->query('type', 'outgoing');
 
-    $requests = Shipment::where('sender_branch_code', $branchCode)
-        ->latest()
-        ->paginate(10);
+        $query = Shipment::query();
 
-    return view('pages.shipment.index', compact('requests'));
-}
+        if ($type === 'incoming') {
+            $query->where('receiver_branch_code', $branchCode);
+        } else {
+            $query->where('sender_branch_code', $branchCode);
+        }
+
+        $requests = $query->latest()->paginate(10)->withQueryString();
+
+        return view('pages.shipment.index', compact('requests', 'type'));
+    }
 
 
     /* ========== 2- صفحة إنشاء طرد ========== */

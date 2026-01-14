@@ -14,8 +14,13 @@ class BranchController extends Controller
     /* ========== 1- عرض جميع الفروع ========== */
     public function index()
     {
+        $allBranches = Branch::all();
+        $totalBranches = $allBranches->count();
+        $totalCities = $allBranches->pluck('city')->unique()->count();
+
         $branches = Branch::latest()->paginate(10);
-        return view('pages.branch.index', compact('branches'));
+        
+        return view('pages.branch.index', compact('branches', 'totalBranches', 'totalCities'));
     }
 
     /* ========== 2- صفحة إنشاء فرع ========== */
@@ -126,8 +131,7 @@ class BranchController extends Controller
                     'لا يمكن حذف الفرع لوجود مستخدمين مرتبطين به.',
                     'حسناً',
                     null,
-                    false, // success flag
-                    'error' // type
+                    false
                 );
             }
 
@@ -137,8 +141,7 @@ class BranchController extends Controller
                     'لا يمكن حذف الفرع لوجود شحنات مرتبطة به.',
                     'حسناً',
                     null,
-                    false,
-                    'error'
+                    false
                 );
             }
             
@@ -150,8 +153,7 @@ class BranchController extends Controller
                      'لا يمكن حذف الفرع لوجود عملاء مسجلين فيه.',
                      'حسناً',
                      null,
-                     false,
-                     'error'
+                     false
                  );
              }
 

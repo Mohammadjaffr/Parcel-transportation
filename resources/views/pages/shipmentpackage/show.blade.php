@@ -2,9 +2,9 @@
 @section('title', 'تفاصيل رحلة الشحن #' . $package->tracking_number)
 
 @section('content')
-    <div class="flex justify-end gap-2 w-full my-4">
+    <div class="flex  justify-end gap-2 w-full my-4">
         <a href="{{ route('shipmentpackage.index') }}"
-            class="group h-12 px-8 flex items-center justify-center gap-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-black rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-brand-500 dark:hover:text-brand-400 transition-all duration-300 active:scale-95 text-sm">
+            class="group px-3 h-12 flex items-center justify-center gap-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 font-black rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-brand-500 dark:hover:text-brand-400 transition-all duration-300 active:scale-95 text-sm">
 
             <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
