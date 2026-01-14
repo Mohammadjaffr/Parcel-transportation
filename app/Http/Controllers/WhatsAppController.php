@@ -28,4 +28,8 @@ class WhatsAppController extends Controller
         $link = $this->whatsAppService->getReceiverLink($shipment);
         return redirect()->away($link);
     }
+
+    public function openForBranch($id){
+        //
+    }
 }
