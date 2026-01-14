@@ -170,13 +170,13 @@
         <table class="info-grid">
             <tr>
                 <td><span class="label">رقم السند:</span></td>
-                <td><span class="value">#{{ $shipment->bond_number }}</span></td>
+                <td><span class="value">{{ $shipment->bond_number }}</span></td>
                 <td><span class="label">نوع الشحنة:</span></td>
                 <td><span class="value-small">{{ $shipment->package_type }}</span></td>
             </tr>
             <tr>
-                <td><span class="label">رمز الشحنة:</span></td>
-                <td><span class="value">{{ $shipment->code }}</span></td>
+                <td><span class="label">البضاعه:</span></td>
+                <td><span class="value">{{ $shipment->notes }}</span></td>
                 <td><span class="label">التاريخ:</span></td>
                 <td><span class="value">{{ $shipment->created_at->format('Y-m-d') }}</span></td>
             </tr>

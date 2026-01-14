@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <style>
         /* إعدادات الخط والصفحة */
-        body { 
-            font-family: 'aealarabiya', 'dejavusans', sans-serif; 
-            direction: rtl; 
-            margin: 0; 
+        body {
+            font-family: 'aealarabiya', 'dejavusans', sans-serif;
+            direction: rtl;
+            margin: 0;
             padding: 0;
             color: #333;
             line-height: 1.4;
         }
-        
+
         @page {
             margin: 10mm;
         }
@@ -163,6 +164,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <table class="header-table">
@@ -196,9 +198,9 @@
         <table class="trip-info-table">
             {{-- <tr>
                 {{-- <td class="label">اسم السائق:</td> --}}
-                {{-- <td class="value">{{ $package->driver_name }}</td> --}}
-                {{-- <td class="label">رقم الجوال:</td> --}}
-                {{-- <td class="value" style="direction: ltr; text-align: right;">{{ $package->driver_phone }}</td> --}}
+            {{-- <td class="value">{{ $package->driver_name }}</td> --}}
+            {{-- <td class="label">رقم الجوال:</td> --}}
+            {{-- <td class="value" style="direction: ltr; text-align: right;">{{ $package->driver_phone }}</td> --}}
             {{-- </tr> --}}
             <tr>
                 <td class="label">فرع المصدر:</td>
@@ -213,32 +215,36 @@
         <thead>
             <tr>
                 <th width="8%">السند</th>
-                <th width="15%">المرسل</th>
-                <th width="15%">المستلم</th>
-                <th width="12%">جوال المستلم</th>
+                <th width="10%">المرسل</th>
+                <th width="10%">جوال المرسل</th>
+                <th width="10%">المستلم</th>
+                <th width="10%">جوال المستلم</th>
                 <th width="10%">من</th>
                 <th width="10%">إلى</th>
-                <th width="12%">نوع الطرد</th>
-                <th width="18%">ملاحظات</th>
+                <th width="10%">نوع الطرد</th>
+                <th width="10%">ملاحظات</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($package->shipments as $shipment)
-            <tr>
-                <td style="font-weight: bold; color: #fb6514;">#{{ $shipment->bond_number }}</td>
-                <td>{{ $shipment->senderCustomer->name }}</td>
-                <td style="font-weight: bold;">{{ $shipment->receiverCustomer->name }}</td>
-                <td style="direction: ltr;">{{ $shipment->receiverCustomer->phone }}</td>
-                <td>{{ $shipment->senderBranch->name }}</td>
-                <td style="font-weight: bold; background-color: #fff4ee;">{{ $shipment->receiverBranch->name }}</td>
-                <td>{{ $shipment->package_type }}</td>
-                <td class="notes-cell">{{ $shipment->notes ?? '-' }}</td>
-            </tr>
+            @foreach ($package->shipments as $shipment)
+                <tr>
+                    <td style="font-weight: bold; color: #fb6514;">#{{ $shipment->bond_number }}</td>
+                    <td>{{ $shipment->senderCustomer->name }}</td>
+                    <td style="direction: ltr;">{{ $shipment->senderCustomer->phone }}</td>
+
+                    <td style="font-weight: bold;">{{ $shipment->receiverCustomer->name }}</td>
+                    <td style="direction: ltr;">{{ $shipment->receiverCustomer->phone }}</td>
+                    <td>{{ $shipment->senderBranch->name }}</td>
+                    <td style="font-weight: bold; background-color: #fff4ee;">{{ $shipment->receiverBranch->name }}
+                    </td>
+                    <td>{{ $shipment->package_type }}</td>
+                    <td class="notes-cell">{{ $shipment->notes ?? '-' }}</td>
+                </tr>
             @endforeach
         </tbody>
     </table>
 
-   
+
 
     <table class="signatures-container">
         <tr>
@@ -257,9 +263,11 @@
         </tr>
     </table>
 
-    <div style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8pt; color: #999; border-top: 1px solid #eee; padding-top: 5px;">
+    <div
+        style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8pt; color: #999; border-top: 1px solid #eee; padding-top: 5px;">
         نظام الزاجل الذكي - طبع بواسطة: {{ auth()->user()->name }} - التاريخ: {{ date('Y-m-d H:i') }}
     </div>
 
 </body>
+
 </html>

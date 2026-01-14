@@ -132,7 +132,7 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إدارة الطرود
+                اضافة الطرود
               </span>
             </a>
           </li>
@@ -156,7 +156,7 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                توزيع الشحنات
+                ارسال الشحنات
               </span>
             </a>
           </li>

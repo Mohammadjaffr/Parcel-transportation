@@ -215,14 +215,15 @@
         <thead>
             <tr>
                 <th width="10%">السند</th>
-                <th width="11%">المرسل</th>
-                <th width="13%">المستلم</th>
+                <th width="10%">المرسل</th>
+                <th width="10%">جوال المرسل</th>
+                <th width="10%">المستلم</th>
                 <th width="10%">جوال المستلم</th>
-                <th width="12%">من</th>
+                <th width="10%">من</th>
                 <th width="10%">إلى</th>
-                <th width="13%">نوع الطرد</th>
+                <th width="10%">نوع الطرد</th>
                 <th width="10%">المبلغ</th>
-                <th width="11%">ملاحظات</th>
+                <th width="10%">ملاحظات</th>
             </tr>
         </thead>
         <tbody>
@@ -230,6 +231,8 @@
                 <tr>
                     <td style="font-weight: bold; color: #fb6514;">#{{ $shipment->bond_number }}</td>
                     <td>{{ $shipment->senderCustomer->name }}</td>
+                    <td style="direction: ltr;">{{ $shipment->senderCustomer->phone }}</td>
+
                     <td style="font-weight: bold;">{{ $shipment->receiverCustomer->name }}</td>
                     <td style="direction: ltr;">{{ $shipment->receiverCustomer->phone }}</td>
                     <td>{{ $shipment->senderBranch->name }}</td>
@@ -239,31 +242,29 @@
                     <td>
                         @switch($shipment->payment_method)
                             @case('prepaid')
-                                <span class="text-success-500 font-bold">مدفوع</span>
+                                <span class="text-success-500 font-bold">محاسب</span>
                             @break
 
                             @case('cod')
-                                  
-                                        الإجمالي:
-                                        <span class="font-bold">
-                                            {{ number_format($shipment->total_amount, 0) }}
-                                        </span>
-                                            @break
+                                الإجمالي:
+                                <span class="font-bold">
+                                    {{ number_format($shipment->total_amount, 0) }}
+                                </span>
+                            @break
 
                             @case('partial_payment')
-                                 
-                                        الإجمالي:
-                                        <span class="font-bold">
-                                            {{ number_format($shipment->total_amount, 0) }}
-                                        </span>
+                                الإجمالي:
+                                <span class="font-bold">
+                                    {{ number_format($shipment->total_amount, 0) }}
+                                </span>
 
-                                    <div class="text-success-500">
-                                        مدفوع:
-                                        {{ number_format($shipment->partial_amount, 0) }}
-                                    </div>
+                                <div class="text-success-500">
+                                    محاسب:
+                                    {{ number_format($shipment->partial_amount, 0) }}
+                                </div>
 
-                                        المتبقي:
-                                        {{ number_format($shipment->total_amount - $shipment->partial_amount, 0) }}
+                                المتبقي:
+                                {{ number_format($shipment->total_amount - $shipment->partial_amount, 0) }}
                             @break
 
                             @case('customer_credit')
