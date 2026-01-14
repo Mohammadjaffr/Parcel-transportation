@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerFinanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
@@ -35,7 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
     Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class, 'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
-    Route::get('/shipments/{id}/thermal', [ShipmentController::class, 'printThermal'])
+    Route::get('/shipments/{id}/thermal', [InvoiceController::class, 'printThermal'])
         ->name('shipment.printThermal');
 
     Route::resource('systems', SystemSettingsController::class);
@@ -63,7 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/whatsapp/receiver/{id}', [WhatsAppController::class, 'openForReceiver'])
         ->name('whatsapp.receiver');
 
-    Route::get('/shipment/{id}/invoice', [ShipmentController::class, 'invoice'])->name('shipment.invoice');
+    Route::get('/shipment/{id}/invoice', [InvoiceController::class, 'printInvoice'])->name('shipment.invoice');
     Route::get('/shipments/select-customer', [ShipmentController::class, 'selectCustomer'])
         ->name('shipments.selectCustomer');
 
