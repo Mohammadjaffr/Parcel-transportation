@@ -8,7 +8,6 @@ use App\Models\Customer;
 use App\Models\Shipment;
 use App\Services\AdminLoggerService;
 use App\Services\ShipmentPaymentService;
-use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use TCPDF;
@@ -16,12 +15,10 @@ use App\Classes\WebResponseClass;
 
 class ShipmentController extends Controller
 {
-    protected $whatsAppService;
     protected $shipmentPaymentService;
 
-    public function __construct(WhatsAppService $whatsAppService, ShipmentPaymentService $shipmentPaymentService)
+    public function __construct(ShipmentPaymentService $shipmentPaymentService)
     {
-        $this->whatsAppService = $whatsAppService;
         $this->shipmentPaymentService = $shipmentPaymentService;
     }
 
@@ -712,17 +709,4 @@ class ShipmentController extends Controller
         }
     }
 
-    public function openForSender($id)
-    {
-        $shipment = Shipment::findOrFail($id);
-        $link = $this->whatsAppService->getSenderLink($shipment);
-       return redirect()->away($link);
-    }
-
-    public function openForReceiver($id)
-    {
-        $shipment = Shipment::findOrFail($id);
-        $link = $this->whatsAppService->getReceiverLink($shipment);
-        return redirect()->away($link);
-    }
 }

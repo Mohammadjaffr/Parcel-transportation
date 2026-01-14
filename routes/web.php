@@ -12,6 +12,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
 use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WhatsAppController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -42,7 +43,7 @@ Route::middleware('auth')->group(function () {
         ->name('system-settings.auto-assign.update');
     Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
 
-    Route::get('/whatsapp/sender/{id}', [ShipmentController::class, 'openForSender'])
+    Route::get('/whatsapp/sender/{id}', [WhatsAppController::class, 'openForSender'])
         ->name('whatsapp.sender');
 
     Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])
@@ -59,7 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/reports/revenue/pdf', [ReportController::class, 'exportRevenuePDF'])
         ->name('reports.revenue.pdf');
 
-    Route::get('/whatsapp/receiver/{id}', [ShipmentController::class, 'openForReceiver'])
+    Route::get('/whatsapp/receiver/{id}', [WhatsAppController::class, 'openForReceiver'])
         ->name('whatsapp.receiver');
 
     Route::get('/shipment/{id}/invoice', [ShipmentController::class, 'invoice'])->name('shipment.invoice');
