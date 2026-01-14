@@ -12,29 +12,48 @@ class WhatsAppService
         $formattedPhone = $this->formatPhone($phone);
         $encodedMessage = urlencode($message);
         
-        return "whatsapp://send?phone={$formattedPhone}&text={$encodedMessage}";
+       return "https://api.whatsapp.com/send?phone={$formattedPhone}&text={$encodedMessage}";
     }
     
     private function formatPhone($phone)
     {
+        // 1. تنظيف الرقم من أي رموز وحروف
         $phone = preg_replace('/[^0-9]/', '', $phone);
-        if (str_starts_with($phone, '0')) {
-            $phone = '966' . substr($phone, 1);
-        }
         
+        // 2. إذا كان الرقم فارغاً، نرجعه كما هو (أو نرجع null)
+        if (empty($phone)) {
+            return null; 
+        }
+
+        // 3. معالجة حالات اليمن (أو دولتك)
+        
+        // إذا بدأ بـ 0 (مثال: 077) -> نحذف الصفر ونضيف 967
+        if (str_starts_with($phone, '0')) {
+            $phone = '967' . substr($phone, 1);
+        }
+        // إذا بدأ بـ 7 مباشرة وكان طوله 9 أرقام (مثال: 771234567) -> نضيف 967
+        elseif (strlen($phone) === 9 && str_starts_with($phone, '7')) {
+             $phone = '967' . $phone;
+        }
+        // إذا لم يبدأ بـ 967 (ولم تنطبق الشروط السابقة)، نضيفها احتياطاً 
+        // (تنبيه: هذا يعتمد على منطق نظامك، هل كل الأرقام يمنية؟)
+        elseif (!str_starts_with($phone, '967')) {
+             $phone = '967' . $phone;
+        }
+
         return $phone;
     }
     
     public function getSenderLink(Shipment $shipment)
     {
         $message = $this->createSenderMessage($shipment);
-        return $this->createWhatsAppLink($shipment->sender_phone, $message);
-    }
+        return $this->createWhatsAppLink($shipment->senderCustomer->phone, $message);
+    }   
     
     public function getReceiverLink(Shipment $shipment)
     {
         $message = $this->createReceiverMessage($shipment);
-        return $this->createWhatsAppLink($shipment->receiver_phone, $message);
+        return $this->createWhatsAppLink($shipment->receiverCustomer->phone, $message);
     }
     
     public function createSenderMessage(Shipment $shipment)

@@ -176,23 +176,75 @@
                     </div>
 
                     <div class="p-8 space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {{-- <div
-                                class="md:col-span-2 p-4 bg-brand-50 dark:bg-brand-500/10 rounded-2xl border border-dashed border-brand-200 text-center">
-                                <span class="text-xs font-black text-brand-600 uppercase tracking-widest">سيتم توليد رقم
-                                    تتبع فريد تلقائياً عند الحفظ</span>
-                            </div> --}}
+                        <div class="grid grid-cols-2 gap-5">
                             <div class="space-y-1.5">
                                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mr-2">اسم
                                     السائق</label>
                                 <input type="text" name="driver_name" required placeholder="الاسم الكامل"
                                     class="w-full h-12 px-4 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 text-sm font-bold dark:text-white shadow-inner">
                             </div>
-                            <div class="md:col-span-2 space-y-1.5">
+
+                            <div class="space-y-1.5">
                                 <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest mr-2">هاتف
                                     التواصل (السائق)</label>
-                                <input type="text" name="driver_phone" required placeholder="7XXXXXXXX"
-                                    class="w-full h-12 px-4 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 text-sm font-bold dark:text-white shadow-inner">
+                                <div x-data="{
+                                    open: false,
+                                    search: '',
+                                    countries: [
+                                        { name: 'Yemen', code: 'YE', dial_code: '+967' }
+                                    ],
+                                    selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                    localPhoneNumber: '',
+                                    get filteredCountries() {
+                                        if (this.search === '') return this.countries;
+                                        return this.countries.filter(country => {
+                                            const searchLower = this.search.toLowerCase();
+                                            return country.name.toLowerCase().includes(searchLower) || country.dial_code.includes(searchLower);
+                                        });
+                                    }
+                                }" class="relative w-full">
+                                    <input type="hidden" name="driver_phone"
+                                        :value="selectedCountry.dial_code.replace('+', '') + localPhoneNumber">
+
+                                    <div
+                                        class="flex h-12 w-full rounded-xl bg-gray-50 dark:bg-gray-800 shadow-inner border-none overflow-hidden focus-within:ring-2 focus-within:ring-brand-500/20 transition-all">
+                                        <button type="button" @click="open = !open"
+                                            class="flex items-center gap-2 px-3 bg-gray-100 dark:bg-gray-700/50 border-l border-gray-200 dark:border-gray-700 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700">
+                                            <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
+                                                alt="Flag" class="w-5 h-auto rounded-sm">
+                                            <svg class="h-4 w-4 text-gray-400 transition-transform"
+                                                :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                        <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX"
+                                            class="flex-grow bg-transparent px-4 text-sm font-bold text-gray-800 dark:text-white focus:outline-none border-none text-left"
+                                            dir="ltr">
+                                    </div>
+
+                                    <div x-show="open" @click.outside="open = false" x-transition
+                                        class="absolute z-50 w-full mt-2 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar">
+                                        <div class="p-2 sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-50 dark:border-gray-800">
+                                            <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
+                                                class="w-full px-3 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-xs font-bold focus:ring-1 focus:ring-brand-500/30">
+                                        </div>
+                                        <template x-for="country in filteredCountries" :key="country.code">
+                                            <div @click="selectedCountry = country; open = false"
+                                                class="flex items-center justify-between p-3 px-4 transition-all cursor-pointer hover:bg-brand-50 dark:hover:bg-brand-500/10 group">
+                                                <div class="flex items-center gap-3">
+                                                    <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
+                                                        class="w-5 rounded-sm">
+                                                    <span class="text-xs font-black text-gray-700 dark:text-gray-300 group-hover:text-brand-600"
+                                                        x-text="country.name"></span>
+                                                </div>
+                                                <span class="text-[10px] font-black tracking-widest text-gray-400"
+                                                    x-text="country.dial_code"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

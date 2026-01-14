@@ -215,7 +215,7 @@
                 </div>
             </div>
 
-            {{-- ===== المخطط البياني ===== --}}
+            {{-- ===== المخطط البياني =====
             <div
                 class="lg:col-span-1 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 shadow-sm">
                 <h3 class="mb-4 text-lg font-bold text-gray-800 dark:text-white">
@@ -227,7 +227,7 @@
                     <span class="font-bold text-gray-900 dark:text-white">{{ number_format(array_sum($monthlySales), 2) }}
                         ر.ي</span>
                 </div>
-            </div>
+            </div> --}}
 
         </div>
 

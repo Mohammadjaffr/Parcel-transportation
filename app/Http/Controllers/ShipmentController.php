@@ -137,7 +137,7 @@ class ShipmentController extends Controller
                 $senderCustomer = Customer::firstOrCreate(
                     [
                         'phone' => $data['sender_phone'],
-                        'branch_code' => $data['sender_branch_code']
+                        // 'branch_code' => $data['sender_branch_code']
                     ],
                     [
                         'name' => $data['sender_name']
@@ -152,7 +152,7 @@ class ShipmentController extends Controller
                 $receiverCustomer = Customer::firstOrCreate(
                     [
                         'phone' => $data['receiver_phone'],
-                        'branch_code' => $data['receiver_branch_code']
+                        // 'branch_code' => $data['receiver_branch_code']
                     ],
                     [
                         'name' => $data['receiver_name']
@@ -716,48 +716,13 @@ class ShipmentController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getSenderLink($shipment);
-
-        return $this->openInNewTab($link, 'sender', $shipment);
+       return redirect()->away($link);
     }
 
     public function openForReceiver($id)
     {
         $shipment = Shipment::findOrFail($id);
         $link = $this->whatsAppService->getReceiverLink($shipment);
-
-        return $this->openInNewTab($link, 'receiver', $shipment);
-    }
-
-    private function openInNewTab($link, $type, $shipment)
-    {
-        $title = $type === 'sender' ? 'المرسل' : 'المستلم';
-
-        $html = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-    <title>واتساب {$title}</title>
-    <script>
-        
-        window.open('{$link}', '_blank');
-        
-        setTimeout(function() {
-            try {
-                window.close();
-            } catch(e) {
-                window.location.href = '/shipments/{$shipment->id}';
-            }
-        }, 1000);
-    </script>
-</head>
-<body style="text-align: center; padding: 50px;">
-    <h2>📱 جاري فتح واتساب {$title}...</h2>
-    <p>رقم التتبع: {$shipment->tracking_number}</p>
-    <p>سيتم فتح المحادثة في تاب جديد</p>
-</body>
-</html>
-HTML;
-
-        return response($html);
+        return redirect()->away($link);
     }
 }
