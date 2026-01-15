@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('branch_code', 10);
             $table->foreign('branch_code')->references(columns: 'code')->on('branches')->cascadeOnDelete();
             $table->string('name');
-            $table->string('phone')->unique();
+            $table->string('phone');
             $table->string('whatsapp_number')->nullable();
             $table->timestamps();
             $table->unique(['phone', 'branch_code']);

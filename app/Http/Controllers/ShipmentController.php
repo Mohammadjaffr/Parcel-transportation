@@ -85,7 +85,7 @@ class ShipmentController extends Controller
             'weight'       => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
 
-            'code'              => 'nullable|string|max:255',
+            'code'              => 'required|string|max:255',
             'no_honey_jars'     => 'nullable|numeric|min:0',
             'no_gallons_honey'  => 'nullable|numeric|min:0',
 
@@ -290,6 +290,7 @@ class ShipmentController extends Controller
 
                 'sender_name'  => 'required_without:sender_customer_id|string|max:255',
                 'sender_phone' => 'required_without:sender_customer_id|string|max:50',
+                'code' => 'required|string|max:255',
 
                 'receiver_name'  => 'required_without:receiver_customer_id|string|max:255',
                 'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',

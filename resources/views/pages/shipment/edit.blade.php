@@ -639,7 +639,7 @@
                             @enderror
                         </div>
 
-                        <div class="mt-3">
+                        {{-- <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                 الوزن (كجم)
                             </label>
@@ -650,7 +650,7 @@
                             @error('weight')
                                 <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                             @enderror
-                        </div>
+                        </div> --}}
 
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -675,7 +675,7 @@
                                     قيد الانتظار
                                 </option>
                                 <option value="in_transit" @selected(old('status', $shipment->status) == 'in_transit')>
-                                    قيد الشحن
+                                    في الطريق
                                 </option>
                                 <option value="delivered" @selected(old('status', $shipment->status) == 'delivered')>
                                     تم التسليم
