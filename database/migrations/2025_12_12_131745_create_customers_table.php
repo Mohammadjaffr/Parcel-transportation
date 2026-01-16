@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('phone');
             $table->string('whatsapp_number')->nullable();
             $table->timestamps();
-            $table->unique(['phone', 'branch_code']);
         
         });
     }

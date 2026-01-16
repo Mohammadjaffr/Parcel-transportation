@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\WebResponseClass;
 use App\Models\AdminActivity;
 use App\Models\Branch;
 use App\Models\Customer;
@@ -10,8 +11,7 @@ use App\Services\AdminLoggerService;
 use App\Services\ShipmentPaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use TCPDF;
-use App\Classes\WebResponseClass;
+use Illuminate\Support\Facades\Auth;
 
 class ShipmentController extends Controller
 {
@@ -43,7 +43,6 @@ class ShipmentController extends Controller
         return view('pages.shipment.index', compact('requests', 'type'));
     }
 
-
     /* ========== 2- صفحة إنشاء طرد ========== */
     public function create(Request $request)
     {
@@ -72,27 +71,27 @@ class ShipmentController extends Controller
         $entryType = $request->input('entry_type', 'sender'); // sender أو receiver
 
         $rules = [
-            'sender_customer_id'   => 'nullable|exists:customers,id',
+            'sender_customer_id' => 'nullable|exists:customers,id',
             'receiver_customer_id' => 'nullable|exists:customers,id',
 
-            'sender_name'   => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone'  => 'required_without:sender_customer_id|string|max:50',
+            'sender_name' => 'required_without:sender_customer_id|string|max:255',
+            'sender_phone' => 'required_without:sender_customer_id|string|max:50',
 
-            'receiver_name'  => 'required_without:receiver_customer_id|string|max:255',
+            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
             'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
 
             'package_type' => 'required|string|max:255',
-            'weight'       => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
 
-            'code'              => 'required|string|max:255',
-            'no_honey_jars'     => 'nullable|numeric|min:0',
-            'no_gallons_honey'  => 'nullable|numeric|min:0',
+            'code' => 'required|string|max:255',
+            'no_honey_jars' => 'nullable|numeric|min:0',
+            'no_gallons_honey' => 'nullable|numeric|min:0',
 
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
 
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
-            'prepaid_reference'      => 'required_if:prepaid_payment_method,bank_transfer|max:255',
+            'prepaid_reference' => 'required_if:prepaid_payment_method,bank_transfer|max:255',
 
             'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
 
@@ -131,13 +130,14 @@ class ShipmentController extends Controller
 
             // المرسل
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::firstOrCreate(
+                $senderCustomer = Customer::create(
                     [
                         'phone' => $data['sender_phone'],
-                        // 'branch_code' => $data['sender_branch_code']
+                        'branch_code' => Auth::user()->branch_code,
+                        'name' => $data['sender_name'],
                     ],
                     [
-                        'name' => $data['sender_name']
+                        'name' => $data['sender_name'],
                     ]
                 );
 
@@ -146,13 +146,11 @@ class ShipmentController extends Controller
 
             // المستلم
             if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::firstOrCreate(
+                $receiverCustomer = Customer::create(
                     [
                         'phone' => $data['receiver_phone'],
-                        // 'branch_code' => $data['receiver_branch_code']
-                    ],
-                    [
-                        'name' => $data['receiver_name']
+                        'branch_code' => Auth::user()->branch_code,
+                        'name' => $data['receiver_name'],
                     ]
                 );
 
@@ -174,7 +172,6 @@ class ShipmentController extends Controller
             } else {
                 $data['status'] = 'pending';
             }
-
 
             // حفظ مبلغ الدفع الجزئي مؤقتاً قبل الحذف
             $partialAmount = $data['partial_amount'] ?? null;
@@ -285,17 +282,17 @@ class ShipmentController extends Controller
             $rules = [
                 'receiver_branch_code' => 'required|exists:branches,code',
 
-                'sender_customer_id'   => 'nullable|exists:customers,id',
+                'sender_customer_id' => 'nullable|exists:customers,id',
                 'receiver_customer_id' => 'nullable|exists:customers,id',
 
-                'sender_name'  => 'required_without:sender_customer_id|string|max:255',
+                'sender_name' => 'required_without:sender_customer_id|string|max:255',
                 'sender_phone' => 'required_without:sender_customer_id|string|max:50',
                 'code' => 'required|string|max:255',
 
-                'receiver_name'  => 'required_without:receiver_customer_id|string|max:255',
+                'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
                 'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
 
-                'no_honey_jars'    => 'nullable|numeric|min:0',
+                'no_honey_jars' => 'nullable|numeric|min:0',
                 'no_gallons_honey' => 'nullable|numeric|min:0',
             ];
 
@@ -306,7 +303,7 @@ class ShipmentController extends Controller
                 /** @var \App\Models\User $user */
                 $user = auth()->user();
 
-                $sender   = $user->branch_code;
+                $sender = $user->branch_code;
                 $receiver = $request->receiver_branch_code ?? $shipment->receiver_branch_code;
 
                 if ($sender && $receiver && $sender === $receiver) {
@@ -328,8 +325,8 @@ class ShipmentController extends Controller
                     $senderCustomer->update(['name' => $data['sender_name']]);
                 } else {
                     $senderCustomer = Customer::create([
-                        'phone'       => $data['sender_phone'],
-                        'name'        => $data['sender_name'],
+                        'phone' => $data['sender_phone'],
+                        'name' => $data['sender_name'],
                         'branch_code' => auth()->user()->branch_code,
                     ]);
                 }
@@ -345,8 +342,8 @@ class ShipmentController extends Controller
                     $receiverCustomer->update(['name' => $data['receiver_name']]);
                 } else {
                     $receiverCustomer = Customer::create([
-                        'phone'       => $data['receiver_phone'],
-                        'name'        => $data['receiver_name'],
+                        'phone' => $data['receiver_phone'],
+                        'name' => $data['receiver_name'],
                         'branch_code' => $data['receiver_branch_code'],
                     ]);
                 }
@@ -370,12 +367,12 @@ class ShipmentController extends Controller
         if ($section === 'details') {
 
             $rules = [
-                'code'         => 'nullable|string|max:255',
+                'code' => 'nullable|string|max:255',
                 'package_type' => 'nullable|string|max:255',
-                'weight'       => 'nullable|numeric|min:0',
+                'weight' => 'nullable|numeric|min:0',
                 'total_amount' => 'required|numeric|min:0',
-                'status'       => 'required|in:pending,in_transit,delivered',
-                'notes'        => 'nullable|string',
+                'status' => 'required|in:pending,in_transit,delivered',
+                'notes' => 'nullable|string',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -419,11 +416,11 @@ class ShipmentController extends Controller
 
                 // ✅ تحقق الدفع الجزئي أقل من الإجمالي
                 if (($request->payment_method ?? $shipment->payment_method) === 'partial_payment') {
-                    $totalAmount   = $request->total_amount ?? $shipment->total_amount;
+                    $totalAmount = $request->total_amount ?? $shipment->total_amount;
                     $partialAmount = $request->partial_amount;
 
-                    if (!is_null($partialAmount) && is_numeric($partialAmount) && is_numeric($totalAmount)) {
-                        if ((float)$partialAmount >= (float)$totalAmount) {
+                    if (! is_null($partialAmount) && is_numeric($partialAmount) && is_numeric($totalAmount)) {
+                        if ((float) $partialAmount >= (float) $totalAmount) {
                             $validator->errors()->add(
                                 'partial_amount',
                                 'المبلغ المدفوع جزئيًا يجب أن يكون أقل من المبلغ الإجمالي.'
@@ -460,6 +457,7 @@ class ShipmentController extends Controller
             // ✅ لو COD أو آجل: نحذف أي دفعات سابقة (مهم جداً)
             if (in_array($shipment->payment_method, ['cod', 'customer_credit'])) {
                 $shipment->payments()->delete();
+
                 return WebResponseClass::sendResponse(
                     'تم التحديث!',
                     'تم تحديث بيانات الدفع بنجاح.',
@@ -470,12 +468,12 @@ class ShipmentController extends Controller
 
             // حساب المبلغ المدفوع الآن
             $paymentType = $request->prepaid_payment_method ?? 'cash';
-            $paidAmount  = null;
+            $paidAmount = null;
 
             if ($shipment->payment_method === 'partial_payment') {
-                $paidAmount = $partialAmount ? (float)$partialAmount : null;
+                $paidAmount = $partialAmount ? (float) $partialAmount : null;
             } elseif ($shipment->payment_method === 'prepaid') {
-                $paidAmount = (float)$shipment->total_amount;
+                $paidAmount = (float) $shipment->total_amount;
             }
 
             // ✅ لا تمرر أي ملف
@@ -518,7 +516,7 @@ class ShipmentController extends Controller
         $validator->after(function ($validator) use ($request, $shipment) {
 
             $paymentMethod = $request->payment_method ?? $shipment->payment_method;
-            $payType       = $request->prepaid_payment_method ?? null;
+            $payType = $request->prepaid_payment_method ?? null;
 
             // ✅ إلزام رقم الإيداع فقط لو (تحويل بنكي) ومع (prepaid أو partial_payment)
             $needsReference = in_array($paymentMethod, ['prepaid', 'partial_payment'])
@@ -531,7 +529,7 @@ class ShipmentController extends Controller
             // ✅ تحقق الدفع الجزئي أقل من الإجمالي
             if ($paymentMethod === 'partial_payment') {
                 $partial = (float) ($request->partial_amount ?? 0);
-                $total   = (float) $shipment->total_amount;
+                $total = (float) $shipment->total_amount;
 
                 if ($partial >= $total) {
                     $validator->errors()->add(
@@ -601,8 +599,6 @@ class ShipmentController extends Controller
         );
     }
 
-
-
     /* ========== 7- حذف الطرد ========== */
     public function destroy($id)
     {
@@ -620,9 +616,6 @@ class ShipmentController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
-
-
 
     public function adminlog()
     {
@@ -669,5 +662,4 @@ class ShipmentController extends Controller
             ], 500);
         }
     }
-
 }

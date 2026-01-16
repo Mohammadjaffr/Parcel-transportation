@@ -117,6 +117,16 @@
                                 @enderror
                             </div>
                         </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+    <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z"/>
+    </svg>
+    <span>
+        ملاحظة: سيتم اعتماد هذا الرقم كرقم
+        <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+        للتواصل.
+    </span>
+</p>
                     </div>
 
 
@@ -124,7 +134,7 @@
                     <div class="col-span-1">
                         <label for="whatsapp_number_display"
                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                            رقم الواتساب <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
+                            رقم اضافي <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
                         </label>
 
                         <div x-data="{

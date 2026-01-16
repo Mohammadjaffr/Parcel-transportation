@@ -56,79 +56,36 @@
         // نظف حقول المقدم/الجزئي حسب الحالة حتى لا تُرسل بالغلط
         if (payment_method !== 'prepaid') prepaid_reference = '';
         if (payment_method !== 'partial_payment') partial_reference = '';
-      "
+    "
                 action="{{ route('shipment.store') }}" @submit="isSubmitting = true" method="POST">
 
                 @csrf
                 <input type="hidden" name="entry_type" value="sender">
                 <input type="hidden" name="active_tab" value="sender">
 
-                <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
-                    <!-- بيانات المرسل -->
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
-                        <!-- البحث عن العميل -->
-                        <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                بحث عن عميل (اسم أو رقم)
-                            </label>
-
-                            <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                @keydown.escape="open=false" placeholder="اكتب اسم العميل أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
-
-                            <!-- Dropdown -->
-                            <div x-show="open" x-transition
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-
-                                <template x-if="loading">
-                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                </template>
-
-                                <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                    <div class="p-3 text-sm text-gray-500">
-                                        لا توجد نتائج — يمكنك إدخال البيانات يدويًا وسيتم إنشاء عميل جديد عند الحفظ
-                                    </div>
-                                </template>
-
-                                <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c)"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
-                                        </div>
-                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- sender_branch_code -->
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة \
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 من</label>
-
                             <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
                                 disabled>
-
                             <input type="hidden" name="sender_branch_code" value="{{ auth()->user()->branch_code }}">
-
                             @error('sender_branch_code')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="sender_customer_id" x-model="selectedId">
                         @error('sender_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
-                        <!-- اسم العميل -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
@@ -140,12 +97,11 @@
                             @enderror
                         </div>
 
-                        <!-- هاتف العميل -->
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
+                        <div class="relative mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                                بالرقم)</label>
 
                             <div class="flex gap-2" dir="ltr">
-                                <!-- Custom Flag Select (كما هو عندك) -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
                                         class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
@@ -171,16 +127,34 @@
                                                     <span class="text-gray-700 dark:text-gray-300"
                                                         x-text="country.code"></span>
                                                 </div>
-                                                <span x-show="countryCode === country.code"
-                                                    class="text-brand-500">✓</span>
+                                                <span x-show="countryCode === country.code" class="text-brand-500">✓</span>
                                             </button>
                                         </template>
                                     </div>
                                 </div>
 
-                                <input type="text" x-model="localNumber" @input="updatePhone()"
+                                <input type="text" x-model="localNumber"
+                                    @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
+                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
                                     class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
+                            </div>
+
+                            <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
+                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+
+                                <template x-if="loading">
+                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
+                                </template>
+
+                                <template x-for="c in results" :key="c.id">
+                                    <button type="button" @click="select(c); open = false"
+                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
+                                        </div>
+                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
+                                    </button>
+                                </template>
                             </div>
 
                             <input type="hidden" name="sender_phone" x-model="selectedPhone">
@@ -188,8 +162,18 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
+                            </svg>
+                            <span>
+                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
+                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.
+                            </span>
+                        </p>
 
-                        <!-- عدد قروف العسل -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
@@ -202,61 +186,22 @@
                         </div>
                     </div>
 
-                    <!-- بيانات المستلم -->
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
-                        <!-- البحث عن العميل -->
-                        <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                بحث عن مستلم (اسم أو رقم)
-                            </label>
-
-                            <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                @keydown.escape="open=false" placeholder="اكتب اسم المستلم أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
-
-                            <div x-show="open" x-transition
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-
-                                <template x-if="loading">
-                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                </template>
-
-                                <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                    <div class="p-3 text-sm text-gray-500">
-                                        لا توجد نتائج — يمكنك إدخال البيانات يدويًا وسيتم إنشاء عميل جديد عند الحفظ
-                                    </div>
-                                </template>
-
-                                <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c)"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
-                                        </div>
-                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                         @error('receiver_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
-                        <!-- فرع المستلم -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 إلى</label>
-
                             <select name="receiver_branch_code"
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
                                 <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>اختر الجهة
                                 </option>
-
                                 @foreach ($branches as $branch)
                                     @continue($branch->code === auth()->user()->branch_code)
                                     <option value="{{ $branch->code }}"
@@ -265,13 +210,11 @@
                                     </option>
                                 @endforeach
                             </select>
-
                             @error('receiver_branch_code')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- اسم المستلم -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
@@ -283,9 +226,9 @@
                             @enderror
                         </div>
 
-                        <!-- هاتف المستلم -->
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
+                        <div class="relative mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                                بالرقم)</label>
 
                             <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
@@ -321,9 +264,26 @@
                                     </div>
                                 </div>
 
-                                <input type="text" x-model="localNumber" @input="updatePhone()"
+                                <input type="text" x-model="localNumber"
+                                    @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
+                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
                                     class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
+                            </div>
+
+                            <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
+                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                <template x-if="loading">
+                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
+                                </template>
+                                <template x-for="c in results" :key="c.id">
+                                    <button type="button" @click="select(c); open = false"
+                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
+                                        </div>
+                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
+                                    </button>
+                                </template>
                             </div>
 
                             <input type="hidden" name="receiver_phone" x-model="selectedPhone">
@@ -331,8 +291,17 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <!-- عدد جوالين العسل -->
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
+                            </svg>
+                            <span>
+                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
+                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.
+                            </span>
+                        </p>
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
@@ -346,7 +315,6 @@
                     </div>
                 </div>
 
-                <!-- تفاصيل الطرد -->
                 <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 xl:grid-cols-2">
                     <div class="space-y-4 w-full md:col-span-2">
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
@@ -373,15 +341,22 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
+                                الطرد</label>
+                            <input type="text" name="code" value="{{ old('code') }}" step="0.01"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                placeholder="QWR123">
+                            @error('code')
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- طريقة الدفع (بعد التعديل الصحيح) -->
                     <div class="mt-2 md:col-span-2">
                         <h3 class="my-6 mb-3 text-sm font-bold text-gray-700 dark:text-gray-400">طريقة الدفع</h3>
-
                         <div class="flex flex-col gap-4">
-
-                            <!-- الحالة العامة -->
                             <div class="flex flex-wrap gap-6">
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -425,7 +400,7 @@
                                         <span :class="payment_method === 'partial_payment' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
-                                    دفع جزئي (المرسل يدفع جزء)
+                                    دفع جزئي
                                 </label>
 
                                 <label
@@ -443,20 +418,14 @@
                                     آجل على حساب العميل
                                 </label>
                             </div>
-
                             @error('payment_method')
                                 <div class="text-sm text-error-500">{{ $message }}</div>
                             @enderror
 
-
-                            <!-- prepaid -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
-
-                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    طريقة الدفع (للدفع المقدم)
-                                </label>
-
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">طريقة الدفع
+                                    (للدفع المقدم)</label>
                                 <div class="flex flex-wrap gap-6">
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -471,7 +440,6 @@
                                         </span>
                                         كاش
                                     </label>
-
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                         <input class="sr-only" type="radio" name="prepaid_payment_method"
@@ -486,17 +454,15 @@
                                         تحويل بنكي
                                     </label>
                                 </div>
-
                                 @error('prepaid_payment_method')
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
-                                <!-- مهم: x-if حتى لا يرسل الحقل لو مخفي -->
                                 <template x-if="prepaid_method === 'bank_transfer'">
                                     <div class="mt-4">
-                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رقم الإيداع
-                                        </label>
+                                        <label
+                                            class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
+                                            الإيداع</label>
                                         <input type="text" name="prepaid_reference" x-model="prepaid_reference"
                                             placeholder="أدخل رقم الإيداع"
                                             class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
@@ -507,8 +473,6 @@
                                 </template>
                             </div>
 
-
-                            <!-- cod -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'cod'" x-transition>
                                 <div class="text-sm text-gray-700 dark:text-gray-300">
@@ -517,33 +481,22 @@
                                 </div>
                             </div>
 
-
-                            <!-- partial_payment -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='partial_payment'" x-transition>
-
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    المبلغ المدفوع من المرسل الآن
-                                </label>
-
+                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">المبلغ
+                                    المدفوع من المرسل الآن</label>
                                 <input type="number" name="partial_amount" x-model="partial_amount"
                                     :disabled="payment_method !== 'partial_payment'"
                                     :required="payment_method === 'partial_payment'" min="0.01" step="0.01"
                                     placeholder="0.00"
-                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg
-                                  bg-white dark:bg-gray-700 text-gray-700 dark:text-white
-                                  focus:ring-2 focus:ring-brand-500 focus:border-brand-500
-                                  @error('partial_amount') border-error-500 @enderror">
-
+                                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 @error('partial_amount') border-error-500 @enderror">
                                 @error('partial_amount')
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
                                 <div class="mt-4">
-                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        طريقة الدفع (للدفع الجزئي)
-                                    </label>
-
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">طريقة
+                                        الدفع (للدفع الجزئي)</label>
                                     <div class="flex flex-wrap gap-6">
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -558,7 +511,6 @@
                                             </span>
                                             كاش
                                         </label>
-
                                         <label
                                             class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                             <input class="sr-only" type="radio" name="partial_payment_method"
@@ -573,18 +525,15 @@
                                             تحويل بنكي
                                         </label>
                                     </div>
-
                                     @error('partial_payment_method')
                                         <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                     @enderror
 
-                                    <!-- مهم: x-if حتى لا يرسل الحقل لو مخفي -->
                                     <template x-if="partial_method === 'bank_transfer'">
                                         <div class="mt-4">
                                             <label
-                                                class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                                رقم الإيداع
-                                            </label>
+                                                class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
+                                                الإيداع</label>
                                             <input type="text" name="partial_reference" x-model="partial_reference"
                                                 placeholder="أدخل رقم الإيداع"
                                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
@@ -596,8 +545,6 @@
                                 </div>
                             </div>
 
-
-                            <!-- customer_credit -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='customer_credit'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -615,12 +562,10 @@
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                <!-- الملاحظات -->
                 <div class="mt-6">
                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
@@ -630,7 +575,6 @@
                     @enderror
                 </div>
 
-                <!-- زر التسجيل -->
                 <div class="mt-6">
                     <button type="submit" :disabled="isSubmitting"
                         class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
@@ -650,8 +594,6 @@
                 </div>
             </form>
 
-
-
             {{-- =================== التاب الثاني: مستلم الطرد) =================== --}}
             <form x-show="activeTab === 'receiver'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
@@ -670,62 +612,22 @@
                 enctype="multipart/form-data">
                 @csrf
 
-                {{-- مهم جداً: هذا اللي يحدد أن هذا التاب (مستلم) --}}
                 <input type="hidden" name="entry_type" value="receiver">
                 <input type="hidden" name="active_tab" value="receiver">
 
-                <!-- الشبكة الرئيسية -->
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
-                    <!-- بيانات المرسل -->
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
-                        <!-- البحث عن العميل -->
-                        <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                بحث عن عميل (اسم أو رقم)
-                            </label>
-
-                            <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                @keydown.escape="open=false" placeholder="اكتب اسم العميل أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
-
-                            <!-- Dropdown -->
-                            <div x-show="open" x-transition
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-                                <template x-if="loading">
-                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                </template>
-
-                                <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                    <div class="p-3 text-sm text-gray-500">
-                                        لا توجد نتائج — يمكنك إدخال البيانات يدويًا وسيتم إنشاء عميل جديد عند الحفظ
-                                    </div>
-                                </template>
-
-                                <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c)"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
-                                        </div>
-                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- sender_branch_code -->
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة \
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 من</label>
-
                             <select name="sender_branch_code"
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
                                 <option value="" {{ old('sender_branch_code') ? '' : 'selected' }}>اختر الجهة
                                 </option>
-
                                 @foreach ($branches as $branch)
                                     @continue($branch->code === auth()->user()->branch_code)
                                     <option value="{{ $branch->code }}"
@@ -734,19 +636,16 @@
                                     </option>
                                 @endforeach
                             </select>
-
                             @error('sender_branch_code')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="sender_customer_id" x-model="selectedId">
                         @error('sender_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
-                        <!-- اسم العميل -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
@@ -758,11 +657,10 @@
                             @enderror
                         </div>
 
-                        <!-- هاتف العميل -->
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
+                        <div class="relative mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                                بالرقم)</label>
                             <div class="flex gap-2" dir="ltr">
-                                <!-- Custom Flag Select -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
                                         class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
@@ -777,8 +675,6 @@
                                                 d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     </button>
-
-                                    <!-- Dropdown List -->
                                     <div x-show="openCountry" x-transition
                                         class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                         <template x-for="country in countries" :key="country.code">
@@ -796,19 +692,42 @@
                                         </template>
                                     </div>
                                 </div>
-
-                                <input type="text" x-model="localNumber" @input="updatePhone()"
+                                <input type="text" x-model="localNumber"
+                                    @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
+                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
                                     class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
-
+                            <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
+                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                <template x-if="loading">
+                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
+                                </template>
+                                <template x-for="c in results" :key="c.id">
+                                    <button type="button" @click="select(c); open = false"
+                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
+                                        </div>
+                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
+                                    </button>
+                                </template>
+                            </div>
                             <input type="hidden" name="sender_phone" x-model="selectedPhone">
                             @error('sender_phone')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <!-- عدد قروف العسل -->
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
+                            </svg>
+                            <span>
+                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
+                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.
+                            </span>
+                        </p>
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
@@ -821,67 +740,27 @@
                         </div>
                     </div>
 
-                    <!-- بيانات المستلم -->
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
 
-                        <!-- البحث عن العميل -->
-                        <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                بحث عن مستلم (اسم أو رقم)
-                            </label>
-
-                            <input type="text" x-model="query" @input.debounce.350ms="search()" @focus="open = true"
-                                @keydown.escape="open=false" placeholder="اكتب اسم المستلم أو رقمه..."
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
-
-                            <!-- Dropdown -->
-                            <div x-show="open" x-transition
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-                                <template x-if="loading">
-                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                </template>
-
-                                <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                    <div class="p-3 text-sm text-gray-500">
-                                        لا توجد نتائج — يمكنك إدخال البيانات يدويًا وسيتم إنشاء عميل جديد عند الحفظ
-                                    </div>
-                                </template>
-
-                                <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c)"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
-                                        </div>
-                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-
-                        <!-- نخزن ID العميل الحقيقي -->
                         <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                         @error('receiver_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
-                        <!-- فرع المستلم -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 إلى</label>
-
                             <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
                                 disabled>
                             <input type="hidden" name="receiver_branch_code" value="{{ auth()->user()->branch_code }}">
-
                             @error('receiver_branch_code')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- اسم المستلم -->
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
@@ -893,11 +772,10 @@
                             @enderror
                         </div>
 
-                        <!-- هاتف المستلم -->
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف</label>
+                        <div class="relative mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                                بالرقم)</label>
                             <div class="flex gap-2" dir="ltr">
-                                <!-- Custom Flag Select -->
                                 <div class="relative" @click.outside="openCountry = false">
                                     <button type="button" @click="openCountry = !openCountry"
                                         class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
@@ -912,8 +790,6 @@
                                                 d="M19 9l-7 7-7-7"></path>
                                         </svg>
                                     </button>
-
-                                    <!-- Dropdown List -->
                                     <div x-show="openCountry" x-transition
                                         class="overflow-y-auto absolute left-0 top-full z-20 mt-1 w-40 max-h-60 bg-white rounded-lg border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                         <template x-for="country in countries" :key="country.code">
@@ -931,19 +807,42 @@
                                         </template>
                                     </div>
                                 </div>
-
-                                <input type="text" x-model="localNumber" @input="updatePhone()"
+                                <input type="text" x-model="localNumber"
+                                    @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
+                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
                                     class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                     placeholder="7XXXXXXXX">
                             </div>
-
+                            <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
+                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                <template x-if="loading">
+                                    <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
+                                </template>
+                                <template x-for="c in results" :key="c.id">
+                                    <button type="button" @click="select(c); open = false"
+                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
+                                        </div>
+                                        <div class="text-xs text-gray-500" x-text="c.phone"></div>
+                                    </button>
+                                </template>
+                            </div>
                             <input type="hidden" name="receiver_phone" x-model="selectedPhone">
                             @error('receiver_phone')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <!-- عدد جوالين العسل -->
+                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
+                            </svg>
+                            <span>
+                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
+                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.
+                            </span>
+                        </p>
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
@@ -957,7 +856,6 @@
                     </div>
                 </div>
 
-                <!-- تفاصيل الطرد -->
                 <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 xl:grid-cols-2">
                     <div class="space-y-4 w-full md:col-span-2">
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
@@ -973,18 +871,6 @@
                             @enderror
                         </div>
 
-                        {{-- <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الوزن
-                                (كجم)</label>
-                            <input type="number" name="weight" value="{{ old('weight') }}" step="0.01"
-                                min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="0.00">
-                            @error('weight')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div> --}}
-
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
                                 المبلغ</label>
@@ -996,15 +882,22 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+
+                        <div class="mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
+                                الطرد</label>
+                            <input type="text" name="code" value="{{ old('code') }}" step="0.01"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                placeholder="QWR123">
+                            @error('code')
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- طريقة الدفع -->
                     <div class="mt-2 md:col-span-2">
                         <h3 class="my-6 mb-3 text-sm font-bold text-gray-700 dark:text-gray-400">طريقة الدفع</h3>
-
                         <div class="flex flex-col gap-4">
-
-                            <!-- الحالة العامة -->
                             <div class="flex flex-wrap gap-6">
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -1036,27 +929,14 @@
                                     دفع عند التسليم (COD)
                                 </label>
                             </div>
-
                             @error('payment_method')
                                 <div class="text-sm text-error-500">{{ $message }}</div>
                             @enderror
 
-                            <!-- cod -->
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method === 'cod'" x-transition>
-                                <div class="text-sm text-gray-700 dark:text-gray-300">
-                                    سيتم اعتبار مبلغ التحصيل = <span class="font-semibold">إجمالي المبلغ</span>.
-                                </div>
-                            </div>
-
-                            <!-- prepaid (مفتوح دائماً عندما prepaid) -->
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'prepaid'" x-transition>
-
-                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    طريقة الدفع (للدفع المقدم)
-                                </label>
-
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">طريقة الدفع
+                                    (للدفع المقدم)</label>
                                 <div class="flex flex-wrap gap-6">
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
@@ -1071,7 +951,6 @@
                                         </span>
                                         كاش
                                     </label>
-
                                     <label
                                         class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                         <input class="sr-only" type="radio" name="prepaid_payment_method"
@@ -1086,72 +965,33 @@
                                         تحويل بنكي
                                     </label>
                                 </div>
-
                                 @error('prepaid_payment_method')
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
 
                                 <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                    {{-- <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                        رفع سند التحويل
+                                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                        رقم السند / رقم التحويل / رقم الإيداع
                                     </label>
-
-                                    <label for="prepaid_attachment"
-                                        class="cursor-pointer flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-6
-                                dark:border-gray-500 dark:bg-gray-800 hover:border-brand-500 dark:hover:border-brand-500
-                                transition-colors duration-200 w-full text-center
-                                @error('prepaid_attachment') border-error-500 @enderror">
-
-                                        <div class="mb-[22px] flex justify-center">
-                                            <div
-                                                class="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700
-                                    dark:bg-gray-700 dark:text-gray-400">
-                                                <svg class="fill-current" width="29" height="28"
-                                                    viewBox="0 0 29 28" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                                        d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        <h4 class="mb-2 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                                            Drop File Here
-                                        </h4>
-
-                                        <span class="block mb-4 text-sm text-gray-700 dark:text-gray-400">
-                                            اسحب الملف هنا أو اضغط للاختيار<br>
-                                            (PNG, JPG, PDF)
-                                        </span>
-
-                                        <span class="font-medium underline text-theme-sm text-brand-500">Browse File</span>
-
-                                        <input id="prepaid_attachment" type="file" name="prepaid_attachment"
-                                            accept="image/*,.pdf" class="hidden" />
-                                    </label> --}}
-
-                                    @error('prepaid_attachment')
+                                    <input type="text" name="prepaid_reference" x-model="prepaid_reference"
+                                        placeholder="أدخل رقم السند أو التحويل"
+                                        class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
+                                    @error('prepaid_reference')
                                         <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                     @enderror
-
-                                    <div class="mt-4">
-                                        <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                            رقم السند / رقم التحويل / رقم الإيداع
-                                        </label>
-                                        <input type="text" name="prepaid_reference" x-model="prepaid_reference"
-                                            placeholder="أدخل رقم السند أو التحويل"
-                                            class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">
-                                        @error('prepaid_reference')
-                                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                                        @enderror
-                                    </div>
                                 </div>
                             </div>
 
+                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                                x-show="payment_method === 'cod'" x-transition>
+                                <div class="text-sm text-gray-700 dark:text-gray-300">
+                                    سيتم اعتبار مبلغ التحصيل = <span class="font-semibold">إجمالي المبلغ</span>.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- الملاحظات -->
                 <div class="mt-6">
                     <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
@@ -1161,7 +1001,6 @@
                     @enderror
                 </div>
 
-                <!-- زر التسجيل -->
                 <div class="mt-6">
                     <button type="submit" :disabled="isSubmitting"
                         class="flex justify-center items-center px-4 py-2 w-full font-medium text-white rounded-lg bg-brand-500 hover:bg-brand-500 md:w-auto disabled:opacity-75 disabled:cursor-not-allowed">
