@@ -327,11 +327,11 @@
                     class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <h3 class="mb-5 text-lg font-bold text-gray-900 dark:text-white">تفاصيل الشحنة</h3>
                     <div class="grid grid-cols-2 gap-6 xl:grid-cols-3">
-                        <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-700">
+                        {{-- <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-700">
                             <div class="mb-1 text-xs text-gray-500 dark:text-gray-400">الوزن</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">{{ $shipment->weight }} <span
                                     class="text-xs font-normal text-gray-500">كجم</span></div>
-                        </div>
+                        </div> --}}
                         <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-700">
                             <div class="mb-1 text-xs text-gray-500 dark:text-gray-400">النوع</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">

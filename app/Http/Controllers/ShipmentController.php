@@ -130,16 +130,11 @@ class ShipmentController extends Controller
 
             // المرسل
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::create(
-                    [
-                        'phone' => $data['sender_phone'],
-                        'branch_code' => Auth::user()->branch_code,
-                        'name' => $data['sender_name'],
-                    ],
-                    [
-                        'name' => $data['sender_name'],
-                    ]
-                );
+                $senderCustomer = Customer::create([
+                    'phone' => $data['sender_phone'],
+                    'branch_code' => Auth::user()->branch_code,
+                    'name' => $data['sender_name'],
+                ]);
 
                 $data['sender_customer_id'] = $senderCustomer->id;
             }

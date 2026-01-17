@@ -12,11 +12,11 @@ class DashboardController extends Controller
         // إحصائيات أعلى الصفحة
         $todayShipments = Shipment::whereDate('created_at', today())->count();
         $inTransit = Shipment::where('status', 'in_transit')->count();
-        $delivered = Shipment::where('status', 'deliverd')->count();
+        $delivered = Shipment::where('status', 'delivered')->count();
 
         // الإيرادات COD المحصّلة
         $revenueCOD = Shipment::where('payment_method', 'cod')
-            ->where('status', 'deliverd')
+            ->where('status', 'delivered')
             ->sum('total_amount');
 
         // رسوم الشهور (للمخطط البياني)

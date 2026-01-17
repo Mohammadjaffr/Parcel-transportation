@@ -161,7 +161,7 @@
                                     class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('customers.show', $customer->id) }}"
-                                            class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10 rounded-xl transition-all"
+                                            class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="كشف الحساب">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                 viewBox="0 0 24 24">

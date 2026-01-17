@@ -171,10 +171,11 @@
                                                 class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded dark:bg-gray-700 dark:text-gray-300">
                                                 {{ $shipment->senderBranch->name ?? $shipment->sender_branch_code }}
                                             </span>
-                                            <svg class="w-3 h-3 text-gray-400 rtl:rotate-180" fill="none" stroke="currentColor"
+                                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                                                    d="M7 16l-4-4m0 0l4-4m-4 4h18">
+                                                </path>
                                             </svg>
                                             <span
                                                 class="px-2 py-0.5 text-xs font-medium rounded text-brand-600 bg-brand-50 dark:bg-brand-500/10 dark:text-brand-400">
@@ -239,7 +240,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const options = {
                 chart: {
                     type: "bar",
@@ -314,7 +315,7 @@
                 tooltip: {
                     theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
                     y: {
-                        formatter: function (val) {
+                        formatter: function(val) {
                             return val + " ر.ي";
                         }
                     }
