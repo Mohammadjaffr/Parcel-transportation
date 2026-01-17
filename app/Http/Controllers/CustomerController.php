@@ -78,50 +78,69 @@ class CustomerController extends Controller
     }
 
     /** عرض */
-    public function show($id)
+    public function show(Request $request,$id)
     {
-        /** @var \App\Models\User $user */
         $user = auth()->user();
         $customer = Customer::where('branch_code', $user->branch_code)
             ->with(['transactions' => function ($query) {
                 $query->latest();
-            }])
-            ->findOrFail($id);
+            }])->findOrFail($id);
+        // 1. جلب الشحنات مع الدفعات المرتبطة بها
+        $shipments = Shipment::with(['senderBranch', 'receiverBranch', 'payments']) // أضفنا payments هنا
+            ->where('sender_customer_id', $id) // الشخص هو المرسل
+            ->where('payment_method', 'customer_credit') // نوع الدفع جزئي
+            ->get();
 
-        // 1. Financial Transactions
-        $financials = $customer->transactions()->get();
+        // 2. تعريف متغيرات لحساب الإجماليات لكل الشحنات (الملخص العام)
+        $grandTotalCost = 0;      // إجمالي قيمة كل الشحنات
+        $grandTotalPaid = 0;      // إجمالي ما دفعه العميل حتى الآن (كم له)
+        $grandTotalRemaining = 0; // إجمالي المبلغ المتبقي عليه (كم عليه)
+        $unpaidShipmentsCount = 0; //  متغير جديد لعدد الشحنات غير المسددة  
 
-        // 2. Shipments (Sent or Received)
-        $shipments = Shipment::with(['senderBranch', 'receiverBranch'])
-            ->where(function ($q) use ($id) {
-                $q->where('sender_customer_id', $id)
-                    ->orWhere('receiver_customer_id', $id);
-            })->get();
+// 3. عمل Loop لحساب المبالغ لكل شحنة على حدة
+foreach ($shipments as $shipment) {
+    // ملاحظة: افترضت أن عمود سعر الشحنة اسمه 'total_cost' في جدول shipments
+    // يرجى تغيير 'total_cost' إلى اسم العمود الصحيح لديك (مثلاً: price, amount, grand_total)
+    $shipmentCost = $shipment->total_amount ?? 0; 
 
-        // 3. Merge & Sort
-        $merged = $financials->concat($shipments)->sortByDesc('created_at');
+    // حساب مجموع الدفعات لهذه الشحنة تحديداً
+    // نستخدم دالة sum الخاصة بالـ Collection لجمع عمود amount من جدول payments
+    $paidAmount = $shipment->payments->sum('amount');
 
-        // 4. Pagination
-        $page = request()->get('page', 1);
-        $perPage = 20;
-        $offset = ($page * $perPage) - $perPage;
+    // حساب المتبقي (قيمة الشحنة - المدفوع)
+    $remaining = $shipmentCost - $paidAmount;
 
-        $items = $merged->slice($offset, $perPage)->values();
+    // سنقوم بتخزين هذه القيم داخل كائن الشحنة نفسه لسهولة عرضها في ملف الـ Blade
+    $shipment->calculated_paid = $paidAmount;       // تم الدفع
+    $shipment->calculated_remaining = $remaining;   // المتبقي
 
-        $transactions = new LengthAwarePaginator(
-            $items,
-            $merged->count(),
-            $perPage,
-            $page,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
-
-        // Totals (Financial Only)
-        $debit  = $customer->transactions()->where('type', 'debit')->sum('amount');
-        $credit = $customer->transactions()->where('type', 'credit')->sum('amount');
-        $balance = $debit - $credit;
-
-        return view('pages.customers.show', compact('customer', 'transactions', 'debit', 'credit', 'balance'));
+    // إضافة للأجماليات العامة
+    $grandTotalCost += $shipmentCost;
+    $grandTotalPaid += $paidAmount;
+    $grandTotalRemaining += $remaining;
+    if ($remaining > 0) {
+        $unpaidShipmentsCount++;
+    }
+}  
+        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch']);
+        if ($request->get('direction') == 'sent') {
+        // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
+        $shipmentsQuery->where('sender_customer_id', $id);
+        } elseif ($request->get('direction') == 'received') {
+        // إذا اختار "واردة": يجب أن يكون هو المستلم فقط
+        $shipmentsQuery->where('receiver_customer_id', $id);
+        } else {
+        // الافتراضي (الكل): نجلب الحالتين (مرسل أو مستلم)
+        $shipmentsQuery->where(function ($q) use ($id) {
+            $q->where('sender_customer_id', $id)
+              ->orWhere('receiver_customer_id', $id);
+            
+        });}
+        if (request()->has('payment_method') && request('payment_method') != 'all') {
+        $shipmentsQuery->where('payment_method', request('payment_method'));
+    }
+    $shipments = $shipmentsQuery->latest()->paginate(10);
+        return view('pages.customers.show', compact('customer', 'shipments', 'grandTotalCost', 'grandTotalPaid', 'grandTotalRemaining','unpaidShipmentsCount'));
     }
 
     /** صفحة تعديل */

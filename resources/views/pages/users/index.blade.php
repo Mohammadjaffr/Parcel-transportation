@@ -2,14 +2,15 @@
 @section('title', 'إدارة المستخدمين')
 @section('addButton')
   @include('pages.users.create-user-modal')
+  <x-modals.success-modal />
+    <x-modals.error-modal />
 @endsection
 
 @section('content')
  
     <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
         @include('pages.users.edit-user-modal')
-   <x-modals.success-modal />
-    <x-modals.error-modal />
+   
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="statusFilter = 'all'; filterNow()" 
