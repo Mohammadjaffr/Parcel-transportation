@@ -220,8 +220,8 @@
                                             </svg>
                                         </button>
                                         <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX"
-                                            class="flex-grow bg-transparent px-4 text-sm font-bold text-gray-800 dark:text-white focus:outline-none border-none text-left"
-                                            dir="ltr">
+                                            class="w-full h-12 px-4 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-brand-500/20 text-sm font-bold dark:text-white shadow-inner text-right"
+                                            >
                                     </div>
 
                                     <div x-show="open" @click.outside="open = false" x-transition

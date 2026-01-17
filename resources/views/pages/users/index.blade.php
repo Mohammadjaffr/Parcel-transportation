@@ -109,7 +109,7 @@
                                         </a> --}}
                                         <button @click="openEditModal(user.id)" 
                                                 :disabled="isFetching == user.id"
-                                                class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all disabled:opacity-50">
+                                                class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
                                             <template x-if="isFetching == user.id">
                                                 <svg class="animate-spin h-5 w-5 text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

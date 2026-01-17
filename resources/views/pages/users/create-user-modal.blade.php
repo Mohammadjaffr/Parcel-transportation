@@ -107,9 +107,10 @@
                             </div>
 
                             <p class="mt-1 text-xs text-warning-500 dark:text-warning/90">
-                                سيتم استخدام هذا الرقم لتسجيل الدخول والتواصل.
+                               و سيتم استخدام هذا الرقم لتسجيل الدخول والتواصل واتساب.
                             </p>
                         </div>
+                        
                     </div>
 
 
@@ -117,7 +118,7 @@
                     <div class="col-span-1">
                         <label for="phone_number_display"
                             class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                            رقم الواتساب <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
+                            رقم اضافي <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
                         </label>
 
                         <div x-data="{

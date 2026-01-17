@@ -162,8 +162,8 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
@@ -291,8 +291,8 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
@@ -717,8 +717,8 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
@@ -832,8 +832,8 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                            <svg class="w-4 h-4 text-success-500" fill="currentColor" viewBox="0 0 24 24">
+                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
