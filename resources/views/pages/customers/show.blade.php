@@ -64,8 +64,8 @@
                                 {{ $customer->phone }}
                             </span>
                             @if ($customer->whatsapp_number)
-                                <span class="text-theme-xs font-bold text-green-500 flex items-center gap-1">
-                                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <span class="text-theme-xs font-bold text-success-500 flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-success-500 animate-pulse"></span>
                                     واتساب: {{ $customer->whatsapp_number }}
                                 </span>
                             @endif
@@ -108,262 +108,207 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+    <div class="relative overflow-hidden rounded-3xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-theme-sm transition-all duration-300 group hover:shadow-theme-md">
+        
+        <div class="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
+             <div class="absolute -right-10 -top-10 w-32 h-32 rounded-full blur-3xl {{ $balance > 0 ? 'bg-error-500/20' : 'bg-success-500/20' }}"></div>
+             <div class="absolute -left-10 -bottom-10 w-32 h-32 rounded-full blur-3xl {{ $balance > 0 ? 'bg-error-500/10' : 'bg-success-500/10' }}"></div>
+        </div>
 
-
-
-                <div
-                    class="group bg-white dark:bg-white/[0.03] p-1 rounded-2xl border   border-gray-100 dark:border-gray-800 shadow-theme-sm transition-all duration-500 hover:shadow-theme-md {{ $balance > 0 ? 'border-b-4 border-b-error-500' : 'border-b-4 border-b-success-500' }}">
-                    <div
-                        class="p-6 flex items-center justify-between bg-gradient-to-br {{ $balance > 0 ? 'from-error-50/30 dark:from-error-500/10' : 'from-success-50/30 dark:from-success-500/10' }} rounded-[2.3rem]">
-                        <div class="space-y-1">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">صافي الرصيد
-                                ({{ $balance > 0 ? 'مدين' : 'دائن' }})</p>
-                            <h3
-                                class="text-3xl font-black {{ $balance > 0 ? 'text-error-600' : 'text-success-600' }} leading-none">
-                                {{ number_format(abs($balance), 2) }}
-                                <small class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
-                            </h3>
-                        </div>
-                        <div
-                            class="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl shadow-theme-sm flex items-center justify-center {{ $balance > 0 ? 'text-error-500' : 'text-success-500' }}">
-                            @if ($balance > 0)
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            @else
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            @endif
-                        </div>
-                    </div>
+        <div class="relative p-6 flex items-center justify-between z-10">
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full {{ $balance > 0 ? 'bg-error-500 animate-pulse' : 'bg-success-500' }}"></div>
+                    <p class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                        صافي الرصيد الحالي
+                    </p>
                 </div>
-
-                <div
-                    class="group bg-white dark:bg-white/[0.03] p-1 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm transition-all duration-500 hover:shadow-theme-md {{ $balance > 0 ? 'border-b-4 border-b-error-500' : 'border-b-4 border-b-success-500' }}">
-                    <div
-                        class="p-6 flex items-center justify-between bg-gradient-to-br {{ $balance > 0 ? 'from-error-50/30 dark:from-error-500/10' : 'from-success-50/30 dark:from-success-500/10' }} rounded-[2.3rem]">
-                        <div class="space-y-1">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">صافي الرصيد
-                                ({{ $balance > 0 ? 'مدين' : 'دائن' }})</p>
-                            <h3
-                                class="text-3xl font-black {{ $balance > 0 ? 'text-error-600' : 'text-success-600' }} leading-none">
-                                {{ number_format(abs($balance), 2) }}
-                                <small class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
-                            </h3>
-                        </div>
-                        <div
-                            class="w-14 h-14 bg-white dark:bg-gray-800 rounded-2xl shadow-theme-sm flex items-center justify-center {{ $balance > 0 ? 'text-error-500' : 'text-success-500' }}">
-                            @if ($balance > 0)
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            @else
-                                <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2"
-                                    viewBox="0 0 24 24">
-                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            @endif
-                        </div>
-                    </div>
+                
+                <div class="flex items-baseline gap-1">
+                    <h3 class="text-4xl font-black {{ $balance > 0 ? 'text-error-600 dark:text-error-400' : 'text-success-600 dark:text-success-400' }} tracking-tight tabular-nums">
+                        {{ number_format(abs($balance), 2) }}
+                    </h3>
+                    <span class="text-sm font-bold text-gray-400">ر.ي</span>
                 </div>
+                
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold border {{ $balance > 0 ? 'bg-error-50 text-error-600 border-error-100 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20' : 'bg-success-50 text-success-600 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20' }}">
+                    {{ $balance > 0 ? 'رصيد مدين (عليك)' : 'رصيد دائن (لك)' }}
+                </span>
             </div>
 
-            <div
-                class="bg-white dark:bg-white/[0.02] rounded-2xl border my-4 border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-                <div
-                    class="p-8 border-b border-gray-50 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-1.5 h-8 bg-brand-500 rounded-full"></div>
-                        <h3 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">سجل حركات
-                            الحساب</h3>
-                    </div>
-                    <div
-                        class="px-4 py-1.5 bg-gray-50 dark:bg-gray-900 rounded-full text-[11px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 dark:border-gray-800">
-                        عدد الحركات: {{ $transactions->total() }}
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-right border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50/50 dark:bg-gray-900/50">
-                                <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">تاريخ
-                                    العملية</th>
-                                <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">نوع
-                                    العملية</th>
-                                <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">قيمة
-                                    المبلغ</th>
-                                <th class="px-8 py-5 text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                                    التفاصيل / البيان</th>
-                                <th
-                                    class="px-8 py-5 text-center text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                                    المرجع</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
-                            @forelse($transactions as $t)
-                                @php
-                                    $isShipment = $t instanceof \App\Models\Shipment;
-                                    if ($isShipment) {
-                                        $isSender = $t->sender_customer_id == $customer->id;
-                                        $pm = $t->payment_method;
-                                        // Payment Method Labels
-                                        $pmLabel = match ($pm) {
-                                            'prepaid' => 'دفع مسبق (على المرسل)',
-                                            'cod' => 'دفع عند الاستلام (على المستلم)',
-                                            'customer_credit' => 'آجل (على الحساب)',
-                                            'partial_payment' => 'دفع جزئي',
-                                            default => $pm,
-                                        };
-                                        $pmColor = match ($pm) {
-                                            'prepaid' => 'text-success-600 bg-success-50 border-success-200',
-                                            'cod' => 'text-warning-600 bg-warning-50 border-warning-200',
-                                            'customer_credit' => 'text-purple-600 bg-purple-50 border-purple-200',
-                                            default => 'text-gray-500 bg-gray-50 border-gray-200',
-                                        };
-                                    }
-                                @endphp
-                                <tr
-                                    class="group hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-300">
-                                    <td class="px-8 py-6">
-                                        <div class="flex flex-col">
-                                            <span
-                                                class="text-sm font-black text-gray-900 dark:text-white">{{ $t->created_at->format('Y-m-d') }}</span>
-                                            <span
-                                                class="text-[10px] font-bold text-gray-400 mt-0.5 tracking-wide">{{ $t->created_at->format('h:i A') }}</span>
-                                        </div>
-                                    </td>
-
-                                    <td class="px-8 py-6">
-                                        @if ($isShipment)
-                                            <div class="flex flex-col gap-2 items-start">
-                                                <div class="flex items-center gap-2">
-                                                    <div
-                                                        class="w-2 h-2 rounded-full {{ $isSender ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' }}">
-                                                    </div>
-                                                    <span
-                                                        class="text-xs font-black uppercase {{ $isSender ? 'text-blue-600' : 'text-purple-600' }}">
-                                                        {{ $isSender ? 'شحنة صادرة (مرسل)' : 'شحنة واردة (مستلم)' }}
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    class="text-[10px] px-1.5 py-0.5 rounded border {{ $pmColor }} font-bold">
-                                                    {{ $pmLabel }}
-                                                </span>
-                                            </div>
-                                        @else
-                                            <div class="flex items-center gap-2">
-                                                <div
-                                                    class="w-2 h-2 rounded-full {{ $t->type === 'debit' ? 'bg-error-500 shadow-[0_0_8px_rgba(240,68,56,0.5)]' : 'bg-success-500 shadow-[0_0_8px_rgba(18,183,106,0.5)]' }}">
-                                                </div>
-                                                <span
-                                                    class="text-xs font-black uppercase {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
-                                                    {{ $t->type === 'debit' ? 'سحب (عليه)' : 'إيداع (دفع)' }}
-                                                </span>
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-8 py-6">
-                                        @if ($isShipment)
-                                            <div class="flex flex-col">
-                                                <span class="text-lg font-black text-gray-800 dark:text-white">
-                                                    {{ number_format($t->total_amount, 2) }}
-                                                    <small class="text-[10px] font-bold opacity-50 mr-0.5">ر.ي</small>
-                                                </span>
-                                                @if ($t->payment_method === 'customer_credit')
-                                                    <span class="text-[10px] text-error-500 font-bold">آجل (غير
-                                                        مدفوع)</span>
-                                                @elseif($t->payment_method === 'cod' && !$isSender)
-                                                    <span class="text-[10px] text-warning-600 font-bold">يدفع عند
-                                                        الاستلام</span>
-                                                @elseif($t->payment_method === 'prepaid' && $isSender)
-                                                    <span class="text-[10px] text-success-600 font-bold">تم الدفع
-                                                        مسبقاً</span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span
-                                                class="text-lg font-black {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
-                                                {{ $t->type === 'debit' ? '-' : '+' }}{{ number_format($t->amount, 2) }}
-                                                <small class="text-[10px] font-bold opacity-50 mr-0.5">ر.ي</small>
-                                            </span>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-8 py-6">
-                                        @if ($isShipment)
-                                            <p class="text-sm font-bold text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[300px]"
-                                                title="{{ $t->notes }}">
-                                                {{ $t->notes ?? '-' }}
-                                            </p>
-                                            <div
-                                                class="flex items-center gap-1 mt-1 text-[10px] text-gray-500 font-medium">
-                                                <span>{{ $t->senderBranch->name ?? $t->sender_branch_code }}</span>
-                                                <svg class="w-3 h-3 text-gray-300 rtl:rotate-180" fill="none"
-                                                    viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                                </svg>
-                                                <span>{{ $t->receiverBranch->name ?? $t->receiver_branch_code }}</span>
-                                                <span class="mx-1 text-gray-300">|</span>
-                                                <span>{{ $t->package_type }}</span>
-                                            </div>
-                                        @else
-                                            <p class="text-sm font-bold text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[300px]"
-                                                title="{{ $t->description }}">
-                                                {{ $t->description ?? 'بدون بيان مالي..' }}
-                                            </p>
-                                        @endif
-                                    </td>
-
-                                    <td class="px-8 py-6 text-center">
-                                        <span
-                                            class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[10px] font-black text-gray-400 border border-gray-200 dark:border-gray-700 shadow-inner">
-                                            @if ($isShipment)
-                                                {{ $t->bond_number }}
-                                            @else
-                                                {{ $t->reference_id ? '#' . $t->reference_id : '---' }}
-                                            @endif
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="py-32 text-center group">
-                                        <div class="relative inline-block">
-                                            <div
-                                                class="absolute inset-0 bg-brand-500/10 rounded-full blur-3xl animate-pulse">
-                                            </div>
-                                            <svg class="w-24 h-24 text-gray-200 dark:text-gray-800 relative z-10 mx-auto mb-4 group-hover:scale-110 transition-transform duration-500"
-                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                                    d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
-                                            </svg>
-                                        </div>
-                                        <h3
-                                            class="text-xl font-black text-gray-800 dark:text-white uppercase tracking-widest">
-                                            السجل فارغ</h3>
-                                        <p class="text-gray-400 mt-2 font-medium">لا توجد حركات مالية مسجلة لهذا الحساب
-                                            حالياً.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                @if ($transactions->hasPages())
-                    <div class="p-8 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-50 dark:border-gray-800">
-                        {{ $transactions->links() }}
-                    </div>
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm {{ $balance > 0 ? 'bg-gradient-to-br from-error-50 to-error-100 text-error-600 dark:from-error-900/50 dark:to-error-800/50 dark:text-error-400' : 'bg-gradient-to-br from-success-50 to-success-100 text-success-600 dark:from-success-900/50 dark:to-success-800/50 dark:text-success-400' }}">
+                @if ($balance > 0)
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" /></svg>
+                @else
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
                 @endif
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+
+    <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-900/50">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-brand-50 dark:bg-brand-500/10 rounded-lg">
+                <svg class="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-gray-900 dark:text-white">سجل الحركات المالية</h3>
+                <p class="text-xs text-gray-400 mt-0.5">تفاصيل العمليات الصادرة والواردة</p>
+            </div>
+        </div>
+        <div class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm">
+            <span class="text-xs font-bold text-gray-600 dark:text-gray-300">
+                إجمالي: <span class="text-brand-600 dark:text-brand-400">{{ $transactions->total() }}</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-right border-collapse">
+            <thead>
+                <tr class="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-800">
+                    <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">التاريخ والوقت</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">نوع العملية</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">المبلغ</th>
+                    <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">التفاصيل</th>
+                    <th class="px-6 py-4 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider">رقم السند</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                @forelse($transactions as $t)
+                    @php
+                        $isShipment = $t instanceof \App\Models\Shipment;
+                        if ($isShipment) {
+                             $isSender = $t->sender_customer_id == $customer->id;
+                             $pm = $t->payment_method;
+                             
+                             $pmLabel = match ($pm) {
+                                 'prepaid' => 'دفع مسبق',
+                                 'cod' => 'عند الاستلام',
+                                 'customer_credit' => 'آجل',
+                                 'partial_payment' => 'دفع جزئي',
+                                 default => $pm,
+                             };
+
+                             // تصميم الشارات (Badges)
+                             $pmClass = match ($pm) {
+                                 'prepaid' => 'bg-success-50 text-success-700 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
+                                 'cod' => 'bg-warning-50 text-warning-700 border-warning-100 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
+                                 'customer_credit' => 'bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20',
+                                 default => 'bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-400',
+                             };
+                        }
+                    @endphp
+                    
+                    <tr class="group hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors duration-200">
+                        
+                        <td class="px-6 py-4 align-top w-[140px]">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-200 font-mono">{{ $t->created_at->format('Y-m-d') }}</span>
+                                <span class="text-[10px] text-gray-400 mt-1">{{ $t->created_at->format('h:i A') }}</span>
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-4 align-top w-[180px]">
+                            @if ($isShipment)
+                                <div class="flex flex-col items-start gap-2">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $isSender ? 'bg-success-50 text-success-700 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20' : 'bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20' }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $isSender ? 'bg-success-500' : 'bg-brand-500' }}"></span>
+                                        {{ $isSender ? 'شحنة صادرة' : 'شحنة واردة' }}
+                                    </span>
+                                    
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border {{ $pmClass }} text-[10px] font-bold">
+                                        @if($pm === 'customer_credit')
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        @elseif($pm === 'cod')
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                        @else
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        @endif
+                                        {{ $pmLabel }}
+                                    </span>
+                                </div>
+                            @else
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border {{ $t->type === 'debit' ? 'bg-error-50 text-error-700 border-error-100 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20' : 'bg-success-50 text-success-700 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20' }}">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $t->type === 'debit' ? 'bg-error-500' : 'bg-success-500' }}"></span>
+                                    {{ $t->type === 'debit' ? 'سحب رصيد' : 'إيداع رصيد' }}
+                                </span>
+                            @endif
+                        </td>
+
+                        <td class="px-6 py-4 align-top">
+                             <div class="flex flex-col">
+                                <span class="text-sm font-black font-mono {{ $isShipment ? 'text-gray-900 dark:text-white' : ($t->type === 'debit' ? 'text-error-600 dark:text-error-400' : 'text-success-600 dark:text-success-400') }}">
+                                    {{ $isShipment ? '' : ($t->type === 'debit' ? '-' : '+') }}
+                                    {{ number_format($isShipment ? $t->total_amount : $t->amount, 2) }}
+                                    <span class="text-[10px] text-gray-400 font-sans font-bold">ر.ي</span>
+                                </span>
+                                @if ($isShipment)
+                                    @if ($t->payment_method === 'customer_credit')
+                                        <span class="text-[9px] text-error-500 mt-1 font-bold">مستحقة الدفع</span>
+                                    @elseif($t->payment_method === 'cod' && !$isSender)
+                                        <span class="text-[9px] text-warning-600 mt-1 font-bold">مطلوب السداد</span>
+                                    @endif
+                                @endif
+                             </div>
+                        </td>
+
+                        <td class="px-6 py-4 align-top">
+                             @if ($isShipment)
+                                <div class="max-w-[280px]">
+                                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate" title="{{ $t->notes }}">{{ $t->notes ?? '-' }}</p>
+                                    
+                                    <div class="flex items-center gap-1 mt-2">
+                                        <div class="flex items-center bg-gray-100 dark:bg-gray-800 rounded px-2 py-1">
+                                            <span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">{{ $t->senderBranch->name ?? $t->sender_branch_code }}</span>
+                                            <svg class="w-3 h-3 text-gray-400 mx-1 rtl:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                            <span class="text-[10px] font-medium text-gray-600 dark:text-gray-400">{{ $t->receiverBranch->name ?? $t->receiver_branch_code }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <p class="text-xs font-medium text-gray-600 dark:text-gray-400 max-w-[280px] leading-relaxed" title="{{ $t->description }}">
+                                    {{ $t->description ?? 'لا يوجد وصف متاح' }}
+                                </p>
+                            @endif
+                        </td>
+
+                        <td class="px-6 py-4 align-top text-center">
+                            <span class="inline-block px-2 py-1 bg-gray-50 dark:bg-gray-800 rounded-md text-[10px] font-mono font-bold text-gray-500 border border-gray-200 dark:border-gray-700 select-all hover:border-brand-300 dark:hover:border-brand-700 transition-colors cursor-pointer" title="انقر للنسخ">
+                                {{ $isShipment ? $t->bond_number : ($t->reference_id ? '#' . $t->reference_id : '---') }}
+                            </span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="py-32">
+                            <div class="flex flex-col items-center justify-center text-center">
+                                <div class="relative w-20 h-20 mb-4">
+                                    <div class="absolute inset-0 bg-brand-100 dark:bg-brand-900/20 rounded-full animate-ping opacity-20"></div>
+                                    <div class="relative w-20 h-20 bg-brand-50 dark:bg-gray-800 rounded-full flex items-center justify-center border border-brand-100 dark:border-gray-700">
+                                        <svg class="w-8 h-8 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                    </div>
+                                </div>
+                                <h3 class="text-gray-900 dark:text-white font-bold text-base">لا توجد حركات مالية</h3>
+                                <p class="text-xs text-gray-400 mt-1 max-w-xs mx-auto">لم يتم تسجيل أي عمليات شحن أو حركات مالية لهذا الحساب حتى الآن.</p>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @if ($transactions->hasPages())
+        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-center">
+            {{ $transactions->links() }}
+        </div>
+    @endif
+</div>
         </div>
     </div>
 
