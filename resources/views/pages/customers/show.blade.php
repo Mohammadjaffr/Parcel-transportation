@@ -2,7 +2,8 @@
 @section('title', 'كشف حساب: ' . $customer->name)
 
 @section('content')
-    <div class="p-4 md:p-6 lg:p-8 bg-[#F8F9FC] dark:bg-gray-950 min-h-screen font-outfit" dir="rtl" x-data="customerRegistry()">
+    <div class="p-4 md:p-6 lg:p-8 bg-[#F8F9FC] dark:bg-gray-950 min-h-screen font-outfit" dir="rtl"
+        x-data="customerRegistry()">
         @include('pages.customers.edit-customer-modal')
         <x-modals.success-modal />
         <x-modals.error-modal />
@@ -84,13 +85,16 @@
                         </svg>
                         العودة للعملاء
                     </a>
-                    <button @click="openEditModal({{ $customer->id }})"
-                        :disabled="isFetching == {{ $customer->id }}"
+                    <button @click="openEditModal({{ $customer->id }})" :disabled="isFetching == {{ $customer->id }}"
                         class="h-11 px-5 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-brand-500/20 text-sm disabled:opacity-75">
                         <template x-if="isFetching == {{ $customer->id }}">
-                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
                             </svg>
                         </template>
                         <template x-if="isFetching != {{ $customer->id }}">
@@ -118,8 +122,7 @@
                             <h3
                                 class="text-3xl font-black {{ $balance > 0 ? 'text-error-600' : 'text-success-600' }} leading-none">
                                 {{ number_format(abs($balance), 2) }}
-                                <small
-                                    class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
+                                <small class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
                             </h3>
                         </div>
                         <div
@@ -149,8 +152,7 @@
                             <h3
                                 class="text-3xl font-black {{ $balance > 0 ? 'text-error-600' : 'text-success-600' }} leading-none">
                                 {{ number_format(abs($balance), 2) }}
-                                <small
-                                    class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
+                                <small class="text-xs font-bold mr-1 italic opacity-60 uppercase text-gray-400 ">ر.ي</small>
                             </h3>
                         </div>
                         <div
@@ -205,6 +207,27 @@
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                             @forelse($transactions as $t)
+                                @php
+                                    $isShipment = $t instanceof \App\Models\Shipment;
+                                    if ($isShipment) {
+                                        $isSender = $t->sender_customer_id == $customer->id;
+                                        $pm = $t->payment_method;
+                                        // Payment Method Labels
+                                        $pmLabel = match ($pm) {
+                                            'prepaid' => 'دفع مسبق (على المرسل)',
+                                            'cod' => 'دفع عند الاستلام (على المستلم)',
+                                            'customer_credit' => 'آجل (على الحساب)',
+                                            'partial_payment' => 'دفع جزئي',
+                                            default => $pm,
+                                        };
+                                        $pmColor = match ($pm) {
+                                            'prepaid' => 'text-success-600 bg-success-50 border-success-200',
+                                            'cod' => 'text-warning-600 bg-warning-50 border-warning-200',
+                                            'customer_credit' => 'text-purple-600 bg-purple-50 border-purple-200',
+                                            default => 'text-gray-500 bg-gray-50 border-gray-200',
+                                        };
+                                    }
+                                @endphp
                                 <tr
                                     class="group hover:bg-brand-50/30 dark:hover:bg-brand-500/5 transition-all duration-300">
                                     <td class="px-8 py-6">
@@ -217,36 +240,96 @@
                                     </td>
 
                                     <td class="px-8 py-6">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="w-2 h-2 rounded-full {{ $t->type === 'debit' ? 'bg-error-500 shadow-[0_0_8px_rgba(240,68,56,0.5)]' : 'bg-success-500 shadow-[0_0_8px_rgba(18,183,106,0.5)]' }}">
+                                        @if ($isShipment)
+                                            <div class="flex flex-col gap-2 items-start">
+                                                <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="w-2 h-2 rounded-full {{ $isSender ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' }}">
+                                                    </div>
+                                                    <span
+                                                        class="text-xs font-black uppercase {{ $isSender ? 'text-blue-600' : 'text-purple-600' }}">
+                                                        {{ $isSender ? 'شحنة صادرة (مرسل)' : 'شحنة واردة (مستلم)' }}
+                                                    </span>
+                                                </div>
+                                                <span
+                                                    class="text-[10px] px-1.5 py-0.5 rounded border {{ $pmColor }} font-bold">
+                                                    {{ $pmLabel }}
+                                                </span>
                                             </div>
+                                        @else
+                                            <div class="flex items-center gap-2">
+                                                <div
+                                                    class="w-2 h-2 rounded-full {{ $t->type === 'debit' ? 'bg-error-500 shadow-[0_0_8px_rgba(240,68,56,0.5)]' : 'bg-success-500 shadow-[0_0_8px_rgba(18,183,106,0.5)]' }}">
+                                                </div>
+                                                <span
+                                                    class="text-xs font-black uppercase {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
+                                                    {{ $t->type === 'debit' ? 'سحب (عليه)' : 'إيداع (دفع)' }}
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-8 py-6">
+                                        @if ($isShipment)
+                                            <div class="flex flex-col">
+                                                <span class="text-lg font-black text-gray-800 dark:text-white">
+                                                    {{ number_format($t->total_amount, 2) }}
+                                                    <small class="text-[10px] font-bold opacity-50 mr-0.5">ر.ي</small>
+                                                </span>
+                                                @if ($t->payment_method === 'customer_credit')
+                                                    <span class="text-[10px] text-error-500 font-bold">آجل (غير
+                                                        مدفوع)</span>
+                                                @elseif($t->payment_method === 'cod' && !$isSender)
+                                                    <span class="text-[10px] text-warning-600 font-bold">يدفع عند
+                                                        الاستلام</span>
+                                                @elseif($t->payment_method === 'prepaid' && $isSender)
+                                                    <span class="text-[10px] text-success-600 font-bold">تم الدفع
+                                                        مسبقاً</span>
+                                                @endif
+                                            </div>
+                                        @else
                                             <span
-                                                class="text-xs font-black uppercase {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
-                                                {{ $t->type === 'debit' ? 'سحب (عليه)' : 'إيداع (دفع)' }}
+                                                class="text-lg font-black {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
+                                                {{ $t->type === 'debit' ? '-' : '+' }}{{ number_format($t->amount, 2) }}
+                                                <small class="text-[10px] font-bold opacity-50 mr-0.5">ر.ي</small>
                                             </span>
-                                        </div>
+                                        @endif
                                     </td>
 
                                     <td class="px-8 py-6">
-                                        <span
-                                            class="text-lg font-black {{ $t->type === 'debit' ? 'text-error-600' : 'text-success-600' }}">
-                                            {{ $t->type === 'debit' ? '-' : '+' }}{{ number_format($t->amount, 2) }}
-                                            <small class="text-[10px] font-bold opacity-50 mr-0.5">ر.ي</small>
-                                        </span>
-                                    </td>
-
-                                    <td class="px-8 py-6">
-                                        <p class="text-sm font-bold text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[300px]"
-                                            title="{{ $t->description }}">
-                                            {{ $t->description ?? 'بدون بيان مالي..' }}
-                                        </p>
+                                        @if ($isShipment)
+                                            <p class="text-sm font-bold text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[300px]"
+                                                title="{{ $t->notes }}">
+                                                {{ $t->notes ?? '-' }}
+                                            </p>
+                                            <div
+                                                class="flex items-center gap-1 mt-1 text-[10px] text-gray-500 font-medium">
+                                                <span>{{ $t->senderBranch->name ?? $t->sender_branch_code }}</span>
+                                                <svg class="w-3 h-3 text-gray-300 rtl:rotate-180" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                                </svg>
+                                                <span>{{ $t->receiverBranch->name ?? $t->receiver_branch_code }}</span>
+                                                <span class="mx-1 text-gray-300">|</span>
+                                                <span>{{ $t->package_type }}</span>
+                                            </div>
+                                        @else
+                                            <p class="text-sm font-bold text-gray-600 dark:text-gray-400 line-clamp-1 max-w-[300px]"
+                                                title="{{ $t->description }}">
+                                                {{ $t->description ?? 'بدون بيان مالي..' }}
+                                            </p>
+                                        @endif
                                     </td>
 
                                     <td class="px-8 py-6 text-center">
                                         <span
                                             class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-[10px] font-black text-gray-400 border border-gray-200 dark:border-gray-700 shadow-inner">
-                                            {{ $t->reference_id ? '#' . $t->reference_id : '---' }}
+                                            @if ($isShipment)
+                                                {{ $t->bond_number }}
+                                            @else
+                                                {{ $t->reference_id ? '#' . $t->reference_id : '---' }}
+                                            @endif
                                         </span>
                                     </td>
                                 </tr>
@@ -307,79 +390,86 @@
 @endsection
 
 @section('script')
-<script>
-function customerRegistry() {
-    return {
-        editModalOpen: false,
-        isUpdating: false,
-        isFetching: null,
-        countries: [
-            { name: 'Yemen', code: 'YE', dial_code: '967' }
-        ],
-        editCustomer: {
-             id: null,
-             name: '',
-             phone: '',
-             whatsapp_number: '',
-             phone_local: '',
-             phone_country: null,
-             whatsapp_local: '',
-             whatsapp_country: null
-        },
+    <script>
+        function customerRegistry() {
+            return {
+                editModalOpen: false,
+                isUpdating: false,
+                isFetching: null,
+                countries: [{
+                    name: 'Yemen',
+                    code: 'YE',
+                    dial_code: '967'
+                }],
+                editCustomer: {
+                    id: null,
+                    name: '',
+                    phone: '',
+                    whatsapp_number: '',
+                    phone_local: '',
+                    phone_country: null,
+                    whatsapp_local: '',
+                    whatsapp_country: null
+                },
 
-        init() {
-            this.editCustomer.phone_country = this.countries[0];
-            this.editCustomer.whatsapp_country = this.countries[0];
-        },
+                init() {
+                    this.editCustomer.phone_country = this.countries[0];
+                    this.editCustomer.whatsapp_country = this.countries[0];
+                },
 
-        parsePhoneNumber(fullNumber) {
-            if (!fullNumber) return { country: this.countries[0], local: '' };
-            
-            // Try to match dial code
-            for (let country of this.countries) {
-                if (fullNumber.startsWith(country.dial_code)) {
-                    return {
-                        country: country,
-                        local: fullNumber.substring(country.dial_code.length)
+                parsePhoneNumber(fullNumber) {
+                    if (!fullNumber) return {
+                        country: this.countries[0],
+                        local: ''
                     };
+
+                    // Try to match dial code
+                    for (let country of this.countries) {
+                        if (fullNumber.startsWith(country.dial_code)) {
+                            return {
+                                country: country,
+                                local: fullNumber.substring(country.dial_code.length)
+                            };
+                        }
+                    }
+                    return {
+                        country: this.countries[0],
+                        local: fullNumber
+                    };
+                },
+
+                async openEditModal(customerId) {
+                    this.isFetching = customerId;
+                    try {
+                        const response = await fetch(`/customers/${customerId}/edit`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+
+                        // Parse numbers
+                        const parsedPhone = this.parsePhoneNumber(data.phone);
+                        const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
+
+                        this.editCustomer = {
+                            ...data,
+                            phone_local: parsedPhone.local,
+                            phone_country: parsedPhone.country,
+                            whatsapp_local: parsedWhatsapp.local,
+                            whatsapp_country: parsedWhatsapp.country
+                        };
+
+                        this.editModalOpen = true;
+                    } catch (error) {
+                        console.error("Error fetching customer data:", error);
+                        alert("حدث خطأ أثناء جلب بيانات العميل");
+                    } finally {
+                        this.isFetching = null;
+                    }
                 }
             }
-            return { country: this.countries[0], local: fullNumber };
-        },
-
-        async openEditModal(customerId) {
-            this.isFetching = customerId;
-            try {
-                const response = await fetch(`/customers/${customerId}/edit`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                const data = await response.json();
-                
-                // Parse numbers
-                const parsedPhone = this.parsePhoneNumber(data.phone);
-                const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
-
-                this.editCustomer = { 
-                    ...data,
-                    phone_local: parsedPhone.local,
-                    phone_country: parsedPhone.country,
-                    whatsapp_local: parsedWhatsapp.local,
-                    whatsapp_country: parsedWhatsapp.country
-                };
-                
-                this.editModalOpen = true;
-            } catch (error) {
-                console.error("Error fetching customer data:", error);
-                alert("حدث خطأ أثناء جلب بيانات العميل");
-            } finally {
-                this.isFetching = null;
-            }
         }
-    }
-}
-</script>
+    </script>
 @endsection
-

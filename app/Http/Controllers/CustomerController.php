@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Services\AdminLoggerService;
 use Illuminate\Support\Facades\Validator;
 use App\Classes\WebResponseClass;
+use App\Models\Shipment;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CustomerController extends Controller
 {
@@ -86,8 +88,35 @@ class CustomerController extends Controller
             }])
             ->findOrFail($id);
 
-        $transactions = $customer->transactions()->latest()->paginate(20);
+        // 1. Financial Transactions
+        $financials = $customer->transactions()->get();
 
+        // 2. Shipments (Sent or Received)
+        $shipments = Shipment::with(['senderBranch', 'receiverBranch'])
+            ->where(function ($q) use ($id) {
+                $q->where('sender_customer_id', $id)
+                    ->orWhere('receiver_customer_id', $id);
+            })->get();
+
+        // 3. Merge & Sort
+        $merged = $financials->concat($shipments)->sortByDesc('created_at');
+
+        // 4. Pagination
+        $page = request()->get('page', 1);
+        $perPage = 20;
+        $offset = ($page * $perPage) - $perPage;
+
+        $items = $merged->slice($offset, $perPage)->values();
+
+        $transactions = new LengthAwarePaginator(
+            $items,
+            $merged->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        // Totals (Financial Only)
         $debit  = $customer->transactions()->where('type', 'debit')->sum('amount');
         $credit = $customer->transactions()->where('type', 'credit')->sum('amount');
         $balance = $debit - $credit;
@@ -102,7 +131,7 @@ class CustomerController extends Controller
         $user = auth()->user();
         $customer = Customer::where('branch_code', $user->branch_code)
             ->findOrFail($id);
- 
+
         if (request()->ajax() || request()->wantsJson()) {
             return response()->json($customer);
         }
@@ -216,23 +245,23 @@ class CustomerController extends Controller
     }
 
     /** البحث */
-public function search(Request $request)
-{
-    $q = trim((string) $request->get('q', ''));
+    public function search(Request $request)
+    {
+        $q = trim((string) $request->get('q', ''));
 
-    if (mb_strlen($q) < 1) {
-        return response()->json([]);
+        if (mb_strlen($q) < 1) {
+            return response()->json([]);
+        }
+
+        $customers = Customer::query()
+            ->where('name', 'like', "%{$q}%")
+            ->orWhere('phone', 'like', "%{$q}%")
+            ->orderBy('name')
+            ->limit(10)
+            ->get(['id', 'name', 'phone']);
+
+        return response()->json($customers);
     }
-
-    $customers = Customer::query()
-        ->where('name', 'like', "%{$q}%")
-        ->orWhere('phone', 'like', "%{$q}%")
-        ->orderBy('name')
-        ->limit(10)
-        ->get(['id','name','phone']);
-
-    return response()->json($customers);
-}
 
 
     /** تصدير */
@@ -246,6 +275,4 @@ public function search(Request $request)
 
         return view('pages.customers.export', compact('customers'));
     }
-
-
 }
