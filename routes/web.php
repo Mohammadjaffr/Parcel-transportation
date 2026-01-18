@@ -4,6 +4,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerFinanceController;
+use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\InvoiceController;
@@ -77,6 +78,14 @@ Route::middleware('auth')->group(function () {
         ->name('customers.search');
 
     Route::resource('customers', CustomerController::class);
+
+    // دفعات العملاء
+    Route::post('/shipments/{shipment}/payment', [CustomerPaymentController::class, 'store'])
+        ->name('customer-payments.store');
+    Route::get('/shipments/{shipment}/payments', [CustomerPaymentController::class, 'index'])
+        ->name('customer-payments.index');
+    Route::delete('/customer-payments/{payment}', [CustomerPaymentController::class, 'destroy'])
+        ->name('customer-payments.destroy');
 
     // مالية العملاء
     Route::get('/finance/customers', [CustomerFinanceController::class, 'index'])->name('finance.customers.index');

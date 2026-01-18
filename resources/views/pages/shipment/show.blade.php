@@ -5,6 +5,10 @@
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
+    
+    {{-- Payment Modals --}}
+    @include('components.modals.payment-modal')
+    @include('components.modals.payments-list-modal')
 
     <!-- Success Modal Data Handler -->
     <div x-data="{
@@ -19,7 +23,46 @@
         ">
     </div>
 
-    <div class="space-y-6">
+    @php
+        $paidAmount = $shipment->payments->sum('amount');
+        $remainingAmount = $shipment->total_amount - $paidAmount;
+        $isUnpaid = $remainingAmount > 0;
+    @endphp
+
+    <div class="space-y-6" x-data="{
+        // Payment Modal State
+        paymentModalOpen: false,
+        paymentData: {
+            shipmentId: {{ $shipment->id }},
+            amount: {{ $remainingAmount }},
+            maxAmount: {{ $remainingAmount }},
+            paymentType: 'cash',
+            referenceNumber: '',
+            notes: ''
+        },
+        openPaymentModal(shipmentId, remainingAmount) {
+            this.paymentData.shipmentId = shipmentId;
+            this.paymentData.amount = remainingAmount;
+            this.paymentData.maxAmount = remainingAmount;
+            this.paymentData.paymentType = 'cash';
+            this.paymentData.referenceNumber = '';
+            this.paymentData.notes = '';
+            this.paymentModalOpen = true;
+        },
+        closePaymentModal() {
+            this.paymentModalOpen = false;
+        },
+        
+        // Payments List Modal State
+        paymentsListModalOpen: false,
+        paymentsList: @json($shipment->payments),
+        openPaymentsListModal() {
+            this.paymentsListModalOpen = true;
+        },
+        closePaymentsListModal() {
+            this.paymentsListModalOpen = false;
+        }
+    }">
 
         <!-- Header Section -->
         <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
@@ -125,13 +168,27 @@
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-sm font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">المرسل
                             </h3>
-                            <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
-                                class="text-success-500 hover:text-success-500">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                </svg>
-                            </a>
+                            <div class="flex items-center gap-2">
+                                @if($shipment->senderCustomer)
+                                <a href="{{ route('customers.show', $shipment->senderCustomer->id) }}"
+                                    class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+                                    title="عرض تفاصيل العميل">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                                @endif
+                                <a href="{{ route('whatsapp.sender', $shipment->id) }}" target="_blank"
+                                    class="text-success-500 hover:text-success-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                         <div class="flex gap-4 items-center">
                             <div class="flex-shrink-0">
@@ -165,13 +222,27 @@
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-sm font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">المستلم
                             </h3>
-                            <a href="{{ route('whatsapp.receiver', $shipment->id) }}" target="_blank"
-                                class="text-success-500 hover:text-success-500">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                </svg>
-                            </a>
+                            <div class="flex items-center gap-2">
+                                @if($shipment->receiverCustomer)
+                                <a href="{{ route('customers.show', $shipment->receiverCustomer->id) }}"
+                                    class="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+                                    title="عرض تفاصيل العميل">
+                                    <svg class="w-4 h-4 text-gray-400 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                                @endif
+                                <a href="{{ route('whatsapp.receiver', $shipment->id) }}" target="_blank"
+                                    class="text-success-500 hover:text-success-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                         <div class="flex gap-4 items-center">
                             <div class="flex-shrink-0">
@@ -260,6 +331,27 @@
                                 @endphp
                                 <span class="font-medium {{ $debtStatusColorRaw }}">{{ $debtStatusText }}</span>
                             </div>
+
+                            {{-- Payment Actions for Customer Credit --}}
+                            @if($shipment->payment_method === 'customer_credit')
+                                @if($isUnpaid)
+                                    <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
+                                        <div class="flex justify-between items-center mb-3">
+                                            <span class="text-sm text-gray-500 dark:text-gray-400">المبلغ المتبقي</span>
+                                            <span class="text-lg font-bold text-error-500">{{ number_format($remainingAmount, 2) }} ر.ي</span>
+                                        </div>
+                                        <button @click="openPaymentModal({{ $shipment->id }}, {{ $remainingAmount }})"
+                                            class="w-full h-10 px-3 flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-bold rounded-lg transition-all shadow-sm">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                            </svg>
+                                            سداد
+                                        </button>
+                                    </div>
+
+                                @endif
+                            @endif
                         </div>
                         <div class="mt-6" x-data="{
                             status: '{{ $shipment->status }}',

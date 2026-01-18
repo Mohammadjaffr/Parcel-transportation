@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\WebResponseClass;
 use App\Models\Customer;
 use App\Models\Shipment;
-use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
+use App\Classes\WebResponseClass;
+use App\Services\AdminLoggerService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -122,7 +123,28 @@ class CustomerController extends Controller
                 $unpaidShipmentsCount++;
             }
         }
-        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch']);
+        
+        // Store branch code in a variable for use in closures
+        $branchCode = auth()->user()->branch_code;
+        
+        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
+    ->where(function ($query) use ($branchCode, $id) {
+        
+        // الحالة الأولى: الفرع هو المرسل + العميل هو المرسل
+        $query->where(function ($q) use ($branchCode, $id) {
+            $q->where('sender_branch_code', $branchCode)
+              ->where('sender_customer_id', $id);
+        })
+        
+        // أو (OR)
+        
+        // الحالة الثانية: الفرع هو المستقبل + العميل هو المستقبل
+        ->orWhere(function ($q) use ($branchCode, $id) {
+            $q->where('receiver_branch_code', $branchCode)
+              ->where('receiver_customer_id', $id);
+        });
+        
+    });
         if ($request->get('direction') == 'sent') {
             // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
             $shipmentsQuery->where('sender_customer_id', $id);

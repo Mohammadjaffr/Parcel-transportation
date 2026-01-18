@@ -132,7 +132,7 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                اضافة الطرود
+                إدارة  الطرود
               </span>
             </a>
           </li>

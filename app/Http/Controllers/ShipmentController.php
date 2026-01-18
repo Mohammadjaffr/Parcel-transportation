@@ -245,7 +245,7 @@ class ShipmentController extends Controller
     /* ========== 4- عرض تفاصيل طرد واحد ========== */
     public function show($id)
     {
-        $shipment = Shipment::findOrFail($id);
+        $shipment = Shipment::with('payments')->findOrFail($id);
         $countrequests = Shipment::count();
 
         return view('pages.shipment.show', compact('shipment', 'countrequests'));

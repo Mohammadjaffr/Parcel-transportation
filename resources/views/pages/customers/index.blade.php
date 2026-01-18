@@ -12,9 +12,8 @@
         <x-modals.error-modal />
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
-            <div @click="filterStatus = 'all'"
-                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterStatus = 'all'" :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                                'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
@@ -30,9 +29,8 @@
                 </div>
             </div>
 
-            <div @click="filterStatus = 'debtor'"
-                :class="filterStatus === 'debtor' ? 'border-error-500 ring-2 ring-error-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterStatus = 'debtor'" :class="filterStatus === 'debtor' ? 'border-error-500 ring-2 ring-error-500/20' :
+                                'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-error-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -49,9 +47,8 @@
                 </div>
             </div>
 
-            <div @click="filterStatus = 'cleared'"
-                :class="filterStatus === 'cleared' ? 'border-success-500 ring-2 ring-success-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterStatus = 'cleared'" :class="filterStatus === 'cleared' ? 'border-success-500 ring-2 ring-success-500/20' :
+                                'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-success-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -126,8 +123,7 @@
                                         <span
                                             class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $customer->phone }}</span>
                                         @if ($customer->whatsapp_number)
-                                            <span
-                                                class="text-[9px] text-success-500 font-black uppercase flex items-center gap-1">
+                                            <span class="text-[9px] text-success-500 font-black uppercase flex items-center gap-1">
                                                 <span class="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse"></span>
                                                 متصل واتساب
                                             </span>
@@ -143,8 +139,7 @@
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
-                                    <div
-                                        class="text-sm font-black {{ $is_debtor ? 'text-error-600' : 'text-success-600' }}">
+                                    <div class="text-sm font-black {{ $is_debtor ? 'text-error-600' : 'text-success-600' }}">
                                         {{ number_format(abs($balance), 2) }}
                                         <small class="text-[10px] mr-0.5 uppercase">ر.ي</small>
                                     </div>
@@ -157,8 +152,7 @@
                                     </span>
                                 </td>
 
-                                <td
-                                    class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
+                                <td class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('customers.show', $customer->id) }}"
                                             class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
@@ -174,9 +168,13 @@
                                             class="p-2 text-gray-400 hover:text-warning-500 hover:bg-warning-50 rounded-xl transition-all"
                                             title="تعديل">
                                             <template x-if="isFetching == {{ $customer->id }}">
-                                                <svg class="animate-spin h-5 w-5 text-warning-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                <svg class="animate-spin h-5 w-5 text-warning-500"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                        stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
                                                 </svg>
                                             </template>
                                             <template x-if="isFetching != {{ $customer->id }}">
@@ -209,89 +207,88 @@
 @endsection
 
 @section('script')
-<script>
-function customerRegistry() {
-    return {
-        search: '',
-        filterStatus: 'all',
-        editModalOpen: false,
-        isUpdating: false,
-        isFetching: null,
-        countries: [
-            { name: 'Yemen', code: 'YE', dial_code: '967' }
-        ],
-        editCustomer: {
-             id: null,
-             name: '',
-             phone: '',
-             whatsapp_number: '',
-             phone_local: '',
-             phone_country: null,
-             whatsapp_local: '',
-             whatsapp_country: null
-        },
+    <script>
+        function customerRegistry() {
+            return {
+                search: '',
+                filterStatus: 'all',
+                editModalOpen: false,
+                isUpdating: false,
+                isFetching: null,
+                countries: [
+                    { name: 'Yemen', code: 'YE', dial_code: '967' }
+                ],
+                editCustomer: {
+                    id: null,
+                    name: '',
+                    phone: '',
+                    whatsapp_number: '',
+                    phone_local: '',
+                    phone_country: null,
+                    whatsapp_local: '',
+                    whatsapp_country: null
+                },
 
-        init() {
-            this.editCustomer.phone_country = this.countries[0];
-            this.editCustomer.whatsapp_country = this.countries[0];
-        },
+                init() {
+                    this.editCustomer.phone_country = this.countries[0];
+                    this.editCustomer.whatsapp_country = this.countries[0];
+                },
 
-        showRow(name, phone, isDebtor) {
-            const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || phone.includes(this.search);
-            const matchesStatus = this.filterStatus === 'all' ||
-                (this.filterStatus === 'debtor' && isDebtor) ||
-                (this.filterStatus === 'cleared' && !isDebtor);
-            return matchesSearch && matchesStatus;
-        },
+                showRow(name, phone, isDebtor) {
+                    const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || phone.includes(this.search);
+                    const matchesStatus = this.filterStatus === 'all' ||
+                        (this.filterStatus === 'debtor' && isDebtor) ||
+                        (this.filterStatus === 'cleared' && !isDebtor);
+                    return matchesSearch && matchesStatus;
+                },
 
-        parsePhoneNumber(fullNumber) {
-            if (!fullNumber) return { country: this.countries[0], local: '' };
-            
-            // Try to match dial code
-            for (let country of this.countries) {
-                if (fullNumber.startsWith(country.dial_code)) {
-                    return {
-                        country: country,
-                        local: fullNumber.substring(country.dial_code.length)
-                    };
+                parsePhoneNumber(fullNumber) {
+                    if (!fullNumber) return { country: this.countries[0], local: '' };
+
+                    // Try to match dial code
+                    for (let country of this.countries) {
+                        if (fullNumber.startsWith(country.dial_code)) {
+                            return {
+                                country: country,
+                                local: fullNumber.substring(country.dial_code.length)
+                            };
+                        }
+                    }
+                    return { country: this.countries[0], local: fullNumber };
+                },
+
+                async openEditModal(customerId) {
+                    this.isFetching = customerId;
+                    try {
+                        const response = await fetch(`/customers/${customerId}/edit`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+
+                        // Parse numbers
+                        const parsedPhone = this.parsePhoneNumber(data.phone);
+                        const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
+
+                        this.editCustomer = {
+                            ...data,
+                            phone_local: parsedPhone.local,
+                            phone_country: parsedPhone.country,
+                            whatsapp_local: parsedWhatsapp.local,
+                            whatsapp_country: parsedWhatsapp.country
+                        };
+
+                        this.editModalOpen = true;
+                    } catch (error) {
+                        console.error("Error fetching customer data:", error);
+                        alert("حدث خطأ أثناء جلب بيانات العميل");
+                    } finally {
+                        this.isFetching = null;
+                    }
                 }
             }
-            return { country: this.countries[0], local: fullNumber };
-        },
-
-        async openEditModal(customerId) {
-            this.isFetching = customerId;
-            try {
-                const response = await fetch(`/customers/${customerId}/edit`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                const data = await response.json();
-                
-                // Parse numbers
-                const parsedPhone = this.parsePhoneNumber(data.phone);
-                const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
-
-                this.editCustomer = { 
-                    ...data,
-                    phone_local: parsedPhone.local,
-                    phone_country: parsedPhone.country,
-                    whatsapp_local: parsedWhatsapp.local,
-                    whatsapp_country: parsedWhatsapp.country
-                };
-                
-                this.editModalOpen = true;
-            } catch (error) {
-                console.error("Error fetching customer data:", error);
-                alert("حدث خطأ أثناء جلب بيانات العميل");
-            } finally {
-                this.isFetching = null;
-            }
         }
-    }
-}
-</script>
+    </script>
 @endsection
-

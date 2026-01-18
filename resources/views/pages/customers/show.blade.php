@@ -13,9 +13,8 @@
 
             <div class="flex gap-6">
 
-                <div @click="setFilter('all')"
-                    :class="activeFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-md' :
-                        'border-gray-100 hover:border-brand-200'"
+                <div @click="setFilter('all')" :class="activeFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-md' :
+                                                                'border-gray-100 hover:border-brand-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 group-hover:scale-110 transition-transform duration-300">
@@ -29,15 +28,15 @@
                             الشحنات</span>
                         <div class="flex items-baseline gap-1 mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalCost, 2) }}</h4>
+                                {{ number_format($grandTotalCost, 2) }}
+                            </h4>
                             <span class="text-xs font-medium text-gray-400">ر.ي</span>
                         </div>
                     </div>
                 </div>
 
-                <div @click="setFilter('paid')"
-                    :class="activeFilter === 'paid' ? 'border-success-500 ring-2 ring-success-500/20 shadow-md' :
-                        'border-gray-100 hover:border-success-200'"
+                <div @click="setFilter('paid')" :class="activeFilter === 'paid' ? 'border-success-500 ring-2 ring-success-500/20 shadow-md' :
+                                                                'border-gray-100 hover:border-success-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500 group-hover:scale-110 transition-transform duration-300">
@@ -51,15 +50,15 @@
                             المسدد (لك)</span>
                         <div class="flex items-baseline gap-1 mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalPaid, 2) }}</h4>
+                                {{ number_format($grandTotalPaid, 2) }}
+                            </h4>
                             <span class="text-xs font-medium text-success-500">ر.ي</span>
                         </div>
                     </div>
                 </div>
 
-                <div @click="setFilter('unpaid')"
-                    :class="activeFilter === 'unpaid' ? 'border-error-500 ring-2 ring-error-500/20 shadow-md' :
-                        'border-gray-100 hover:border-error-200'"
+                <div @click="setFilter('unpaid')" :class="activeFilter === 'unpaid' ? 'border-error-500 ring-2 ring-error-500/20 shadow-md' :
+                                                                'border-gray-100 hover:border-error-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500 group-hover:scale-110 transition-transform duration-300">
@@ -73,15 +72,15 @@
                             المتبقي (عليك)</span>
                         <div class="flex items-baseline gap-1 mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalRemaining, 2) }}</h4>
+                                {{ number_format($grandTotalRemaining, 2) }}
+                            </h4>
                             <span class="text-xs font-medium text-error-500">ر.ي</span>
                         </div>
                     </div>
                 </div>
 
-                <div @click="setFilter('unpaidShipments')"
-                    :class="activeFilter === 'unpaidShipments' ? 'border-warning-500 ring-2 ring-warning-500/20 shadow-md' :
-                        'border-gray-100 hover:border-warning-200'"
+                <div @click="setFilter('unpaidShipments')" :class="activeFilter === 'unpaidShipments' ? 'border-warning-500 ring-2 ring-warning-500/20 shadow-md' :
+                                                                'border-gray-100 hover:border-warning-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500 group-hover:scale-110 transition-transform duration-300">
@@ -104,182 +103,9 @@
 
             @include('pages.customers.edit-customer-modal')
 
-            {{-- Payment Modal --}}
-            <div x-show="paymentModalOpen" x-cloak
-                class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto modal z-99999"
-                x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
-
-                {{-- Overlay --}}
-                <div class="modal-close-btn fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"
-                    @click="closePaymentModal()"></div>
-
-                {{-- Modal Content --}}
-                <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-100 dark:border-gray-800"
-                    x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 transform scale-95"
-                    x-transition:enter-end="opacity-100 transform scale-100"
-                    x-transition:leave="transition ease-in duration-200"
-                    x-transition:leave-start="opacity-100 transform scale-100"
-                    x-transition:leave-end="opacity-0 transform scale-95">
-
-                    {{-- Header --}}
-                    <div
-                        class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-brand-500 to-brand-600">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-white/20 rounded-xl">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                </div>
-                                <h3 class="text-lg font-bold text-white">سداد الدين</h3>
-                            </div>
-                            <button @click="closePaymentModal()" class="p-2 hover:bg-white/20 rounded-xl transition-colors">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- Body --}}
-                    <form :action="`{{ route('shipments.index') }}/${paymentData.shipmentId}/payment`" method="POST"
-                        class="p-6 space-y-5">
-                        @csrf
-
-                        {{-- Amount Field --}}
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">المبلغ
-                                المستحق</label>
-                            <div class="relative">
-                                <input type="number" name="amount" x-model="paymentData.amount" step="0.01"
-                                    min="0" :max="paymentData.maxAmount"
-                                    class="w-full h-12 pr-4 pl-12 text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all"
-                                    placeholder="أدخل المبلغ">
-                                <span
-                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">ر.ي</span>
-                            </div>
-                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                المبلغ المتبقي: <span class="font-bold text-error-500"
-                                    x-text="paymentData.maxAmount.toLocaleString()"></span> ر.ي
-                            </p>
-                        </div>
-
-                        {{-- Payment Type --}}
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">طريقة
-                                الدفع</label>
-                            <div class="grid grid-cols-2 gap-3">
-                                {{-- Cash Option --}}
-                                <label
-                                    :class="paymentData.paymentType === 'cash' ?
-                                        'border-brand-500 bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500/20' :
-                                        'border-gray-200 dark:border-gray-700 hover:border-brand-300'"
-                                    class="relative flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-all">
-                                    <input type="radio" name="payment_method" value="cash"
-                                        x-model="paymentData.paymentType" class="sr-only">
-                                    <div :class="paymentData.paymentType === 'cash' ? 'bg-brand-500 text-white' :
-                                        'bg-gray-100 dark:bg-gray-800 text-gray-500'"
-                                        class="p-2.5 rounded-xl transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    <span
-                                        :class="paymentData.paymentType === 'cash' ? 'text-brand-600 dark:text-brand-400' :
-                                            'text-gray-600 dark:text-gray-400'"
-                                        class="text-sm font-bold transition-colors">كاش</span>
-                                </label>
-
-                                {{-- Bank Transfer Option --}}
-                                <label
-                                    :class="paymentData.paymentType === 'bank_transfer' ?
-                                        'border-brand-500 bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500/20' :
-                                        'border-gray-200 dark:border-gray-700 hover:border-brand-300'"
-                                    class="relative flex flex-col items-center gap-2 p-4 border rounded-xl cursor-pointer transition-all">
-                                    <input type="radio" name="payment_method" value="bank_transfer"
-                                        x-model="paymentData.paymentType" class="sr-only">
-                                    <div :class="paymentData.paymentType === 'bank_transfer' ? 'bg-brand-500 text-white' :
-                                        'bg-gray-100 dark:bg-gray-800 text-gray-500'"
-                                        class="p-2.5 rounded-xl transition-colors">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                        </svg>
-                                    </div>
-                                    <span
-                                        :class="paymentData.paymentType === 'bank_transfer' ?
-                                            'text-brand-600 dark:text-brand-400' : 'text-gray-600 dark:text-gray-400'"
-                                        class="text-sm font-bold transition-colors">تحويل بنكي</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        {{-- Reference Number (for bank transfer) --}}
-                        <div x-show="paymentData.paymentType === 'bank_transfer'"
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 transform -translate-y-2"
-                            x-transition:enter-end="opacity-100 transform translate-y-0"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 transform translate-y-0"
-                            x-transition:leave-end="opacity-0 transform -translate-y-2">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">رقم الإيداع /
-                                المرجع</label>
-                            <div class="relative">
-                                <input type="text" name="reference_number" x-model="paymentData.referenceNumber"
-                                    class="w-full h-12 pr-12 pl-4 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all"
-                                    placeholder="أدخل رقم الإيداع أو المرجع">
-                                <div class="absolute px-2 right-4 top-1/2 -translate-y-1/2">
-                                    {{-- <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                    </svg> --}}
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Notes Field --}}
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">ملاحظات
-                                (اختياري)</label>
-                            <textarea name="notes" x-model="paymentData.notes" rows="2"
-                                class="w-full px-4 py-3 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all resize-none"
-                                placeholder="أضف ملاحظات إن وجدت..."></textarea>
-                        </div>
-
-                        {{-- Hidden Fields --}}
-                        <input type="hidden" name="shipment_id" :value="paymentData.shipmentId">
-                        <input type="hidden" name="customer_id" value="{{ $customer->id }}">
-
-                        {{-- Actions --}}
-                        <div class="flex gap-3 pt-2">
-                            <button type="button" @click="closePaymentModal()"
-                                class="flex-1 h-12 px-4 flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                إلغاء
-                            </button>
-                            <button type="submit" :disabled="!paymentData.amount || paymentData.amount <= 0"
-                                class="flex-1 h-12 px-4 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7" />
-                                </svg>
-                                تأكيد الدفع
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+            {{-- Payment Modals --}}
+            <x-modals.payment-modal />
+            <x-modals.payments-list-modal />
 
             <div
                 class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
@@ -290,7 +116,8 @@
                     </div>
                     <div>
                         <h2 class="text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">
-                            {{ $customer->name }}</h2>
+                            {{ $customer->name }}
+                        </h2>
                         <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
                             <span
                                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-gray-50 dark:bg-gray-800 text-theme-xs font-bold text-gray-500 dark:text-gray-300 border border-gray-100 dark:border-gray-700">
@@ -375,11 +202,9 @@
                                     مسبق</option>
                                 <option value="cod" {{ request('payment_method') == 'cod' ? 'selected' : '' }}>دفع عند
                                     الاستلام</option>
-                                <option value="customer_credit"
-                                    {{ request('payment_method') == 'customer_credit' ? 'selected' : '' }}>آجل (دين)
+                                <option value="customer_credit" {{ request('payment_method') == 'customer_credit' ? 'selected' : '' }}>آجل (دين)
                                 </option>
-                                <option value="partial_payment"
-                                    {{ request('payment_method') == 'partial_payment' ? 'selected' : '' }}>دفع جزئي
+                                <option value="partial_payment" {{ request('payment_method') == 'partial_payment' ? 'selected' : '' }}>دفع جزئي
                                 </option>
                             </select>
                         </form>
@@ -408,6 +233,8 @@
                                 </th>
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">المسار
                                 </th>
+                                <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">التفاصيل
+                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800 bg-white dark:bg-gray-900">
@@ -428,8 +255,7 @@
                                     };
                                 @endphp
 
-                                <tr x-show="isVisible('{{ $status }}')"
-                                    x-transition:enter="transition ease-out duration-300"
+                                <tr x-show="isVisible('{{ $status }}')" x-transition:enter="transition ease-out duration-300"
                                     x-transition:enter-start="opacity-0 transform scale-95"
                                     x-transition:enter-end="opacity-100 transform scale-100"
                                     class="group hover:bg-brand-50/30 dark:hover:bg-gray-800/60 transition-colors duration-200">
@@ -439,10 +265,8 @@
                                             <div class="flex items-center gap-2">
                                                 <div
                                                     class="w-8 h-8 rounded-2xl  bg-brand-500 dark:bg-gray-800 flex items-center justify-center text-white">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                     </svg>
                                                 </div>
@@ -462,8 +286,8 @@
                                         @if ($isSender)
                                             <span
                                                 class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl text-[10px] font-bold bg-brand-50 text-brand-700 border border-brand-100 dark:bg-brand-500/10 dark:text-brand-400 dark:border-brand-500/20">
-                                                <svg class="w-3 h-3 rotate-45 rtl:-rotate-45" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3 h-3 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M5 10l7-7m0 0l7 7m-7-7v18" />
                                                 </svg>
@@ -472,8 +296,8 @@
                                         @else
                                             <span
                                                 class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20">
-                                                <svg class="w-3 h-3 rotate-45 rtl:-rotate-45" fill="none"
-                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3 h-3 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                                                 </svg>
@@ -487,27 +311,26 @@
                                             <span class="text-[11px] font-bold text-gray-500 dark:text-gray-300">
                                                 {{ $paymentLabel }}
                                             </span>
-                                            @if (!$isUnpaid)
-                                                <span
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-2xl text-[10px] font-bold bg-success-50 text-success-500 border border-success-100">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                    خالص
-                                                </span>
-                                            @else
-                                                <span
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-2xl text-[10px] font-bold bg-error-50 text-error-500 border border-error-100">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    غير مسدد
-                                                </span>
+                                            @if ($shipment->payment_method == 'customer_credit')
+                                                @if (!$isUnpaid)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-2xl text-[10px] font-bold bg-success-50 text-success-500 border border-success-100">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                        خالص
+                                                    </span>
+                                                @else
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-2xl text-[10px] font-bold bg-error-50 text-error-500 border border-error-100">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        </svg>
+                                                        غير مسدد
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
                                     </td>
@@ -520,23 +343,40 @@
                                                 <span class="text-[10px] text-gray-400 font-sans">ر.ي</span>
                                             </span>
 
-                                            @if ($isUnpaid && $isSender && $shipment->payment_method == 'customer_credit')
+                                            @if ($isSender && $shipment->payment_method == 'customer_credit')
                                                 <div class="flex flex-col gap-1.5">
-                                                    <span
-                                                        class="text-[10px] font-bold text-error-500 bg-error-50 px-2 py-1 rounded-2xl border border-error-100 dark:border-error-500/20">
-                                                        متبقي: {{ number_format($remainingAmount, 2) }}
-                                                    </span>
-                                                    <button
-                                                        @click="openPaymentModal({{ $shipment->id }}, {{ $remainingAmount }})"
-                                                        class="w-full px-3 py-1.5 bg-brand-500 hover:bg-brand-500 text-white text-[11px] font-bold rounded-2xl shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-1.5 hover:scale-[1.02] active:scale-95">
-                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                            viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                                        </svg>
-                                                        سداد الدين
-                                                    </button>
+                                                    @if ($isUnpaid)
+                                                        <span
+                                                            class="text-[10px] font-bold text-error-500 bg-error-50 px-2 py-1 rounded-xl border border-error-100 dark:border-error-500/20">
+                                                            متبقي: {{ number_format($remainingAmount, 2) }}
+                                                        </span>
+                                                    @endif
+                                                    <div class="grid {{ $isUnpaid ? 'grid-cols-2' : 'grid-cols-1' }} gap-1.5">
+                                                        @if ($isUnpaid)
+                                                            <button
+                                                                @click="openPaymentModal({{ $shipment->id }}, {{ $remainingAmount }})"
+                                                                class="px-2 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-bold rounded-xl shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-95">
+                                                                <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                                    viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                                </svg>
+                                                                سداد
+                                                            </button>
+                                                        @endif
+                                                        <button
+                                                            @click="openPaymentsListModal({{ $shipment->id }}, {{ json_encode($shipment->payments) }})"
+                                                            class="px-2 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-bold rounded-xl shadow-md shadow-brand-500/20 transition-all flex items-center justify-center gap-1 hover:scale-[1.02] active:scale-95">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                            الدفعات
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             @endif
                                         </div>
@@ -548,8 +388,8 @@
                                                 class="flex items-center bg-brand-50 dark:bg-gray-800 rounded-2xl  px-3 py-2 border border-gray-100 dark:border-gray-700">
                                                 <span
                                                     class="text-[10px] font-bold text-gray-700 dark:text-gray-300">{{ $shipment->senderBranch->name ?? $shipment->sender_branch_code }}</span>
-                                                <svg class="w-3 h-3 text-gray-400 mx-2 rotate-180 rtl:rotate-0"
-                                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <svg class="w-3 h-3 text-gray-400 mx-2 rotate-180 rtl:rotate-0" fill="none"
+                                                    viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                                 </svg> <span
@@ -557,17 +397,29 @@
                                             </div>
                                         </div>
                                     </td>
+
+                                    <td class="px-6 py-4 align-top">
+                                        <a href="{{ route('shipments.show', $shipment->id) }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            عرض التفاصيل
+                                        </a>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="py-24">
+                                    <td colspan="6" class="py-24">
                                         <div class="flex flex-col items-center justify-center text-center">
                                             <div
                                                 class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-gray-700">
                                                 <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="1.5"
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                 </svg>
                                             </div>
@@ -629,6 +481,10 @@
                     notes: ''
                 },
 
+                // متغيرات موديل عرض الدفعات
+                paymentsListModalOpen: false,
+                paymentsList: [],
+
                 // فتح موديل الدفع
                 openPaymentModal(shipmentId, remainingAmount) {
                     this.paymentData = {
@@ -653,6 +509,18 @@
                         referenceNumber: '',
                         notes: ''
                     };
+                },
+
+                // فتح موديل عرض الدفعات
+                openPaymentsListModal(shipmentId, payments) {
+                    this.paymentsList = payments || [];
+                    this.paymentsListModalOpen = true;
+                },
+
+                // إغلاق موديل عرض الدفعات
+                closePaymentsListModal() {
+                    this.paymentsListModalOpen = false;
+                    this.paymentsList = [];
                 },
 
                 // دالة تغيير الفلتر
