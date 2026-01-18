@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\Shipment;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Services\AdminLoggerService;
@@ -75,10 +76,53 @@ class BranchController extends Controller
     }
 
     /* ========== 4- عرض تفاصيل فرع واحد ========== */
-    public function show($id)
+    public function show(Request $request, $code)
     {
-        $branch = Branch::findOrFail($id);
-        return view('pages.branch.show', compact('branch'));
+        // Get the branch by code
+        $branch = Branch::where('code', $code)->firstOrFail();
+
+        // Get the authenticated user's branch code
+        $userBranchCode = auth()->user()->branch_code;
+
+        // Query shipments between the two branches
+        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch', 'senderCustomer', 'receiverCustomer'])
+            ->where(function ($query) use ($userBranchCode, $code) {
+                // Sent shipments: user's branch is sender AND selected branch is receiver
+                $query->where(function ($q) use ($userBranchCode, $code) {
+                    $q->where('sender_branch_code', $userBranchCode)
+                        ->where('receiver_branch_code', $code);
+                })
+                    // OR Received shipments: selected branch is sender AND user's branch is receiver
+                    ->orWhere(function ($q) use ($userBranchCode, $code) {
+                        $q->where('sender_branch_code', $code)
+                            ->where('receiver_branch_code', $userBranchCode);
+                    });
+            });
+
+        // Apply direction filter if provided
+        if ($request->get('direction') == 'sent') {
+            // Only sent shipments
+            $shipmentsQuery->where('sender_branch_code', $userBranchCode)
+                ->where('receiver_branch_code', $code);
+        } elseif ($request->get('direction') == 'received') {
+            // Only received shipments
+            $shipmentsQuery->where('sender_branch_code', $code)
+                ->where('receiver_branch_code', $userBranchCode);
+        }
+
+        // Calculate statistics
+        $totalSentShipments = Shipment::where('sender_branch_code', $userBranchCode)
+            ->where('receiver_branch_code', $code)
+            ->count();
+
+        $totalReceivedShipments = Shipment::where('sender_branch_code', $code)
+            ->where('receiver_branch_code', $userBranchCode)
+            ->count();
+
+        // Paginate shipments
+        $shipments = $shipmentsQuery->latest()->paginate(10);
+
+        return view('pages.branch.show', compact('branch', 'shipments', 'totalSentShipments', 'totalReceivedShipments'));
     }
 
     /* ========== 5- صفحة تعديل الفرع ========== */
