@@ -11,12 +11,12 @@
 
         <div class="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
 
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+            <div class="flex gap-6">
 
                 <div @click="setFilter('all')"
                     :class="activeFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-md' :
                         'border-gray-100 hover:border-brand-200'"
-                    class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-lg shadow-theme-sm group">
+                    class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@
                 <div @click="setFilter('paid')"
                     :class="activeFilter === 'paid' ? 'border-success-500 ring-2 ring-success-500/20 shadow-md' :
                         'border-gray-100 hover:border-success-200'"
-                    class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-lg shadow-theme-sm group">
+                    class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +60,7 @@
                 <div @click="setFilter('unpaid')"
                     :class="activeFilter === 'unpaid' ? 'border-error-500 ring-2 ring-error-500/20 shadow-md' :
                         'border-gray-100 hover:border-error-200'"
-                    class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-lg shadow-theme-sm group">
+                    class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,12 +79,12 @@
                     </div>
                 </div>
 
-                <div @click="setFilter('unpaid')"
-                    :class="activeFilter === 'unpaid' ? 'border-error-500 ring-2 ring-error-500/20 shadow-md' :
-                        'border-gray-100 hover:border-error-200'"
-                    class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-lg shadow-theme-sm group">
+                <div @click="setFilter('unpaidShipments')"
+                    :class="activeFilter === 'unpaidShipments' ? 'border-warning-500 ring-2 ring-warning-500/20 shadow-md' :
+                        'border-gray-100 hover:border-warning-200'"
+                    class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 group-hover:scale-110 transition-transform duration-300">
+                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500 group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -352,7 +352,7 @@
                             <h3 class="text-base font-bold text-gray-900 dark:text-white">سجل الشحنات المالي</h3>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                                 <span
-                                    x-text="activeFilter === 'all' ? 'عرض جميع الشحنات' : (activeFilter === 'paid' ? 'عرض الشحنات المسددة فقط' : 'عرض الشحنات الغير مسددة')"></span>
+                                    x-text="activeFilter === 'all' ? 'عرض جميع الشحنات' : (activeFilter === 'paid' ? 'عرض الشحنات المسددة فقط' : activeFilter === 'unpaid' ? 'عرض الشحنات الغير مسددة' : activeFilter === 'unpaidShipments' ? 'عرض الشحنات الغير مسددة')"></span>
                             </p>
                         </div>
                     </div>
@@ -663,6 +663,10 @@
                 // دالة التحقق من ظهور الصف في الجدول
                 isVisible(rowStatus) {
                     if (this.activeFilter === 'all') return true;
+                    // عند اختيار فلتر "شحنات غير مسددة" نعرض الشحنات غير المسددة
+                    if (this.activeFilter === 'unpaidShipments') {
+                        return rowStatus === 'unpaid';
+                    }
                     return this.activeFilter === rowStatus;
                 },
 

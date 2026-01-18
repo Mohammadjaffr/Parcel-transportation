@@ -8,42 +8,102 @@
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
         search: '',
         filterCity: 'all',
+        createModalOpen: false,
+        editModalOpen: false,
+        isFetching: null,
+        editBranch: {
+            code: '',
+            name: '',
+            city: '',
+            address: '',
+            phone: ''
+        },
         showRow(city, name, code) {
             const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || code.toLowerCase().includes(this.search.toLowerCase());
             const matchesCity = this.filterCity === 'all' || city === this.filterCity;
             return matchesSearch && matchesCity;
+        },
+        async openEditModal(branchCode) {
+            this.isFetching = branchCode;
+            try {
+                const response = await fetch(`/branch/${branchCode}/edit`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                this.editBranch = {
+                    code: data.code,
+                    name: data.name,
+                    city: data.city,
+                    address: data.address,
+                    phone: data.phone
+                };
+                this.editModalOpen = true;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء جلب البيانات');
+            } finally {
+                this.isFetching = null;
+            }
         }
     }">
 
+        {{-- Modal إضافة فرع --}}
+        @include('pages.branch.create-branch-modal')
+
+        {{-- Modal تعديل فرع --}}
+        @include('pages.branch.edit-branch-modal')
+
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="filterCity = 'all'"
-                 :class="filterCity === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
-                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                :class="filterCity === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
+                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي الفروع</span>
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي
+                        الفروع</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $totalBranches }}</h4>
                 </div>
             </div>
 
-            <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">المدن المغطاة</span>
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">المدن
+                        المغطاة</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $totalCities }}</h4>
                 </div>
             </div>
 
-            <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
+                <div
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">آخر فرع مضاف</span>
+                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">آخر فرع
+                        مضاف</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $branches->first()->name ?? '---' }}</h4>
                 </div>
             </div>
@@ -64,17 +124,17 @@
             </div>
             @if (Auth::user()->type == 'super_admin')
                 <div class="flex md:justify-end w-full">
-                <a href="{{ route('branch.create') }}"
-                    class="h-12 px-8 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl transition-all shadow-lg shadow-brand-500/20 active:scale-95 text-sm font-bold w-full md:w-auto">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    إضافة فرع جديد
-                </a>
-            </div>
+                    <button @click="createModalOpen = true"
+                        class="h-12 px-8 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white rounded-xl transition-all shadow-lg shadow-brand-500/20 active:scale-95 text-sm font-bold w-full md:w-auto">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        إضافة فرع جديد
+                    </button>
+                </div>
             @endif
-            
+
         </div>
 
         <div
@@ -131,15 +191,27 @@
                                 <td
                                     class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('branch.edit', ['branch' => $branch->code]) }}"
-                                            class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all"
+                                        <button type="button" @click="openEditModal('{{ $branch->code }}')"
+                                            :disabled="isFetching === '{{ $branch->code }}'"
+                                            class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all disabled:opacity-50"
                                             title="تعديل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </a>
+                                            <template x-if="isFetching !== '{{ $branch->code }}'">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    stroke-width="2" viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </template>
+                                            <template x-if="isFetching === '{{ $branch->code }}'">
+                                                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                            </template>
+                                        </button>
 
                                         <button type="button"
                                             @click="$dispatch('open-warning-modal', {

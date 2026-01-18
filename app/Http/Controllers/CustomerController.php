@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
-use Illuminate\Http\Request;
-use App\Services\AdminLoggerService;
-use Illuminate\Support\Facades\Validator;
 use App\Classes\WebResponseClass;
+use App\Models\Customer;
 use App\Models\Shipment;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Services\AdminLoggerService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
@@ -38,15 +37,15 @@ class CustomerController extends Controller
         $branchCode = $user->branch_code;
 
         $validator = Validator::make($request->all(), [
-            'name'            => 'required|string|max:255',
-            'phone'           => 'required|string|max:20|unique:customers,phone,NULL,id,branch_code,' . $branchCode,
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,branch_code,'.$branchCode,
             'whatsapp_number' => 'nullable|string|max:20',
 
         ], [
-            'name.required'  => 'اسم العميل مطلوب',
-            'name.max'       => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
+            'name.required' => 'اسم العميل مطلوب',
+            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
             'phone.required' => 'رقم الهاتف مطلوب',
-            'phone.unique'   => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
+            'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
         ]);
 
         if ($validator->fails()) {
@@ -57,7 +56,7 @@ class CustomerController extends Controller
             $data = $validator->validated();
             $data['branch_code'] = $branchCode;
 
-            $customer =  Customer::create($data);
+            $customer = Customer::create($data);
 
             // AdminLoggerService::log(
             //     'إنشاء عميل',
@@ -78,8 +77,9 @@ class CustomerController extends Controller
     }
 
     /** عرض */
-    public function show(Request $request,$id)
+    public function show(Request $request, $id)
     {
+
         $user = auth()->user();
         $customer = Customer::where('branch_code', $user->branch_code)
             ->with(['transactions' => function ($query) {
@@ -95,52 +95,54 @@ class CustomerController extends Controller
         $grandTotalCost = 0;      // إجمالي قيمة كل الشحنات
         $grandTotalPaid = 0;      // إجمالي ما دفعه العميل حتى الآن (كم له)
         $grandTotalRemaining = 0; // إجمالي المبلغ المتبقي عليه (كم عليه)
-        $unpaidShipmentsCount = 0; //  متغير جديد لعدد الشحنات غير المسددة  
+        $unpaidShipmentsCount = 0; //  متغير جديد لعدد الشحنات غير المسددة
 
-// 3. عمل Loop لحساب المبالغ لكل شحنة على حدة
-foreach ($shipments as $shipment) {
-    // ملاحظة: افترضت أن عمود سعر الشحنة اسمه 'total_cost' في جدول shipments
-    // يرجى تغيير 'total_cost' إلى اسم العمود الصحيح لديك (مثلاً: price, amount, grand_total)
-    $shipmentCost = $shipment->total_amount ?? 0; 
+        // 3. عمل Loop لحساب المبالغ لكل شحنة على حدة
+        foreach ($shipments as $shipment) {
+            // ملاحظة: افترضت أن عمود سعر الشحنة اسمه 'total_cost' في جدول shipments
+            // يرجى تغيير 'total_cost' إلى اسم العمود الصحيح لديك (مثلاً: price, amount, grand_total)
+            $shipmentCost = $shipment->total_amount ?? 0;
 
-    // حساب مجموع الدفعات لهذه الشحنة تحديداً
-    // نستخدم دالة sum الخاصة بالـ Collection لجمع عمود amount من جدول payments
-    $paidAmount = $shipment->payments->sum('amount');
+            // حساب مجموع الدفعات لهذه الشحنة تحديداً
+            // نستخدم دالة sum الخاصة بالـ Collection لجمع عمود amount من جدول payments
+            $paidAmount = $shipment->payments->sum('amount');
 
-    // حساب المتبقي (قيمة الشحنة - المدفوع)
-    $remaining = $shipmentCost - $paidAmount;
+            // حساب المتبقي (قيمة الشحنة - المدفوع)
+            $remaining = $shipmentCost - $paidAmount;
 
-    // سنقوم بتخزين هذه القيم داخل كائن الشحنة نفسه لسهولة عرضها في ملف الـ Blade
-    $shipment->calculated_paid = $paidAmount;       // تم الدفع
-    $shipment->calculated_remaining = $remaining;   // المتبقي
+            // سنقوم بتخزين هذه القيم داخل كائن الشحنة نفسه لسهولة عرضها في ملف الـ Blade
+            $shipment->calculated_paid = $paidAmount;       // تم الدفع
+            $shipment->calculated_remaining = $remaining;   // المتبقي
 
-    // إضافة للأجماليات العامة
-    $grandTotalCost += $shipmentCost;
-    $grandTotalPaid += $paidAmount;
-    $grandTotalRemaining += $remaining;
-    if ($remaining > 0) {
-        $unpaidShipmentsCount++;
-    }
-}  
+            // إضافة للأجماليات العامة
+            $grandTotalCost += $shipmentCost;
+            $grandTotalPaid += $paidAmount;
+            $grandTotalRemaining += $remaining;
+            if ($remaining > 0) {
+                $unpaidShipmentsCount++;
+            }
+        }
         $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch']);
         if ($request->get('direction') == 'sent') {
-        // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
-        $shipmentsQuery->where('sender_customer_id', $id);
+            // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
+            $shipmentsQuery->where('sender_customer_id', $id);
         } elseif ($request->get('direction') == 'received') {
-        // إذا اختار "واردة": يجب أن يكون هو المستلم فقط
-        $shipmentsQuery->where('receiver_customer_id', $id);
+            // إذا اختار "واردة": يجب أن يكون هو المستلم فقط
+            $shipmentsQuery->where('receiver_customer_id', $id);
         } else {
-        // الافتراضي (الكل): نجلب الحالتين (مرسل أو مستلم)
-        $shipmentsQuery->where(function ($q) use ($id) {
-            $q->where('sender_customer_id', $id)
-              ->orWhere('receiver_customer_id', $id);
-            
-        });}
+            // الافتراضي (الكل): نجلب الحالتين (مرسل أو مستلم)
+            $shipmentsQuery->where(function ($q) use ($id) {
+                $q->where('sender_customer_id', $id)
+                    ->orWhere('receiver_customer_id', $id);
+
+            });
+        }
         if (request()->has('payment_method') && request('payment_method') != 'all') {
-        $shipmentsQuery->where('payment_method', request('payment_method'));
-    }
-    $shipments = $shipmentsQuery->latest()->paginate(10);
-        return view('pages.customers.show', compact('customer', 'shipments', 'grandTotalCost', 'grandTotalPaid', 'grandTotalRemaining','unpaidShipmentsCount'));
+            $shipmentsQuery->where('payment_method', request('payment_method'));
+        }
+        $shipments = $shipmentsQuery->latest()->paginate(10);
+
+        return view('pages.customers.show', compact('customer', 'shipments', 'grandTotalCost', 'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount'));
     }
 
     /** صفحة تعديل */
@@ -169,12 +171,12 @@ foreach ($shipments as $shipment) {
             ->findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'            => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'whatsapp_number' => 'nullable|string|max:20',
         ], [
             'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-            'name.max'     => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
+            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
         ]);
 
         if ($validator->fails()) {
@@ -194,7 +196,7 @@ foreach ($shipments as $shipment) {
             foreach ($validated as $key => $value) {
                 $oldValue = $old[$key] ?? null;
                 if ($oldValue != $value) {
-                    $changes[] = "{$key}: " . ($oldValue ?? 'فارغ') . " → " . ($value ?? 'فارغ');
+                    $changes[] = "{$key}: ".($oldValue ?? 'فارغ').' → '.($value ?? 'فارغ');
                 }
             }
 
@@ -281,7 +283,6 @@ foreach ($shipments as $shipment) {
 
         return response()->json($customers);
     }
-
 
     /** تصدير */
     public function export()
