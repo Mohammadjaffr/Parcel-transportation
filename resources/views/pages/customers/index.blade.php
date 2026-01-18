@@ -13,7 +13,7 @@
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="filterStatus = 'all'" :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+                                        'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
@@ -30,7 +30,7 @@
             </div>
 
             <div @click="filterStatus = 'debtor'" :class="filterStatus === 'debtor' ? 'border-error-500 ring-2 ring-error-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+                                        'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-error-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -48,7 +48,7 @@
             </div>
 
             <div @click="filterStatus = 'cleared'" :class="filterStatus === 'cleared' ? 'border-success-500 ring-2 ring-success-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+                                        'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-success-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -91,7 +91,7 @@
                             <th class="py-4 px-6">العميل</th>
                             <th class="py-4 px-6">بيانات التواصل</th>
                             <th class="py-4 px-6 text-center">الفرع</th>
-                            <th class="py-4 px-6 text-center">الرصيد المالي</th>
+                            <th class="py-4 px-6 text-center">عدد الشحنات</th>
                             <th class="py-4 px-6 text-center">الحالة</th>
                             <th class="py-4 px-6 text-center">الإجراءات</th>
                         </tr>
@@ -134,14 +134,14 @@
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
                                     <span
                                         class="px-3 py-1 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-500 text-[10px] font-black uppercase border border-gray-100 dark:border-gray-700">
-                                        {{ $customer->branch_code }}
+                                        {{ $customer->branch->name ?? $customer->branch_code }}
                                     </span>
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
-                                    <div class="text-sm font-black {{ $is_debtor ? 'text-error-600' : 'text-success-600' }}">
-                                        {{ number_format(abs($balance), 2) }}
-                                        <small class="text-[10px] mr-0.5 uppercase">ر.ي</small>
+                                    <div class="text-sm font-black text-brand-600 dark:text-brand-400">
+                                        {{ $customer->shipments_count ?? 0 }}
+                                        <small class="text-[10px] mr-0.5 uppercase">شحنة</small>
                                     </div>
                                 </td>
 

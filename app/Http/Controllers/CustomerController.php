@@ -17,7 +17,15 @@ class CustomerController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $customers = Customer::where('branch_code', $user->branch_code)
+        $branchCode = $user->branch_code;
+        $customers = Customer::where('branch_code', $branchCode)
+            ->selectRaw('customers.*, 
+                (SELECT COUNT(*) FROM shipments 
+                 WHERE sender_customer_id = customers.id 
+                 AND sender_branch_code = ?) + 
+                (SELECT COUNT(*) FROM shipments 
+                 WHERE receiver_customer_id = customers.id 
+                 AND receiver_branch_code = ?) as shipments_count', [$branchCode, $branchCode])
             ->latest()
             ->paginate(10);
 

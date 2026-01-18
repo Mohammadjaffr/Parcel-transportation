@@ -14,9 +14,19 @@ class Customer extends Model
         'whatsapp_number',
     ];
 
-    public function shipments()
+    public function branch()
     {
-        return $this->hasMany(Shipment::class);
+        return $this->belongsTo(Branch::class, 'branch_code', 'code');
+    }
+
+    public function sentShipments()
+    {
+        return $this->hasMany(Shipment::class, 'sender_customer_id');
+    }
+
+    public function receivedShipments()
+    {
+        return $this->hasMany(Shipment::class, 'receiver_customer_id');
     }
 
     public function transactions()

@@ -108,7 +108,7 @@
             </div>
 
             {{-- Attachment (for bank transfer) --}}
-            <div x-show="paymentData.paymentType === 'bank_transfer'"
+            {{-- <div x-show="paymentData.paymentType === 'bank_transfer'"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 transform -translate-y-2"
                 x-transition:enter-end="opacity-100 transform translate-y-0">
@@ -116,7 +116,7 @@
                     (اختياري)</label>
                 <input type="file" name="attachment" accept="image/*,.pdf"
                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-500/10 dark:file:text-brand-400">
-            </div>
+            </div> --}}
 
             {{-- Notes Field --}}
             <div>

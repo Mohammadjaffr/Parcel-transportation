@@ -14,7 +14,7 @@
             <div class="flex gap-6">
 
                 <div @click="setFilter('all')" :class="activeFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-md' :
-                                                                'border-gray-100 hover:border-brand-200'"
+                                                                    'border-gray-100 hover:border-brand-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500 group-hover:scale-110 transition-transform duration-300">
@@ -36,7 +36,7 @@
                 </div>
 
                 <div @click="setFilter('paid')" :class="activeFilter === 'paid' ? 'border-success-500 ring-2 ring-success-500/20 shadow-md' :
-                                                                'border-gray-100 hover:border-success-200'"
+                                                                    'border-gray-100 hover:border-success-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500 group-hover:scale-110 transition-transform duration-300">
@@ -58,7 +58,7 @@
                 </div>
 
                 <div @click="setFilter('unpaid')" :class="activeFilter === 'unpaid' ? 'border-error-500 ring-2 ring-error-500/20 shadow-md' :
-                                                                'border-gray-100 hover:border-error-200'"
+                                                                    'border-gray-100 hover:border-error-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500 group-hover:scale-110 transition-transform duration-300">
@@ -80,7 +80,7 @@
                 </div>
 
                 <div @click="setFilter('unpaidShipments')" :class="activeFilter === 'unpaidShipments' ? 'border-warning-500 ring-2 ring-warning-500/20 shadow-md' :
-                                                                'border-gray-100 hover:border-warning-200'"
+                                                                    'border-gray-100 hover:border-warning-200'"
                     class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex h-12 w-12 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500 group-hover:scale-110 transition-transform duration-300">
@@ -110,10 +110,12 @@
             <div
                 class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
                 <div class="flex items-center gap-5">
-                    <div
-                        class="w-16 h-16 bg-gradient-to-br from-brand-500 to-brand-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-brand-500/30 text-3xl font-black transform rotate-3">
-                        {{ mb_substr($customer->name, 0, 1) }}
-                    </div>
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-brand-500 font-black text-sm border border-gray-100 dark:border-gray-700 shadow-inner">
+                            {{ mb_substr($customer->name, 0, 1) }}
+                        </div>
+                    </div>  
                     <div>
                         <h2 class="text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">
                             {{ $customer->name }}
@@ -278,7 +280,7 @@
                                                 </div>
                                             </div>
                                             <span
-                                                class="text-[10px] text-gray-400 mt-1 font-bold mr-10">{{ $shipment->created_at->format('Y-m-d h:i A') }}</span>
+                                                class="text-[10px] text-gray-400 mt-1 font-bold mr-10">{{ $shipment->created_at->translatedFormat('d F Y l') }}</span>
                                         </div>
                                     </td>
 
