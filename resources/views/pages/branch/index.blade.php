@@ -148,6 +148,8 @@
                             <th class="py-4 px-6">اسم الفرع</th>
                             <th class="py-4 px-6">المدينة / العنوان</th>
                             <th class="py-4 px-6">رقم الهاتف</th>
+                            <th class="py-4 px-6 text-center">الشحنات المستقبلة</th>
+                            <th class="py-4 px-6 text-center">الشحنات المرسلة</th>
                             <th class="py-4 px-6 text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -186,6 +188,20 @@
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50">
                                     <span
                                         class="text-sm font-black text-gray-600 dark:text-gray-400">{{ $branch->phone }}</span>
+                                </td>
+
+                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                    <span
+                                        class="px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 rounded-lg text-xs font-black text-blue-600 border border-blue-100 dark:border-blue-500/20">
+                                        {{ $branch->sent_shipments_count ?? 0 }}
+                                    </span>
+                                </td>
+
+                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                    <span
+                                        class="px-3 py-1.5 bg-green-50 dark:bg-green-500/10 rounded-lg text-xs font-black text-green-600 border border-green-100 dark:border-green-500/20">
+                                        {{ $branch->received_shipments_count ?? 0 }}
+                                    </span>
                                 </td>
 
                                 <td
@@ -234,7 +250,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-20 text-center text-gray-400 italic">لا توجد فروع مسجلة
+                                <td colspan="8" class="py-20 text-center text-gray-400 italic">لا توجد فروع مسجلة
                                     حالياً..</td>
                             </tr>
                         @endforelse

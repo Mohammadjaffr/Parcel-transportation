@@ -22,14 +22,14 @@ class Branch extends Model
         'code',
     ];
 
-    public function senderBranch()
+    public function sentShipments()
     {
-        return $this->belongsTo(Branch::class, 'sender_branch_code', 'code');
+        return $this->hasMany(Shipment::class, 'sender_branch_code', 'code');
     }
 
-    public function receiverBranch()
+    public function receivedShipments()
     {
-        return $this->belongsTo(Branch::class, 'receiver_branch_code', 'code');
+        return $this->hasMany(Shipment::class, 'receiver_branch_code', 'code');
     }
 
     public function users()

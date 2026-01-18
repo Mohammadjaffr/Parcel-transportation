@@ -14,12 +14,14 @@ class BranchController extends Controller
     /* ========== 1- عرض جميع الفروع ========== */
     public function index()
     {
-        $allBranches = Branch::all();
+        $allBranches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
         $totalBranches = $allBranches->count();
         $totalCities = $allBranches->pluck('city')->unique()->count();
+        $branches = Branch::where('code', '!=', auth()->user()->branch_code)
+            ->withCount(['sentShipments', 'receivedShipments'])
+            ->latest()
+            ->paginate(10);
 
-        $branches = Branch::latest()->paginate(10);
-        
         return view('pages.branch.index', compact('branches', 'totalBranches', 'totalCities'));
     }
 
@@ -144,18 +146,18 @@ class BranchController extends Controller
                     false
                 );
             }
-            
-             // Check if branch has customers
-             $customerCount = \App\Models\Customer::where('branch_code', $branch->code)->count();
-             if ($customerCount > 0) {
-                 return WebResponseClass::sendResponse(
-                     'خطأ!',
-                     'لا يمكن حذف الفرع لوجود عملاء مسجلين فيه.',
-                     'حسناً',
-                     null,
-                     false
-                 );
-             }
+
+            // Check if branch has customers
+            $customerCount = \App\Models\Customer::where('branch_code', $branch->code)->count();
+            if ($customerCount > 0) {
+                return WebResponseClass::sendResponse(
+                    'خطأ!',
+                    'لا يمكن حذف الفرع لوجود عملاء مسجلين فيه.',
+                    'حسناً',
+                    null,
+                    false
+                );
+            }
 
             $branch->delete();
             // AdminLoggerService::log('حذف فرع', 'Branch', $branch->code, "تم حذف الفرع بنجاح");
@@ -169,7 +171,7 @@ class BranchController extends Controller
             );
         } catch (\Illuminate\Database\QueryException $e) {
             if ($e->getCode() == 23000) {
-                 return WebResponseClass::sendResponse(
+                return WebResponseClass::sendResponse(
                     'خطأ!',
                     'لا يمكن حذف الفرع لوجود بيانات مرتبطة به (مثل المعاملات المالية أو العملاء).',
                     'حسناً',
@@ -183,7 +185,4 @@ class BranchController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
-
-
 }
