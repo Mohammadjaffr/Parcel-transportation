@@ -92,17 +92,22 @@
                 </div>
             </div>
 
-              <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
-    <div class="flex justify-center items-center w-10 h-10 text-orange-500 bg-orange-50 rounded-xl dark:bg-orange-500/10">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6h1.5m-1.5 3h1.5m-1.5 3h1.5M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
-        </svg>
-    </div>
-    <div class="mt-3">
-        <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">آخر فرع مضاف</span>
-        <h4 class="text-xl font-black dark:text-white">{{ $branches->first()->name ?? '---' }}</h4>
-    </div>
-</div>
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 text-orange-500 bg-orange-50 rounded-xl dark:bg-orange-500/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6h1.5m-1.5 3h1.5m-1.5 3h1.5M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">آخر فرع
+                        مضاف</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $branches->first()->name ?? '---' }}</h4>
+                </div>
+            </div>
         </div>
 
         <div
@@ -204,20 +209,18 @@
                                     class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         <a href="{{ route('branch.show', $branch->code) }}"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="عرض التفاصيل">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                <path
+                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </a>
 
                                         <button type="button" @click="openEditModal('{{ $branch->code }}')"
                                             :disabled="isFetching === '{{ $branch->code }}'"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="تعديل">
                                             <template x-if="isFetching !== '{{ $branch->code }}'">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
@@ -245,7 +248,7 @@
                                                 confirmButtonText: 'نعم، احذف',
                                                 cancelButtonText: 'إلغاء'
                                             })"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="حذف">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                 viewBox="0 0 24 24">

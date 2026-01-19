@@ -158,7 +158,7 @@
                                 <td class="px-6 py-5 border-r first:rounded-r-2xl border-y dark:border-gray-800/50">
                                     <span
                                         class="px-3 py-1.5 text-xs font-black bg-gray-50 rounded-lg border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
-                                        #{{ $request->bond_number }}
+                                        {{ $request->bond_number }}
                                     </span>
                                 </td>
 

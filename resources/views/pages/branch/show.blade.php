@@ -12,16 +12,16 @@
                 <div
                     class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 hover:border-brand-200 transition-all hover:shadow-md shadow-theme-sm">
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-500 group-hover:scale-110 transition-transform duration-300">
+                        class="flex justify-center items-center w-12 h-12 rounded-xl transition-transform duration-300 bg-brand-50 text-brand-500 dark:bg-brand-500/10 group-hover:scale-110">
                         <svg class="w-6 h-6 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M5 10l7-7m0 0l7 7m-7-7v18" />
                         </svg>
                     </div>
                     <div class="mt-4">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">الشحنات
+                        <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">الشحنات
                             المرسلة</span>
-                        <div class="flex items-baseline gap-1 mt-1">
+                        <div class="flex gap-1 items-baseline mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
                                 {{ $totalSentShipments }}
                             </h4>
@@ -33,7 +33,7 @@
                 <div
                     class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 hover:border-success-200 transition-all hover:shadow-md shadow-theme-sm">
                     <div
-                        class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 dark:bg-green-500/10 text-green-500 group-hover:scale-110 transition-transform duration-300">
+                        class="flex justify-center items-center w-12 h-12 rounded-xl transition-transform duration-300 bg-success-50 dark:bg-success-500/10 text-success-500 group-hover:scale-110">
                         <svg class="w-6 h-6 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -41,9 +41,9 @@
                         </svg>
                     </div>
                     <div class="mt-4">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">الشحنات
+                        <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">الشحنات
                             المستقبلة</span>
-                        <div class="flex items-baseline gap-1 mt-1">
+                        <div class="flex gap-1 items-baseline mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
                                 {{ $totalReceivedShipments }}
                             </h4>
@@ -57,20 +57,20 @@
             {{-- Branch Information Card --}}
             <div
                 class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-                <div class="flex items-center gap-5">
-                    <div class="flex items-center gap-3">
+                <div class="flex gap-5 items-center">
+                    <div class="flex gap-3 items-center">
                         <div
-                            class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-brand-500 font-black text-sm border border-gray-100 dark:border-gray-700 shadow-inner">
+                            class="flex justify-center items-center w-10 h-10 text-sm font-black bg-gray-50 rounded-xl border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
                             {{ mb_substr($branch->name, 0, 1) }}
                         </div>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-black text-gray-900 dark:text-white leading-tight tracking-tight">
+                        <h2 class="text-2xl font-black tracking-tight leading-tight text-gray-900 dark:text-white">
                             {{ $branch->name }}
                         </h2>
-                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                        <div class="flex flex-wrap gap-y-2 gap-x-4 items-center mt-2">
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-gray-50 dark:bg-gray-800 text-theme-xs font-bold text-gray-500 dark:text-gray-300 border border-gray-100 dark:border-gray-700">
+                                class="inline-flex gap-1.5 items-center px-3 py-1 font-bold text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800 text-theme-xs dark:text-gray-300 dark:border-gray-700">
                                 <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path
@@ -90,7 +90,7 @@
                                 {{ $branch->city }} - {{ $branch->address }}
                             </span>
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-brand-50 dark:bg-brand-500/10 text-[10px] font-black uppercase text-brand-600 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20">
+                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-brand-50 dark:bg-brand-500/10 text-[10px] font-black uppercase text-brand-500 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -101,9 +101,9 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-3 w-full lg:w-auto">
+                <div class="flex gap-3 items-center w-full lg:w-auto">
                     <a href="{{ route('branch.index') }}"
-                        class="flex-1 lg:flex-none h-11 px-5 flex w-full items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-300 font-bold rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-sm shadow-sm hover:shadow-md">
+                        class="flex flex-1 gap-2 justify-center items-center px-5 w-full h-11 text-sm font-bold text-gray-500 rounded-2xl border border-gray-200 shadow-sm transition-all lg:flex-none dark:border-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -115,13 +115,13 @@
 
             {{-- Shipments Table --}}
             <div
-                class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-xs overflow-hidden">
+                class="overflow-hidden bg-white rounded-2xl border border-gray-100 dark:bg-gray-900 dark:border-gray-800 shadow-theme-xs">
 
                 <div
-                    class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-gray-900/50">
-                    <div class="flex items-center gap-3 w-full md:w-auto">
+                    class="flex flex-col gap-4 justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800 md:flex-row bg-gray-50/50 dark:bg-gray-900/50">
+                    <div class="flex gap-3 items-center w-full md:w-auto">
                         <div
-                            class="p-2 bg-white dark:bg-gray-800 rounded-2xl  shadow-sm border border-gray-100 dark:border-gray-700">
+                            class="p-2 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                             <svg class="w-5 h-5 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -130,17 +130,17 @@
                         </div>
                         <div>
                             <h3 class="text-base font-bold text-gray-900 dark:text-white">جدول الشحنات</h3>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                            <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                                 الشحنات بين فرعك وهذا الفرع
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                    <div class="flex flex-wrap gap-3 justify-end items-center w-full md:w-auto">
                         <form method="GET" action="{{ url()->current() }}"
-                            class="flex items-center gap-2 flex-1 md:flex-none">
+                            class="flex flex-1 gap-2 items-center md:flex-none">
                             <select name="direction" onchange="this.form.submit()"
-                                class="h-10 pr-8 pl-3 text-xs font-bold bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-500 dark:text-gray-300 shadow-sm cursor-pointer transition-all hover:border-brand-300">
+                                class="pr-8 pl-3 h-10 text-xs font-bold text-gray-500 bg-white rounded-2xl border-gray-200 shadow-sm transition-all cursor-pointer dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 dark:text-gray-300 hover:border-brand-300">
                                 <option value="all">كل الاتجاهات</option>
                                 <option value="sent" {{ request('direction') == 'sent' ? 'selected' : '' }}>صادرة (مرسلة)
                                 </option>
@@ -150,10 +150,10 @@
                         </form>
 
                         <div
-                            class="px-4 py-2 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
+                            class="px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                             <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
                                 عدد النتائج: <span
-                                    class="text-brand-500 dark:text-brand-400 text-sm font-black">{{ $shipments->total() }}</span>
+                                    class="text-sm font-black text-brand-500 dark:text-brand-400">{{ $shipments->total() }}</span>
                             </span>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-right border-collapse">
                         <thead>
-                            <tr class="bg-gray-50/80 dark:bg-gray-800/80 border-b border-gray-100 dark:border-gray-800">
+                            <tr class="border-b border-gray-100 bg-gray-50/80 dark:bg-gray-800/80 dark:border-gray-800">
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">الشحنة /
                                     التاريخ</th>
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">الاتجاه
@@ -177,7 +177,7 @@
                                 </th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-50 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                        <tbody class="bg-white divide-y divide-gray-50 dark:divide-gray-800 dark:bg-gray-900">
                             @forelse($shipments as $shipment)
                                 @php
                                     $userBranchCode = auth()->user()->branch_code;
@@ -185,13 +185,13 @@
                                 @endphp
 
                                 <tr
-                                    class="group hover:bg-brand-50/30 dark:hover:bg-gray-800/60 transition-colors duration-200">
+                                    class="transition-colors duration-200 group hover:bg-brand-50/30 dark:hover:bg-gray-800/60">
 
                                     <td class="px-6 py-4 align-top">
                                         <div class="flex flex-col">
-                                            <div class="flex items-center gap-2">
+                                            <div class="flex gap-2 items-center">
                                                 <div
-                                                    class="w-8 h-8 rounded-2xl  bg-brand-500 dark:bg-gray-800 flex items-center justify-center text-white">
+                                                    class="flex justify-center items-center w-8 h-8 text-white rounded-2xl bg-brand-500 dark:bg-gray-800">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -201,7 +201,7 @@
                                                 </div>
                                                 <div>
                                                     <span
-                                                        class="block text-sm font-black text-gray-800 dark:text-white font-mono tracking-wide">
+                                                        class="block font-mono text-sm font-black tracking-wide text-gray-800 dark:text-white">
                                                         {{ $shipment->bond_number }}
                                                     </span>
                                                 </div>
@@ -224,7 +224,7 @@
                                             </span>
                                         @else
                                             <span
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl text-[10px] font-bold bg-green-50 text-green-700 border border-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl text-[10px] font-bold bg-success-50 text-success-700 border border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
                                                 <svg class="w-3 h-3 rotate-45 rtl:-rotate-45" fill="none"
                                                     stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -237,7 +237,7 @@
 
                                     <td class="px-6 py-4 align-top">
                                         <span
-                                            class="text-sm font-black bg-brand-50 dark:bg-gray-800 px-2 py-1 rounded-2xl font-mono text-gray-900 dark:text-white">
+                                            class="px-2 py-1 font-mono text-sm font-black text-gray-900 rounded-2xl bg-brand-50 dark:bg-gray-800 dark:text-white">
                                             {{ number_format($shipment->total_amount, 2) }}
                                             <span class="text-[10px] text-gray-400 font-sans">ر.ي</span>
                                         </span>
@@ -267,7 +267,7 @@
 
                                     <td class="px-6 py-4 align-top">
                                         <a href="{{ route('shipments.show', $shipment->id) }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-500 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -282,9 +282,9 @@
                             @empty
                                 <tr>
                                     <td colspan="6" class="py-24">
-                                        <div class="flex flex-col items-center justify-center text-center">
+                                        <div class="flex flex-col justify-center items-center text-center">
                                             <div
-                                                class="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 border border-gray-100 dark:border-gray-700">
+                                                class="flex justify-center items-center mb-4 w-24 h-24 bg-gray-50 rounded-full border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                                                 <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -292,8 +292,8 @@
                                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                 </svg>
                                             </div>
-                                            <h3 class="text-gray-900 dark:text-white font-bold text-lg">لا توجد شحنات</h3>
-                                            <p class="text-sm text-gray-400 mt-2 max-w-xs">لم يتم العثور على أي شحنات بين
+                                            <h3 class="text-lg font-bold text-gray-900 dark:text-white">لا توجد شحنات</h3>
+                                            <p class="mt-2 max-w-xs text-sm text-gray-400">لم يتم العثور على أي شحنات بين
                                                 فرعك وهذا الفرع.</p>
                                         </div>
                                     </td>
@@ -304,7 +304,7 @@
                 </div>
 
                 @if ($shipments->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 flex justify-center"
+                    <div class="flex justify-center px-6 py-4 bg-gray-50 border-t border-gray-100 dark:border-gray-800 dark:bg-gray-900"
                         dir="ltr">
                         {{ $shipments->appends(request()->query())->links() }}
                     </div>

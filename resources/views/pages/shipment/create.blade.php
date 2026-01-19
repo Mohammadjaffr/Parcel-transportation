@@ -85,19 +85,7 @@
                         @error('sender_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
-
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                            <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
-                                value="{{ old('sender_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="اسم المرسل">
-                            @error('sender_name')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="relative mt-3">
+<div class="relative mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
 
@@ -141,7 +129,7 @@
                             </div>
 
                             <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
 
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
@@ -149,7 +137,7 @@
 
                                 <template x-for="c in results" :key="c.id">
                                     <button type="button" @click="select(c); open = false"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
                                         <div class="text-xs text-gray-500" x-text="c.phone"></div>
@@ -162,7 +150,7 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                        <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
@@ -173,6 +161,18 @@
                                 للتواصل.
                             </span>
                         </p>
+                        <div class="mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
+                                value="{{ old('sender_name') }}"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                placeholder="اسم المرسل">
+                            @error('sender_name')
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        
 
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
@@ -214,18 +214,6 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                            <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
-                                value="{{ old('receiver_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="اسم المستلم">
-                            @error('receiver_name')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
-
                         <div class="relative mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
@@ -272,13 +260,13 @@
                             </div>
 
                             <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
                                 <template x-for="c in results" :key="c.id">
                                     <button type="button" @click="select(c); open = false"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
                                         <div class="text-xs text-gray-500" x-text="c.phone"></div>
@@ -291,7 +279,7 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                        <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
@@ -302,6 +290,18 @@
                                 للتواصل.
                             </span>
                         </p>
+                        <div class="mt-3">
+                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
+                                value="{{ old('receiver_name') }}"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                placeholder="اسم المستلم">
+                            @error('receiver_name')
+                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+
                         <div class="mt-3">
                             <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
@@ -699,13 +699,13 @@
                                     placeholder="7XXXXXXXX">
                             </div>
                             <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
                                 <template x-for="c in results" :key="c.id">
                                     <button type="button" @click="select(c); open = false"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
                                         <div class="text-xs text-gray-500" x-text="c.phone"></div>
@@ -717,7 +717,7 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                        <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
@@ -814,13 +814,13 @@
                                     placeholder="7XXXXXXXX">
                             </div>
                             <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
-                                class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700 right-0">
+                                class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
                                 <template x-for="c in results" :key="c.id">
                                     <button type="button" @click="select(c); open = false"
-                                        class="px-4 py-3 w-full text-right hover:bg-gray-50 dark:hover:bg-gray-700 border-b last:border-0 border-gray-100 dark:border-gray-700">
+                                        class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
                                         <div class="text-xs text-gray-500" x-text="c.phone"></div>
@@ -832,7 +832,7 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
-                        <p class="mt-2 text-xs text-warning-500 dark:text-warning/90 flex items-center gap-2">
+                        <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />

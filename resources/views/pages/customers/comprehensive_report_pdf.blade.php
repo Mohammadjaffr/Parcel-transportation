@@ -287,7 +287,7 @@
             لا توجد شحنات مرسلة مسجلة</div>
     @endif
 
-    <div class="section-header">الشحنات المستقبلة ({{ $receivedCount }})</div>
+    <div class="section-header">الشحنات المستلم ({{ $receivedCount }})</div>
     @if ($receivedShipments->count() > 0)
         <table class="manifest-table" border="0.5" cellpadding="6">
             <thead>

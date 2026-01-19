@@ -282,7 +282,7 @@ class ShipmentController extends Controller
 
                 'sender_name' => 'required_without:sender_customer_id|string|max:255',
                 'sender_phone' => 'required_without:sender_customer_id|string|max:50',
-                'code' => 'required|string|max:255',
+                'code' => 'nullable|string|max:255',
 
                 'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
                 'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
