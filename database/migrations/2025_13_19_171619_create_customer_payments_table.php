@@ -16,6 +16,7 @@ return new class extends Migration
 
             $table->foreignId('shipment_id')->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained('customers')->cascadeOnDelete();
+            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
 
             $table->string('branch_code', 10);
             $table->foreign('branch_code')->references('code')->on('branches')->cascadeOnDelete();

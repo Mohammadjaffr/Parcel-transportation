@@ -21,6 +21,7 @@ class CustomerPayment extends Model
         'attachment_path',
         'reference_number',
         'notes',
+        'created_by',
     ];
 
    
@@ -29,7 +30,17 @@ class CustomerPayment extends Model
         'payment_date' => 'date',   
     ];
 
-    
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($payment) {
+            if (auth()->check() && empty($payment->created_by)) {
+                $payment->created_by = auth()->id();
+            }
+        });
+    }
 
     
     public function shipment(): BelongsTo
@@ -41,6 +52,12 @@ class CustomerPayment extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
   
