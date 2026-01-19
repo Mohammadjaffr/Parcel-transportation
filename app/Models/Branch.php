@@ -36,4 +36,14 @@ class Branch extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * العلاقة many-to-many مع حزم الشحن المستقبلة
+     */
+    public function receivingPackages()
+    {
+        return $this->belongsToMany(ShipmentPackage::class, 'branch_shipment_package', 'branch_code', 'shipment_package_id')
+            ->withPivot('status', 'arrival_date', 'notes')
+            ->withTimestamps();
+    }
 }

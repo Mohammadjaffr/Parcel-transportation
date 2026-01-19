@@ -73,6 +73,24 @@ class ShipmentPackagesController extends Controller
                     'status' => 'in_transit',
                 ]);
 
+            // استخراج الفروع المستقبلة من الطرود وربطها بالحزمة
+            $receiverBranches = Shipment::whereIn('id', $request->selected_ids)
+                ->pluck('receiver_branch_code')
+                ->unique()
+                ->filter() // إزالة القيم الفارغة
+                ->toArray();
+
+            if (!empty($receiverBranches)) {
+                // ربط الحزمة بالفروع المستقبلة
+                foreach ($receiverBranches as $branchCode) {
+                    $package->receiverBranches()->attach($branchCode, [
+                        'status' => 'pending',
+                        'arrival_date' => null,
+                        'notes' => null,
+                    ]);
+                }
+            }
+
             return WebResponseClass::sendResponse(
                 'تمت الرحلة!',
                 'تم إنشاء رحلة الشحن وربط الطرود بنجاح.',

@@ -72,8 +72,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/shipments/store-customer', [ShipmentController::class, 'storeCustomer'])
         ->name('shipments.storeCustomer');
 
-    Route::get('/system-settings/auto-assign', [SystemSettingsController::class, 'getAutoAssignSetting'])
-        ->name('system-settings.auto-assign.get');
+    
     Route::get('/customers/search', [CustomerController::class, 'search'])
         ->name('customers.search');
     Route::get('/customers/{id}/comprehensive-report', [CustomerController::class, 'comprehensiveReport'])
@@ -148,15 +147,17 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
         ->name('reports.revenue');
 
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
-    Route::get(
-        '/shipmentpackage/print/{id}',
-        [ShipmentPackagesController::class, 'printManifest']
-    )->name('shipmentpackage.print');
+    Route::get('/shipmentpackage/print/{id}',[ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 
-    Route::get(
-        '/shipmentpackage/print-driver/{id}',
-        [ShipmentPackagesController::class, 'printManifestD']
-    )->name('shipmentpackage.printD');
+    Route::get('/shipmentpackage/print-driver/{id}',[ShipmentPackagesController::class, 'printManifestD'])->name('shipmentpackage.printD');
+
+    // دفعات الحزم للفروع
+    Route::post('/branch-package-payment', [App\Http\Controllers\BranchPackagePaymentController::class, 'store'])
+        ->name('branch-package-payment.store');
+    Route::get('/branch-package-payment/{branchShipmentPackageId}', [App\Http\Controllers\BranchPackagePaymentController::class, 'index'])
+        ->name('branch-package-payment.index');
+    Route::delete('/branch-package-payment/{id}', [App\Http\Controllers\BranchPackagePaymentController::class, 'destroy'])
+        ->name('branch-package-payment.destroy');
 });
 
 require __DIR__ . '/auth.php';

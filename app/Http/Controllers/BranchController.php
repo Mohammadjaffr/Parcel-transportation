@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use App\Models\Shipment;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Services\AdminLoggerService;
 use App\Classes\WebResponseClass;
@@ -19,7 +20,7 @@ class BranchController extends Controller
         $totalBranches = $allBranches->count();
         $totalCities = $allBranches->pluck('city')->unique()->count();
         $branches = Branch::where('code', '!=', auth()->user()->branch_code)
-            ->withCount(['sentShipments', 'receivedShipments'])
+            ->withCount(['receivingPackages'])
             ->latest()
             ->paginate(10);
 
@@ -84,33 +85,7 @@ class BranchController extends Controller
         // Get the authenticated user's branch code
         $userBranchCode = auth()->user()->branch_code;
 
-        // Query shipments between the two branches
-        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch', 'senderCustomer', 'receiverCustomer'])
-            ->where(function ($query) use ($userBranchCode, $code) {
-                // Sent shipments: user's branch is sender AND selected branch is receiver
-                $query->where(function ($q) use ($userBranchCode, $code) {
-                    $q->where('sender_branch_code', $userBranchCode)
-                        ->where('receiver_branch_code', $code);
-                })
-                    // OR Received shipments: selected branch is sender AND user's branch is receiver
-                    ->orWhere(function ($q) use ($userBranchCode, $code) {
-                        $q->where('sender_branch_code', $code)
-                            ->where('receiver_branch_code', $userBranchCode);
-                    });
-            });
-
-        // Apply direction filter if provided
-        if ($request->get('direction') == 'sent') {
-            // Only sent shipments
-            $shipmentsQuery->where('sender_branch_code', $userBranchCode)
-                ->where('receiver_branch_code', $code);
-        } elseif ($request->get('direction') == 'received') {
-            // Only received shipments
-            $shipmentsQuery->where('sender_branch_code', $code)
-                ->where('receiver_branch_code', $userBranchCode);
-        }
-
-        // Calculate statistics
+        // Calculate statistics for sent/received shipments
         $totalSentShipments = Shipment::where('sender_branch_code', $userBranchCode)
             ->where('receiver_branch_code', $code)
             ->count();
@@ -119,10 +94,120 @@ class BranchController extends Controller
             ->where('receiver_branch_code', $userBranchCode)
             ->count();
 
-        // Paginate shipments
-        $shipments = $shipmentsQuery->latest()->paginate(10);
+        // ========== معلومات الحزم المرسلة لهذا الفرع ==========
 
-        return view('pages.branch.show', compact('branch', 'shipments', 'totalSentShipments', 'totalReceivedShipments'));
+        // الحصول على IDs الحزم المرتبطة بهذا الفرع من جدول الـ pivot
+        $branchPackagePivotIds = DB::table('branch_shipment_package')
+            ->where('branch_code', $code)
+            ->pluck('id', 'shipment_package_id')
+            ->toArray();
+
+        $packageCount = count($branchPackagePivotIds);
+
+        // حساب عدد الشحنات داخل هذه الحزم المتجهة لهذا الفرع
+        $shipmentCount = 0;
+        $totalAmount = 0;
+
+        if (!empty($branchPackagePivotIds)) {
+            $packageIds = array_keys($branchPackagePivotIds);
+
+            // عدد الشحنات في هذه الحزم المتجهة لهذا الفرع
+            $shipmentCount = Shipment::whereIn('shipment_package_id', $packageIds)
+                ->where('receiver_branch_code', $code)
+                ->count();
+
+            // المبلغ المستحق على الفرع (COD + Partial فقط)
+            $shipments = Shipment::whereIn('shipment_package_id', $packageIds)
+                ->where('receiver_branch_code', $code)
+                ->get();
+
+            foreach ($shipments as $shipment) {
+                if ($shipment->payment_method === 'cod') {
+                    $totalAmount += $shipment->total_amount;
+                } elseif ($shipment->payment_method === 'partial_payment') {
+                    $totalAmount += ($shipment->total_amount - ($shipment->partial_amount ?? 0));
+                }
+            }
+        }
+
+        // حساب المبلغ المدفوع
+        $paidAmount = 0;
+        if (!empty($branchPackagePivotIds)) {
+            $paidAmount = DB::table('branch_package_payments')
+                ->whereIn('branch_shipment_package_id', array_values($branchPackagePivotIds))
+                ->sum('paid_amount');
+        }
+
+        // حساب المبلغ المتبقي
+        $remainingAmount = $totalAmount - $paidAmount;
+        $isPaid = $remainingAmount <= 0 && $totalAmount > 0;
+
+        // ========== جلب الحزم للعرض في الجدول ==========
+
+        // جلب الحزم المرتبطة بهذا الفرع مع معلومات الدفعات
+        $packagesQuery = \App\Models\ShipmentPackage::query()
+            ->whereHas('receiverBranches', function ($query) use ($code) {
+                $query->where('branch_code', $code);
+            })
+            ->with(['shipments' => function ($query) use ($code) {
+                $query->where('receiver_branch_code', $code);
+            }]);
+
+        // حساب معلومات إضافية لكل حزمة
+        $packages = $packagesQuery->latest()->paginate(10);
+
+        // إضافة معلومات الدفع لكل حزمة
+        foreach ($packages as $package) {
+            // الحصول على pivot id لهذه الحزمة
+            $pivotId = DB::table('branch_shipment_package')
+                ->where('shipment_package_id', $package->id)
+                ->where('branch_code', $code)
+                ->value('id');
+
+            // حساب المبلغ المستحق على الفرع بناءً على نوع الدفع
+            $amountDue = 0;
+            foreach ($package->shipments as $shipment) {
+                // COD: الفرع مديون بالمبلغ الكامل
+                if ($shipment->payment_method === 'cod') {
+                    $amountDue += $shipment->total_amount;
+                }
+                // Partial Payment: الفرع مديون بالباقي (المبلغ الكامل - المبلغ الجزئي)
+                elseif ($shipment->payment_method === 'partial_payment') {
+                    $amountDue += ($shipment->total_amount - ($shipment->partial_amount ?? 0));
+                }
+                // Prepaid & Customer Credit: لا يوجد مبلغ مستحق على الفرع
+                // (المبلغ مدفوع مسبقاً أو على حساب العميل)
+            }
+
+            $package->branch_total_amount = $amountDue;
+
+            // حساب المبلغ المدفوع لهذه الحزمة
+            $package->branch_paid_amount = DB::table('branch_package_payments')
+                ->where('branch_shipment_package_id', $pivotId)
+                ->sum('paid_amount');
+
+            // حساب المتبقي
+            $package->branch_remaining_amount = $package->branch_total_amount - $package->branch_paid_amount;
+
+            // حالة الدفع
+            $package->branch_is_paid = $package->branch_remaining_amount <= 0 && $package->branch_total_amount > 0;
+
+            // عدد الشحنات في هذا الفرع
+            $package->branch_shipment_count = $package->shipments->count();
+        }
+
+        return view('pages.branch.show', compact(
+            'branch',
+            'packages',
+            'totalSentShipments',
+            'totalReceivedShipments',
+            'packageCount',
+            'shipmentCount',
+            'totalAmount',
+            'paidAmount',
+            'remainingAmount',
+            'isPaid'
+        ));
     }
 
     /* ========== 5- صفحة تعديل الفرع ========== */
