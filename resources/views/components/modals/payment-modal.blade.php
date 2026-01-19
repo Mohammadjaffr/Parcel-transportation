@@ -33,9 +33,9 @@
                             class="w-full h-12 pr-4 pl-12 text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all"
                             placeholder="أدخل المبلغ" required>
                         <span
-                            class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-400">ر.ي</span>
+                            class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-brand-500">ر.ي</span>
                     </div>
-                    <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    <p class="mt-2 text-xs text-brand-500 dark:text-gray-400">
                         المبلغ المتبقي: <span class="font-bold text-error-500"
                             x-text="paymentData.maxAmount.toLocaleString()"></span> ر.ي
                     </p>
@@ -100,7 +100,7 @@
                     المرجع</label>
                 <div class="relative">
                     <input type="text" name="reference_number" x-model="paymentData.referenceNumber"
-                        class="w-full h-12 pr-12 pl-4 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all"
+                        class="w-full px-4 py-3 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all resize-none"
                         placeholder="أدخل رقم الإيداع أو المرجع">
                     <div class="absolute px-2 right-4 top-1/2 -translate-y-1/2">
                     </div>

@@ -23,14 +23,14 @@
             <div
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    class="flex justify-center items-center w-10 h-10 bg-gray-50 rounded-xl dark:bg-gray-800 text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">المسجلة
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">المسجلة
                         اليوم</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $todayShipments }}</h4>
                 </div>
@@ -40,14 +40,16 @@
             <div
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">في
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">في
                         الطريق</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $inTransit }}</h4>
                 </div>
@@ -57,14 +59,14 @@
             <div
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">تم
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">تم
                         التسليم</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $delivered }}</h4>
                 </div>
@@ -74,16 +76,16 @@
             <div
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500">
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.67 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.407-2.67-1" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إيرادات
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إيرادات
                         COD</span>
-                    <h4 class="text-xl font-black dark:text-white">{{ number_format($revenueCOD, 2) }}
+                    <h4 class="text-xl font-black dark:text-white">{{ number_format($revenueCOD) }}
                         <small class="text-[10px] font-bold text-gray-400 mr-0.5">ر.ي</small>
                     </h4>
                 </div>
@@ -95,118 +97,188 @@
 
             {{-- ===== جدول آخر 24 ساعة ===== --}}
             <div
-                class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 shadow-sm">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-                        الطرود خلال <span class="text-brand-500">24</span> ساعة
-                    </h3>
+                class="flex overflow-hidden flex-col h-full bg-white rounded-2xl border border-gray-100 shadow-xl lg:col-span-2 shadow-gray-200/50 dark:border-gray-800 dark:bg-gray-900 dark:shadow-none">
+
+                {{-- Header --}}
+                <div class="flex justify-between items-center px-6 py-5 border-b border-gray-100 dark:border-gray-800">
+                    <div class="flex gap-3 items-center">
+                        <div class="p-2 rounded-lg bg-brand-50 text-brand-500 dark:bg-brand-500/10 dark:text-brand-400">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+                            الطرود خلال <span class="text-brand-500">24</span> ساعة
+                        </h3>
+                    </div>
                     <a href="{{ route('shipment.index') }}"
-                        class="text-sm font-medium text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300">
-                        عرض الكل &larr;
+                        class="flex gap-1 items-center text-sm font-medium text-gray-500 transition-colors group hover:text-brand-500 dark:text-gray-400 dark:hover:text-brand-400">
+                        عرض الكل
+                        <svg class="w-4 h-4 transition-transform text-brand-500 group-hover:-translate-x-1 rtl:rotate-180"
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                        </svg>
                     </a>
                 </div>
 
-                <div class="overflow-x-auto">
+                {{-- Table Container --}}
+                <div class="overflow-x-auto flex-1">
                     <table class="min-w-full text-center align-middle">
-                        <thead class="bg-gray-50 dark:bg-gray-700/50">
-                            <tr class="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                                <th class="px-3 py-3 text-right">المعرف</th>
-                                <th class="px-3 py-3 text-right">العميل</th>
-                                <th class="px-3 py-3">المبلغ</th>
-                                <th class="px-3 py-3">الحالة</th>
-                                <th class="px-3 py-3">من / إلى</th>
-                                <th class="px-3 py-3"></th>
+                        <thead class="bg-gray-50/50 dark:bg-gray-800/50">
+                            <tr
+                                class="text-xs font-bold tracking-wider text-gray-400 uppercase border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-6 py-4 text-right">رقم السند</th>
+                                <th class="px-6 py-4 text-right">العميل</th>
+                                <th class="px-6 py-4">المسار</th>
+                                <th class="px-6 py-4">الحالة</th>
+                                <th class="px-6 py-4 text-left">المبلغ</th>
+                                <th class="px-4 py-4"></th>
                             </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                             @forelse ($last24Shipments as $shipment)
-                                <tr class="transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-3 py-4 text-sm font-medium text-right text-gray-900 dark:text-white">
-                                        #{{ $shipment->bond_number }}
-                                    </td>
-                                    <td class="px-3 py-4 text-sm text-right text-gray-700 dark:text-gray-300">
-                                        <div class="font-medium text-gray-900 dark:text-white">
-                                            {{ $shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '-') }}
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            {{ optional($shipment->driver)->name ?? 'لم يعين' }}
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-4 text-sm font-bold text-gray-900 whitespace-nowrap dark:text-white">
-                                        {{ number_format($shipment->total_amount, 2) }}
-                                        <span class="text-xs font-normal text-gray-500">ر.ي</span>
-                                    </td>
-                                    <td class="px-3 py-4 text-sm">
-                                        @php
-                                            $statusClasses = [
-                                                'pending' =>
-                                                    'bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400',
-                                                'in_transit' =>
-                                                    'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
-                                                'delivered' =>
-                                                    'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-400',
-                                                'returned' =>
-                                                    'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400',
-                                                'cancelled' =>
-                                                    'bg-gray-100 text-gray-600 dark:bg-gray-500/10 dark:text-gray-400',
-                                            ];
-                                            $statusLabels = [
-                                                'pending' => 'انتظار',
-                                                'in_transit' => 'جاري التوصيل',
-                                                'delivered' => 'تم التسليم',
-                                                'returned' => 'مرتجع',
-                                                'cancelled' => 'ملغي',
-                                            ];
-                                            $statusKey = $shipment->status;
-                                        @endphp
+                                <tr class="transition-all group hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                    {{-- ID --}}
+                                    <td class="px-6 py-4 text-sm text-right">
                                         <span
-                                            class="px-2.5 py-1 rounded-full text-xs font-medium {{ $statusClasses[$statusKey] ?? 'bg-gray-100 text-gray-500' }}">
-                                            {{ $statusLabels[$statusKey] ?? $statusKey }}
+                                            class="inline-flex items-center px-2.5 py-0.5 font-mono text-xs font-medium text-gray-500 rounded-md bg-brand-50 dark:bg-gray-800 dark:text-gray-300">
+                                            {{ $shipment->bond_number }}
                                         </span>
                                     </td>
-                                    <td class="px-3 py-4 text-sm">
-                                        <div class="flex gap-2 justify-center items-center">
-                                            <span
-                                                class="px-2 py-0.5 text-xs font-medium text-gray-600 bg-gray-100 rounded dark:bg-gray-700 dark:text-gray-300">
-                                                {{ $shipment->senderBranch->name ?? $shipment->sender_branch_code }}
-                                            </span>
-                                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M7 16l-4-4m0 0l4-4m-4 4h18">
-                                                </path>
-                                            </svg>
-                                            <span
-                                                class="px-2 py-0.5 text-xs font-medium rounded text-brand-600 bg-brand-50 dark:bg-brand-500/10 dark:text-brand-400">
-                                                {{ $shipment->receiverBranch->name ?? $shipment->receiver_branch_code }}
-                                            </span>
+
+                                    {{-- Customer --}}
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex gap-3 items-center">
+                                            {{-- Avatar Placeholder --}}
+                                            <div
+                                                class="flex justify-center items-center w-8 h-8 text-xs font-bold text-white rounded-full bg-brand-500 from-brand-50 to-brand-500 dark:from-brand-900 dark:to-brand-800 dark:text-brand-300">
+                                                {{ mb_substr($shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '?'), 0, 1) }}
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-sm font-semibold text-gray-900 dark:text-white">
+                                                    {{ Str::limit($shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '-'), 20) }}
+                                                </span>
+                                                <span class="flex gap-1 items-center text-xs text-brand-500">
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                                        stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    {{ optional($shipment->package)->driver_name ?? 'لم يعين' }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="px-3 py-4 text-sm text-left">
+
+                                    {{-- Route (From -> To) --}}
+                                    <td class="px-6 py-4">
+                                        <div class="flex gap-2 justify-center items-center text-xs">
+                                            <div
+                                                class="flex gap-2 items-center px-2 py-1 text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300">
+                                                <div class="w-2 h-2 rounded-full bg-brand-500"></div>
+                                                {{ $shipment->senderBranch->name ?? $shipment->sender_branch_code }}
+                                            </div>
+
+                                            {{-- The Arrow (Using the rotate logic) --}}
+                                            <svg class="w-3 h-3 text-gray-300 rotate-180 rtl:rotate-0" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                            </svg>
+
+                                            <div
+                                                class="flex gap-2 items-center px-2 py-1 rounded-2xl border bg-brand-50 text-brand-700 border-brand-100 dark:bg-brand-900/20 dark:border-brand-800 dark:text-brand-300">
+                                                <div class="w-2 h-2 rounded-full bg-brand-500"></div>
+                                                {{ $shipment->receiverBranch->name ?? $shipment->receiver_branch_code }}
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    {{-- Status --}}
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $statusConfig = [
+                                                'pending' => [
+                                                    'bg' => 'bg-warning-100',
+                                                    'text' => 'text-warning-700',
+                                                    'label' => 'انتظار',
+                                                    'dot' => 'bg-warning-500',
+                                                ],
+                                                'in_transit' => [
+                                                    'bg' => 'bg-blue-light-100',
+                                                    'text' => 'text-blue-light-700',
+                                                    'label' => 'جاري التوصيل',
+                                                    'dot' => 'bg-blue-light-500',
+                                                ],
+                                                'delivered' => [
+                                                    'bg' => 'bg-success-100',
+                                                    'text' => 'text-success-700',
+                                                    'label' => 'تم التسليم',
+                                                    'dot' => 'bg-success-500',
+                                                ],
+                                                'returned' => [
+                                                    'bg' => 'bg-error-100',
+                                                    'text' => 'text-error-700',
+                                                    'label' => 'مرتجع',
+                                                    'dot' => 'bg-error-500',
+                                                ],
+                                                'cancelled' => [
+                                                    'bg' => 'bg-error-100',
+                                                    'text' => 'text-error-700',
+                                                    'label' => 'ملغي',
+                                                    'dot' => 'bg-error-500',
+                                                ],
+                                            ];
+                                            $currentStatus =
+                                                $statusConfig[$shipment->status] ?? $statusConfig['cancelled'];
+                                        @endphp
+                                        <span
+                                            class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium {{ $currentStatus['bg'] }} {{ $currentStatus['text'] }} dark:bg-opacity-10">
+                                            <span class="w-2 h-2 rounded-full {{ $currentStatus['dot'] }}"></span>
+                                            {{ $currentStatus['label'] }}
+                                        </span>
+                                    </td>
+
+                                    {{-- Amount --}}
+                                    <td class="px-6 py-4 text-left">
+                                        <div class="font-mono text-sm font-bold text-brand-500 dark:text-white">
+                                            {{ number_format($shipment->total_amount, 2) }}
+                                            <span class="font-sans text-xs font-normal text-gray-400">ر.ي</span>
+                                        </div>
+                                    </td>
+
+                                    {{-- Actions --}}
+                                    <td class="px-4 py-4 text-right">
                                         <a href="{{ route('shipment.show', $shipment->id) }}"
-                                            class="p-2 text-gray-500 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="عرض التفاصيل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="py-8 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="6" class="py-12 text-center">
                                         <div class="flex flex-col justify-center items-center">
-                                            <svg class="mb-3 w-12 h-12 text-gray-300 dark:text-gray-600" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
-                                                </path>
-                                            </svg>
-                                            <p>لا توجد شحنات مسجلة خلال 24 ساعة الماضية</p>
+                                            <div class="p-4 mb-3 bg-gray-50 rounded-full dark:bg-gray-800">
+                                                <svg class="w-8 h-8 text-gray-400 dark:text-gray-500" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                            <h4 class="font-medium text-gray-900 dark:text-white">لا توجد بيانات</h4>
+                                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">لم يتم تسجيل شحنات
+                                                خلال الـ 24 ساعة الماضية</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -216,19 +288,8 @@
                 </div>
             </div>
 
-            {{-- ===== المخطط البياني =====
-            <div
-                class="lg:col-span-1 rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] p-6 shadow-sm">
-                <h3 class="mb-4 text-lg font-bold text-gray-800 dark:text-white">
-                    الإيرادات الشهرية
-                </h3>
-                <div id="chartOne" class="w-full h-80"></div>
-                <div class="flex justify-between items-center mt-4 text-sm text-gray-500 dark:text-gray-400">
-                    <span>إجمالي السنة:</span>
-                    <span class="font-bold text-gray-900 dark:text-white">{{ number_format(array_sum($monthlySales), 2) }}
-                        ر.ي</span>
-                </div>
-            </div> --}}
+            {{-- المخطط البياني (متروك كما هو في حال أردت تفعيله) --}}
+            {{-- <div class="lg:col-span-1 ..."> ... </div> --}}
 
         </div>
 

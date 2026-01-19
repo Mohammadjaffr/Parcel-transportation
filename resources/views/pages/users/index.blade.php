@@ -87,17 +87,17 @@
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-bold text-gray-600 dark:text-gray-400" x-text="user.phone"></span>
+                                    <span class="text-sm font-bold text-gray-500 dark:text-gray-400" x-text="user.phone"></span>
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
-                                    <span :class="user.type === 'admin' ? 'bg-brand-50 text-brand-600 dark:bg-brand-500/10' : 'bg-gray-50 text-gray-600 dark:bg-gray-700'"
+                                    <span :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' : 'bg-gray-50 text-gray-500 dark:bg-gray-700'"
                                           class="px-3 py-1 rounded-lg text-[10px] font-black uppercase"
                                           x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
-                                    <span :class="user.is_banned == 0 ? 'bg-success-50 text-success-600' : 'bg-error-50 text-error-600'"
+                                    <span :class="user.is_banned == 0 ? 'bg-success-50 text-success-500' : 'bg-error-50 text-error-500'"
                                           class="px-3 py-1 rounded-lg text-[10px] font-black uppercase">
                                         <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
                                     </span>
@@ -110,7 +110,7 @@
                                         </a> --}}
                                         <button @click="openEditModal(user.id)" 
                                                 :disabled="isFetching == user.id"
-                                                class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
+                                                class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
                                             <template x-if="isFetching == user.id">
                                                 <svg class="animate-spin h-5 w-5 text-brand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -118,9 +118,9 @@
                                                 </svg>
                                             </template>
                                             <template x-if="isFetching != user.id">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                               <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                </svg>
+                                                </svg> 
                                             </template>
                                         </button>
                                     </div>

@@ -4,251 +4,252 @@
 <head>
     <meta charset="UTF-8">
     <style>
+        /* إعدادات الخط والصفحة */
         body {
-            font-family: DejaVu Sans;
-            font-size: 10px;
+            font-family: 'aealarabiya', 'dejavusans', sans-serif;
+            direction: rtl;
+            margin: 0;
+            padding: 0;
             color: #333;
+            line-height: 1.5;
+            font-size: 10pt;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #4f46e5;
-            padding-bottom: 15px;
-        }
-
-        .header h1 {
-            color: #4f46e5;
-            font-size: 20px;
-            margin: 5px 0;
-        }
-
-        .header p {
-            margin: 3px 0;
-            color: #666;
-        }
-
-        .info-box {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 15px 0;
-            border: 1px solid #e0e0e0;
-        }
-
-        .info-row {
-            margin: 5px 0;
-        }
-
-        .label {
-            font-weight: bold;
-            color: #4f46e5;
-            display: inline-block;
-            width: 100px;
-        }
-
-        .financial-summary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .financial-item {
-            display: inline-block;
-            margin: 0 15px;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 5px;
-        }
-
-        .debt-status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 11px;
-        }
-
-        .debt-status.debtor {
-            background: #ef4444;
-            color: white;
-        }
-
-        .debt-status.cleared {
-            background: #10b981;
-            color: white;
-        }
-
-        .section-title {
-            background: #4f46e5;
-            color: white;
-            padding: 10px;
-            margin: 20px 0 10px 0;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        table {
+        /* الهيدر الاحترافي */
+        .header-table {
             width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 9px;
+            border-bottom: 3.5px solid #fb6514;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
         }
 
-        th {
-            background: #f3f4f6;
-            color: #374151;
-            padding: 8px 5px;
-            text-align: center;
-            border: 1px solid #e5e7eb;
+        .brand-name {
+            color: #fb6514;
+            font-size: 26pt;
             font-weight: bold;
-            font-size: 9px;
+            margin: 0;
+            line-height: 1;
         }
 
-        td {
-            border: 1px solid #e5e7eb;
-            padding: 6px 5px;
-            text-align: center;
-        }
-
-        tr:nth-child(even) {
-            background: #f9fafb;
-        }
-
-        .payment-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 8px;
+        .brand-subtitle {
+            color: #333;
+            font-size: 11pt;
             font-weight: bold;
+            margin-top: 2px;
         }
 
-        .payment-prepaid {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .payment-cod {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .payment-credit {
-            background: #fce7f3;
-            color: #9f1239;
-        }
-
-        .stats-grid {
-            margin: 15px 0;
-        }
-
-        .stat-item {
-            display: inline-block;
-            width: 30%;
-            text-align: center;
-            padding: 10px;
-            margin: 5px;
-            background: #f3f4f6;
-            border-radius: 5px;
-        }
-
-        .stat-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #4f46e5;
-        }
-
-        .stat-label {
-            font-size: 8px;
-            color: #6b7280;
+        .header-extra {
+            font-size: 8pt;
+            color: #555;
             margin-top: 3px;
         }
 
-        .no-data {
-            text-align: center;
-            padding: 30px;
-            color: #9ca3af;
-            font-style: italic;
+        .header-phones {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #222;
+            margin-top: 5px;
+            direction: ltr;
         }
 
-        .footer {
+        .document-title-box {
+            background-color: #333;
+            color: #fff;
+            padding: 6px 15px;
+            font-size: 12pt;
+            font-weight: bold;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        /* صناديق المعلومات (المالية والإحصائيات) */
+        .info-box {
+            width: 100%;
+            background-color: #fdfdfd;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .info-table {
+            width: 100%;
+        }
+
+        .label {
+            color: #fb6514;
+            font-weight: bold;
+            font-size: 10.5pt;
+        }
+
+        .value {
+            font-weight: bold;
+            font-size: 11.5pt;
+            color: #111;
+        }
+
+        /* العناوين الفرعية للأقسام */
+        .section-header {
+            background-color: #f3f4f6;
+            color: #111;
+            padding: 8px 12px;
+            font-weight: bold;
+            font-size: 12pt;
+            border-right: 6px solid #fb6514;
             margin-top: 30px;
-            padding-top: 15px;
-            border-top: 2px solid #e5e7eb;
+            margin-bottom: 15px;
+            border-radius: 2px;
+        }
+
+        /* جداول البيانات */
+        .manifest-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .manifest-table th {
+            background-color: #374151;
+            color: #ffffff;
+            font-weight: bold;
             text-align: center;
-            font-size: 8px;
-            color: #9ca3af;
+            border: 1px solid #1f2937;
+            padding: 10px 5px;
+            font-size: 10pt;
+        }
+
+        .manifest-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 5px;
+            text-align: center;
+            font-size: 9.5pt;
+            vertical-align: middle;
+        }
+
+        /* الbadges */
+        .debt-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 9.5pt;
+            font-weight: bold;
+            text-align: center;
+            display: block;
+        }
+
+        .debt-danger {
+            background-color: #ef4444;
+        }
+
+        .debt-success {
+            background-color: #10b981;
+        }
+
+        /* التواقيع */
+        .signatures-table {
+            width: 100%;
+            margin-top: 50px;
+        }
+
+        .sig-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 45px;
+        }
+
+        .sig-line {
+            width: 70%;
+            margin: 0 auto;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Header -->
-    <div class="header">
-        <h1>تقرير شامل للعميل</h1>
-        <p style="font-size: 12px; font-weight: bold;">{{ $customer->name }}</p>
-        <p>الهاتف: {{ $customer->phone }} | الفرع: {{ $customer->branch->name ?? $customer->branch_code }}</p>
+    <!-- الهيدر -->
+    <table class="header-table" cellpadding="0">
+        <tr>
+            <!-- معلومات الشركة -->
+            <td width="38%" style="vertical-align: top;">
+                <h1 class="brand-name">الـزاجـل</h1>
+                <div class="brand-subtitle">للنقل والشحن السريع</div>
+                <div class="header-extra">إلى جميع المحافظات ودول الخليج</div>
+                <div class="header-extra">الفرع الرئيسي: حضرموت - القطن</div>
+                <div class="header-phones">781216757 - 730831802</div>
+                <div class="header-phones">773136727 - 781989021</div>
+            </td>
+
+            <!-- اللوجو في المنتصف -->
+            <td width="24%" style="text-align: center; vertical-align: middle;">
+                <img src="{{ public_path('images/new.svg') }}" style="width: 80px; height: auto;">
+                <br>
+                <div class="document-title-box">تقرير عميل شامل</div>
+            </td>
+
+            <!-- معلومات العميل والفرع -->
+            <td width="38%" style="text-align: left; vertical-align: top;">
+                <div style="font-weight: bold; color: #111; font-size: 11pt;">الفرع:
+                    {{ $customer->branch->name ?? $customer->branch_code }}</div>
+                <div style="margin-top: 8px; color: #666; font-size: 9pt;">بيانات العميل:</div>
+                <div style="font-size: 13pt; font-weight: bold; color: #000; margin-top: 2px;">{{ $customer->name }}
+                </div>
+                <div style="color: #fb6514; font-weight: bold; font-size: 12pt; margin-top: 4px; direction: ltr;">
+                    {{ $customer->phone }}</div>
+                <div style="font-size: 8.5pt; color: #999; margin-top: 10px;">
+                    تاريخ الطباعة: {{ date('Y-m-d H:i') }}
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ملخص الرصيد المالي والإحصائيات -->
+    <div class="info-box">
+        <table class="info-table" cellpadding="5">
+            <tr>
+                <td width="15%" class="label">إجمالي الشحنات:</td>
+                <td width="10%" class="value" style="font-size: 13pt;">{{ $sentCount + $receivedCount }}</td>
+
+                @if ($isDebtor)
+                    <!-- حالة وجود مديونية -->
+                    <td width="15%" class="label">مرسلة / مستقبلة:</td>
+                    <td width="15%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
+                    <td width="15%" class="label">المبلغ:</td>
+                    <td width="25%" style="text-align: right; color: #dc2626; font-weight: bold;">
+                            {{ number_format(abs($balance)) }} (عليه دين)
+                    </td>
+                @else
+                    <!-- حالة الرصيد الخالص -->
+                    <td width="15%" class="label">مرسلة / مستقبلة:</td>
+                    <td width="15%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
+                    <td width="15%" class="label">المبلغ:</td>
+                    <td  width="35%" style="text-align: right; color: #10b981; font-weight: bold;">
+                        الرصيد صافي (لا يوجد مديونيه)
+                    </td>
+                @endif
+            </tr>
+        </table>
     </div>
 
-    <!-- Financial Summary -->
-    <div class="financial-summary">
-        <div class="financial-item">
-            <div style="font-size: 8px;">مدين</div>
-            <div style="font-size: 14px; font-weight: bold;">{{ number_format($debit, 2) }}</div>
-        </div>
-        <div class="financial-item">
-            <div style="font-size: 8px;">دائن</div>
-            <div style="font-size: 14px; font-weight: bold;">{{ number_format($credit, 2) }}</div>
-        </div>
-        <div class="financial-item">
-            <div style="font-size: 8px;">الرصيد</div>
-            <div style="font-size: 14px; font-weight: bold;">{{ number_format(abs($balance), 2) }}</div>
-        </div>
-        <br>
-        <span class="debt-status {{ $isDebtor ? 'debtor' : 'cleared' }}">
-            {{ $isDebtor ? 'مديون' : 'رصيد خالص' }}
-        </span>
-    </div>
-
-    <!-- Statistics -->
-    <div class="section-title">إحصائيات عامة</div>
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div class="stat-value">{{ $sentCount + $receivedCount }}</div>
-            <div class="stat-label">إجمالي الشحنات</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">{{ $sentCount }}</div>
-            <div class="stat-label">شحنات مرسلة</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-value">{{ $receivedCount }}</div>
-            <div class="stat-label">شحنات مستقبلة</div>
-        </div>
-    </div>
-
-    <!-- Sent Shipments -->
-    <div class="section-title">الشحنات المرسلة ({{ $sentCount }})</div>
-    @if($sentShipments->count() > 0)
-        <table>
+    <!-- جداول البيانات التفصيلية -->
+    <div class="section-header">الشحنات المرسلة ({{ $sentCount }})</div>
+    @if ($sentShipments->count() > 0)
+        <table class="manifest-table" border="0.5" cellpadding="6">
             <thead>
                 <tr>
-                    <th style="width: 8%;">#</th>
-                    <th style="width: 12%;">التاريخ</th>
-                    <th style="width: 20%;">الفرع المستقبل</th>
-                    <th style="width: 15%;">المبلغ الإجمالي</th>
-                    <th style="width: 18%;">طريقة الدفع</th>
-                    <th style="width: 12%;">المدفوع</th>
-                    <th style="width: 15%;">المتبقي</th>
+                    <th width="13%">#</th>
+                    <th width="12%">التاريخ</th>
+                    <th width="12%">رقم السند</th>
+                    <th width="12%">فرع المستلم</th>
+                    <th width="12%">قيمة الشحنة</th>
+                    <th width="13%">طريقة الدفع</th>
+                    <th width="13%">المدفوع</th>
+                    <th width="13%">المتبقي</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($sentShipments as $shipment)
+                @foreach ($sentShipments as $shipment)
                     @php
                         $paid = $shipment->payments->sum('amount');
                         $remaining = ($shipment->total_amount ?? 0) - $paid;
@@ -256,58 +257,53 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $shipment->created_at->format('Y-m-d') }}</td>
-                        <td>{{ $shipment->receiverBranch->name ?? 'غير محدد' }}</td>
-                        <td>{{ number_format($shipment->total_amount ?? 0, 2) }}</td>
+                        <td style="color: #fb6514; font-weight: bold;">{{ $shipment->bond_number }}</td>
+                        <td>{{ $shipment->receiverBranch->name ?? '---' }}</td>
+                        <td style="font-weight: bold;">{{ number_format($shipment->total_amount ?? 0) }}</td>
                         <td>
-                            @if($shipment->payment_method == 'prepaid')
-                                <span class="payment-badge payment-prepaid">مدفوع مقدماً</span>
+                            @if ($shipment->payment_method == 'prepaid')
+                                مقدم
                             @elseif($shipment->payment_method == 'cod')
-                                <span class="payment-badge payment-cod">الدفع عند الاستلام</span>
+                                عند الاستلام
                             @else
-                                <span class="payment-badge payment-credit">آجل</span>
+                                آجل
                             @endif
                         </td>
-                        <td>{{ number_format($paid, 2) }}</td>
-                        <td style="color: {{ $remaining > 0 ? '#ef4444' : '#10b981' }}; font-weight: bold;">
-                            {{ number_format($remaining, 2) }}
+                        <td>{{ number_format($paid) }}</td>
+                        <td style="color: {{ $remaining > 0 ? '#dc2626' : '#10b981' }}; font-weight: bold;">
+                            {{ number_format($remaining) }}
                         </td>
                     </tr>
                 @endforeach
-                <tr style="background: #f3f4f6; font-weight: bold;">
-                    <td colspan="3" style="text-align: right; padding-right: 10px;">الإجمالي</td>
-                    <td>{{ number_format($sentTotal, 2) }}</td>
+                <tr style="background-color: #f9fafb; font-weight: bold;">
+                    <td colspan="4" style="text-align: left; padding-left: 15px;">إجمالي المبلغ :</td>
+                    <td style="color: #111;">{{ number_format($sentTotal) }}</td>
                     <td colspan="3"></td>
                 </tr>
             </tbody>
         </table>
-
-        <!-- Sent Shipments Payment Statistics -->
-        <div style="margin: 10px 0; padding: 8px; background: #f9fafb; border-radius: 5px;">
-            <span style="margin-left: 15px;"><strong>مدفوع مقدماً:</strong> {{ $sentPrepaid }}</span>
-            <span style="margin-left: 15px;"><strong>الدفع عند الاستلام:</strong> {{ $sentCod }}</span>
-            <span><strong>آجل:</strong> {{ $sentCustomerCredit }}</span>
-        </div>
     @else
-        <div class="no-data">لا توجد شحنات مرسلة</div>
+        <div style="text-align: center; border: 1.5px dashed #e5e7eb; padding: 20px; color: #9ca3af; font-size: 11pt;">
+            لا توجد شحنات مرسلة مسجلة</div>
     @endif
 
-    <!-- Received Shipments -->
-    <div class="section-title">الشحنات المستقبلة ({{ $receivedCount }})</div>
-    @if($receivedShipments->count() > 0)
-        <table>
+    <div class="section-header">الشحنات المستقبلة ({{ $receivedCount }})</div>
+    @if ($receivedShipments->count() > 0)
+        <table class="manifest-table" border="0.5" cellpadding="6">
             <thead>
                 <tr>
-                    <th style="width: 8%;">#</th>
-                    <th style="width: 12%;">التاريخ</th>
-                    <th style="width: 20%;">الفرع المرسل</th>
-                    <th style="width: 15%;">المبلغ الإجمالي</th>
-                    <th style="width: 18%;">طريقة الدفع</th>
-                    <th style="width: 12%;">المدفوع</th>
-                    <th style="width: 15%;">المتبقي</th>
+                    <th width="13%">#</th>
+                    <th width="12%">التاريخ</th>
+                    <th width="12%">رقم السند</th>
+                    <th width="12%">فرع المرسل</th>
+                    <th width="12%">قيمة الشحنة</th>
+                    <th width="13%">طريقة الدفع</th>
+                    <th width="13%">المدفوع</th>
+                    <th width="13%">المتبقي</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($receivedShipments as $shipment)
+                @foreach ($receivedShipments as $shipment)
                     @php
                         $paid = $shipment->payments->sum('amount');
                         $remaining = ($shipment->total_amount ?? 0) - $paid;
@@ -315,45 +311,57 @@
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $shipment->created_at->format('Y-m-d') }}</td>
-                        <td>{{ $shipment->senderBranch->name ?? 'غير محدد' }}</td>
-                        <td>{{ number_format($shipment->total_amount ?? 0, 2) }}</td>
+                        <td style="color: #fb6514; font-weight: bold;">{{ $shipment->bond_number }}</td>
+                        <td>{{ $shipment->senderBranch->name ?? '---' }}</td>
+                        <td style="font-weight: bold;">{{ number_format($shipment->total_amount) }}</td>
                         <td>
-                            @if($shipment->payment_method == 'prepaid')
-                                <span class="payment-badge payment-prepaid">مدفوع مقدماً</span>
+                            @if ($shipment->payment_method == 'prepaid')
+                                مقدم
                             @elseif($shipment->payment_method == 'cod')
-                                <span class="payment-badge payment-cod">الدفع عند الاستلام</span>
+                                عند الاستلام
                             @else
-                                <span class="payment-badge payment-credit">آجل</span>
+                                آجل
                             @endif
                         </td>
-                        <td>{{ number_format($paid, 2) }}</td>
-                        <td style="color: {{ $remaining > 0 ? '#ef4444' : '#10b981' }}; font-weight: bold;">
-                            {{ number_format($remaining, 2) }}
+                        <td>{{ number_format($paid) }}</td>
+                        <td style="color: {{ $remaining > 0 ? '#dc2626' : '#10b981' }}; font-weight: bold;">
+                            {{ number_format($remaining) }}
                         </td>
                     </tr>
                 @endforeach
-                <tr style="background: #f3f4f6; font-weight: bold;">
-                    <td colspan="3" style="text-align: right; padding-right: 10px;">الإجمالي</td>
-                    <td>{{ number_format($receivedTotal, 2) }}</td>
+                <tr style="background-color: #f9fafb; font-weight: bold;">
+                    <td colspan="4" style="text-align: left; padding-left: 15px;">إجمالي المبلغ :</td>
+                    <td style="color: #111;">{{ number_format($receivedTotal) }}</td>
                     <td colspan="3"></td>
                 </tr>
             </tbody>
         </table>
-
-        <!-- Received Shipments Payment Statistics -->
-        <div style="margin: 10px 0; padding: 8px; background: #f9fafb; border-radius: 5px;">
-            <span style="margin-left: 15px;"><strong>مدفوع مقدماً:</strong> {{ $receivedPrepaid }}</span>
-            <span style="margin-left: 15px;"><strong>الدفع عند الاستلام:</strong> {{ $receivedCod }}</span>
-            <span><strong>آجل:</strong> {{ $receivedCustomerCredit }}</span>
-        </div>
     @else
-        <div class="no-data">لا توجد شحنات مستقبلة</div>
+        <div style="text-align: center; border: 1.5px dashed #e5e7eb; padding: 20px; color: #9ca3af; font-size: 11pt;">
+            لا توجد شحنات مستقبلة مسجلة</div>
     @endif
 
-    <!-- Footer -->
-    <div class="footer">
-        <p>تم إنشاء التقرير في: {{ now()->format('Y-m-d H:i:s') }}</p>
-        <p>هذا التقرير تم إنشاؤه بواسطة نظام إدارة الطرود</p>
+    <!-- قسم التواقيع والاعتمادات -->
+    <table class="signatures-table">
+        <tr>
+            <td width="33.3%" style="text-align: center;">
+                <div class="sig-title">توقيع وموافقة العميل</div>
+                <div class="sig-line"></div>
+            </td>
+            <td width="33.4%" style="text-align: center;">
+                <div class="sig-title">توقيع المحاسب المختص</div>
+                <div class="sig-line"></div>
+            </td>
+            <td width="33.3%" style="text-align: center;">
+                <div class="sig-title">ختم فرع الشركة</div>
+                <div style="height: 60px;"></div>
+            </td>
+        </tr>
+    </table>
+
+    <div
+        style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8.5pt; color: #6b7280; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+        نظام الزاجل الذكي - تم إنشاء هذا التقرير آلياً بواسطة: {{ auth()->user()->name ?? 'نظام الإدارة' }}
     </div>
 
 </body>
