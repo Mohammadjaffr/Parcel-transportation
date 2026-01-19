@@ -13,7 +13,7 @@
 
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
             <div @click="filterStatus = 'all'" :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                                        'border-gray-100 dark:border-gray-800'"
+                                            'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
@@ -30,7 +30,7 @@
             </div>
 
             <div @click="filterStatus = 'debtor'" :class="filterStatus === 'debtor' ? 'border-error-500 ring-2 ring-error-500/20' :
-                                        'border-gray-100 dark:border-gray-800'"
+                                            'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-error-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -48,7 +48,7 @@
             </div>
 
             <div @click="filterStatus = 'cleared'" :class="filterStatus === 'cleared' ? 'border-success-500 ring-2 ring-success-500/20' :
-                                        'border-gray-100 dark:border-gray-800'"
+                                            'border-gray-100 dark:border-gray-800'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm border-r-4 border-r-success-500">
                 <div
                     class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -161,6 +161,15 @@
                                                 viewBox="0 0 24 24">
                                                 <path
                                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </a>
+                                        <a href="{{ route('customers.comprehensive-report', $customer->id) }}"
+                                            class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-purple-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-purple-400"
+                                            title="تقرير شامل" target="_blank">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                             </svg>
                                         </a>
                                         <button @click="openEditModal({{ $customer->id }})"

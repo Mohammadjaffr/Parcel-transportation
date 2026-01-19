@@ -76,8 +76,11 @@ Route::middleware('auth')->group(function () {
         ->name('system-settings.auto-assign.get');
     Route::get('/customers/search', [CustomerController::class, 'search'])
         ->name('customers.search');
+    Route::get('/customers/{id}/comprehensive-report', [CustomerController::class, 'comprehensiveReport'])
+        ->name('customers.comprehensive-report');
 
     Route::resource('customers', CustomerController::class);
+
 
     // دفعات العملاء
     Route::post('/shipments/{shipment}/payment', [CustomerPaymentController::class, 'store'])

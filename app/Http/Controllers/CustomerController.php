@@ -314,6 +314,107 @@ class CustomerController extends Controller
         return response()->json($customers);
     }
 
+    /** تقرير شامل للعميل PDF */
+    public function comprehensiveReport($id)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $branchCode = $user->branch_code;
+
+        // جلب بيانات العميل والتأكد من أنه ينتمي للفرع
+        $customer = Customer::where('branch_code', $branchCode)
+            ->with(['branch'])
+            ->findOrFail($id);
+
+        // جلب الشحنات المرسلة من الفرع الحالي
+        $sentShipments = Shipment::with(['receiverBranch', 'payments'])
+            ->where('sender_customer_id', $id)
+            ->where('sender_branch_code', $branchCode)
+            ->latest()
+            ->get();
+
+        // جلب الشحنات المستقبلة في الفرع الحالي
+        $receivedShipments = Shipment::with(['senderBranch', 'payments'])
+            ->where('receiver_customer_id', $id)
+            ->where('receiver_branch_code', $branchCode)
+            ->latest()
+            ->get();
+
+        // حساب الديون والرصيد من خلال الشحنات والدفعات
+        $totalShipmentsCost = 0;  // إجمالي قيمة كل الشحنات
+        $totalPaid = 0;           // إجمالي المدفوع
+        
+        // حساب من الشحنات المرسلة
+        foreach ($sentShipments as $shipment) {
+            $shipmentCost = $shipment->total_amount ?? 0;
+            $paidAmount = $shipment->payments->sum('amount');
+            
+            $totalShipmentsCost += $shipmentCost;
+            $totalPaid += $paidAmount;
+        }
+        
+        // حساب من الشحنات المستقبلة
+        foreach ($receivedShipments as $shipment) {
+            $shipmentCost = $shipment->total_amount ?? 0;
+            $paidAmount = $shipment->payments->sum('amount');
+            
+            $totalShipmentsCost += $shipmentCost;
+            $totalPaid += $paidAmount;
+        }
+        
+        // الرصيد = إجمالي قيمة الشحنات - إجمالي المدفوع
+        $balance = $totalShipmentsCost - $totalPaid;
+        $isDebtor = $balance > 0;
+        
+        // للعرض في التقرير
+        $debit = $totalShipmentsCost;  // إجمالي المستحقات (قيمة الشحنات)
+        $credit = $totalPaid;           // إجمالي المدفوع
+
+        // إحصائيات الشحنات المرسلة
+        $sentTotal = $sentShipments->sum('total_amount');
+        $sentCount = $sentShipments->count();
+        $sentPrepaid = $sentShipments->where('payment_method', 'prepaid')->count();
+        $sentCod = $sentShipments->where('payment_method', 'cod')->count();
+        $sentCustomerCredit = $sentShipments->where('payment_method', 'customer_credit')->count();
+
+        // إحصائيات الشحنات المستقبلة
+        $receivedTotal = $receivedShipments->sum('total_amount');
+        $receivedCount = $receivedShipments->count();
+        $receivedPrepaid = $receivedShipments->where('payment_method', 'prepaid')->count();
+        $receivedCod = $receivedShipments->where('payment_method', 'cod')->count();
+        $receivedCustomerCredit = $receivedShipments->where('payment_method', 'customer_credit')->count();
+
+        // توليد PDF
+        $pdf = new \TCPDF();
+        $pdf->setRTL(true);
+        $pdf->SetFont('dejavusans', '', 10);
+        $pdf->AddPage();
+
+        $html = view('pages.customers.comprehensive_report_pdf', compact(
+            'customer',
+            'sentShipments',
+            'receivedShipments',
+            'debit',
+            'credit',
+            'balance',
+            'isDebtor',
+            'sentTotal',
+            'sentCount',
+            'sentPrepaid',
+            'sentCod',
+            'sentCustomerCredit',
+            'receivedTotal',
+            'receivedCount',
+            'receivedPrepaid',
+            'receivedCod',
+            'receivedCustomerCredit'
+        ))->render();
+
+        $pdf->writeHTML($html);
+        return $pdf->Output("customer_comprehensive_report_{$customer->id}.pdf", 'I');
+    }
+
+
     /** تصدير */
     public function export()
     {
