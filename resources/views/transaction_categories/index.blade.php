@@ -6,8 +6,67 @@
     <x-modals.error-modal />
     <x-modals.warning-modal />
 
-    <div class="space-y-6 font-outfit" dir="rtl">
+    <div class="space-y-6 font-outfit" dir="rtl" x-data="{ filterType: 'all' }">
+ {{-- Filter Cards --}}
+        <div class="flex gap-6">
 
+            {{-- All Categories --}}
+            <div @click="filterType = 'all'"
+                :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        الفئات</span>
+                    <h4 class="text-xl font-black text-brand-500">{{ $categories->count() }}</h4>
+                </div>
+            </div>
+
+            {{-- Income Categories --}}
+            <div @click="filterType = 'in'"
+                :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">فئات
+                        الإيرادات</span>
+                    <h4 class="text-xl font-black text-success-500">{{ $categories->where('type', 'in')->count() }}</h4>
+                </div>
+            </div>
+
+            {{-- Expense Categories --}}
+            <div @click="filterType = 'out'"
+                :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">فئات
+                        المصروفات</span>
+                    <h4 class="text-xl font-black text-error-500">{{ $categories->where('type', 'out')->count() }}</h4>
+                </div>
+            </div>
+        </div>
         {{-- Header --}}
         <div
             class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
@@ -37,6 +96,8 @@
                 </a>
             </div>
         </div>
+
+       
 
         {{-- Categories Table --}}
         <div
@@ -87,7 +148,10 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse ($categories as $category)
-                            <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                            <tr x-show="filterType === 'all' || filterType === '{{ $category->type }}'"
+                                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                                 <td class="px-6 py-4">
                                     <span
                                         class="inline-flex justify-center items-center w-8 h-8 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-300">
@@ -104,7 +168,8 @@
                                     @if ($category->type === 'in')
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                             </svg>
@@ -113,7 +178,8 @@
                                     @else
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                             </svg>
@@ -164,8 +230,8 @@
                                                 onclick="if(confirm('هل أنت متأكد من حذف هذه الفئة؟')) { this.closest('form').submit(); }"
                                                 class="inline-flex justify-center items-center w-10 h-10 text-gray-400 rounded-xl transition-all duration-200 hover:bg-error-50 hover:text-error-500 dark:hover:bg-error-500/10 dark:hover:text-error-400"
                                                 title="حذف الفئة">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                    viewBox="0 0 24 24">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>

@@ -5,72 +5,70 @@
     <x-modals.success-modal />
     <x-modals.error-modal />
 
-    <div class="space-y-6 font-outfit" dir="rtl">
+    <div class="space-y-6 font-outfit" dir="rtl" x-data="{ filterType: 'all' }">
 
         {{-- Balance Cards --}}
-        @php
-            $typeFilter = request('type');
-        @endphp
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
-            {{-- Current Balance --}}
-            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => null])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ !$typeFilter ? 'border-brand-500 ring-2 ring-brand-500' : 'border-gray-100 dark:border-gray-800' }}">
-               
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ !$typeFilter ? 'pe-10' : '' }}">الرصيد
-                        الحالي</span>
+        <div class="flex gap-6">
+
+            {{-- Current Balance (All) --}}
+            <div @click="filterType = 'all'"
+                :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black {{ $balance >= 0 ? 'text-brand-500' : 'text-error-500' }}">
-                    {{ number_format($balance) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">الرصيد
+                        الحالي</span>
+                    <h4 class="text-xl font-black {{ $balance >= 0 ? 'text-brand-500' : 'text-error-500' }}">
+                        {{ number_format($balance) }} <span class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
 
             {{-- Total Income --}}
-            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => 'in'])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $typeFilter === 'in' ? 'border-success-500 ring-2 ring-success-500' : 'border-gray-100 dark:border-gray-800' }}">
-             
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10">
-                        <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $typeFilter === 'in' ? 'pe-16' : '' }}">إجمالي
-                        الإيرادات</span>
+            <div @click="filterType = 'in'"
+                :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black text-success-500">
-                    {{ number_format($income) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        الإيرادات</span>
+                    <h4 class="text-xl font-black text-success-500">{{ number_format($income) }} <span
+                            class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
 
             {{-- Total Expenses --}}
-            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => 'out'])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $typeFilter === 'out' ? 'border-error-500 ring-2 ring-error-500' : 'border-gray-100 dark:border-gray-800' }}">
-               
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
-                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $typeFilter === 'out' ? 'pe-16' : '' }}">إجمالي
-                        المصروفات</span>
+            <div @click="filterType = 'out'"
+                :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black text-error-500">
-                    {{ number_format($expense) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        المصروفات</span>
+                    <h4 class="text-xl font-black text-error-500">{{ number_format($expense) }} <span
+                            class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
         </div>
 
         {{-- Date Range Filter Toolbar --}}
@@ -275,7 +273,10 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse ($transactions as $transaction)
-                            <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                            <tr x-show="filterType === 'all' || filterType === '{{ $transaction->category->type }}'"
+                                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                                 <td class="px-6 py-4">
                                     <span
                                         class="inline-flex justify-center items-center w-8 h-8 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-300">

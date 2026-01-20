@@ -3,73 +3,70 @@
 
 @section('content')
 
-    <div class="space-y-6 font-outfit" dir="rtl">
+    <div class="space-y-6 font-outfit" dir="rtl" x-data="{ filterStatus: 'all' }">
 
         {{-- KPI Cards --}}
-        @php
-            $statusFilter = request('status');
-        @endphp
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+        <div class="flex gap-6">
 
             {{-- Total Transferred (All) --}}
-            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => null])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ !$statusFilter ? 'border-success-500 ring-2 ring-success-500' : 'border-gray-100 dark:border-gray-800' }}">
-                
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10">
-                        <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ !$statusFilter ? 'pe-14' : '' }}">إجمالي
-                        المحول للمركز</span>
+            <div @click="filterStatus = 'all'"
+                :class="filterStatus === 'all' ? 'border-success-500 ring-2 ring-success-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black text-success-500">
-                    {{ number_format($totalTransferred) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        المحول للمركز</span>
+                    <h4 class="text-xl font-black text-success-500">{{ number_format($totalTransferred) }} <span
+                            class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
 
             {{-- Total Shortage --}}
-            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => 'shortage'])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $statusFilter === 'shortage' ? 'border-error-500 ring-2 ring-error-500' : 'border-gray-100 dark:border-gray-800' }}">
-               
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
-                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $statusFilter === 'shortage' ? 'pe-16' : '' }}">إجمالي
-                        العجز (النقص)</span>
+            <div @click="filterStatus = 'shortage'"
+                :class="filterStatus === 'shortage' ? 'border-error-500 ring-2 ring-error-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black text-error-500">
-                    {{ number_format(abs($totalShortage)) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        العجز (النقص)</span>
+                    <h4 class="text-xl font-black text-error-500">{{ number_format(abs($totalShortage)) }} <span
+                            class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
 
             {{-- Total Surplus --}}
-            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => 'surplus'])) }}"
-                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $statusFilter === 'surplus' ? 'border-brand-500 ring-2 ring-brand-500' : 'border-gray-100 dark:border-gray-800' }}">
-               
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                    </div>
-                    <span
-                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $statusFilter === 'surplus' ? 'pe-16' : '' }}">إجمالي
-                        الفائض (الزيادة)</span>
+            <div @click="filterStatus = 'surplus'"
+                :class="filterStatus === 'surplus' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
                 </div>
-                <h4 class="mt-3 text-2xl font-black text-brand-500">
-                    {{ number_format($totalSurplus) }} <span class="text-sm font-semibold">ر.ي</span>
-                </h4>
-            </a>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        الفائض (الزيادة)</span>
+                    <h4 class="text-xl font-black text-brand-500">{{ number_format($totalSurplus) }} <span
+                            class="text-xs font-semibold">ر.ي</span></h4>
+                </div>
+            </div>
         </div>
         {{-- Header --}}
         <div
@@ -233,7 +230,18 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse ($closings as $closing)
-                            <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                            @php
+                                $closingStatus =
+                                    $closing->difference < 0
+                                        ? 'shortage'
+                                        : ($closing->difference > 0
+                                            ? 'surplus'
+                                            : 'balanced');
+                            @endphp
+                            <tr x-show="filterStatus === 'all' || filterStatus === '{{ $closingStatus }}'"
+                                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+                                x-transition:enter-end="opacity-100"
+                                class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                                 <td class="px-6 py-4">
                                     <span
                                         class="text-xs font-bold text-gray-500 dark:text-gray-400">{{ $loop->iteration + ($closings->currentPage() - 1) * $closings->perPage() }}</span>
