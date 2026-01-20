@@ -41,7 +41,7 @@
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">بيانات المعاملة</h3>
             </div>
 
-            <form method="POST" action="{{ route('transactions.store') }}" id="transactionForm">
+            <form method="POST" action="{{ route('transactions.store') }}" id="transactionForm" enctype="multipart/form-data">
                 @csrf
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -103,8 +103,31 @@
                         @enderror
                     </div>
 
-                    {{-- Empty cell for grid alignment --}}
-                    <div class="hidden md:block"></div>
+                    {{-- Reference Number --}}
+                    <div>
+                        <label for="reference_number" class="block mb-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            رقم السند/المرجع <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                        </label>
+                        <input type="text" name="reference_number" id="reference_number"
+                            class="px-4 w-full h-12 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white placeholder:text-gray-400"
+                            placeholder="أدخل رقم السند أو المرجع" value="{{ old('reference_number') }}">
+                        @error('reference_number')
+                            <p class="mt-2 text-xs text-error-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Attachment --}}
+                    <div class="md:col-span-2">
+                        <label for="attachment" class="block mb-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            صورة المرفق <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                        </label>
+                        <input type="file" name="attachment" id="attachment" accept="image/*"
+                            class="block w-full text-sm text-gray-900 border border-gray-200 rounded-xl cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-900 dark:border-gray-700 dark:placeholder-gray-400">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">الحد الأقصى للحجم: 2MB. الصيغ المدعومة: PNG, JPG, JPEG.</p>
+                        @error('attachment')
+                            <p class="mt-2 text-xs text-error-500">{{ $message }}</p>
+                        @enderror
+                    </div>
 
                     {{-- Description --}}
                     <div class="md:col-span-2">

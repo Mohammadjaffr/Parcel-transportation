@@ -6,9 +6,17 @@ use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ImageService;
 
 class TransactionController extends Controller
 {
+    protected $imageService;
+
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
     /**
      * Display a listing of transactions with balance calculation and analytics
      */
@@ -125,7 +133,14 @@ class TransactionController extends Controller
             'transaction_category_id' => 'required|exists:transaction_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:1000',
+            'reference_number' => 'nullable|string|max:50',
+            'attachment' => 'nullable|image|max:2048', // Max 2MB
         ]);
+
+        $attachmentPath = null;
+        if ($request->hasFile('attachment')) {
+            $attachmentPath = $this->imageService->saveImage($request->file('attachment'), 'transactions');
+        }
 
         // Create transaction for the current branch
         Transaction::create([
@@ -133,6 +148,8 @@ class TransactionController extends Controller
             'transaction_category_id' => $validated['transaction_category_id'],
             'amount' => $validated['amount'],
             'description' => $validated['description'] ?? null,
+            'reference_number' => $validated['reference_number'] ?? null,
+            'attachment_path' => $attachmentPath,
             'created_by' => Auth::id(),
         ]);
 

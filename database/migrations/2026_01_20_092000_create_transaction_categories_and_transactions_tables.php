@@ -28,6 +28,8 @@ return new class extends Migration
             $table->unsignedBigInteger('transaction_category_id');
             $table->decimal('amount', 10, 2);
             $table->text('description')->nullable();
+            $table->string('reference_number', 50)->nullable();
+            $table->string('attachment_path')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->unsignedBigInteger('shipment_id')->nullable()->comment('Link to shipment if applicable');
             $table->timestamps();

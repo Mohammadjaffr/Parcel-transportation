@@ -11,9 +11,8 @@
         <div class="flex gap-6">
 
             {{-- Current Balance (All) --}}
-            <div @click="filterType = 'all'"
-                :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'all'" :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                        'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
@@ -26,14 +25,14 @@
                     <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">الرصيد
                         الحالي</span>
                     <h4 class="text-xl font-black {{ $balance >= 0 ? 'text-brand-500' : 'text-error-500' }}">
-                        {{ number_format($balance) }} <span class="text-xs font-semibold">ر.ي</span></h4>
+                        {{ number_format($balance) }} <span class="text-xs font-semibold">ر.ي</span>
+                    </h4>
                 </div>
             </div>
 
             {{-- Total Income --}}
-            <div @click="filterType = 'in'"
-                :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'in'" :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
+                        'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -51,9 +50,8 @@
             </div>
 
             {{-- Total Expenses --}}
-            <div @click="filterType = 'out'"
-                :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
-                    'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'out'" :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
+                        'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -82,8 +80,7 @@
                         <div class="flex gap-3 items-center mb-3">
                             <div
                                 class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
-                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
@@ -126,8 +123,7 @@
                         <div class="flex gap-3 items-center mb-3">
                             <div
                                 class="flex justify-center items-center w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-500/10">
-                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
@@ -201,7 +197,8 @@
                     <div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white">الحركة اليومية</h3>
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ $startDate->format('Y-m-d') }} -
-                            {{ $endDate->format('Y-m-d') }}</p>
+                            {{ $endDate->format('Y-m-d') }}
+                        </p>
                     </div>
                 </div>
                 <div class="relative" style="height: 280px;">
@@ -267,6 +264,12 @@
                                 class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
                                 الوصف</th>
                             <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                رقم الإيداع</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                المرفق</th>
+                            <th
                                 class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
                                 المستخدم</th>
                         </tr>
@@ -302,8 +305,7 @@
                                     @if ($transaction->category->type === 'in')
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                             </svg>
@@ -312,8 +314,7 @@
                                     @else
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                             </svg>
@@ -334,6 +335,27 @@
                                         class="text-sm text-gray-500 dark:text-gray-400">{{ $transaction->description ?? '—' }}</span>
                                 </td>
 
+                                <td class="px-6 py-4 text-center">
+                                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        {{ $transaction->reference_number ?? '—' }}
+                                    </span>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    @if($transaction->attachment_path)
+                                        <a href="{{ asset($transaction->attachment_path) }}" download
+                                            class="inline-flex items-center justify-center w-8 h-8 text-brand-500 bg-brand-50 rounded-lg transition-all hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
+                                            title="تحميل المرفق">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </a>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
+                                </td>
+
                                 <td class="px-6 py-4">
                                     <span
                                         class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $transaction->user->name }}</span>
@@ -341,7 +363,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-16 text-center">
+                                <td colspan="9" class="py-16 text-center">
                                     <div class="flex flex-col items-center">
                                         <div
                                             class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
@@ -373,7 +395,7 @@
 
     @if (session('success'))
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 window.dispatchEvent(new CustomEvent('open-success-modal', {
                     detail: {
                         message: '{{ session('success') }}'
@@ -385,7 +407,7 @@
 
     @if (session('error'))
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 window.dispatchEvent(new CustomEvent('open-error-modal', {
                     detail: {
                         message: '{{ session('error') }}'
@@ -400,7 +422,7 @@
 
     {{-- Charts Initialization --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // === 1. Expenses Breakdown Pie Chart ===
             const expensesCtx = document.getElementById('expensesChart');
             if (expensesCtx) {
@@ -447,7 +469,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         let label = context.label || '';
                                         if (label) label += ': ';
                                         label += new Intl.NumberFormat('en-US', {
@@ -489,19 +511,19 @@
                     data: {
                         labels: formattedDates,
                         datasets: [{
-                                label: 'إيرادات',
-                                data: incomeData,
-                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                                borderColor: 'rgba(34, 197, 94, 1)',
-                                borderWidth: 1
-                            },
-                            {
-                                label: 'مصروفات',
-                                data: expenseData,
-                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                                borderColor: 'rgba(239, 68, 68, 1)',
-                                borderWidth: 1
-                            }
+                            label: 'إيرادات',
+                            data: incomeData,
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderColor: 'rgba(34, 197, 94, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'مصروفات',
+                            data: expenseData,
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1
+                        }
                         ]
                     },
                     options: {
@@ -533,7 +555,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         let label = context.dataset.label || '';
                                         if (label) label += ': ';
                                         label += new Intl.NumberFormat('en-US', {

@@ -16,6 +16,8 @@ class Transaction extends Model
         'description',
         'created_by',
         'shipment_id',
+        'reference_number',
+        'attachment_path',
     ];
 
     protected $casts = [

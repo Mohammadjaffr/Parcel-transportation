@@ -46,7 +46,8 @@
             </div>
 
             {{-- Form --}}
-            <form method="POST" action="{{ route('transactions.store') }}" @submit="isLoading = true">
+            <form method="POST" action="{{ route('transactions.store') }}" @submit="isLoading = true"
+                enctype="multipart/form-data">
                 @csrf
 
                 <div class="space-y-5">
@@ -74,8 +75,7 @@
                                             d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                     </svg>
                                 </div>
-                                <span
-                                    :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
+                                <span :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
                                         'text-gray-600 dark:text-gray-300'"
                                     class="text-sm font-bold transition-colors">إيراد / دخل</span>
                             </button>
@@ -96,8 +96,7 @@
                                             d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                     </svg>
                                 </div>
-                                <span
-                                    :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
+                                <span :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
                                         'text-gray-600 dark:text-gray-300'"
                                     class="text-sm font-bold transition-colors">مصروف / خروج</span>
                             </button>
@@ -141,6 +140,32 @@
                         @enderror
                     </div>
 
+                    {{-- Reference Number --}}
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            رقم السند/المرجع <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                        </label>
+                        <input type="text" name="reference_number"
+                            class="px-4 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-800 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white placeholder:text-gray-400"
+                            placeholder="أدخل رقم السند أو المرجع" value="{{ old('reference_number') }}">
+                        @error('reference_number')
+                            <p class="mt-1.5 text-xs text-error-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Attachment --}}
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            صورة المرفق <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                        </label>
+                        <input type="file" name="attachment" accept="image/*"
+                            class="block w-full text-sm text-gray-900 border border-gray-200 rounded-xl cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:placeholder-gray-400">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">حد أقصى: 2MB</p>
+                        @error('attachment')
+                            <p class="mt-1.5 text-xs text-error-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Description --}}
                     <div>
                         <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -171,16 +196,14 @@
                         {{-- Loading Spinner --}}
                         <svg x-show="isLoading" class="w-4 h-4 text-white animate-spin"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        <svg x-show="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M5 13l4 4L19 7" />
+                        <svg x-show="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
                         <span x-text="isLoading ? 'جاري الحفظ...' : 'حفظ المعاملة'"></span>
                     </button>
