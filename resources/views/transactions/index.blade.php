@@ -6,217 +6,343 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl">
-        
-        {{-- Balance Card --}}
+
+        {{-- Balance Cards --}}
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             {{-- Current Balance --}}
-            <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm {{ $balance >= 0 ? 'border-success-200' : 'border-danger-200' }}">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl {{ $balance >= 0 ? 'bg-success-50 dark:bg-success-500/10 text-success-500' : 'bg-danger-50 dark:bg-danger-500/10 text-danger-500' }}">
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border transition-all shadow-theme-sm {{ $balance >= 0 ? 'border-success-200 dark:border-success-500/30' : 'border-error-200 dark:border-error-500/30' }}">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl {{ $balance >= 0 ? 'bg-success-50 dark:bg-success-500/10 text-success-500' : 'bg-error-50 dark:bg-error-500/10 text-error-500' }}">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">الرصيد الحالي</span>
-                    <h4 class="text-2xl font-black {{ $balance >= 0 ? 'text-success-500' : 'text-danger-500' }}">
-                        {{ number_format($balance, 2) }} YER
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">الرصيد
+                        الحالي</span>
+                    <h4 class="mt-1 text-2xl font-black {{ $balance >= 0 ? 'text-success-500' : 'text-error-500' }}">
+                        {{ number_format($balance, 2) }} <span class="text-base font-semibold">YER</span>
                     </h4>
                 </div>
             </div>
 
             {{-- Total Income --}}
-            <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 transition-all shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
                     </svg>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي الإيرادات</span>
-                    <h4 class="text-xl font-black text-success-500">{{ number_format($income, 2) }} YER</h4>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">إجمالي
+                        الإيرادات</span>
+                    <h4 class="mt-1 text-2xl font-black text-success-500">
+                        {{ number_format($income, 2) }} <span class="text-base font-semibold">YER</span>
+                    </h4>
                 </div>
             </div>
 
             {{-- Total Expenses --}}
-            <div class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all shadow-theme-sm">
-                <div class="flex justify-center items-center w-10 h-10 text-danger-500 bg-danger-50 rounded-xl dark:bg-danger-500/10">
+            <div
+                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 transition-all shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                     </svg>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي المصروفات</span>
-                    <h4 class="text-xl font-black text-danger-500">{{ number_format($expense, 2) }} YER</h4>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">إجمالي
+                        المصروفات</span>
+                    <h4 class="mt-1 text-2xl font-black text-error-500">
+                        {{ number_format($expense, 2) }} <span class="text-base font-semibold">YER</span>
+                    </h4>
                 </div>
             </div>
         </div>
 
         {{-- Date Range Filter Toolbar --}}
-        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-            <form method="GET" action="{{ route('transactions.index') }}" id="filterForm" class="space-y-4">
-                <div class="flex flex-col lg:flex-row gap-4 items-end">
-                    {{-- Date Inputs --}}
-                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label for="start_date" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                من تاريخ
-                            </label>
-                            <input 
-                                type="date" 
-                                name="start_date" 
-                                id="start_date" 
-                                class="w-full h-12 px-4 text-sm font-medium bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white" 
-                                value="{{ $startDate->format('Y-m-d') }}"
-                            >
+        <div
+            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
+            <form method="GET" action="{{ route('transactions.index') }}" id="filterForm">
+                {{-- Filter Header --}}
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
+                    {{-- Date Range Section --}}
+                    <div class="flex-1">
+                        <div class="flex gap-3 items-center mb-3">
+                            <div
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">الفترة الزمنية</span>
                         </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="relative">
+                                <label for="start_date"
+                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">من</label>
+                                <input type="date" name="start_date" id="start_date"
+                                    class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
+                                    value="{{ $startDate->format('Y-m-d') }}">
+                            </div>
+                            <div class="relative">
+                                <label for="end_date"
+                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">إلى</label>
+                                <input type="date" name="end_date" id="end_date"
+                                    class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
+                                    value="{{ $endDate->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="end_date" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                إلى تاريخ
-                            </label>
-                            <input 
-                                type="date" 
-                                name="end_date" 
-                                id="end_date" 
-                                class="w-full h-12 px-4 text-sm font-medium bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white" 
-                                value="{{ $endDate->format('Y-m-d') }}"
-                            >
+                    {{-- Quick Filters --}}
+                    <div class="flex-1">
+                        <div class="flex gap-3 items-center mb-3">
+                            <div
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-500/10">
+                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">فلاتر سريعة</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="setDateRange('thisMonth')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
+                                الشهر الحالي
+                            </button>
+                            <button type="button" onclick="setDateRange('lastMonth')"
+                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                الشهر الماضي
+                            </button>
+                            <button type="button" onclick="setDateRange('thisYear')"
+                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                هذه السنة
+                            </button>
+                            <button type="button" onclick="setDateRange('allTime')"
+                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                الكل
+                            </button>
                         </div>
                     </div>
 
                     {{-- Submit Button --}}
-                    <button type="submit" class="h-12 px-8 text-sm font-bold text-white bg-brand-500 rounded-xl shadow-lg transition-all hover:bg-brand-600 shadow-brand-500/20 active:scale-95">
-                        <svg class="inline-block w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    <button type="submit"
+                        class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/20 shadow-brand-500/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                        تصفية
-                    </button>
-                </div>
-
-                {{-- Quick Filter Presets --}}
-                <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
-                    <span class="text-sm font-bold text-gray-500 dark:text-gray-400 self-center ml-2">فلاتر سريعة:</span>
-                    <button type="button" onclick="setDateRange('thisMonth')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
-                        الشهر الحالي
-                    </button>
-                    <button type="button" onclick="setDateRange('lastMonth')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
-                        الشهر الماضي
-                    </button>
-                    <button type="button" onclick="setDateRange('thisYear')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
-                        هذه السنة
-                    </button>
-                    <button type="button" onclick="setDateRange('allTime')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
-                        كل الفترات
+                        عرض النتائج
                     </button>
                 </div>
             </form>
         </div>
 
         {{-- Analytics Charts --}}
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {{-- Expenses Breakdown (Pie Chart) --}}
-            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-                <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4">تحليل المصروفات حسب الفئة</h3>
-                <div class="relative" style="height: 300px;">
+            <div
+                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
+                <div class="flex gap-3 items-center mb-6">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
+                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">تحليل المصروفات حسب الفئة</h3>
+                </div>
+                <div class="relative" style="height: 280px;">
                     <canvas id="expensesChart"></canvas>
                 </div>
             </div>
 
             {{-- Daily Movement (Bar Chart) --}}
-            <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-                <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4">
-                    الحركة اليومية 
-                    <span class="text-sm font-normal text-gray-500">({{ $startDate->format('Y-m-d') }} - {{ $endDate->format('Y-m-d') }})</span>
-                </h3>
-                <div class="relative" style="height: 300px;">
+            <div
+                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
+                <div class="flex gap-3 items-center mb-6">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">الحركة اليومية</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $startDate->format('Y-m-d') }} -
+                            {{ $endDate->format('Y-m-d') }}</p>
+                    </div>
+                </div>
+                <div class="relative" style="height: 280px;">
                     <canvas id="dailyTrendChart"></canvas>
                 </div>
             </div>
         </div>
 
         {{-- Actions Bar --}}
-        <div class="flex justify-between items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-            <h2 class="text-xl font-black text-gray-900 dark:text-white">قائمة المعاملات</h2>
-            <div class="flex gap-3">
-                <a href="{{ route('closings.create') }}" class="flex gap-2 justify-center items-center px-8 h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-purple-500 hover:bg-purple-600 shadow-purple-500/20 active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div
+            class="flex flex-col gap-4 justify-between items-start p-5 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
+            <div class="flex gap-3 items-center">
+                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-bold text-gray-900 dark:text-white">قائمة المعاملات</h2>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        <span class="font-bold text-brand-500">{{ $transactions->total() }}</span> معاملة
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('transaction-categories.index') }}"
+                    class="inline-flex gap-1.5 items-center px-4 h-10 text-xs font-bold text-gray-600 bg-gray-100 rounded-xl transition-all duration-200 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    الفئات
+                </a>
+                <a href="{{ route('closings.create') }}"
+                    class="inline-flex gap-1.5 items-center px-4 h-10 text-xs font-bold text-white bg-purple-500 rounded-xl transition-all duration-200 hover:bg-purple-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     إقفال يومي
                 </a>
-                <a href="{{ route('transactions.create') }}" class="flex gap-2 justify-center items-center px-8 h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    إضافة معاملة جديدة
-                </a>
+                @include('transactions.create-transaction-modal')
             </div>
         </div>
 
         {{-- Transactions Table --}}
-        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div class="overflow-x-auto px-4 pb-4">
-                <table class="w-full text-right border-separate border-spacing-y-3">
-                    <thead>
-                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                            <th class="px-6 py-4">#</th>
-                            <th class="px-6 py-4">التاريخ</th>
-                            <th class="px-6 py-4">الفئة</th>
-                            <th class="px-6 py-4 text-center">النوع</th>
-                            <th class="px-6 py-4 text-center">المبلغ</th>
-                            <th class="px-6 py-4">الوصف</th>
-                            <th class="px-6 py-4">المستخدم</th>
+        <div
+            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[800px]">
+                    <thead class="bg-gray-50/80 dark:bg-gray-900/50">
+                        <tr>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                #</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                التاريخ</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                الفئة</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                النوع</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                المبلغ</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                الوصف</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                المستخدم</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y-0">
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse ($transactions as $transaction)
-                            <tr class="bg-white rounded-2xl border border-transparent shadow-sm transition-all dark:bg-gray-900 hover:shadow-md hover:border-gray-100 dark:hover:border-gray-800">
-                                
-                                <td class="px-6 py-5 border-r first:rounded-r-2xl border-y dark:border-gray-800/50">
-                                    <span class="text-xs font-black text-gray-400">{{ $loop->iteration + ($transactions->currentPage() - 1) * $transactions->perPage() }}</span>
+                            <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="inline-flex justify-center items-center w-8 h-8 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-300">
+                                        {{ $loop->iteration + ($transactions->currentPage() - 1) * $transactions->perPage() }}
+                                    </span>
                                 </td>
 
-                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
+                                <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $transaction->created_at->format('Y-m-d') }}</span>
-                                        <span class="mt-0.5 text-xs text-gray-400">{{ $transaction->created_at->format('h:i A') }}</span>
+                                        <span
+                                            class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $transaction->created_at->format('Y-m-d') }}</span>
+                                        <span
+                                            class="mt-0.5 text-xs text-gray-400">{{ $transaction->created_at->format('h:i A') }}</span>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-black text-gray-900 dark:text-white">{{ $transaction->category->name }}</span>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ $transaction->category->name }}</span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
-                                    @if($transaction->category->type === 'in')
-                                        <span class="px-3 py-1.5 text-xs font-black rounded-lg border bg-success-50 dark:bg-success-500/10 text-success-500 border-success-100 dark:border-success-500/20">
+                                <td class="px-6 py-4 text-center">
+                                    @if ($transaction->category->type === 'in')
+                                        <span
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                            </svg>
                                             إيراد
                                         </span>
                                     @else
-                                        <span class="px-3 py-1.5 text-xs font-black rounded-lg border bg-danger-50 dark:bg-danger-500/10 text-danger-500 border-danger-100 dark:border-danger-500/20">
+                                        <span
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                            </svg>
                                             مصروف
                                         </span>
                                     @endif
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
-                                    <span class="text-lg font-black {{ $transaction->category->type === 'in' ? 'text-success-500' : 'text-danger-500' }}">
+                                <td class="px-6 py-4 text-center">
+                                    <span
+                                        class="text-lg font-black {{ $transaction->category->type === 'in' ? 'text-success-500' : 'text-error-500' }}">
                                         {{ $transaction->category->type === 'in' ? '+' : '-' }}{{ number_format($transaction->amount, 2) }}
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
-                                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ $transaction->description ?? '—' }}</span>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="text-sm text-gray-500 dark:text-gray-400">{{ $transaction->description ?? '—' }}</span>
                                 </td>
 
-                                <td class="px-6 py-5 border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $transaction->user->name }}</span>
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $transaction->user->name }}</span>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-20 italic text-center text-gray-400">
-                                    لا توجد معاملات مسجلة حالياً..
+                                <td colspan="7" class="py-16 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <div
+                                            class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
+                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            </svg>
+                                        </div>
+                                        <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">لا توجد معاملات
+                                            مسجلة حالياً</p>
+                                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">ابدأ بإضافة معاملة جديدة
+                                        </p>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -225,7 +351,7 @@
             </div>
 
             @if ($transactions->hasPages())
-                <div class="p-8 border-t border-gray-100 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
+                <div class="p-6 border-t border-gray-100 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
                     {{ $transactions->links() }}
                 </div>
             @endif
@@ -266,19 +392,18 @@
             const expensesCtx = document.getElementById('expensesChart');
             if (expensesCtx) {
                 const expensesData = @json($expensesByCategory);
-                
+
                 const expensesLabels = expensesData.map(item => item.category_name);
                 const expensesValues = expensesData.map(item => parseFloat(item.total));
-                
-                // Generate colors for pie chart
+
                 const backgroundColors = [
-                    'rgba(239, 68, 68, 0.8)',   // Red
-                    'rgba(249, 115, 22, 0.8)',  // Orange
-                    'rgba(245, 158, 11, 0.8)',  // Amber
-                    'rgba(132, 204, 22, 0.8)',  // Lime
-                    'rgba(14, 165, 233, 0.8)',  // Sky
-                    'rgba(139, 92, 246, 0.8)',  // Violet
-                    'rgba(236, 72, 153, 0.8)',  // Pink
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(249, 115, 22, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(132, 204, 22, 0.8)',
+                    'rgba(14, 165, 233, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
                 ];
 
                 new Chart(expensesCtx, {
@@ -311,11 +436,9 @@
                                 callbacks: {
                                     label: function(context) {
                                         let label = context.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += new Intl.NumberFormat('en-US', { 
-                                            minimumFractionDigits: 2 
+                                        if (label) label += ': ';
+                                        label += new Intl.NumberFormat('en-US', {
+                                            minimumFractionDigits: 2
                                         }).format(context.parsed) + ' YER';
                                         return label;
                                     }
@@ -330,43 +453,29 @@
             const dailyCtx = document.getElementById('dailyTrendChart');
             if (dailyCtx) {
                 const dailyData = @json($dailyTrend);
-                
-                // Extract all unique dates
                 const dates = Object.keys(dailyData).sort();
-                
-                // Prepare data for income and expense
                 const incomeData = [];
                 const expenseData = [];
-                
+
                 dates.forEach(date => {
                     const dayData = dailyData[date];
-                    let incomeValue = 0;
-                    let expenseValue = 0;
-                    
+                    let incomeValue = 0,
+                        expenseValue = 0;
                     dayData.forEach(item => {
-                        if (item.type === 'in') {
-                            incomeValue += parseFloat(item.total);
-                        } else if (item.type === 'out') {
-                            expenseValue += parseFloat(item.total);
-                        }
+                        if (item.type === 'in') incomeValue += parseFloat(item.total);
+                        else if (item.type === 'out') expenseValue += parseFloat(item.total);
                     });
-                    
                     incomeData.push(incomeValue);
                     expenseData.push(expenseValue);
                 });
-                
-                // Format dates for display (only day number)
-                const formattedDates = dates.map(date => {
-                    const d = new Date(date);
-                    return d.getDate();
-                });
+
+                const formattedDates = dates.map(date => new Date(date).getDate());
 
                 new Chart(dailyCtx, {
                     type: 'bar',
                     data: {
                         labels: formattedDates,
-                        datasets: [
-                            {
+                        datasets: [{
                                 label: 'إيرادات',
                                 data: incomeData,
                                 backgroundColor: 'rgba(34, 197, 94, 0.8)',
@@ -389,9 +498,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
-                                        return new Intl.NumberFormat('en-US').format(value);
-                                    }
+                                    callback: value => new Intl.NumberFormat('en-US').format(value)
                                 }
                             },
                             x: {
@@ -415,11 +522,9 @@
                                 callbacks: {
                                     label: function(context) {
                                         let label = context.dataset.label || '';
-                                        if (label) {
-                                            label += ': ';
-                                        }
-                                        label += new Intl.NumberFormat('en-US', { 
-                                            minimumFractionDigits: 2 
+                                        if (label) label += ': ';
+                                        label += new Intl.NumberFormat('en-US', {
+                                            minimumFractionDigits: 2
                                         }).format(context.parsed.y) + ' YER';
                                         return label;
                                     }
@@ -431,54 +536,37 @@
             }
         });
 
-        // === Quick Date Range Presets Function ===
         function setDateRange(preset) {
             const startDateInput = document.getElementById('start_date');
             const endDateInput = document.getElementById('end_date');
             const today = new Date();
             let startDate, endDate;
 
-            switch(preset) {
+            switch (preset) {
                 case 'thisMonth':
-                    // First day of current month to today
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                     break;
-
                 case 'lastMonth':
-                    // First day of last month to last day of last month
                     startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                     endDate = new Date(today.getFullYear(), today.getMonth(), 0);
                     break;
-
                 case 'thisYear':
-                    // January 1st to December 31st of current year
                     startDate = new Date(today.getFullYear(), 0, 1);
                     endDate = new Date(today.getFullYear(), 11, 31);
                     break;
-
                 case 'allTime':
-                    // From a very old date to today (e.g., 10 years ago)
                     startDate = new Date(today.getFullYear() - 10, 0, 1);
                     endDate = today;
                     break;
-
                 default:
                     return;
             }
 
-            // Format dates as YYYY-MM-DD
-            const formatDate = (date) => {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            };
-
+            const formatDate = (date) =>
+                `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
             startDateInput.value = formatDate(startDate);
             endDateInput.value = formatDate(endDate);
-
-            // Auto-submit the form
             document.getElementById('filterForm').submit();
         }
     </script>

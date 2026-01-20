@@ -1,6 +1,6 @@
 {{-- Payment Modal Component --}}
 <div x-show="paymentModalOpen" x-cloak
-    class="fixed inset-0 flex items-center justify-center p-5 overflow-y-auto modal z-99999"
+    class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 modal z-99999"
     x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
     x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
@@ -10,7 +10,7 @@
         @click="closePaymentModal()"></div>
 
     {{-- Modal Content --}}
-    <div class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-gray-100 dark:border-gray-800"
+    <div class="overflow-hidden relative mx-4 w-full max-w-md bg-white rounded-2xl border border-gray-100 shadow-2xl dark:bg-gray-900 dark:border-gray-800"
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95"
         x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 transform scale-100"
@@ -22,18 +22,18 @@
 
 
             {{-- Amount and Payment Type in one row --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {{-- Amount Field --}}
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">المبلغ
+                    <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">المبلغ
                         المستحق</label>
                     <div class="relative">
                         <input type="number" name="amount" x-model="paymentData.amount" step="0.01" min="0"
                             :max="paymentData.maxAmount"
-                            class="w-full h-12 pr-4 pl-12 text-lg font-bold bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all"
+                            class="pr-4 pl-12 w-full h-12 text-lg font-bold text-gray-900 bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 dark:text-white"
                             placeholder="أدخل المبلغ" required>
                         <span
-                            class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-brand-500">ر.ي</span>
+                            class="absolute left-4 top-1/2 text-sm font-bold -translate-y-1/2 text-brand-500">ر.ي</span>
                     </div>
                     <p class="mt-2 text-xs text-brand-500 dark:text-gray-400">
                         المبلغ المتبقي: <span class="font-bold text-error-500"
@@ -43,14 +43,14 @@
 
                 {{-- Payment Type --}}
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">طريقة
+                    <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">طريقة
                         الدفع</label>
                     <div class="grid grid-cols-2 gap-3">
                         {{-- Cash Option --}}
                         <label :class="paymentData.paymentType === 'cash' ?
                                 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500/20' :
                                 'border-gray-200 dark:border-gray-700 hover:border-brand-300'"
-                            class="relative flex flex-row items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer transition-all">
+                            class="flex relative flex-row gap-2 justify-center items-center p-3 rounded-xl border transition-all cursor-pointer">
                             <input type="radio" name="payment_method" value="cash" x-model="paymentData.paymentType"
                                 class="sr-only">
                             <div :class="paymentData.paymentType === 'cash' ? 'bg-brand-500 text-white' :
@@ -69,7 +69,7 @@
                         <label :class="paymentData.paymentType === 'bank_transfer' ?
                                 'border-brand-500 bg-brand-50 dark:bg-brand-500/10 ring-2 ring-brand-500/20' :
                                 'border-gray-200 dark:border-gray-700 hover:border-brand-300'"
-                            class="relative flex flex-row items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer transition-all">
+                            class="flex relative flex-row gap-2 justify-center items-center p-3 rounded-xl border transition-all cursor-pointer">
                             <input type="radio" name="payment_method" value="bank_transfer"
                                 x-model="paymentData.paymentType" class="sr-only">
                             <div :class="paymentData.paymentType === 'bank_transfer' ? 'bg-brand-500 text-white' :
@@ -96,13 +96,13 @@
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 transform translate-y-0"
                 x-transition:leave-end="opacity-0 transform -translate-y-2">
-                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">رقم الإيداع /
+                <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">رقم الإيداع /
                     المرجع</label>
                 <div class="relative">
                     <input type="text" name="reference_number" x-model="paymentData.referenceNumber"
-                        class="w-full px-4 py-3 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all resize-none"
+                        class="px-4 py-3 w-full text-sm font-medium text-gray-900 bg-gray-50 rounded-xl border border-gray-200 transition-all resize-none dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 dark:text-white"
                         placeholder="أدخل رقم الإيداع أو المرجع">
-                    <div class="absolute px-2 right-4 top-1/2 -translate-y-1/2">
+                    <div class="absolute right-4 top-1/2 px-2 -translate-y-1/2">
                     </div>
                 </div>
             </div>
@@ -112,7 +112,7 @@
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 transform -translate-y-2"
                 x-transition:enter-end="opacity-100 transform translate-y-0">
-                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">إيصال التحويل
+                <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">إيصال التحويل
                     (اختياري)</label>
                 <input type="file" name="attachment" accept="image/*,.pdf"
                     class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-500/10 dark:file:text-brand-400">
@@ -120,10 +120,10 @@
 
             {{-- Notes Field --}}
             <div>
-                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">ملاحظات
+                <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">ملاحظات
                     (اختياري)</label>
                 <textarea name="notes" x-model="paymentData.notes" rows="2"
-                    class="w-full px-4 py-3 text-sm font-medium bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 text-gray-900 dark:text-white transition-all resize-none"
+                    class="px-4 py-3 w-full text-sm font-medium text-gray-900 bg-gray-50 rounded-xl border border-gray-200 transition-all resize-none dark:bg-gray-800 dark:border-gray-700 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 dark:text-white"
                     placeholder="أضف ملاحظات إن وجدت..."></textarea>
             </div>
 
@@ -133,7 +133,7 @@
             {{-- Actions --}}
             <div class="flex gap-3 pt-2">
                 <button type="button" @click="closePaymentModal()"
-                    class="flex-1 h-12 px-4 flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                    class="flex flex-1 gap-2 justify-center items-center px-4 h-12 font-bold text-gray-600 rounded-xl border border-gray-200 transition-all dark:border-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
@@ -141,7 +141,7 @@
                     إلغاء
                 </button>
                 <button type="submit" :disabled="!paymentData.amount || paymentData.amount <= 0"
-                    class="flex-1 h-12 px-4 flex items-center justify-center gap-2 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-xl shadow-lg shadow-brand-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="flex flex-1 gap-2 justify-center items-center px-4 h-12 font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                     </svg>

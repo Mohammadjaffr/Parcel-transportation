@@ -217,7 +217,7 @@
                     <td width="25%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
                     
                 @else
-                    <!-- حالة الرصيد الخالص -->
+                    <!-- حالة الرصيد المسدد -->
                     <td width="15%" class="label">مرسلة / مستقبلة:</td>
                     <td width="15%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
                     <td width="15%" class="label">المبلغ:</td>
@@ -281,9 +281,10 @@
                             @if ($shipment->payment_method == 'cod')
                                 ---
                             @elseif ($remaining > 0)
-                                {{ number_format($remaining) }}
+                                {{-- {{ number_format($remaining) }} --}}
+                                ---
                             @else
-                                خالص
+                                مسدد
                             @endif
                         </td>
                     </tr>

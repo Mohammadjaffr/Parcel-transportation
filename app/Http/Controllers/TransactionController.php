@@ -76,6 +76,9 @@ class TransactionController extends Controller
             ->get()
             ->groupBy('date');
 
+        // Get active categories for the modal
+        $categories = TransactionCategory::active()->get();
+
         return view('transactions.index', compact(
             'transactions', 
             'balance', 
@@ -84,7 +87,8 @@ class TransactionController extends Controller
             'expensesByCategory', 
             'dailyTrend',
             'startDate',
-            'endDate'
+            'endDate',
+            'categories'
         ));
     }
 
