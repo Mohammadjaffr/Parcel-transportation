@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class TransactionController extends Controller
 {
     /**
-     * Display a listing of transactions with balance calculation
+     * Display a listing of transactions with balance calculation and analytics
      */
     public function index()
     {
@@ -37,7 +37,34 @@ class TransactionController extends Controller
 
         $balance = $income - $expense;
 
-        return view('transactions.index', compact('transactions', 'balance', 'income', 'expense'));
+        // === Analytics Data for Charts ===
+
+        // 1. Expenses Breakdown by Category
+        $expensesByCategory = Transaction::where('branch_code', $branchCode)
+            ->whereHas('category', function ($query) {
+                $query->where('type', 'out');
+            })
+            ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
+            ->selectRaw('transaction_categories.name as category_name, SUM(transactions.amount) as total')
+            ->groupBy('transaction_categories.name')
+            ->get();
+
+        // 2. Daily Trend for Current Month
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        $dailyTrend = Transaction::where('branch_code', $branchCode)
+            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
+            ->selectRaw('DATE(transactions.created_at) as date, 
+                         transaction_categories.type,
+                         SUM(transactions.amount) as total')
+            ->groupBy('date', 'transaction_categories.type')
+            ->orderBy('date')
+            ->get()
+            ->groupBy('date');
+
+        return view('transactions.index', compact('transactions', 'balance', 'income', 'expense', 'expensesByCategory', 'dailyTrend'));
     }
 
     /**

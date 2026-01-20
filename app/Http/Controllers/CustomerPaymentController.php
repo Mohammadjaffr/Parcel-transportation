@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Classes\WebResponseClass;
 use App\Models\CustomerPayment;
 use App\Models\Shipment;
+use App\Services\TransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -88,6 +89,18 @@ class CustomerPaymentController extends Controller
                 'reference_number' => $data['reference_number'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ]);
+            
+            // تسجيل الدفعة في الصندوق المالي (Cash Box Integration)
+            try {
+                TransactionService::recordShipmentPayment(
+                    shipment: $shipment,
+                    amount: $data['amount'],
+                    branchCode: $user->branch_code
+                );
+            } catch (\Exception $e) {
+                // Log the error but don't fail the payment
+                \Log::error('Failed to record shipment payment in cash box: ' . $e->getMessage());
+            }
             
             // تحديث حالة الدين للشحنة إذا تم السداد بالكامل
             $newTotalPaid = $shipment->payments()->sum('amount');
