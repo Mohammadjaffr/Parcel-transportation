@@ -170,6 +170,8 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit']);
     
     // Daily Cash Closing
+    Route::get('/closings/export', [CashClosingController::class, 'export'])->name('closings.export');
+    Route::get('/closings', [CashClosingController::class, 'index'])->name('closings.index');
     Route::get('/closings/create', [CashClosingController::class, 'create'])->name('closings.create');
     Route::post('/closings', [CashClosingController::class, 'store'])->name('closings.store');
 });

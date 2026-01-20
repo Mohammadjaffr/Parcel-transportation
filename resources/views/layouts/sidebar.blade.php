@@ -78,9 +78,9 @@
             <li>
               <a href="{{ route('users.index') }}" @click="selected = (selected === 'users' ? '':'users')"
                 class="menu-item group" :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-active' :
-                                    'menu-item-inactive'">
+                                      'menu-item-inactive'">
                 <svg :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-icon-active' :
-                                    'menu-item-icon-inactive'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                      'menu-item-icon-inactive'" width="24" height="24" viewBox="0 0 24 24" fill="none"
                   xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
@@ -202,21 +202,54 @@
             </a>
           </li>
 
-          <li>
-            <a href="{{ route('closings.create') }}"
+          {{-- مخزن القائمة المنسدلة للتقارير المالية --}}
+          <li x-data="{ open: {{ request()->routeIs('closings.*') ? 'true' : 'false' }} }">
+            <a href="#" @click.prevent="open = !open"
               class="menu-item group {{ request()->routeIs('closings.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
-              {{-- أيقونة الإقفال اليومي --}}
+              {{-- Icon --}}
               <svg class="{{ request()->routeIs('closings.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                 width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.5"
-                  stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إقفال يومي
+                الإقفال اليومي
               </span>
+
+              {{-- Arrow Icon --}}
+              <svg :class="{ 'rotate-180': open, 'rotate-0': !open }"
+                class="ml-auto w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
             </a>
+
+            {{-- Submenu --}}
+            <ul x-show="open" x-transition:enter="transition ease-out duration-100"
+              x-transition:enter-start="opacity-0 transform scale-95"
+              x-transition:enter-end="opacity-100 transform scale-100"
+              x-transition:leave="transition ease-in duration-75"
+              x-transition:leave-start="opacity-100 transform scale-100"
+              x-transition:leave-end="opacity-0 transform scale-95" class="pr-5 mt-2 space-y-1">
+
+              <li>
+                <a href="{{ route('closings.create') }}"
+                  class="block px-4 py-2 text-sm rounded-lg transition-colors duration-200 {{ request()->routeIs('closings.create') ? 'text-brand-500 bg-brand-50 dark:bg-brand-500/10 font-bold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800' }}">
+                  إقفال جديد
+                </a>
+              </li>
+
+              <li>
+                <a href="{{ route('closings.index') }}"
+                  class="block px-4 py-2 text-sm rounded-lg transition-colors duration-200 {{ request()->routeIs('closings.index') ? 'text-brand-500 bg-brand-50 dark:bg-brand-500/10 font-bold' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800' }}">
+                  سجل الإقفال
+                </a>
+              </li>
+
+            </ul>
           </li>
 
           <!-- Menu Item Forms -->

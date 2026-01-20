@@ -148,4 +148,104 @@ class CashClosingController extends Controller
             return back()->withErrors(['error' => 'Error processing closing: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * Export cash closings to CSV
+     */
+    public function export(Request $request)
+    {
+        $branchCode = Auth::user()->branch_code;
+
+        // Date Range (Same logic as index)
+        $startDate = $request->input('start_date') 
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+            : now()->startOfMonth();
+        
+        $endDate = $request->input('end_date') 
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+            : now()->endOfMonth();
+
+        $fileName = 'closings_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($branchCode, $startDate, $endDate) {
+            $handle = fopen('php://output', 'w');
+
+            // 1. Add BOM for Excel UTF-8 recognition
+            fwrite($handle, "\xEF\xBB\xBF");
+
+            // 2. CSV Headers (Arabic)
+            fputcsv($handle, [
+                'التاريخ والوقت',
+                'المسؤول',
+                'الرصيد المتوقع',
+                'النقد الفعلي',
+                'الفرق',
+                'المبلغ المحول',
+                'ملاحظات'
+            ]);
+
+            // 3. Data Query & Loop (Chunking for memory efficiency)
+            CashRegisterClosing::where('branch_code', $branchCode)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with('user')
+                ->latest()
+                ->chunk(100, function ($closings) use ($handle) {
+                    foreach ($closings as $closing) {
+                        fputcsv($handle, [
+                            $closing->created_at->format('Y-m-d h:i A'),
+                            $closing->user->name ?? 'N/A',
+                            $closing->expected_balance,
+                            $closing->actual_cash,
+                            $closing->difference,
+                            $closing->transferred_amount,
+                            $closing->notes
+                        ]);
+                    }
+                });
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
+    }
+
+    /**
+     * Display a listing of cash closings
+     */
+    public function index(Request $request)
+    {
+        $branchCode = Auth::user()->branch_code;
+
+        // Date Range
+        $startDate = $request->input('start_date') 
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+            : now()->startOfMonth();
+        
+        $endDate = $request->input('end_date') 
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+            : now()->endOfMonth();
+
+        // Base Query
+        $query = CashRegisterClosing::where('branch_code', $branchCode)
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        // KPIs (Calculated from filtered data)
+        $totalTransferred = (clone $query)->sum('transferred_amount');
+        $totalShortage = (clone $query)->where('difference', '<', 0)->sum('difference'); // Will be negative
+        $totalSurplus = (clone $query)->where('difference', '>', 0)->sum('difference');
+
+        // Fetch Data
+        $closings = $query->with('user')
+            ->latest()
+            ->paginate(15);
+
+        return view('closings.index', compact(
+            'closings', 
+            'startDate', 
+            'endDate', 
+            'totalTransferred', 
+            'totalShortage', 
+            'totalSurplus'
+        ));
+    }
 }
