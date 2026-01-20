@@ -64,6 +64,24 @@ class TransactionCategorySeeder extends Seeder
                 'code' => 'CASH_SHORTAGE',
                 'is_active' => true,
             ],
+            [
+                'name' => 'تحويل لحساب العمقي',
+                'type' => 'out',
+                'code' => null,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'تحويل لحساب الكريمي',
+                'type' => 'out',
+                'code' => null,
+                'is_active' => true,
+            ],
+            [
+                'name' => 'تحويل لحساب القطيبي',
+                'type' => 'out',
+                'code' => null,
+                'is_active' => true,
+            ],
         ];
 
         // Use updateOrCreate to avoid duplicate errors
