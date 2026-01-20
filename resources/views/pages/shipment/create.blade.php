@@ -8,31 +8,31 @@
         <div x-data="{ activeTab: 'sender' }">
 
             {{-- شريط التابات --}}
-            <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
-                <nav class="flex gap-2">
+            {{-- <div class="mb-6 border-b border-gray-200 dark:border-gray-700"> --}}
+                {{-- <nav class="flex gap-2"> --}}
 
                     {{-- التاب الأول --}}
-                    <button type="button" @click="activeTab = 'sender'"
+                    {{-- <button type="button" @click="activeTab = 'sender'"
                         :class="activeTab === 'sender'
                             ?
                             'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
                             'border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                         class="px-4 py-2 text-sm font-medium">
                         مرسل الطرد
-                    </button>
+                    </button> --}}
 
                     {{-- التاب الثاني --}}
-                    <button type="button" @click="activeTab = 'receiver'"
+                    {{-- <button type="button" @click="activeTab = 'receiver'"
                         :class="activeTab === 'receiver'
                             ?
                             'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
                             'border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400'"
                         class="px-4 py-2 text-sm font-medium">
                         مستلم الطرد
-                    </button>
+                    </button> --}}
 
-                </nav>
-            </div>
+                {{-- </nav> --}}
+            {{-- </div> --}}
 
             {{-- =================== التاب الأول: مرسل الطرد =================== --}}
             <form x-show="activeTab === 'sender'" x-cloak x-data="{
@@ -545,7 +545,7 @@
                                 </div>
                             </div>
 
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            {{-- <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='customer_credit'" x-transition>
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
                                     حالة مديونية العميل
@@ -561,7 +561,7 @@
                                 @error('customer_debt_status')
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </div>

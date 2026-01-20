@@ -554,7 +554,7 @@
                             إغلاق
                         </button>
                         <button type="submit" :disabled="isSubmitting"
-                            class="flex justify-center items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
+                            class="flex gap-2 justify-center items-center px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">حفظ التعديلات</span>
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -705,7 +705,7 @@
                             إغلاق
                         </button>
                         <button type="submit" :disabled="isSubmitting"
-                            class="flex justify-center items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
+                            class="flex gap-2 justify-center items-center px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">حفظ التعديلات</span>
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -1020,7 +1020,7 @@
 
 
                             {{-- =============== customer_credit =============== --}}
-                            <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
+                            {{-- <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method === 'customer_credit'" x-transition>
 
                                 <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -1048,7 +1048,7 @@
                                 @error('customer_debt_status')
                                     <div class="mt-1 text-sm text-error-600">{{ $message }}</div>
                                 @enderror
-                            </div>
+                            </div> --}}
 
                         </div>
                     </div>
@@ -1060,7 +1060,7 @@
                         </button>
 
                         <button type="submit" :disabled="isSubmitting"
-                            class="flex justify-center items-center gap-2 px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
+                            class="flex gap-2 justify-center items-center px-4 py-2 text-sm font-bold text-white rounded-lg bg-brand-500 hover:bg-brand-600 disabled:opacity-75 disabled:cursor-not-allowed">
                             <span x-show="!isSubmitting">حفظ التعديلات</span>
                             <span x-show="isSubmitting" class="flex gap-2 items-center">
                                 <svg class="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"

@@ -6,7 +6,7 @@
 
     <style>
         @page {
-            size: 100mm 70mm;
+            size: 70mm 120mm;
             margin: 0;
         }
 
@@ -18,65 +18,66 @@
         body {
             margin: 0;
             padding: 0;
-            width: 100mm;
-            height: 70mm;
+            width: 70mm;
+            height: 120mm;
             background: #fff;
             font-family: 'aealarabiya', 'dejavusans', sans-serif;
             direction: rtl;
         }
 
         .sticker-card {
-            width: 100mm;
-            height: 70mm;
-            padding: 2mm 3mm;
+            width: 70mm;
+            height: 120mm;
+            padding: 2mm 1mm;
         }
 
         /* ===== الهيدر ===== */
         .header-table {
             width: 100%;
             border-bottom: 1.2px solid #fb6514;
-            margin-bottom: 1mm;
+            margin-bottom: 0.5mm;
+            table-layout: fixed;
         }
 
         .company-cell {
-            width: 35mm;
+            width: 33%;
             font-size: 6.2pt;
             line-height: 1.2;
         }
 
         .header-title {
-            font-size: 9pt;
+            font-size: 7.5pt;
             font-weight: bold;
         }
 
         .header-subtitle {
-            font-size: 7pt;
-            margin-top: .2mm;
+            font-size: 6pt;
+            margin-top: .1mm;
         }
 
         .header-extra {
-            font-size: 6pt;
-            margin-top: .2mm;
+            font-size: 5pt;
+            margin-top: .1mm;
         }
 
         .header-phones {
-            font-size: 6pt;
+            font-size: 5pt;
             font-weight: bold;
-            margin-top: .2mm;
+            margin-top: .1mm;
             direction: ltr;
         }
 
         .logo-cell {
-            width: 28mm;
+            width: 34%;
             text-align: center;
         }
 
         .logo-cell img {
-            width: 13mm;
+            width: 10mm;
         }
 
         .branch-cell {
-            width: 35mm;
+            width: 33%;
             text-align: left;
             font-size: 6.2pt;
             font-weight: bold;
@@ -87,11 +88,11 @@
         .info-grid {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: .8mm;
+            margin-bottom: 0.5mm;
         }
 
         .info-grid td {
-            padding: .35mm 0;
+            padding: .25mm 0;
             border-bottom: 1px solid #eee;
         }
 
@@ -114,11 +115,11 @@
 
         /* ===== الإدارة العامة (مضغوطة) ===== */
         .admin-text {
-            font-size: 5.6pt;
+            font-size: 5.4pt;
             font-weight: 700;
             text-align: center;
-            margin-top: .5mm;
-            line-height: 1.15;
+            margin-top: 0.3mm;
+            line-height: 1.1;
         }
 
         .admin-text .phones {
@@ -177,7 +178,15 @@
                 <td><span class="value">{{ $shipment->code ?? '...' }}</span></td>
             </tr>
             <tr>
-                <td><span class="label">البضاعه:</span></td>
+                <td><span class="label">اسم المرسل:</span></td>
+                <td><span class="value">{{ $shipment->senderCustomer->name ?? '...' }}</span></td>
+                <td><span class="label">رقم المرسل:</span></td>
+                <td><span class="value-small">{{ $shipment->senderCustomer->phone ?? '...' }}</span></td>
+                <td><span class="label">اسم المستلم:</span></td>
+                <td><span class="value">{{ $shipment->receiverCustomer->name ?? '...' }}</span></td>
+            </tr>
+            <tr>
+                <td><span class="label">ملاحظه:</span></td>
                 <td><span class="value">{{ $shipment->notes ?? '...' }}</span></td>
                 <td><span class="label">التاريخ:</span></td>
                 <td><span class="value">{{ $shipment->created_at->format('Y-m-d') }}</span></td>

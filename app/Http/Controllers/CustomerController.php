@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\WebResponseClass;
 use App\Models\Customer;
 use App\Models\Shipment;
-use Illuminate\Http\Request;
-use App\Classes\WebResponseClass;
 use App\Services\AdminLoggerService;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -25,7 +24,21 @@ class CustomerController extends Controller
                  AND sender_branch_code = ?) + 
                 (SELECT COUNT(*) FROM shipments 
                  WHERE receiver_customer_id = customers.id 
-                 AND receiver_branch_code = ?) as shipments_count', [$branchCode, $branchCode])
+                 AND receiver_branch_code = ?) as shipments_count,
+                
+                (SELECT COALESCE(SUM(s.total_amount), 0) 
+                 FROM shipments s
+                 WHERE s.sender_customer_id = customers.id 
+                 AND s.sender_branch_code = ?
+                 AND s.payment_method = "customer_credit") as debit_sum,
+                
+                (SELECT COALESCE(SUM(cp.amount), 0)
+                 FROM shipments s2
+                 INNER JOIN customer_payments cp ON cp.shipment_id = s2.id
+                 WHERE s2.sender_customer_id = customers.id 
+                 AND s2.sender_branch_code = ?
+                 AND s2.payment_method = "customer_credit") as credit_sum',
+                [$branchCode, $branchCode, $branchCode, $branchCode])
             ->latest()
             ->paginate(10);
 
@@ -131,28 +144,28 @@ class CustomerController extends Controller
                 $unpaidShipmentsCount++;
             }
         }
-        
+
         // Store branch code in a variable for use in closures
         $branchCode = auth()->user()->branch_code;
-        
+
         $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
-    ->where(function ($query) use ($branchCode, $id) {
-        
-        // الحالة الأولى: الفرع هو المرسل + العميل هو المرسل
-        $query->where(function ($q) use ($branchCode, $id) {
-            $q->where('sender_branch_code', $branchCode)
-              ->where('sender_customer_id', $id);
-        })
-        
-        // أو (OR)
-        
-        // الحالة الثانية: الفرع هو المستقبل + العميل هو المستقبل
-        ->orWhere(function ($q) use ($branchCode, $id) {
-            $q->where('receiver_branch_code', $branchCode)
-              ->where('receiver_customer_id', $id);
-        });
-        
-    });
+            ->where(function ($query) use ($branchCode, $id) {
+
+                // الحالة الأولى: الفرع هو المرسل + العميل هو المرسل
+                $query->where(function ($q) use ($branchCode, $id) {
+                    $q->where('sender_branch_code', $branchCode)
+                        ->where('sender_customer_id', $id);
+                })
+
+                // أو (OR)
+
+                // الحالة الثانية: الفرع هو المستقبل + العميل هو المستقبل
+                    ->orWhere(function ($q) use ($branchCode, $id) {
+                        $q->where('receiver_branch_code', $branchCode)
+                            ->where('receiver_customer_id', $id);
+                    });
+
+            });
         if ($request->get('direction') == 'sent') {
             // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
             $shipmentsQuery->where('sender_customer_id', $id);
@@ -341,31 +354,38 @@ class CustomerController extends Controller
             ->get();
 
         // حساب الديون والرصيد من خلال الشحنات والدفعات
+        // نحسب فقط الشحنات الآجلة والجزئية (نستثني COD لأن المستلم سيدفعها)
         $totalShipmentsCost = 0;  // إجمالي قيمة كل الشحنات
         $totalPaid = 0;           // إجمالي المدفوع
-        
-        // حساب من الشحنات المرسلة
+
+        // حساب من الشحنات المرسلة - فقط customer_credit و partial_payment
         foreach ($sentShipments as $shipment) {
-            $shipmentCost = $shipment->total_amount ?? 0;
-            $paidAmount = $shipment->payments->sum('amount');
-            
-            $totalShipmentsCost += $shipmentCost;
-            $totalPaid += $paidAmount;
+            // نحسب فقط الشحنات الآجلة والجزئية
+            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
+                $shipmentCost = $shipment->total_amount ?? 0;
+                $paidAmount = $shipment->payments->sum('amount');
+
+                $totalShipmentsCost += $shipmentCost;
+                $totalPaid += $paidAmount;
+            }
         }
-        
-        // حساب من الشحنات المستقبلة
+
+        // حساب من الشحنات المستقبلة - فقط customer_credit و partial_payment
         foreach ($receivedShipments as $shipment) {
-            $shipmentCost = $shipment->total_amount ?? 0;
-            $paidAmount = $shipment->payments->sum('amount');
-            
-            $totalShipmentsCost += $shipmentCost;
-            $totalPaid += $paidAmount;
+            // نحسب فقط الشحنات الآجلة والجزئية
+            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
+                $shipmentCost = $shipment->total_amount ?? 0;
+                $paidAmount = $shipment->payments->sum('amount');
+
+                $totalShipmentsCost += $shipmentCost;
+                $totalPaid += $paidAmount;
+            }
         }
-        
+
         // الرصيد = إجمالي قيمة الشحنات - إجمالي المدفوع
         $balance = $totalShipmentsCost - $totalPaid;
         $isDebtor = $balance > 0;
-        
+
         // للعرض في التقرير
         $debit = $totalShipmentsCost;  // إجمالي المستحقات (قيمة الشحنات)
         $credit = $totalPaid;           // إجمالي المدفوع
@@ -385,7 +405,7 @@ class CustomerController extends Controller
         $receivedCustomerCredit = $receivedShipments->where('payment_method', 'customer_credit')->count();
 
         // توليد PDF
-        $pdf = new \TCPDF();
+        $pdf = new \TCPDF;
         $pdf->setRTL(true);
         $pdf->SetFont('dejavusans', '', 10);
         $pdf->AddPage();
@@ -411,9 +431,9 @@ class CustomerController extends Controller
         ))->render();
 
         $pdf->writeHTML($html);
+
         return $pdf->Output("customer_comprehensive_report_{$customer->id}.pdf", 'I');
     }
-
 
     /** تصدير */
     public function export()

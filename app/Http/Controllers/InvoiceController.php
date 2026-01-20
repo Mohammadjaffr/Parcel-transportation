@@ -29,7 +29,8 @@ class InvoiceController extends Controller
      */
     public function printThermal($id)
     {
-        $shipment = Shipment::findOrFail($id);
+        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])
+            ->findOrFail($id);
         return $this->invoiceService->generateThermalSticker($shipment);
     }
 }

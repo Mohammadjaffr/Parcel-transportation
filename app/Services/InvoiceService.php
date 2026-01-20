@@ -25,7 +25,7 @@ class InvoiceService
         $pdf->AddPage();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('invoice-' . $shipment->id . '.pdf', 'I');
+        return $pdf->Output('invoice-'.$shipment->id.'.pdf', 'I');
     }
 
     /**
@@ -33,10 +33,11 @@ class InvoiceService
      */
     public function generateThermalSticker(Shipment $shipment)
     {
-        $pdf = new \TCPDF('L', 'mm', [70, 100], true, 'UTF-8', false);
+        // Landscape: 70mm width x 120mm height
+        $pdf = new \TCPDF('L', 'mm', [120, 70], true, 'UTF-8', false);
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
-        $pdf->SetMargins(2, 2, 2);
+        $pdf->SetMargins(0, 0, 0);
         $pdf->SetAutoPageBreak(false, 0);
         $pdf->setRTL(true);
         $pdf->SetFont('dejavusans', '', 10);
@@ -47,6 +48,6 @@ class InvoiceService
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output('Sticker-' . $shipment->bond_number . '.pdf', 'I');
+        return $pdf->Output('Sticker-'.$shipment->bond_number.'.pdf', 'I');
     }
 }

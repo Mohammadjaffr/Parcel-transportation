@@ -6,17 +6,17 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                            search: '',
-                            filterStatus: 'all',
-                            showRow(status, bond, sender, receiver) {
-                                const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-                                const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-                                return matchesSearch && matchesStatus;
-                            }
-                        }">
+        search: '',
+        filterStatus: 'all',
+        showRow(status, bond, sender, receiver) {
+            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+            return matchesSearch && matchesStatus;
+        }
+    }">
 
         {{-- Tabs --}}
-        <div class="flex p-1 mb-6 bg-gray-100 rounded-xl dark:bg-gray-800 w-fit">
+        {{-- <div class="flex p-1 mb-6 bg-gray-100 rounded-xl dark:bg-gray-800 w-fit">
             <a href="{{ route('shipment.index', ['type' => 'outgoing']) }}"
                 class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all {{ request('type', 'outgoing') == 'outgoing' ? 'bg-white dark:bg-gray-700 text-brand-500 shadow-sm ring-1 ring-gray-200 dark:ring-gray-600' : 'text-gray-500 hover:text-gray-700' }}">
                 الطرود الصادرة (من فرعنا)
@@ -25,7 +25,7 @@
                 class="px-6 py-2.5 rounded-lg text-sm font-bold transition-all {{ request('type') == 'incoming' ? 'bg-white dark:bg-gray-700 text-brand-500 shadow-sm ring-1 ring-gray-200 dark:ring-gray-600' : 'text-gray-500 hover:text-gray-700' }}">
                 الطرود الواردة (إلى فرعنا)
             </a>
-        </div>
+        </div> --}}
 
         <div class="flex gap-6">
 
@@ -66,12 +66,13 @@
                 </div>
             </div>
 
-            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                                        'border-gray-100'"
+            <div @click="filterStatus = 'in_transit'"
+                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                    'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
-                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -175,12 +176,28 @@
                                 </td>
 
                                 <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
+                                    @php
+                                        $paymentLabel = match ($request->payment_method) {
+                                            'prepaid' => 'دفع مسبق',
+                                            'cod' => 'دفع عند الاستلام',
+                                            'customer_credit' => 'آجل (دين)',
+                                            'partial_payment' => 'دفع جزئي',
+                                            default => $request->payment_method,
+                                        };
+                                        $paymentColor = match ($request->payment_method) {
+                                            'prepaid' => 'bg-success-50 text-success-600 border-success-100',
+                                            'cod' => 'bg-blue-light-50 text-blue-light-600 border-blue-light-100',
+                                            'customer_credit' => 'bg-error-50 text-error-600 border-error-100',
+                                            'partial_payment' => 'bg-warning-50 text-warning-600 border-warning-100',
+                                            default => 'bg-gray-50 text-gray-600 border-gray-100',
+                                        };
+                                    @endphp
                                     <div class="flex flex-col gap-1 items-center">
                                         <span
                                             class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{{ $request->package_type }}</span>
                                         <span
-                                            class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase {{ $request->payment_method == 'prepaid' ? 'bg-success-50 text-success-600' : 'bg-warning-50 text-warning-600' }}">
-                                            {{ $request->payment_method == 'prepaid' ? 'نقداً' : 'آجل' }}
+                                            class="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border {{ $paymentColor }}">
+                                            {{ $paymentLabel }}
                                         </span>
                                     </div>
                                 </td>
@@ -211,11 +228,12 @@
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                <td
+                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-1 justify-center items-center">
                                         <a href="{{ route('shipment.show', $request->id) }} " title="عرض الشحنة"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
-                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                 viewBox="0 0 24 24">
                                                 <path
                                                     d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -231,7 +249,7 @@
                                         </a>
                                     </div>
                                 </td>
-                            </tr>   
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="py-20 italic text-center text-gray-400">

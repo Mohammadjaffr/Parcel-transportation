@@ -208,23 +208,20 @@
     <div class="info-box">
         <table class="info-table" cellpadding="5">
             <tr>
-                <td width="15%" class="label">إجمالي الشحنات:</td>
-                <td width="10%" class="value" style="font-size: 13pt;">{{ $sentCount + $receivedCount }}</td>
+                <td width="25%" class="label">إجمالي الشحنات:</td>
+                <td width="25%" class="value" style="font-size: 13pt;">{{ $sentCount + $receivedCount }}</td>
 
                 @if ($isDebtor)
                     <!-- حالة وجود مديونية -->
-                    <td width="15%" class="label">مرسلة / مستقبلة:</td>
-                    <td width="15%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
-                    <td width="15%" class="label">المبلغ:</td>
-                    <td width="25%" style="text-align: right; color: #dc2626; font-weight: bold;">
-                            {{ number_format(abs($balance)) }} (عليه دين)
-                    </td>
+                    <td width="25%" class="label">مرسلة / مستقبلة:</td>
+                    <td width="25%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
+                    
                 @else
                     <!-- حالة الرصيد الخالص -->
                     <td width="15%" class="label">مرسلة / مستقبلة:</td>
                     <td width="15%" class="value">{{ $receivedCount }} / {{ $sentCount }}</td>
                     <td width="15%" class="label">المبلغ:</td>
-                    <td  width="35%" style="text-align: right; color: #10b981; font-weight: bold;">
+                    <td width="35%" style="text-align: right; color: #10b981; font-weight: bold;">
                         الرصيد صافي (لا يوجد مديونيه)
                     </td>
                 @endif
@@ -262,23 +259,40 @@
                         <td style="font-weight: bold;">{{ number_format($shipment->total_amount ?? 0) }}</td>
                         <td>
                             @if ($shipment->payment_method == 'prepaid')
-                                مقدم
+                                دفع مسبق
                             @elseif($shipment->payment_method == 'cod')
-                                عند الاستلام
+                                دفع عند الاستلام
+                            @elseif($shipment->payment_method == 'partial_payment')
+                                دفع جزئي
+                            @elseif($shipment->payment_method == 'customer_credit')
+                                آجل (دين)
                             @else
-                                آجل
+                                {{ $shipment->payment_method }}
                             @endif
                         </td>
-                        <td>{{ number_format($paid) }}</td>
+                        <td>
+                            @if ($shipment->payment_method == 'cod')
+                                ---
+                            @else
+                                {{ number_format($paid) }}
+                            @endif
+                        </td>
                         <td style="color: {{ $remaining > 0 ? '#dc2626' : '#10b981' }}; font-weight: bold;">
-                            {{ number_format($remaining) }}
+                            @if ($shipment->payment_method == 'cod')
+                                ---
+                            @elseif ($remaining > 0)
+                                {{ number_format($remaining) }}
+                            @else
+                                خالص
+                            @endif
                         </td>
                     </tr>
                 @endforeach
                 <tr style="background-color: #f9fafb; font-weight: bold;">
                     <td colspan="4" style="text-align: left; padding-left: 15px;">إجمالي المبلغ :</td>
+                    
                     <td style="color: #111;">{{ number_format($sentTotal) }}</td>
-                    <td colspan="3"></td>
+                    <td colspan="3" style="text-align: center; color: {{ $balance > 0 ? '#dc2626' : '#10b981' }}; font-weight: bold;"><span class="lable">الاجمالي المتبقي: </span>{{ number_format(abs($balance)) }}</td>
                 </tr>
             </tbody>
         </table>
@@ -287,59 +301,7 @@
             لا توجد شحنات مرسلة مسجلة</div>
     @endif
 
-    <div class="section-header">الشحنات المستلم ({{ $receivedCount }})</div>
-    @if ($receivedShipments->count() > 0)
-        <table class="manifest-table" border="0.5" cellpadding="6">
-            <thead>
-                <tr>
-                    <th width="13%">#</th>
-                    <th width="12%">التاريخ</th>
-                    <th width="12%">رقم السند</th>
-                    <th width="12%">فرع المرسل</th>
-                    <th width="12%">قيمة الشحنة</th>
-                    <th width="13%">طريقة الدفع</th>
-                    <th width="13%">المدفوع</th>
-                    <th width="13%">المتبقي</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($receivedShipments as $shipment)
-                    @php
-                        $paid = $shipment->payments->sum('amount');
-                        $remaining = ($shipment->total_amount ?? 0) - $paid;
-                    @endphp
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $shipment->created_at->format('Y-m-d') }}</td>
-                        <td style="color: #fb6514; font-weight: bold;">{{ $shipment->bond_number }}</td>
-                        <td>{{ $shipment->senderBranch->name ?? '---' }}</td>
-                        <td style="font-weight: bold;">{{ number_format($shipment->total_amount) }}</td>
-                        <td>
-                            @if ($shipment->payment_method == 'prepaid')
-                                مقدم
-                            @elseif($shipment->payment_method == 'cod')
-                                عند الاستلام
-                            @else
-                                آجل
-                            @endif
-                        </td>
-                        <td>{{ number_format($paid) }}</td>
-                        <td style="color: {{ $remaining > 0 ? '#dc2626' : '#10b981' }}; font-weight: bold;">
-                            {{ number_format($remaining) }}
-                        </td>
-                    </tr>
-                @endforeach
-                <tr style="background-color: #f9fafb; font-weight: bold;">
-                    <td colspan="4" style="text-align: left; padding-left: 15px;">إجمالي المبلغ :</td>
-                    <td style="color: #111;">{{ number_format($receivedTotal) }}</td>
-                    <td colspan="3"></td>
-                </tr>
-            </tbody>
-        </table>
-    @else
-        <div style="text-align: center; border: 1.5px dashed #e5e7eb; padding: 20px; color: #9ca3af; font-size: 11pt;">
-            لا توجد شحنات مستقبلة مسجلة</div>
-    @endif
+ 
 
     <!-- قسم التواقيع والاعتمادات -->
     <table class="signatures-table">
