@@ -58,14 +58,14 @@
                             نوع المعاملة <span class="text-error-500">*</span>
                         </label>
 
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="flex gap-3">
                             {{-- Income Option --}}
                             <button type="button" @click="selectedType = 'in'; selectedCategory = ''"
                                 :class="selectedType === 'in'
                                     ?
-                                    'bg-success-50 border-success-500 dark:bg-success-500/15 dark:border-success-400' :
+                                    'bg-success-50 border-success-500 hover:bg--500 dark:border-success-400' :
                                     'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
-                                class="flex gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
+                                class="flex flex-1 gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
                                 <div :class="selectedType === 'in' ? 'bg-success-100 dark:bg-success-500/20' :
                                     'bg-gray-100 dark:bg-gray-700'"
                                     class="flex justify-center items-center w-10 h-10 rounded-xl transition-colors">
@@ -75,7 +75,8 @@
                                             d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                     </svg>
                                 </div>
-                                <span :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
+                                <span
+                                    :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
                                         'text-gray-600 dark:text-gray-300'"
                                     class="text-sm font-bold transition-colors">إيراد / دخل</span>
                             </button>
@@ -86,7 +87,7 @@
                                     ?
                                     'bg-error-50 border-error-500 dark:bg-error-500/15 dark:border-error-400' :
                                     'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
-                                class="flex gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
+                                class="flex flex-1 gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
                                 <div :class="selectedType === 'out' ? 'bg-error-100 dark:bg-error-500/20' :
                                     'bg-gray-100 dark:bg-gray-700'"
                                     class="flex justify-center items-center w-10 h-10 rounded-xl transition-colors">
@@ -96,7 +97,8 @@
                                             d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                     </svg>
                                 </div>
-                                <span :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
+                                <span
+                                    :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
                                         'text-gray-600 dark:text-gray-300'"
                                     class="text-sm font-bold transition-colors">مصروف / خروج</span>
                             </button>
@@ -154,13 +156,83 @@
                     </div>
 
                     {{-- Attachment --}}
-                    <div>
+                    <div x-data="{
+                        fileName: '',
+                        filePreview: null,
+                        isDragging: false,
+                        handleFile(file) {
+                            if (file && file.type.startsWith('image/')) {
+                                this.fileName = file.name;
+                                const reader = new FileReader();
+                                reader.onload = (e) => this.filePreview = e.target.result;
+                                reader.readAsDataURL(file);
+                            }
+                        },
+                        removeFile() {
+                            this.fileName = '';
+                            this.filePreview = null;
+                            this.$refs.fileInput.value = '';
+                        }
+                    }">
                         <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
                             صورة المرفق <span class="text-xs font-normal text-gray-400">(اختياري)</span>
                         </label>
-                        <input type="file" name="attachment" accept="image/*"
-                            class="block w-full text-sm text-gray-900 border border-gray-200 rounded-xl cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:placeholder-gray-400">
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">حد أقصى: 2MB</p>
+
+                        {{-- Upload Area --}}
+                        <div x-show="!filePreview" @dragover.prevent="isDragging = true"
+                            @dragleave.prevent="isDragging = false"
+                            @drop.prevent="isDragging = false; handleFile($event.dataTransfer.files[0])"
+                            :class="isDragging ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10' :
+                                'border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-500/50'"
+                            class="flex relative flex-col justify-center items-center p-5 bg-gray-50 rounded-xl border-2 border-dashed transition-all cursor-pointer dark:bg-gray-800/50 group">
+
+                            <input type="file" name="attachment" accept="image/*" x-ref="fileInput"
+                                @change="handleFile($event.target.files[0])"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer hover:border-brand-500 focus:border-brand-500">
+
+                            <div
+                                class="flex justify-center items-center mb-3 w-12 h-12 rounded-xl transition-all bg-brand-50 dark:bg-brand-500/10 group-hover:scale-110">
+                                <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                            <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                <span class="text-brand-500">اختر صورة</span> أو اسحب وأفلت هنا
+                            </p>
+                            <p class="mt-1 text-xs text-gray-400">PNG, JPG, JPEG • حد أقصى 2MB</p>
+                        </div>
+
+                        {{-- Preview Area --}}
+                        <div x-show="filePreview" x-transition
+                            class="overflow-hidden relative rounded-xl border-2 border-success-200 dark:border-success-500/30 bg-success-50 dark:bg-success-500/10">
+                            <img :src="filePreview" alt="Preview" class="object-cover w-full h-32">
+                            <div
+                                class="flex justify-between items-center p-3 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
+                                <div class="flex gap-2 items-center">
+                                    <div
+                                        class="flex justify-center items-center w-8 h-8 rounded-lg bg-success-100 dark:bg-success-500/20">
+                                        <svg class="w-4 h-4 text-success-500" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                    <span
+                                        class="text-xs font-semibold text-gray-700 dark:text-gray-300 truncate max-w-[150px]"
+                                        x-text="fileName"></span>
+                                </div>
+                                <button type="button" @click="removeFile()"
+                                    class="flex justify-center items-center w-8 h-8 rounded-lg transition-all text-error-500 bg-error-50 dark:bg-error-500/10 hover:bg-error-100 dark:hover:bg-error-500/20">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
                         @error('attachment')
                             <p class="mt-1.5 text-xs text-error-500">{{ $message }}</p>
                         @enderror
@@ -196,14 +268,17 @@
                         {{-- Loading Spinner --}}
                         <svg x-show="isLoading" class="w-4 h-4 text-white animate-spin"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
-                        <svg x-show="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        <svg x-show="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 13l4 4L19 7" />
                         </svg>
                         <span x-text="isLoading ? 'جاري الحفظ...' : 'حفظ المعاملة'"></span>
                     </button>

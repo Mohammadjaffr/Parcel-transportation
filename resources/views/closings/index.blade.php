@@ -68,40 +68,50 @@
                 </div>
             </div>
         </div>
-        {{-- Header --}}
+        {{-- Header with Filter --}}
         <div
-            class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
-            <div class="flex gap-4 items-center">
-                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                    <svg class="w-6 h-6 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
+            {{-- Top Row: Title & Back Button --}}
+            <div
+                class="flex flex-col gap-4 justify-between items-start pb-5 mb-5 border-b border-gray-100 md:flex-row md:items-center dark:border-gray-800">
+                <div class="flex gap-4 items-center">
+                    <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                        <svg class="w-6 h-6 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">سجل الإقفال اليومي</h2>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
+                    </div>
+                </div>
+                <a href="{{ route('transactions.index') }}"
+                    class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">سجل الإقفال اليومي</h2>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
-                </div>
+                    العودة للمعاملات
+                </a>
             </div>
-            <a href="{{ route('transactions.index') }}"
-                class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                العودة للمعاملات
-            </a>
-        </div>
 
-        {{-- Filter Toolbar --}}
-        <div
-            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
+            {{-- Filter Form --}}
             <form method="GET" action="{{ route('closings.index') }}" id="filterForm">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
 
                     {{-- Date Range --}}
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
+                            <div
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">الفترة الزمنية</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -139,14 +149,14 @@
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
                             <div
-                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
-                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-500/10">
+                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">عرض سريع</span>
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">فلاتر سريعة</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" onclick="setDateRange('thisMonth')"
@@ -168,32 +178,28 @@
                         </div>
                     </div>
 
-                    {{-- Submit --}}
-                    <div>
-                        <div class="flex gap-2 items-center">
-                            <button type="submit"
-                                class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/20 shadow-brand-500/20">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                عرض النتائج
-                            </button>
-
-                            <button type="submit" formaction="{{ route('closings.export') }}"
-                                class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-success-500 hover:bg-success-600 focus:ring-4 focus:ring-success-500/20 shadow-success-500/20">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                تصدير Excel
-                            </button>
-                        </div>
+                    {{-- Submit Buttons --}}
+                    <div class="flex gap-2">
+                        <button type="submit"
+                            class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/20 shadow-brand-500/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            عرض النتائج
+                        </button>
+                        <button type="submit" formaction="{{ route('closings.export') }}"
+                            class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-success-500 hover:bg-success-600 focus:ring-4 focus:ring-success-500/20 shadow-success-500/20">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            تصدير Excel
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
-
 
         {{-- Data Table --}}
         <div

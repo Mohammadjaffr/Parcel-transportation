@@ -225,14 +225,14 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <a href="{{ route('transaction-categories.index') }}"
+                {{-- <a href="{{ route('transaction-categories.index') }}"
                     class="inline-flex gap-1.5 items-center px-4 h-10 text-xs font-bold text-gray-600 bg-gray-100 rounded-xl transition-all duration-200 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     الفئات
-                </a>
+                </a> --}}
                 @include('closings.create-closing-modal')
                 @include('transactions.create-transaction-modal')
             </div>
@@ -344,7 +344,7 @@
                                 <td class="px-6 py-4 text-center">
                                     @if($transaction->attachment_path)
                                         <a href="{{ asset($transaction->attachment_path) }}" download
-                                            class="inline-flex items-center justify-center w-8 h-8 text-brand-500 bg-brand-50 rounded-lg transition-all hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
+                                            class="inline-flex justify-center items-center w-8 h-8 rounded-lg transition-all text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
                                             title="تحميل المرفق">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

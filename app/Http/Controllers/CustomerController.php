@@ -446,4 +446,78 @@ class CustomerController extends Controller
 
         return view('pages.customers.export', compact('customers'));
     }
+
+    /** تصفية حساب العميل */
+    public function clearBalance(Request $request, Customer $customer)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        
+        // التحقق من أن العميل ينتمي للفرع
+        if ($customer->branch_code !== $user->branch_code) {
+            return WebResponseClass::sendError(
+                'لا يمكنك تصفية حساب عميل من فرع آخر.',
+                'خطأ!'
+            );
+        }
+
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|in:cash,bank_transfer,check',
+            'reference_number' => 'nullable|string|max:100',
+            'notes' => 'nullable|string|max:500',
+        ], [
+            'amount.required' => 'المبلغ مطلوب',
+            'amount.min' => 'يجب أن يكون المبلغ أكبر من صفر',
+            'payment_method.required' => 'طريقة الدفع مطلوبة',
+        ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
+
+        try {
+            $data = $validator->validated();
+            
+            // جلب الشحنات الآجلة غير المسددة بالكامل
+            $shipments = Shipment::with(['payments'])
+                ->where('sender_customer_id', $customer->id)
+                ->where('payment_method', 'customer_credit')
+                ->get();
+
+            $remainingAmount = $data['amount'];
+
+            // توزيع المبلغ على الشحنات
+            foreach ($shipments as $shipment) {
+                if ($remainingAmount <= 0) break;
+
+                $paidAmount = $shipment->payments->sum('amount');
+                $shipmentRemaining = $shipment->total_amount - $paidAmount;
+
+                if ($shipmentRemaining > 0) {
+                    $paymentAmount = min($remainingAmount, $shipmentRemaining);
+
+                    // إنشاء دفعة جديدة
+                    $shipment->payments()->create([
+                        'amount' => $paymentAmount,
+                        'payment_method' => $data['payment_method'],
+                        'notes' => $data['notes'] ?? 'تصفية حساب',
+                        'reference_number' => $data['reference_number'] ?? null,
+                        'received_by' => $user->id,
+                    ]);
+
+                    $remainingAmount -= $paymentAmount;
+                }
+            }
+
+            return WebResponseClass::sendResponse(
+                'تمت التصفية!',
+                'تم تصفية حساب العميل بنجاح.',
+                'حسناً',
+                'customers.index'
+            );
+        } catch (\Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
 }

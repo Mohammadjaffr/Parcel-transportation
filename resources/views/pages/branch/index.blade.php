@@ -6,49 +6,49 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                        search: '',
-                        filterCity: 'all',
-                        createModalOpen: false,
-                        editModalOpen: false,
-                        isFetching: null,
-                        editBranch: {
-                            code: '',
-                            name: '',
-                            city: '',
-                            address: '',
-                            phone: ''
-                        },
-                        showRow(city, name, code) {
-                            const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || code.toLowerCase().includes(this.search.toLowerCase());
-                            const matchesCity = this.filterCity === 'all' || city === this.filterCity;
-                            return matchesSearch && matchesCity;
-                        },
-                        async openEditModal(branchCode) {
-                            this.isFetching = branchCode;
-                            try {
-                                const response = await fetch(`/branch/${branchCode}/edit`, {
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'X-Requested-With': 'XMLHttpRequest'
-                                    }
-                                });
-                                const data = await response.json();
-                                this.editBranch = {
-                                    code: data.code,
-                                    name: data.name,
-                                    city: data.city,
-                                    address: data.address,
-                                    phone: data.phone
-                                };
-                                this.editModalOpen = true;
-                            } catch (error) {
-                                console.error('Error:', error);
-                                alert('حدث خطأ أثناء جلب البيانات');
-                            } finally {
-                                this.isFetching = null;
-                            }
-                        }
-                    }">
+        search: '',
+        filterCity: 'all',
+        createModalOpen: false,
+        editModalOpen: false,
+        isFetching: null,
+        editBranch: {
+            code: '',
+            name: '',
+            city: '',
+            address: '',
+            phone: ''
+        },
+        showRow(city, name, code) {
+            const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || code.toLowerCase().includes(this.search.toLowerCase());
+            const matchesCity = this.filterCity === 'all' || city === this.filterCity;
+            return matchesSearch && matchesCity;
+        },
+        async openEditModal(branchCode) {
+            this.isFetching = branchCode;
+            try {
+                const response = await fetch(`/branch/${branchCode}/edit`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                const data = await response.json();
+                this.editBranch = {
+                    code: data.code,
+                    name: data.name,
+                    city: data.city,
+                    address: data.address,
+                    phone: data.phone
+                };
+                this.editModalOpen = true;
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء جلب البيانات');
+            } finally {
+                this.isFetching = null;
+            }
+        }
+    }">
 
         {{-- Modal إضافة فرع --}}
         @include('pages.branch.create-branch-modal')
@@ -173,7 +173,8 @@
                                 </td>
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
+                                    <span
+                                        class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
                                 </td>
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
@@ -191,12 +192,13 @@
 
                                 <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
                                     <span
-                                        class="px-3 py-1.5 text-xs font-black rounded-lg border border-purple-100 bg-purple-50 text-purple-500 dark:bg-purple-500/10 dark:border-purple-500/20">
+                                        class="px-3 py-1.5 text-xs font-black text-purple-500 bg-purple-50 rounded-lg border border-purple-100 dark:bg-purple-500/10 dark:border-purple-500/20">
                                         {{ $branch->receiving_packages_count ?? 0 }}
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                <td
+                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         <a href="{{ route('branch.show', $branch->code) }}"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
@@ -213,16 +215,16 @@
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="تعديل">
                                             <template x-if="isFetching !== '{{ $branch->code }}'">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                    viewBox="0 0 24 24">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    stroke-width="2" viewBox="0 0 24 24">
                                                     <path
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </template>
                                             <template x-if="isFetching === '{{ $branch->code }}'">
                                                 <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                        stroke-width="4"></circle>
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
                                                     <path class="opacity-75" fill="currentColor"
                                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                                     </path>
@@ -230,7 +232,8 @@
                                             </template>
                                         </button>
 
-                                        <button type="button" @click="$dispatch('open-warning-modal', {
+                                        <button type="button"
+                                            @click="$dispatch('open-warning-modal', {
                                                                                 url: '{{ route('branch.destroy', ['branch' => $branch->code]) }}',
                                                                                 title: 'هل أنت متأكد من حذف هذا الفرع؟',
                                                                                 message: 'سيتم حذف الفرع نهائياً. لا يمكن التراجع عن هذا الإجراء.',
@@ -245,6 +248,12 @@
                                                     d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
                                         </button>
+
+                                        {{-- زر تصفية حساب الفرع --}}
+                                        @include('pages.branch.claeramountbranch', [
+                                            'branch' => $branch,
+                                            'branchBalance' => 0,
+                                        ])
                                     </div>
                                 </td>
                             </tr>

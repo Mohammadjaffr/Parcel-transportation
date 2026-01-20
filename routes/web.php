@@ -81,6 +81,8 @@ Route::middleware('auth')->group(function () {
         ->name('customers.search');
     Route::get('/customers/{id}/comprehensive-report', [CustomerController::class, 'comprehensiveReport'])
         ->name('customers.comprehensive-report');
+    Route::post('/customers/{customer}/clear-balance', [CustomerController::class, 'clearBalance'])
+        ->name('customers.clear-balance');
 
     Route::resource('customers', CustomerController::class);
 

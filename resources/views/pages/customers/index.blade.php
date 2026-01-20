@@ -208,6 +208,12 @@
                                                 </svg>
                                             </template>
                                         </button>
+                                        {{-- Clear Balance Button - يظهر فقط للعملاء المديونين --}}
+                                        @if ($is_debtor)
+                                            @include('pages.customers.clearamount', [
+                                                'customer' => $customer,
+                                            ])
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
