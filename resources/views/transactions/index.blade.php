@@ -51,6 +51,67 @@
             </div>
         </div>
 
+        {{-- Date Range Filter Toolbar --}}
+        <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
+            <form method="GET" action="{{ route('transactions.index') }}" id="filterForm" class="space-y-4">
+                <div class="flex flex-col lg:flex-row gap-4 items-end">
+                    {{-- Date Inputs --}}
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="start_date" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                من تاريخ
+                            </label>
+                            <input 
+                                type="date" 
+                                name="start_date" 
+                                id="start_date" 
+                                class="w-full h-12 px-4 text-sm font-medium bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white" 
+                                value="{{ $startDate->format('Y-m-d') }}"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="end_date" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                                إلى تاريخ
+                            </label>
+                            <input 
+                                type="date" 
+                                name="end_date" 
+                                id="end_date" 
+                                class="w-full h-12 px-4 text-sm font-medium bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white" 
+                                value="{{ $endDate->format('Y-m-d') }}"
+                            >
+                        </div>
+                    </div>
+
+                    {{-- Submit Button --}}
+                    <button type="submit" class="h-12 px-8 text-sm font-bold text-white bg-brand-500 rounded-xl shadow-lg transition-all hover:bg-brand-600 shadow-brand-500/20 active:scale-95">
+                        <svg class="inline-block w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        تصفية
+                    </button>
+                </div>
+
+                {{-- Quick Filter Presets --}}
+                <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100 dark:border-gray-700">
+                    <span class="text-sm font-bold text-gray-500 dark:text-gray-400 self-center ml-2">فلاتر سريعة:</span>
+                    <button type="button" onclick="setDateRange('thisMonth')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
+                        الشهر الحالي
+                    </button>
+                    <button type="button" onclick="setDateRange('lastMonth')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
+                        الشهر الماضي
+                    </button>
+                    <button type="button" onclick="setDateRange('thisYear')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
+                        هذه السنة
+                    </button>
+                    <button type="button" onclick="setDateRange('allTime')" class="px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-900 rounded-lg transition-all hover:bg-gray-200 dark:hover:bg-gray-800">
+                        كل الفترات
+                    </button>
+                </div>
+            </form>
+        </div>
+
         {{-- Analytics Charts --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {{-- Expenses Breakdown (Pie Chart) --}}
@@ -63,7 +124,10 @@
 
             {{-- Daily Movement (Bar Chart) --}}
             <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-                <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4">الحركة اليومية ({{ now()->format('F Y') }})</h3>
+                <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4">
+                    الحركة اليومية 
+                    <span class="text-sm font-normal text-gray-500">({{ $startDate->format('Y-m-d') }} - {{ $endDate->format('Y-m-d') }})</span>
+                </h3>
                 <div class="relative" style="height: 300px;">
                     <canvas id="dailyTrendChart"></canvas>
                 </div>
@@ -366,5 +430,56 @@
                 });
             }
         });
+
+        // === Quick Date Range Presets Function ===
+        function setDateRange(preset) {
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
+            const today = new Date();
+            let startDate, endDate;
+
+            switch(preset) {
+                case 'thisMonth':
+                    // First day of current month to today
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+
+                case 'lastMonth':
+                    // First day of last month to last day of last month
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                    break;
+
+                case 'thisYear':
+                    // January 1st to December 31st of current year
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    endDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+
+                case 'allTime':
+                    // From a very old date to today (e.g., 10 years ago)
+                    startDate = new Date(today.getFullYear() - 10, 0, 1);
+                    endDate = today;
+                    break;
+
+                default:
+                    return;
+            }
+
+            // Format dates as YYYY-MM-DD
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            startDateInput.value = formatDate(startDate);
+            endDateInput.value = formatDate(endDate);
+
+            // Auto-submit the form
+            document.getElementById('filterForm').submit();
+        }
     </script>
 @endsection

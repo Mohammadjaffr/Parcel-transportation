@@ -12,24 +12,37 @@ class TransactionController extends Controller
     /**
      * Display a listing of transactions with balance calculation and analytics
      */
-    public function index()
+    public function index(Request $request)
     {
         $branchCode = Auth::user()->branch_code;
 
-        // Fetch transactions for the current branch
+        // === Date Range Filter ===
+        // Default to current month if no dates provided
+        $startDate = $request->input('start_date') 
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+            : now()->startOfMonth();
+        
+        $endDate = $request->input('end_date') 
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+            : now()->endOfMonth();
+
+        // Fetch transactions for the current branch with date range
         $transactions = Transaction::where('branch_code', $branchCode)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->with(['category', 'user', 'shipment'])
             ->latest()
             ->paginate(15);
 
-        // Calculate balance (Income - Expense)
+        // Calculate balance (Income - Expense) for the date range
         $income = Transaction::where('branch_code', $branchCode)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->whereHas('category', function ($query) {
                 $query->where('type', 'in');
             })
             ->sum('amount');
 
         $expense = Transaction::where('branch_code', $branchCode)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->whereHas('category', function ($query) {
                 $query->where('type', 'out');
             })
@@ -39,8 +52,9 @@ class TransactionController extends Controller
 
         // === Analytics Data for Charts ===
 
-        // 1. Expenses Breakdown by Category
+        // 1. Expenses Breakdown by Category (Filtered by date range)
         $expensesByCategory = Transaction::where('branch_code', $branchCode)
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->whereHas('category', function ($query) {
                 $query->where('type', 'out');
             })
@@ -49,12 +63,10 @@ class TransactionController extends Controller
             ->groupBy('transaction_categories.name')
             ->get();
 
-        // 2. Daily Trend for Current Month
-        $startOfMonth = now()->startOfMonth();
-        $endOfMonth = now()->endOfMonth();
 
+        // 2. Daily Trend for the selected date range
         $dailyTrend = Transaction::where('branch_code', $branchCode)
-            ->whereBetween('transactions.created_at', [$startOfMonth, $endOfMonth])
+            ->whereBetween('transactions.created_at', [$startDate, $endDate])
             ->join('transaction_categories', 'transactions.transaction_category_id', '=', 'transaction_categories.id')
             ->selectRaw('DATE(transactions.created_at) as date, 
                          transaction_categories.type,
@@ -64,7 +76,16 @@ class TransactionController extends Controller
             ->get()
             ->groupBy('date');
 
-        return view('transactions.index', compact('transactions', 'balance', 'income', 'expense', 'expensesByCategory', 'dailyTrend'));
+        return view('transactions.index', compact(
+            'transactions', 
+            'balance', 
+            'income', 
+            'expense', 
+            'expensesByCategory', 
+            'dailyTrend',
+            'startDate',
+            'endDate'
+        ));
     }
 
     /**
