@@ -5,12 +5,81 @@
 
     <div class="space-y-6 font-outfit" dir="rtl">
 
+        {{-- KPI Cards --}}
+        @php
+            $statusFilter = request('status');
+        @endphp
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+
+            {{-- Total Transferred (All) --}}
+            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => null])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ !$statusFilter ? 'border-success-500 ring-2 ring-success-500' : 'border-gray-100 dark:border-gray-800' }}">
+                
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10">
+                        <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ !$statusFilter ? 'pe-14' : '' }}">إجمالي
+                        المحول للمركز</span>
+                </div>
+                <h4 class="mt-3 text-2xl font-black text-success-500">
+                    {{ number_format($totalTransferred) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
+
+            {{-- Total Shortage --}}
+            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => 'shortage'])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $statusFilter === 'shortage' ? 'border-error-500 ring-2 ring-error-500' : 'border-gray-100 dark:border-gray-800' }}">
+               
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
+                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $statusFilter === 'shortage' ? 'pe-16' : '' }}">إجمالي
+                        العجز (النقص)</span>
+                </div>
+                <h4 class="mt-3 text-2xl font-black text-error-500">
+                    {{ number_format(abs($totalShortage)) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
+
+            {{-- Total Surplus --}}
+            <a href="{{ route('closings.index', array_merge(request()->query(), ['status' => 'surplus'])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $statusFilter === 'surplus' ? 'border-brand-500 ring-2 ring-brand-500' : 'border-gray-100 dark:border-gray-800' }}">
+               
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $statusFilter === 'surplus' ? 'pe-16' : '' }}">إجمالي
+                        الفائض (الزيادة)</span>
+                </div>
+                <h4 class="mt-3 text-2xl font-black text-brand-500">
+                    {{ number_format($totalSurplus) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
+        </div>
         {{-- Header --}}
-        <div class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
+        <div
+            class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
             <div class="flex gap-4 items-center">
-                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-500/10">
-                    <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                    <svg class="w-6 h-6 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                 </div>
                 <div>
@@ -18,7 +87,8 @@
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
                 </div>
             </div>
-            <a href="{{ route('transactions.index') }}" class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
+            <a href="{{ route('transactions.index') }}"
+                class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -27,10 +97,11 @@
         </div>
 
         {{-- Filter Toolbar --}}
-        <div class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
+        <div
+            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
             <form method="GET" action="{{ route('closings.index') }}" id="filterForm">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
-                    
+
                     {{-- Date Range --}}
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
@@ -38,42 +109,85 @@
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div class="relative">
-                                <label for="start_date" class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">من</label>
-                                <input type="date" name="start_date" id="start_date" class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white" value="{{ $startDate->format('Y-m-d') }}">
+                                <label for="start_date"
+                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">من</label>
+                                <input type="date" name="start_date" id="start_date"
+                                    class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
+                                    value="{{ $startDate->format('Y-m-d') }}">
                             </div>
                             <div class="relative">
-                                <label for="end_date" class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">إلى</label>
-                                <input type="date" name="end_date" id="end_date" class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white" value="{{ $endDate->format('Y-m-d') }}">
+                                <label for="end_date"
+                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">إلى</label>
+                                <input type="date" name="end_date" id="end_date"
+                                    class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
+                                    value="{{ $endDate->format('Y-m-d') }}">
                             </div>
                         </div>
                     </div>
 
                     {{-- Quick Filters --}}
+                    @php
+                        $now = now();
+                        $isThisMonth =
+                            $startDate->isSameDay($now->copy()->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->endOfMonth());
+                        $isLastMonth =
+                            $startDate->isSameDay($now->copy()->subMonth()->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->subMonth()->endOfMonth());
+                        $isThisYear =
+                            $startDate->isSameDay($now->copy()->startOfYear()) &&
+                            $endDate->isSameDay($now->copy()->endOfYear());
+                        $isAllTime = !$isThisMonth && !$isLastMonth && !$isThisYear;
+                    @endphp
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
+                            <div
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">عرض سريع</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" onclick="setDateRange('thisMonth')" class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">الشهر الحالى</button>
-                            <button type="button" onclick="setDateRange('lastMonth')" class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">الشهر الماضي</button>
-                            <button type="button" onclick="setDateRange('thisYear')" class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">هذه السنة</button>
-                            <button type="button" onclick="setDateRange('allTime')" class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">الكل</button>
+                            <button type="button" onclick="setDateRange('thisMonth')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                الشهر الحالي
+                            </button>
+                            <button type="button" onclick="setDateRange('lastMonth')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLastMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                الشهر الماضي
+                            </button>
+                            <button type="button" onclick="setDateRange('thisYear')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisYear ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                هذه السنة
+                            </button>
+                            <button type="button" onclick="setDateRange('allTime')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isAllTime ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                الكل
+                            </button>
                         </div>
                     </div>
 
                     {{-- Submit --}}
                     <div>
                         <div class="flex gap-2 items-center">
-                            <button type="submit" class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/20 shadow-brand-500/20">
+                            <button type="submit"
+                                class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 focus:ring-4 focus:ring-brand-500/20 shadow-brand-500/20">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                تصفية
+                                عرض النتائج
                             </button>
 
-                            <button type="submit" formaction="{{ route('closings.export') }}" class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white bg-green-600 rounded-xl shadow-lg transition-all hover:bg-green-700 focus:ring-4 focus:ring-green-500/20 shadow-green-500/20">
+                            <button type="submit" formaction="{{ route('closings.export') }}"
+                                class="inline-flex gap-2 justify-center items-center px-6 h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all bg-success-500 hover:bg-success-600 focus:ring-4 focus:ring-success-500/20 shadow-success-500/20">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
                                 تصدير Excel
                             </button>
@@ -83,97 +197,92 @@
             </form>
         </div>
 
-        {{-- KPI Cards --}}
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-            
-            {{-- Total Transferred --}}
-            <div class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between shadow-theme-sm border-l-4 border-l-success-500">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">إجمالي المحول للمركز</p>
-                    <h3 class="text-2xl font-black text-success-600 dark:text-success-400 mt-2">
-                        {{ number_format($totalTransferred, 2) }} <span class="text-sm text-gray-500">YER</span>
-                    </h3>
-                </div>
-            </div>
-
-            {{-- Total Shortage --}}
-            <div class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between shadow-theme-sm border-l-4 border-l-error-500">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">إجمالي العجز (النقص)</p>
-                    <h3 class="text-2xl font-black text-error-600 dark:text-error-400 mt-2">
-                        {{ number_format(abs($totalShortage), 2) }} <span class="text-sm text-gray-500">YER</span>
-                    </h3>
-                </div>
-            </div>
-
-            {{-- Total Surplus --}}
-            <div class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 p-6 flex flex-col justify-between shadow-theme-sm border-l-4 border-l-blue-500">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">إجمالي الفائض (الزيادة)</p>
-                    <h3 class="text-2xl font-black text-blue-600 dark:text-blue-400 mt-2">
-                        {{ number_format($totalSurplus, 2) }} <span class="text-sm text-gray-500">YER</span>
-                    </h3>
-                </div>
-            </div>
-        </div>
 
         {{-- Data Table --}}
-        <div class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
+        <div
+            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[1000px]">
                     <thead class="bg-gray-50/80 dark:bg-gray-900/50">
                         <tr>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">#</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">التاريخ والوقت</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">المسؤول</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">الرصيد المتوقع</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">النقد الفعلي</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">الفرق</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">المبلغ المحول</th>
-                            <th class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">ملاحظات</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                #</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                التاريخ والوقت</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                المسؤول</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                الرصيد المتوقع</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                النقد الفعلي</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                الفرق</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                المبلغ المحول</th>
+                            <th
+                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                ملاحظات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @forelse ($closings as $closing)
                             <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                                 <td class="px-6 py-4">
-                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-400">{{ $loop->iteration + ($closings->currentPage() - 1) * $closings->perPage() }}</span>
+                                    <span
+                                        class="text-xs font-bold text-gray-500 dark:text-gray-400">{{ $loop->iteration + ($closings->currentPage() - 1) * $closings->perPage() }}</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $closing->created_at->format('Y-m-d') }}</span>
-                                        <span class="text-xs text-gray-500">{{ $closing->created_at->format('h:i A') }}</span>
+                                        <span
+                                            class="text-sm font-bold text-gray-900 dark:text-white">{{ $closing->created_at->format('Y-m-d') }}</span>
+                                        <span
+                                            class="text-xs text-gray-500">{{ $closing->created_at->format('h:i A') }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $closing->user->name ?? '—' }}</span>
+                                    <span
+                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $closing->user->name ?? '—' }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="text-sm font-mono text-gray-600 dark:text-gray-400">{{ number_format($closing->expected_balance, 2) }}</span>
+                                    <span
+                                        class="font-mono text-sm text-gray-500 dark:text-gray-400">{{ number_format($closing->expected_balance, 2) }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($closing->actual_cash, 2) }}</span>
+                                    <span
+                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($closing->actual_cash, 2) }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($closing->difference < 0)
-                                        <span class="inline-flex px-2 py-1 text-xs font-bold text-error-600 bg-error-50 rounded-lg dark:bg-error-500/10 dark:text-error-400">
+                                    @if ($closing->difference < 0)
+                                        <span
+                                            class="inline-flex px-2 py-1 text-xs font-bold rounded-lg text-error-500 bg-error-50 dark:bg-error-500/10 dark:text-error-400">
                                             {{ number_format($closing->difference, 2) }}
                                         </span>
                                     @elseif($closing->difference > 0)
-                                        <span class="inline-flex px-2 py-1 text-xs font-bold text-blue-600 bg-blue-50 rounded-lg dark:bg-blue-500/10 dark:text-blue-400">
+                                        <span
+                                            class="inline-flex px-2 py-1 text-xs font-bold text-blue-500 bg-blue-50 rounded-lg dark:bg-blue-500/10 dark:text-blue-400">
                                             +{{ number_format($closing->difference, 2) }}
                                         </span>
                                     @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-400">
+                                        <span
+                                            class="inline-flex px-2 py-1 text-xs font-bold text-gray-500 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-400">
                                             مطابق
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="font-bold text-success-600 dark:text-success-400">{{ number_format($closing->transferred_amount, 2) }}</span>
+                                    <span
+                                        class="font-bold text-success-500 dark:text-success-400">{{ number_format($closing->transferred_amount, 2) }}</span>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <p class="text-xs text-gray-500 max-w-[200px] truncate" title="{{ $closing->notes }}">
+                                    <p class="text-xs text-gray-500 max-w-[200px] truncate"
+                                        title="{{ $closing->notes }}">
                                         {{ $closing->notes ?? '—' }}
                                     </p>
                                 </td>
@@ -182,12 +291,16 @@
                             <tr>
                                 <td colspan="8" class="py-16 text-center">
                                     <div class="flex flex-col items-center">
-                                        <div class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
-                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        <div
+                                            class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
+                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </div>
-                                        <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">لا يوجد سجلات للإقفال اليومي في هذه الفترة</p>
+                                        <p class="text-sm font-semibold text-gray-500 dark:text-gray-400">لا يوجد سجلات
+                                            للإقفال اليومي في هذه الفترة</p>
                                     </div>
                                 </td>
                             </tr>
@@ -195,7 +308,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             @if ($closings->hasPages())
                 <div class="p-6 border-t border-gray-100 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
                     {{ $closings->links() }}
@@ -236,7 +349,7 @@
 
             const formatDate = (date) =>
                 `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            
+
             startDateInput.value = formatDate(startDate);
             endDateInput.value = formatDate(endDate);
             document.getElementById('filterForm').submit();

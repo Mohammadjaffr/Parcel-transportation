@@ -225,14 +225,24 @@ class CashClosingController extends Controller
             ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
             : now()->endOfMonth();
 
+        // Status filter
+        $statusFilter = $request->input('status');
+
         // Base Query
         $query = CashRegisterClosing::where('branch_code', $branchCode)
             ->whereBetween('created_at', [$startDate, $endDate]);
 
-        // KPIs (Calculated from filtered data)
+        // KPIs (Calculated from filtered data - without status filter)
         $totalTransferred = (clone $query)->sum('transferred_amount');
         $totalShortage = (clone $query)->where('difference', '<', 0)->sum('difference'); // Will be negative
         $totalSurplus = (clone $query)->where('difference', '>', 0)->sum('difference');
+
+        // Apply status filter for listing
+        if ($statusFilter === 'shortage') {
+            $query->where('difference', '<', 0);
+        } elseif ($statusFilter === 'surplus') {
+            $query->where('difference', '>', 0);
+        }
 
         // Fetch Data
         $closings = $query->with('user')

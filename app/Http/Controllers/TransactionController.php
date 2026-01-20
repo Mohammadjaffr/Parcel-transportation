@@ -26,12 +26,22 @@ class TransactionController extends Controller
             ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
             : now()->endOfMonth();
 
-        // Fetch transactions for the current branch with date range
-        $transactions = Transaction::where('branch_code', $branchCode)
+        // Type filter (in = income, out = expense)
+        $typeFilter = $request->input('type');
+
+        // Build transactions query
+        $transactionsQuery = Transaction::where('branch_code', $branchCode)
             ->whereBetween('transactions.created_at', [$startDate, $endDate])
-            ->with(['category', 'user', 'shipment'])
-            ->latest()
-            ->paginate(15);
+            ->with(['category', 'user', 'shipment']);
+
+        // Apply type filter if provided
+        if ($typeFilter) {
+            $transactionsQuery->whereHas('category', function ($query) use ($typeFilter) {
+                $query->where('type', $typeFilter);
+            });
+        }
+
+        $transactions = $transactionsQuery->latest()->paginate(15);
 
         // Calculate balance (Income - Expense) for the date range
         $income = Transaction::where('branch_code', $branchCode)
@@ -79,6 +89,9 @@ class TransactionController extends Controller
         // Get active categories for the modal
         $categories = TransactionCategory::active()->get();
 
+        // System balance for closing modal
+        $systemBalance = $balance;
+
         return view('transactions.index', compact(
             'transactions', 
             'balance', 
@@ -88,7 +101,8 @@ class TransactionController extends Controller
             'dailyTrend',
             'startDate',
             'endDate',
-            'categories'
+            'categories',
+            'systemBalance'
         ));
     }
 

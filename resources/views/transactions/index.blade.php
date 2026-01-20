@@ -8,63 +8,69 @@
     <div class="space-y-6 font-outfit" dir="rtl">
 
         {{-- Balance Cards --}}
+        @php
+            $typeFilter = request('type');
+        @endphp
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             {{-- Current Balance --}}
-            <div
-                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border transition-all shadow-theme-sm {{ $balance >= 0 ? 'border-success-200 dark:border-success-500/30' : 'border-error-200 dark:border-error-500/30' }}">
-                <div
-                    class="flex justify-center items-center w-12 h-12 rounded-xl {{ $balance >= 0 ? 'bg-success-50 dark:bg-success-500/10 text-success-500' : 'bg-error-50 dark:bg-error-500/10 text-error-500' }}">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                </div>
-                <div class="mt-4">
-                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">الرصيد
+            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => null])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ !$typeFilter ? 'border-brand-500 ring-2 ring-brand-500' : 'border-gray-100 dark:border-gray-800' }}">
+               
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ !$typeFilter ? 'pe-10' : '' }}">الرصيد
                         الحالي</span>
-                    <h4 class="mt-1 text-2xl font-black {{ $balance >= 0 ? 'text-success-500' : 'text-error-500' }}">
-                        {{ number_format($balance, 2) }} <span class="text-base font-semibold">YER</span>
-                    </h4>
                 </div>
-            </div>
+                <h4 class="mt-3 text-2xl font-black {{ $balance >= 0 ? 'text-brand-500' : 'text-error-500' }}">
+                    {{ number_format($balance) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
 
             {{-- Total Income --}}
-            <div
-                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 transition-all shadow-theme-sm">
-                <div
-                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                    </svg>
-                </div>
-                <div class="mt-4">
-                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">إجمالي
+            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => 'in'])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $typeFilter === 'in' ? 'border-success-500 ring-2 ring-success-500' : 'border-gray-100 dark:border-gray-800' }}">
+             
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10">
+                        <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $typeFilter === 'in' ? 'pe-16' : '' }}">إجمالي
                         الإيرادات</span>
-                    <h4 class="mt-1 text-2xl font-black text-success-500">
-                        {{ number_format($income, 2) }} <span class="text-base font-semibold">YER</span>
-                    </h4>
                 </div>
-            </div>
+                <h4 class="mt-3 text-2xl font-black text-success-500">
+                    {{ number_format($income) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
 
             {{-- Total Expenses --}}
-            <div
-                class="relative flex flex-col items-start justify-between rounded-2xl bg-white p-6 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 transition-all shadow-theme-sm">
-                <div
-                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                    </svg>
-                </div>
-                <div class="mt-4">
-                    <span class="text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">إجمالي
+            <a href="{{ route('transactions.index', array_merge(request()->query(), ['type' => 'out'])) }}"
+                class="relative flex flex-col rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all shadow-theme-sm cursor-pointer hover:shadow-lg {{ $typeFilter === 'out' ? 'border-error-500 ring-2 ring-error-500' : 'border-gray-100 dark:border-gray-800' }}">
+               
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
+                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                        </svg>
+                    </div>
+                    <span
+                        class="text-sm font-bold text-gray-700 dark:text-gray-300 {{ $typeFilter === 'out' ? 'pe-16' : '' }}">إجمالي
                         المصروفات</span>
-                    <h4 class="mt-1 text-2xl font-black text-error-500">
-                        {{ number_format($expense, 2) }} <span class="text-base font-semibold">YER</span>
-                    </h4>
                 </div>
-            </div>
+                <h4 class="mt-3 text-2xl font-black text-error-500">
+                    {{ number_format($expense) }} <span class="text-sm font-semibold">ر.ي</span>
+                </h4>
+            </a>
         </div>
 
         {{-- Date Range Filter Toolbar --}}
@@ -105,6 +111,19 @@
                     </div>
 
                     {{-- Quick Filters --}}
+                    @php
+                        $now = now();
+                        $isThisMonth =
+                            $startDate->isSameDay($now->copy()->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->endOfMonth());
+                        $isLastMonth =
+                            $startDate->isSameDay($now->copy()->subMonth()->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->subMonth()->endOfMonth());
+                        $isThisYear =
+                            $startDate->isSameDay($now->copy()->startOfYear()) &&
+                            $endDate->isSameDay($now->copy()->endOfYear());
+                        $isAllTime = !$isThisMonth && !$isLastMonth && !$isThisYear;
+                    @endphp
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
                             <div
@@ -119,19 +138,19 @@
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button type="button" onclick="setDateRange('thisMonth')"
-                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الشهر الحالي
                             </button>
                             <button type="button" onclick="setDateRange('lastMonth')"
-                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLastMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الشهر الماضي
                             </button>
                             <button type="button" onclick="setDateRange('thisYear')"
-                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisYear ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 هذه السنة
                             </button>
                             <button type="button" onclick="setDateRange('allTime')"
-                                class="px-3 py-2 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg transition-all dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isAllTime ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الكل
                             </button>
                         </div>
@@ -219,14 +238,7 @@
                     </svg>
                     الفئات
                 </a>
-                <a href="{{ route('closings.create') }}"
-                    class="inline-flex gap-1.5 items-center px-4 h-10 text-xs font-bold text-white bg-purple-500 rounded-xl transition-all duration-200 hover:bg-purple-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    إقفال يومي
-                </a>
+                @include('closings.create-closing-modal')
                 @include('transactions.create-transaction-modal')
             </div>
         </div>
@@ -312,7 +324,7 @@
                                 <td class="px-6 py-4 text-center">
                                     <span
                                         class="text-lg font-black {{ $transaction->category->type === 'in' ? 'text-success-500' : 'text-error-500' }}">
-                                        {{ $transaction->category->type === 'in' ? '+' : '-' }}{{ number_format($transaction->amount, 2) }}
+                                        {{ $transaction->category->type === 'in' ? '+' : '-' }}{{ number_format($transaction->amount) }}
                                     </span>
                                 </td>
 
@@ -398,11 +410,11 @@
 
                 const backgroundColors = [
                     'rgba(239, 68, 68, 0.8)',
-                    'rgba(249, 115, 22, 0.8)',
+                    'rgba(249, 1152, 0.8)',
                     'rgba(245, 158, 11, 0.8)',
-                    'rgba(132, 204, 22, 0.8)',
-                    'rgba(14, 165, 233, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(132042, 0.8)',
+                    'rgba(14, 16533, 0.8)',
+                    'rgba(139, 9246, 0.8)',
                     'rgba(236, 72, 153, 0.8)',
                 ];
 
