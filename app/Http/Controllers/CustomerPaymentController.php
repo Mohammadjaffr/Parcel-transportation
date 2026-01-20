@@ -91,16 +91,12 @@ class CustomerPaymentController extends Controller
             ]);
             
             // تسجيل الدفعة في الصندوق المالي (Cash Box Integration)
-            try {
-                TransactionService::recordShipmentPayment(
-                    shipment: $shipment,
-                    amount: $data['amount'],
-                    branchCode: $user->branch_code
-                );
-            } catch (\Exception $e) {
-                // Log the error but don't fail the payment
-                \Log::error('Failed to record shipment payment in cash box: ' . $e->getMessage());
-            }
+            // Note: This needs to propagate exception to rollback DB transaction if it fails
+            TransactionService::recordShipmentPayment(
+                shipment: $shipment,
+                amount: $data['amount'],
+                branchCode: $user->branch_code
+            );
             
             // تحديث حالة الدين للشحنة إذا تم السداد بالكامل
             $newTotalPaid = $shipment->payments()->sum('amount');

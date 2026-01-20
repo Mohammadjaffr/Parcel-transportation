@@ -37,7 +37,7 @@ class TransactionService
             'branch_code' => $branchCode,
             'transaction_category_id' => $category->id,
             'amount' => $amount,
-            'description' => "Payment received for shipment #{$shipment->bond_number}",
+            'description' => "استلام دفعة للشحنة رقم {$shipment->bond_number}",
             'created_by' => auth()->id() ?? 1, // Fallback to system user if no auth
             'shipment_id' => $shipment->id,
         ]);
