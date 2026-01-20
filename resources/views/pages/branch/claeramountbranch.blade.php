@@ -3,7 +3,8 @@
 
 <div x-data="{
     isModalOpen: false,
-    isLoading: false
+    isLoading: false,
+    selectedType: 'in'
 }">
     {{-- Open Modal Button - أيقونة تصفية الحساب --}}
     <button @click="isModalOpen = true"
@@ -33,38 +34,15 @@
 
             {{-- Modal Header --}}
             <div class="flex gap-3 items-center pb-4 mb-5 border-b border-gray-100 dark:border-gray-800">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10">
-                    <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                 </div>
                 <div>
                     <h4 class="text-lg font-bold text-gray-900 dark:text-white">تصفية حساب الفرع</h4>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">تسجيل تسوية للمستحقات من الفرع</p>
-                </div>
-            </div>
-
-            {{-- Branch Info --}}
-            <div class="p-4 mb-5 bg-gray-50 rounded-xl border border-gray-100 dark:bg-gray-800/50 dark:border-gray-800">
-                <div class="flex gap-3 items-center">
-                    <div
-                        class="flex justify-center items-center w-12 h-12 text-lg font-bold rounded-xl text-brand-500 bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                        </svg>
-                    </div>
-                    <div class="flex-1">
-                        <h5 class="font-bold text-gray-900 dark:text-white">{{ $branch->name }}</h5>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $branch->city }} - {{ $branch->code }}
-                        </p>
-                    </div>
-                    <div class="text-left">
-                        <span class="text-xs text-gray-500 dark:text-gray-400">المبلغ المستحق</span>
-                        <p class="text-lg font-black text-error-500">{{ number_format($branchBalance) }} <span
-                                class="text-xs">ر.ي</span></p>
-                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">تسجيل حركة مالية لتصفية المستحقات</p>
                 </div>
             </div>
 
@@ -75,15 +53,94 @@
 
                 <div class="space-y-5">
 
+                    {{-- Branch Info Card --}}
+                    <div
+                        class="p-4 bg-gray-50 rounded-xl border border-gray-100 dark:bg-gray-800/50 dark:border-gray-800">
+                        <div class="flex gap-3 items-center">
+                            <div
+                                class="flex justify-center items-center w-12 h-12 text-lg font-bold rounded-xl text-brand-500 bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-gray-900 dark:text-white">{{ $branch->name }}</h5>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">{{ $branch->city }} -
+                                    {{ $branch->code }}</p>
+                            </div>
+                            <div class="text-left">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">المبلغ المستحق</span>
+                                <p class="text-lg font-black text-error-500">{{ number_format($branchBalance) }} <span
+                                        class="text-xs">ر.ي</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Type Selection --}}
+                    <div>
+                        <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                            نوع المعاملة <span class="text-error-500">*</span>
+                        </label>
+
+                        <div class="flex gap-3">
+                            {{-- Income Option --}}
+                            <button type="button" @click="selectedType = 'in'"
+                                :class="selectedType === 'in'
+                                    ?
+                                    'bg-success-50 border-success-500 dark:border-success-400' :
+                                    'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                                class="flex flex-1 gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
+                                <div :class="selectedType === 'in' ? 'bg-success-100 dark:bg-success-500/20' :
+                                    'bg-gray-100 dark:bg-gray-700'"
+                                    class="flex justify-center items-center w-10 h-10 rounded-xl transition-colors">
+                                    <svg class="w-5 h-5 text-success-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                    </svg>
+                                </div>
+                                <span
+                                    :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
+                                        'text-gray-600 dark:text-gray-300'"
+                                    class="text-sm font-bold transition-colors">إيراد / دخل</span>
+                            </button>
+
+                            {{-- Expense Option --}}
+                            <button type="button" @click="selectedType = 'out'"
+                                :class="selectedType === 'out'
+                                    ?
+                                    'bg-error-50 border-error-500 dark:bg-error-500/15 dark:border-error-400' :
+                                    'bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'"
+                                class="flex flex-1 gap-3 items-center p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer">
+                                <div :class="selectedType === 'out' ? 'bg-error-100 dark:bg-error-500/20' :
+                                    'bg-gray-100 dark:bg-gray-700'"
+                                    class="flex justify-center items-center w-10 h-10 rounded-xl transition-colors">
+                                    <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                    </svg>
+                                </div>
+                                <span
+                                    :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
+                                        'text-gray-600 dark:text-gray-300'"
+                                    class="text-sm font-bold transition-colors">مصروف / خروج</span>
+                            </button>
+                        </div>
+                        <input type="hidden" name="type" :value="selectedType">
+                    </div>
+
                     {{-- Amount --}}
                     <div>
                         <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            المبلغ المدفوع <span class="text-error-500">*</span>
+                            المبلغ <span class="text-error-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="number" name="amount"
                                 class="pr-4 pl-14 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-800 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white placeholder:text-gray-400"
-                                step="0.01" min="0.01" placeholder="0.00" value="{{ $branchBalance }}" required>
+                                step="0.01" min="0.01" placeholder="0.00" value="{{ $branchBalance }}"
+                                required>
                             <span
                                 class="absolute left-4 top-1/2 text-xs font-bold -translate-y-1/2 text-brand-500">ر.ي</span>
                         </div>
@@ -139,7 +196,7 @@
                         إلغاء
                     </button>
                     <button type="submit" :disabled="isLoading"
-                        class="inline-flex flex-1 gap-2 justify-center items-center h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all duration-200 bg-success-500 hover:bg-success-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-success-500/20">
+                        class="inline-flex flex-1 gap-2 justify-center items-center h-11 text-sm font-semibold text-white rounded-xl shadow-lg transition-all duration-200 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed shadow-brand-500/20">
                         {{-- Loading Spinner --}}
                         <svg x-show="isLoading" class="w-4 h-4 text-white animate-spin"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -154,7 +211,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M5 13l4 4L19 7" />
                         </svg>
-                        <span x-text="isLoading ? 'جاري الحفظ...' : 'تأكيد التسوية'"></span>
+                        <span x-text="isLoading ? 'جاري الحفظ...' : 'حفظ المعاملة'"></span>
                     </button>
                 </div>
             </form>

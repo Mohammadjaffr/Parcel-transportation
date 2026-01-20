@@ -13,6 +13,8 @@
         * {
             box-sizing: border-box;
             -webkit-print-color-adjust: exact;
+            margin: 0;
+            padding: 0;
         }
 
         body {
@@ -28,7 +30,9 @@
         .sticker-card {
             width: 70mm;
             height: 120mm;
-            padding: 2mm 1mm;
+            padding: 0.5mm 1mm;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ===== الهيدر ===== */
@@ -37,94 +41,108 @@
             border-bottom: 1.2px solid #fb6514;
             margin-bottom: 0.5mm;
             table-layout: fixed;
+            border-spacing: 0;
+        }
+
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+            line-height: 1;
         }
 
         .company-cell {
-            width: 33%;
-            font-size: 6.2pt;
-            line-height: 1.2;
+            width: 38%;
+            font-size: 4.5pt;
+            line-height: 1.05;
         }
 
         .header-title {
-            font-size: 7.5pt;
+            font-size: 6.5pt;
             font-weight: bold;
+            margin-bottom: 0.2mm;
         }
 
         .header-subtitle {
-            font-size: 6pt;
-            margin-top: .1mm;
+            font-size: 4.8pt;
+            margin-bottom: 0.1mm;
         }
 
         .header-extra {
-            font-size: 5pt;
-            margin-top: .1mm;
+            font-size: 4.2pt;
+            margin-bottom: 0.05mm;
         }
 
         .header-phones {
-            font-size: 5pt;
+            font-size: 4pt;
             font-weight: bold;
-            margin-top: .1mm;
+            margin-top: 0.2mm;
             direction: ltr;
+            line-height: 1.1;
         }
 
         .logo-cell {
-            width: 34%;
+            width: 24%;
             text-align: center;
+            padding: 0;
         }
 
         .logo-cell img {
-            width: 10mm;
+            width: 6mm;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
 
         .branch-cell {
-            width: 33%;
+            width: 38%;
             text-align: left;
-            font-size: 6.2pt;
+            font-size: 5pt;
             font-weight: bold;
-            line-height: 1.2;
+            line-height: 1.15;
         }
 
         /* ===== الجداول ===== */
         .info-grid {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 0.5mm;
+            margin-bottom: 0.3mm;
         }
 
         .info-grid td {
-            padding: .25mm 0;
-            border-bottom: 1px solid #eee;
+            padding: 0.1mm 0.5mm;
+            border-bottom: 0.5px solid #eee;
+            font-size: 5.5pt;
         }
 
         .label {
-            font-size: 6.3pt;
+            font-size: 5.5pt;
             font-weight: bold;
             color: #fb6514;
             white-space: nowrap;
         }
 
         .value {
-            font-size: 8pt;
-            font-weight: 900;
+            font-size: 6.5pt;
+            font-weight: 800;
         }
 
         .value-small {
-            font-size: 7pt;
+            font-size: 6pt;
             font-weight: 700;
         }
 
         /* ===== الإدارة العامة (مضغوطة) ===== */
         .admin-text {
-            font-size: 5.4pt;
+            font-size: 4.5pt;
             font-weight: 700;
             text-align: center;
-            margin-top: 0.3mm;
-            line-height: 1.1;
+            margin-top: 1mm;
+            line-height: 1.12;
         }
 
         .admin-text .phones {
             font-weight: 800;
-            margin-bottom: .3mm;
+            /* margin-bottom: 0.4mm; */
         }
 
         .admin-text .nums {
@@ -135,6 +153,7 @@
 
         .admin-text .note {
             margin: 0;
+            line-height: 1.15;
         }
     </style>
 </head>

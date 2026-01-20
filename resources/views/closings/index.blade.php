@@ -68,36 +68,34 @@
                 </div>
             </div>
         </div>
-        {{-- Header with Filter --}}
+        {{-- Header --}}
         <div
-            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-            {{-- Top Row: Title & Back Button --}}
-            <div
-                class="flex flex-col gap-4 justify-between items-start pb-5 mb-5 border-b border-gray-100 md:flex-row md:items-center dark:border-gray-800">
-                <div class="flex gap-4 items-center">
-                    <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-6 h-6 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-900 dark:text-white">سجل الإقفال اليومي</h2>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
-                    </div>
-                </div>
-                <a href="{{ route('transactions.index') }}"
-                    class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
+            <div class="flex gap-4 items-center">
+                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                    <svg class="w-6 h-6 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
-                    العودة للمعاملات
-                </a>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">سجل الإقفال اليومي</h2>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
+                </div>
             </div>
+            <a href="{{ route('transactions.index') }}"
+                class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                العودة للمعاملات
+            </a>
+        </div>
 
-            {{-- Filter Form --}}
+        {{-- Filter Toolbar --}}
+        <div
+            class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
             <form method="GET" action="{{ route('closings.index') }}" id="filterForm">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
 

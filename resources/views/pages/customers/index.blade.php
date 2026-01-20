@@ -60,7 +60,7 @@
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="font-bold tracking-widest uppercase text-theme-xs text-success-500">رصيد خالص</span>
+                    <span class="font-bold tracking-widest uppercase text-theme-xs text-success-500">رصيد مسدد</span>
                     <h4 class="text-xl font-black dark:text-white">
                         {{ $customers->getCollection()->filter(fn($c) => ($c->debit_sum ?? 0) <= ($c->credit_sum ?? 0))->count() }}
                     </h4>
@@ -153,7 +153,7 @@
                                     <div class="flex flex-col gap-1.5 items-center">
                                         <span
                                             class="px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-lg {{ $is_debtor ? 'bg-error-500 text-white shadow-error-500/20' : 'bg-success-500 text-white shadow-success-500/20' }}">
-                                            {{ $is_debtor ? 'مديون' : 'خالص' }}
+                                            {{ $is_debtor ? 'مديون' : 'مسدد' }}
                                         </span>
                                         @if ($is_debtor)
                                             <span
@@ -172,8 +172,8 @@
                                             title="كشف الحساب">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                 viewBox="0 0 24 24">
-                                                <path
-                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                         </a>
                                         <a href="{{ route('customers.comprehensive-report', $customer->id) }}"

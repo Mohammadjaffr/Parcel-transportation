@@ -14,14 +14,15 @@
 
     {{-- ===== التصميم الرئيسي للوحة التحكم ===== --}}
 
-    <div class="grid grid-cols-1 gap-6 mb-6 xl:grid-cols-1">
+    <div class="grid grid-cols-1 gap-6 mb-6 xl:grid-cols-1" x-data="{ filterStatus: 'all' }">
 
         {{-- ===== بطاقات الإحصائيات ===== --}}
         <div class="flex gap-6 mb-6">
 
-            {{-- بطاقة: المسجلة اليوم --}}
-            <div
-                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+            {{-- بطاقة: المسجلة اليوم (الكل) --}}
+            <div @click="filterStatus = 'all'"
+                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 bg-gray-50 rounded-xl dark:bg-gray-800 text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,8 +38,10 @@
             </div>
 
             {{-- بطاقة: في الطريق --}}
-            <div
-                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+            <div @click="filterStatus = 'in_transit'"
+                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                    'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,8 +59,9 @@
             </div>
 
             {{-- بطاقة: المستلمة --}}
-            <div
-                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 transition-all hover:shadow-md shadow-theme-sm">
+            <div @click="filterStatus = 'delivered'"
+                :class="filterStatus === 'delivered' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,6 +96,7 @@
             </div>
 
         </div>
+
 
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
@@ -140,7 +145,9 @@
 
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                             @forelse ($last24Shipments as $shipment)
-                                <tr class="transition-all group hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                <tr class="transition-all group hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                                    x-show="filterStatus === 'all' || filterStatus === '{{ $shipment->status }}'"
+                                    x-transition>
                                     {{-- ID --}}
                                     <td class="px-6 py-4 text-sm text-right">
                                         <span
