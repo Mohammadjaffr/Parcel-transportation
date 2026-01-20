@@ -100,4 +100,12 @@ class Shipment extends Model
     {
         return $this->hasMany(CustomerPayment::class);
     }
+
+    /**
+     * Get the transaction associated with this shipment
+     */
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
+    }
 }

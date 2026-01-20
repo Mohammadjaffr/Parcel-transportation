@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
+use App\Http\Controllers\CashClosingController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerFinanceController;
 use App\Http\Controllers\CustomerPaymentController;
@@ -13,9 +14,12 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
 use App\Http\Controllers\SystemSettingsController;
+use App\Http\Controllers\TransactionCategoryController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
 use Illuminate\Support\Facades\Route;
+
 
 // الصفحة الرئيسية تحول للدخول
 Route::get('/', function () {
@@ -158,6 +162,17 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
         ->name('branch-package-payment.index');
     Route::delete('/branch-package-payment/{id}', [App\Http\Controllers\BranchPackagePaymentController::class, 'destroy'])
         ->name('branch-package-payment.destroy');
+
+    // Cash Box / Petty Cash Transactions
+    Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store']);
+    
+    // Transaction Category Settings
+    Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit']);
+    
+    // Daily Cash Closing
+    Route::get('/closings/create', [CashClosingController::class, 'create'])->name('closings.create');
+    Route::post('/closings', [CashClosingController::class, 'store'])->name('closings.store');
 });
+
 
 require __DIR__ . '/auth.php';

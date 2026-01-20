@@ -4,8 +4,7 @@
 
 
   <!-- SIDEBAR HEADER -->
-  <div :class="sidebarToggle ? 'justify-center' : 'justify-between'"
-    class="flex gap-2 items-center  sidebar-header">
+  <div :class="sidebarToggle ? 'justify-center' : 'justify-between'" class="flex gap-2 items-center  sidebar-header">
     <a href="#">
       <span class="logo" :class="sidebarToggle ? 'hidden' : ''">
         <img width="150" height="150" class=" h-auto dark:hidden"
@@ -76,22 +75,22 @@
 
           <!-- Menu Item Calendar -->
           @if(Auth::user()->type != 'user')
-          <li>
-            <a href="{{ route('users.index') }}" @click="selected = (selected === 'users' ? '':'users')"
-              class="menu-item group" :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-active' :
-                                'menu-item-inactive'">
-              <svg :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd"
-                  d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
-                  fill="" />
-              </svg>
-              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                ادارة المستخدمين
-              </span>
-            </a>
-          </li>
+            <li>
+              <a href="{{ route('users.index') }}" @click="selected = (selected === 'users' ? '':'users')"
+                class="menu-item group" :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-active' :
+                                    'menu-item-inactive'">
+                <svg :class="window.location.href.includes('{{ route('users.index') }}') ? 'menu-item-icon-active' :
+                                    'menu-item-icon-inactive'" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 14.1526 4.3002 16.1184 5.61936 17.616C6.17279 15.3096 8.24852 13.5955 10.7246 13.5955H13.2746C15.7509 13.5955 17.8268 15.31 18.38 17.6167C19.6996 16.119 20.5 14.153 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM17.0246 18.8566V18.8455C17.0246 16.7744 15.3457 15.0955 13.2746 15.0955H10.7246C8.65354 15.0955 6.97461 16.7744 6.97461 18.8455V18.856C8.38223 19.8895 10.1198 20.5 12 20.5C13.8798 20.5 15.6171 19.8898 17.0246 18.8566ZM2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12ZM11.9991 7.25C10.8847 7.25 9.98126 8.15342 9.98126 9.26784C9.98126 10.3823 10.8847 11.2857 11.9991 11.2857C13.1135 11.2857 14.0169 10.3823 14.0169 9.26784C14.0169 8.15342 13.1135 7.25 11.9991 7.25ZM8.48126 9.26784C8.48126 7.32499 10.0563 5.75 11.9991 5.75C13.9419 5.75 15.5169 7.32499 15.5169 9.26784C15.5169 11.2107 13.9419 12.7857 11.9991 12.7857C10.0563 12.7857 8.48126 11.2107 8.48126 9.26784Z"
+                    fill="" />
+                </svg>
+                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                  ادارة المستخدمين
+                </span>
+              </a>
+            </li>
           @endif
           <!-- Menu Item Calendar -->
 
@@ -111,6 +110,8 @@
               </span>
             </a>
           </li>
+
+
 
           <!-- Menu Item Forms -->
           <li>
@@ -132,7 +133,7 @@
               </svg>
 
               <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                إدارة  الطرود
+                إدارة الطرود
               </span>
             </a>
           </li>
@@ -161,7 +162,65 @@
             </a>
           </li>
 
+          <li>
+            <a href="{{ route('transactions.index') }}"
+              class="menu-item group {{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+
+              {{-- أيقونة تدل على النقدية --}}
+              <svg
+                class="{{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0Z"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                الصندوق المالي
+              </span>
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('transaction-categories.index') }}"
+              class="menu-item group {{ request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+
+              {{-- أيقونة الإعدادات --}}
+              <svg
+                class="{{ request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"
+                  stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                إعدادات الفئات
+              </span>
+            </a>
+          </li>
+
+          <li>
+            <a href="{{ route('closings.create') }}"
+              class="menu-item group {{ request()->routeIs('closings.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+
+              {{-- أيقونة الإقفال اليومي --}}
+              <svg class="{{ request()->routeIs('closings.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="1.5"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+
+              <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                إقفال يومي
+              </span>
+            </a>
+          </li>
+
           <!-- Menu Item Forms -->
+
 
           <!-- Menu Item Tables -->
           <li>

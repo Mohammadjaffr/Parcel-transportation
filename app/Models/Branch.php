@@ -46,4 +46,12 @@ class Branch extends Model
             ->withPivot('status', 'arrival_date', 'notes')
             ->withTimestamps();
     }
+
+    /**
+     * Get all transactions for this branch
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'branch_code', 'code');
+    }
 }
