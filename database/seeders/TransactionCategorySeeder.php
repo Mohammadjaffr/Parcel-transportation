@@ -15,19 +15,19 @@ class TransactionCategorySeeder extends Seeder
         $categories = [
             // Income categories
             [
-                'name' => 'Shipment Payment',
+                'name' => 'تحصيل شحنات',
                 'type' => 'in',
                 'code' => 'SHIPMENT_PAYMENT',
                 'is_active' => true,
             ],
             [
-                'name' => 'Deposit from HQ',
+                'name' => 'إيداع من المركز الرئيسي',
                 'type' => 'in',
                 'code' => 'HQ_DEPOSIT',
                 'is_active' => true,
             ],
             [
-                'name' => 'Cash Surplus',
+                'name' => 'فائض نقدي (زيادة)',
                 'type' => 'in',
                 'code' => 'CASH_SURPLUS',
                 'is_active' => true,
@@ -35,31 +35,31 @@ class TransactionCategorySeeder extends Seeder
 
             // Expense categories
             [
-                'name' => 'Employee Salary',
+                'name' => 'رواتب موظفين',
                 'type' => 'out',
                 'code' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Electricity Bill',
+                'name' => 'فاتورة كهرباء',
                 'type' => 'out',
                 'code' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Daily Expenses',
+                'name' => 'نثريات يومية',
                 'type' => 'out',
                 'code' => null,
                 'is_active' => true,
             ],
             [
-                'name' => 'Transfer to HQ',
+                'name' => 'تحويل للمركز الرئيسي',
                 'type' => 'out',
                 'code' => 'HQ_TRANSFER',
                 'is_active' => true,
             ],
             [
-                'name' => 'Cash Shortage',
+                'name' => 'عجز نقدي (نقص)',
                 'type' => 'out',
                 'code' => 'CASH_SHORTAGE',
                 'is_active' => true,
