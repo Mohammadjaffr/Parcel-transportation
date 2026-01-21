@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Classes\WebResponseClass;
 use App\Models\Customer;
 use App\Models\Shipment;
+use App\Models\Transaction;
+use App\Models\TransactionCategory;
 use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
@@ -461,15 +464,35 @@ class CustomerController extends Controller
             );
         }
 
+        // حساب إجمالي دين العميل للتحقق
+        $totalDebt = Shipment::where('sender_customer_id', $customer->id)
+            ->where('sender_branch_code', $user->branch_code)
+            ->where('payment_method', 'customer_credit')
+            ->get()
+            ->sum(function ($shipment) {
+                $paidAmount = $shipment->payments->sum('amount');
+                return max(0, $shipment->total_amount - $paidAmount);
+            });
+
         $validator = Validator::make($request->all(), [
-            'amount' => 'required|numeric|min:0.01',
-            'payment_method' => 'required|in:cash,bank_transfer,check',
+            'amount' => [
+                'required',
+                'numeric',
+                'min:0.01',
+                function ($attribute, $value, $fail) use ($totalDebt) {
+                    if ($value > $totalDebt) {
+                        $fail('المبلغ المدخل (' . number_format($value, 0) . ' ر.ي) أكبر من إجمالي دين العميل (' . number_format($totalDebt, 0) . ' ر.ي)');
+                    }
+                },
+            ],
+            'payment_method' => 'required|in:cash,bank_transfer',
             'reference_number' => 'nullable|string|max:100',
             'notes' => 'nullable|string|max:500',
         ], [
             'amount.required' => 'المبلغ مطلوب',
             'amount.min' => 'يجب أن يكون المبلغ أكبر من صفر',
             'payment_method.required' => 'طريقة الدفع مطلوبة',
+            'payment_method.in' => 'طريقة الدفع غير صالحة',
         ]);
 
         if ($validator->fails()) {
@@ -477,24 +500,31 @@ class CustomerController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+
             $data = $validator->validated();
             
-            // جلب الشحنات الآجلة غير المسددة بالكامل
+            // جلب الشحنات الآجلة غير المسددة بالكامل - مرتبة من الأقدم للأحدث (Water-Filling Algorithm)
             $shipments = Shipment::with(['payments'])
                 ->where('sender_customer_id', $customer->id)
+                ->where('sender_branch_code', $user->branch_code)
                 ->where('payment_method', 'customer_credit')
+                ->orderBy('created_at', 'ASC') // الأقدم أولاً
                 ->get();
 
             $remainingAmount = $data['amount'];
+            $totalPaidAmount = 0; // لتسجيل المبلغ الإجمالي المدفوع
 
             // توزيع المبلغ على الشحنات
             foreach ($shipments as $shipment) {
                 if ($remainingAmount <= 0) break;
 
+                // حساب المبلغ المدفوع سابقاً والمتبقي
                 $paidAmount = $shipment->payments->sum('amount');
                 $shipmentRemaining = $shipment->total_amount - $paidAmount;
 
                 if ($shipmentRemaining > 0) {
+                    // المبلغ الذي سندفعه لهذه الشحنة (الأقل بين المتبقي من الدفعة أو المتبقي على الشحنة)
                     $paymentAmount = min($remainingAmount, $shipmentRemaining);
 
                     // إنشاء دفعة جديدة
@@ -503,20 +533,65 @@ class CustomerController extends Controller
                         'payment_method' => $data['payment_method'],
                         'notes' => $data['notes'] ?? 'تصفية حساب',
                         'reference_number' => $data['reference_number'] ?? null,
-                        'received_by' => $user->id,
+                        'created_by' => $user->id,
+                        'customer_id' => $customer->id,
+                        'branch_code' => $user->branch_code,
+                        'payment_date' => now(),
                     ]);
 
+                    // تحديث المبلغ المدفوع الكلي
+                    $newPaidTotal = $paidAmount + $paymentAmount;
+
+                    // تحديث حالة الدفع للشحنة
+                    if ($newPaidTotal >= $shipment->total_amount) {
+                        // تم الدفع بالكامل
+                        $shipment->update([
+                            'payment_status' => 'paid',
+                            'partial_amount' => $shipment->total_amount,
+                        ]);
+                    } else {
+                        // دفع جزئي
+                        $shipment->update([
+                            'payment_status' => 'partial',
+                            'partial_amount' => $newPaidTotal,
+                        ]);
+                    }
+
+                    $totalPaidAmount += $paymentAmount;
                     $remainingAmount -= $paymentAmount;
                 }
             }
 
+            // إنشاء أو جلب فئة "تحصيل ديون"
+            $debtCategory = TransactionCategory::firstOrCreate(
+                ['code' => 'DEBT_COLLECT'],
+                [
+                    'name' => 'تحصيل ديون',
+                    'type' => 'in', // إيراد
+                    'is_active' => true,
+                ]
+            );
+
+            // إنشاء سجل في جدول المعاملات (Cash Box Integration)
+            Transaction::create([
+                'branch_code' => $user->branch_code,
+                'transaction_category_id' => $debtCategory->id,
+                'amount' => $totalPaidAmount,
+                'description' => 'تحصيل دين من العميل: ' . $customer->name,
+                'created_by' => $user->id,
+                'reference_number' => $data['reference_number'] ?? null,
+            ]);
+
+            DB::commit();
+
             return WebResponseClass::sendResponse(
                 'تمت التصفية!',
-                'تم تصفية حساب العميل بنجاح.',
+                'تم تصفية حساب العميل بنجاح بمبلغ ' . number_format($totalPaidAmount, 0) . ' ر.ي',
                 'حسناً',
                 'customers.index'
             );
         } catch (\Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
