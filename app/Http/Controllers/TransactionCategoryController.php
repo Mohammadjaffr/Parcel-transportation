@@ -12,7 +12,7 @@ class TransactionCategoryController extends Controller
      */
     public function index()
     {
-        $categories = TransactionCategory::orderBy('type')->orderBy('name')->get();
+        $categories = TransactionCategory::orderBy('type')->orderBy('name')->paginate(10);
 
         return view('transaction_categories.index', compact('categories'));
     }
@@ -54,15 +54,13 @@ class TransactionCategoryController extends Controller
                 ->with('success', 'Category status updated successfully.');
         }
 
-        // If updating name/type
+        // If updating name - validate uniqueness excluding current category
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:in,out',
+            'name' => 'required|string|max:255|unique:transaction_categories,name,' . $transactionCategory->id,
         ]);
 
         $transactionCategory->update([
             'name' => $validated['name'],
-            'type' => $validated['type'],
         ]);
 
         return redirect()->route('transaction-categories.index')
