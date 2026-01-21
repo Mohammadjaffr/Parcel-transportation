@@ -15,6 +15,7 @@ class Transaction extends Model
         'amount',
         'description',
         'created_by',
+        'customer_id',
         'shipment_id',
         'reference_number',
         'attachment_path',
@@ -47,6 +48,14 @@ class Transaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get the related customer (optional)
+     */
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /**

@@ -34,6 +34,11 @@ class Customer extends Model
         return $this->hasMany(CustomerTransaction::class);
     }
 
+    public function cashTransactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
     public function users()
     {
         return $this->hasMany(User::class);

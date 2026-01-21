@@ -579,6 +579,7 @@ class CustomerController extends Controller
                 'amount' => $totalPaidAmount,
                 'description' => 'تحصيل دين من العميل: ' . $customer->name,
                 'created_by' => $user->id,
+                'customer_id' => $customer->id,
                 'reference_number' => $data['reference_number'] ?? null,
             ]);
 
