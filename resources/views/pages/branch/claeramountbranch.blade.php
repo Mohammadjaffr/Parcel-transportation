@@ -103,7 +103,7 @@
                                 <span
                                     :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
                                         'text-gray-600 dark:text-gray-300'"
-                                    class="text-sm font-bold transition-colors">إيراد / دخل</span>
+                                    class="text-sm font-bold transition-colors">قبض / دخل</span>
                             </button>
 
                             {{-- Expense Option --}}
@@ -125,7 +125,7 @@
                                 <span
                                     :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
                                         'text-gray-600 dark:text-gray-300'"
-                                    class="text-sm font-bold transition-colors">مصروف / خروج</span>
+                                    class="text-sm font-bold transition-colors">صروف / خروج</span>
                             </button>
                         </div>
                         <input type="hidden" name="type" :value="selectedType">

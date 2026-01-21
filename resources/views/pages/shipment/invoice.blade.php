@@ -130,10 +130,10 @@
                 <div class="header-title">الزاجل</div>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
                 <div style="font-size: 11px;">الى جميع المحافظات ودول الخليج</div>
-                <div style="font-size: 11px; margin-top: 4px;">الفرع الرئيسي / حضرموت - القطن - المرقدة</div>
+                <div style="font-size: 11px; margin-top: 4px;">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
                 <div class="header-phones">
-                    للتواصل / 781216757 - 730831802<br>
-                    773136727 - 781989021
+                   735637947   للتواصل / 774996316 - 772038561<br>
+                   
                 </div>
             </td>
 
@@ -145,10 +145,15 @@
             <!-- Left: Branch Info (Last TD in RTL) -->
             <td style="width: 35%; text-align: left; padding-top: 10px;">
                 <div style="font-weight: bold; font-size: 13px; margin-bottom: 5px;">
-                    فرع {{ $shipment->senderBranch->name ?? '........' }} - {{ $shipment->senderBranch->address ?? '' }}
+                    فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن   
                 </div>
                 <div style="font-weight: bold; font-size: 12px;">
-                    {{ $shipment->senderBranch->phone ?? '' }}
+                    781216757 - 773136727 - 730831802
+                </div>
+                 <div style="font-size: 11px; margin-top: 4px;">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
+                <div class="header-phones">
+                   735637947   للتواصل / 774996316 - 772038561<br>
+                   
                 </div>
             </td>
         </tr>

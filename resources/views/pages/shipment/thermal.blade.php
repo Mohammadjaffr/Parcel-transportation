@@ -168,10 +168,11 @@
                     <div class="header-title">الزاجل</div>
                     <div class="header-subtitle">للنقل والشحن السريع</div>
                     <div class="header-extra">الى جميع المحافظات ودول الخليج</div>
-                    <div class="header-extra">الفرع الرئيسي / حضرموت - القطن</div>
+                    <div class="header-extra">الفرع المكلا / اربعين شقة - جنب بنك  ا مجاد</div>
                     <div class="header-phones">
-                        781216757 - 730831802<br>
-                        773136727 - 781989021
+                        772038561 - 735637947<br>
+                        774996316 
+                        
                     </div>
                 </td>
 
@@ -180,8 +181,17 @@
                 </td>
 
                 <td class="branch-cell">
-                    فرع {{ $shipment->senderBranch->name ?? '...' }}<br>
-                    {{ $shipment->senderBranch->phone ?? '' }}
+                    <div style="font-weight: bold;  margin-bottom: 5px;">
+                    فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن   
+                </div>
+                <div style="font-weight: bold; ">
+                    781216757 - 773136727 - 730831802
+                </div>
+                 <div style=" margin-top: 4px;">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
+                <div class="header-phones">
+                   735637947   للتواصل / 774996316 - 772038561<br>
+                   
+                </div>
                 </td>
             </tr>
         </table>
@@ -193,22 +203,27 @@
                 <td><span class="value">{{ $shipment->bond_number ?? '...' }}</span></td>
                 <td><span class="label">نوع الشحنة:</span></td>
                 <td><span class="value-small">{{ $shipment->package_type ?? '...' }}</span></td>
-                <td><span class="label">الرمز:</span></td>
-                <td><span class="value">{{ $shipment->code ?? '...' }}</span></td>
+                <td><span class="label">التاريخ:</span></td>
+                <td><span class="value">{{ $shipment->created_at->format('Y-m-d') }}</span></td>
             </tr>
             <tr>
                 <td><span class="label">اسم المرسل:</span></td>
                 <td><span class="value">{{ $shipment->senderCustomer->name ?? '...' }}</span></td>
                 <td><span class="label">رقم المرسل:</span></td>
                 <td><span class="value-small">{{ $shipment->senderCustomer->phone ?? '...' }}</span></td>
-                <td><span class="label">اسم المستلم:</span></td>
-                <td><span class="value">{{ $shipment->receiverCustomer->name ?? '...' }}</span></td>
-            </tr>
-            <tr>
                 <td><span class="label">ملاحظه:</span></td>
                 <td><span class="value">{{ $shipment->notes ?? '...' }}</span></td>
-                <td><span class="label">التاريخ:</span></td>
-                <td><span class="value">{{ $shipment->created_at->format('Y-m-d') }}</span></td>
+
+            </tr>
+            <tr>
+
+                <td><span class="label">اسم المستلم:</span></td>
+                <td><span class="value">{{ $shipment->receiverCustomer->name ?? '...' }}</span></td>
+                <td><span class="label">رقم المستلم:</span></td>
+                <td><span class="value-small">{{ $shipment->receiverCustomer->phone ?? '...' }}</span></td>
+
+                <td><span class="label">الرمز:</span></td>
+                <td><span class="value">{{ $shipment->code ?? '...' }}</span></td>
             </tr>
         </table>
 

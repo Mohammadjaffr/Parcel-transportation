@@ -110,7 +110,7 @@
                 class="bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
                 <div class="flex gap-3 items-center mb-5">
                     <div
-                        class="p-2 bg-brand-50 rounded-2xl border border-brand-100 shadow-sm dark:bg-brand-500/10 dark:border-brand-500/20">
+                        class="p-2 rounded-2xl border shadow-sm bg-brand-50 border-brand-100 dark:bg-brand-500/10 dark:border-brand-500/20">
                         <svg class="w-5 h-5 text-brand-500 dark:text-brand-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -118,38 +118,38 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-gray-900 dark:text-white">معلومات الحزم المرسلة</h3>
+                        <h3 class="text-base font-bold text-gray-900 dark:text-white">معلومات الباصات المرسلة</h3>
                         <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                            الحزم والشحنات المتجهة لهذا الفرع
+                            الباصات والشحنات المتجهة لهذا الفرع
                         </p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
                     {{-- Package Count --}}
                     <div
-                        class="flex flex-col items-start justify-between p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-500/10 dark:to-purple-500/5 border border-purple-100 dark:border-purple-500/20">
+                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br rounded-2xl border border-brand-100 from-brand-50 to-brand-100/50 dark:from-brand-500/10 dark:to-brand-500/5 dark:border-brand-500/20">
                         <div class="flex gap-2 items-center mb-2">
-                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                             </svg>
-                            <span class="text-xs font-bold text-purple-600 dark:text-purple-400">عدد الحزم</span>
+                            <span class="text-xs font-bold text-brand-500 dark:text-brand-400">عدد الباصات</span>
                         </div>
-                        <h4 class="text-2xl font-black text-purple-700 dark:text-purple-300">
+                        <h4 class="text-2xl font-black text-brand-700 dark:text-brand-300">
                             {{ $packageCount }}
                         </h4>
                     </div>
 
                     {{-- Shipment Count --}}
                     <div
-                        class="flex flex-col items-start justify-between p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-500/10 dark:to-blue-500/5 border border-blue-100 dark:border-blue-500/20">
+                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br from-blue-50 rounded-2xl border border-blue-100 to-blue-100/50 dark:from-blue-500/10 dark:to-blue-500/5 dark:border-blue-500/20">
                         <div class="flex gap-2 items-center mb-2">
                             <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span class="text-xs font-bold text-blue-600 dark:text-blue-400">عدد الشحنات</span>
+                            <span class="text-xs font-bold text-blue-500 dark:text-blue-400">عدد الشحنات</span>
                         </div>
                         <h4 class="text-2xl font-black text-blue-700 dark:text-blue-300">
                             {{ $shipmentCount }}
@@ -158,16 +158,16 @@
 
                     {{-- Total Amount --}}
                     <div
-                        class="flex flex-col items-start justify-between p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 border border-amber-100 dark:border-amber-500/20">
+                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br from-amber-50 rounded-2xl border border-amber-100 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 dark:border-amber-500/20">
                         <div class="flex gap-2 items-center mb-2">
-                            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span class="text-xs font-bold text-amber-600 dark:text-amber-400">المبلغ الإجمالي</span>
+                            <span class="text-xs font-bold text-warning-500 dark:text-warning-400">المبلغ الإجمالي</span>
                         </div>
-                        <h4 class="text-xl font-black text-amber-700 dark:text-amber-300">
-                            {{ number_format($totalAmount, 0) }} <span class="text-xs font-sans">ر.ي</span>
+                        <h4 class="text-xl font-black text-warning-700 dark:text-warning-300">
+                            {{ number_format($totalAmount, 0) }} <span class="font-sans text-xs">ر.ي</span>
                         </h4>
                     </div>
 
@@ -186,7 +186,7 @@
                                 @endif
                             </svg>
                             <span
-                                class="text-xs font-bold {{ $isPaid ? 'text-success-600 dark:text-success-400' : 'text-rose-600 dark:text-rose-400' }}">حالة
+                                class="text-xs font-bold {{ $isPaid ? 'text-success-500 dark:text-success-400' : 'text-rose-500 dark:text-rose-400' }}">حالة
                                 الدفع</span>
                         </div>
                         <div class="flex flex-col gap-1">
@@ -279,9 +279,9 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-base font-bold text-gray-900 dark:text-white">جدول الحزم</h3>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white">جدول الباصات</h3>
                             <p class="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                                الحزم المتجهة لهذا الفرع
+                                الباصات المتجهة لهذا الفرع
                             </p>
                         </div>
                     </div>
@@ -290,7 +290,7 @@
                         <div
                             class="px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                             <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                                عدد الحزم: <span
+                                عدد الباصات: <span
                                     class="text-sm font-black text-brand-500 dark:text-brand-400">{{ $packages->total() }}</span>
                             </span>
                         </div>
@@ -302,7 +302,7 @@
                         <thead>
                             <tr class="border-b border-gray-100 bg-gray-50/80 dark:bg-gray-800/80 dark:border-gray-800">
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">رقم
-                                    الحزمة</th>
+                                    الرحلة</th>
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">السائق
                                 </th>
                                 <th class="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">عدد
@@ -351,7 +351,7 @@
                                     {{-- Shipment Count --}}
                                     <td class="px-6 py-4 align-top">
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20">
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-blue-700 bg-blue-50 rounded-2xl border border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -387,7 +387,7 @@
 
                                         @if ($package->branch_is_paid)
                                             <span
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-success-50 text-success-700 border border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
+                                                class="inline-flex gap-1.5 items-center px-3 py-1.5 rounded-2xl border bg-success-50 text-success-700 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -397,7 +397,7 @@
                                         @else
                                             <button type="button"
                                                 @click="openPaymentModal({{ $pivotId }}, '{{ $package->tracking_number }}', {{ $package->branch_total_amount }}, {{ $package->branch_paid_amount }}, {{ $package->branch_remaining_amount }})"
-                                                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-95">
+                                                class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-500 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-95">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -410,7 +410,7 @@
                                     {{-- Details Link --}}
                                     <td class="px-6 py-4 align-top">
                                         <a href="{{ route('shipmentpackage.show', $package->id) }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-600 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-500 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
