@@ -103,7 +103,6 @@
                             required>
                             <option value="cash">نقداً</option>
                             <option value="bank_transfer">تحويل بنكي</option>
-                            <option value="check">شيك</option>
                         </select>
                     </div>
 
