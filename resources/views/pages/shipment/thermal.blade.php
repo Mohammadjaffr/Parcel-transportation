@@ -168,11 +168,11 @@
                     <div class="header-title">الزاجل</div>
                     <div class="header-subtitle">للنقل والشحن السريع</div>
                     <div class="header-extra">الى جميع المحافظات ودول الخليج</div>
-                    <div class="header-extra">الفرع المكلا / اربعين شقة - جنب بنك  ا مجاد</div>
+                    <div class="header-extra">الفرع المكلا / اربعين شقة - جنب بنك ا مجاد</div>
                     <div class="header-phones">
                         772038561 - 735637947<br>
-                        774996316 
-                        
+                        774996316
+
                     </div>
                 </td>
 
@@ -182,16 +182,16 @@
 
                 <td class="branch-cell">
                     <div style="font-weight: bold;  margin-bottom: 5px;">
-                    فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن   
-                </div>
-                <div style="font-weight: bold; ">
-                    781216757 - 773136727 - 730831802
-                </div>
-                 <div style=" margin-top: 4px;">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
-                <div class="header-phones">
-                   735637947   للتواصل / 774996316 - 772038561<br>
-                   
-                </div>
+                        فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن
+                    </div>
+                    <div style="font-weight: bold; ">
+                        781216757 - 773136727 - 730831802
+                    </div>
+                    <div style=" margin-top: 4px;">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
+                    <div class="header-phones">
+                        735637947 للتواصل / 774996316 - 772038561<br>
+
+                    </div>
                 </td>
             </tr>
         </table>

@@ -3,58 +3,58 @@
 
 @section('content')
     <div class="min-h-screen bg-[#F8F9FC] dark:bg-gray-950 font-outfit" dir="rtl" x-data="{
-                        paymentModalOpen: false,
-                        isSubmitting: false,
-                        selectedPackage: {
-                            pivot_id: null,
-                            tracking_number: '',
-                            total_amount: 0,
-                            paid_amount: 0,
-                            remaining_amount: 0
-                        },
-                        openPaymentModal(pivotId, trackingNumber, totalAmount, paidAmount, remainingAmount) {
-                            this.selectedPackage = {
-                                pivot_id: pivotId,
-                                tracking_number: trackingNumber,
-                                total_amount: totalAmount,
-                                paid_amount: paidAmount,
-                                remaining_amount: remainingAmount
-                            };
-                            this.paymentModalOpen = true;
-                        },
-                        formatNumber(num) {
-                            return new Intl.NumberFormat('ar-EG').format(num);
-                        },
-                        async submitPayment(event) {
-                            this.isSubmitting = true;
-                            const form = event.target;
-                            const formData = new FormData(form);
-
-                            try {
-                                const response = await fetch(form.action, {
-                                    method: 'POST',
-                                    headers: {
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
-                                        'Accept': 'application/json',
-                                    },
-                                    body: formData
-                                });
-
-                                const data = await response.json();
-
-                                if (data.success) {
-                                    window.location.reload();
-                                } else {
-                                    alert(data.message || 'حدث خطأ');
-                                }
-                            } catch (error) {
-                                console.error(error);
-                                alert('حدث خطأ في الاتصال');
-                            } finally {
-                                this.isSubmitting = false;
-                            }
-                        }
-                    }">
+        paymentModalOpen: false,
+        isSubmitting: false,
+        selectedPackage: {
+            pivot_id: null,
+            tracking_number: '',
+            total_amount: 0,
+            paid_amount: 0,
+            remaining_amount: 0
+        },
+        openPaymentModal(pivotId, trackingNumber, totalAmount, paidAmount, remainingAmount) {
+            this.selectedPackage = {
+                pivot_id: pivotId,
+                tracking_number: trackingNumber,
+                total_amount: totalAmount,
+                paid_amount: paidAmount,
+                remaining_amount: remainingAmount
+            };
+            this.paymentModalOpen = true;
+        },
+        formatNumber(num) {
+            return new Intl.NumberFormat('ar-EG').format(num);
+        },
+        async submitPayment(event) {
+            this.isSubmitting = true;
+            const form = event.target;
+            const formData = new FormData(form);
+    
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+    
+                const data = await response.json();
+    
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'حدث خطأ');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('حدث خطأ في الاتصال');
+            } finally {
+                this.isSubmitting = false;
+            }
+        }
+    }">
 
         <div class="max-w-[1400px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
 
@@ -86,7 +86,8 @@
                     class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 hover:border-success-200 transition-all hover:shadow-md shadow-theme-sm">
                     <div
                         class="flex justify-center items-center w-12 h-12 rounded-xl transition-transform duration-300 bg-success-50 dark:bg-success-500/10 text-success-500 group-hover:scale-110">
-                        <svg class="w-6 h-6 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-6 h-6 rotate-45 rtl:-rotate-45" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                         </svg>
@@ -128,7 +129,7 @@
                 <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
                     {{-- Package Count --}}
                     <div
-                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br rounded-2xl border border-brand-100 from-brand-50 to-brand-100/50 dark:from-brand-500/10 dark:to-brand-500/5 dark:border-brand-500/20">
+                        class="flex flex-col justify-between items-start p-4 rounded-2xl border bg-success-to-br border-brand-100 from-brand-50 to-brand-100/50 dark:from-brand-500/10 dark:to-brand-500/5 dark:border-brand-500/20">
                         <div class="flex gap-2 items-center mb-2">
                             <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -143,22 +144,22 @@
 
                     {{-- Shipment Count --}}
                     <div
-                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br from-blue-50 rounded-2xl border border-blue-100 to-blue-100/50 dark:from-blue-500/10 dark:to-blue-500/5 dark:border-blue-500/20">
+                        class="flex flex-col justify-between items-start p-4 rounded-2xl border bg-success-to-br from-blue-light-50 border-blue-light-100 to-blue-light-100/50 dark:from-blue-light-500/10 dark:to-blue-light-500/5 dark:border-blue-light-500/20">
                         <div class="flex gap-2 items-center mb-2">
-                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-blue-light-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <span class="text-xs font-bold text-blue-500 dark:text-blue-400">عدد الشحنات</span>
+                            <span class="text-xs font-bold text-blue-light-500 dark:text-blue-light-400">عدد الشحنات</span>
                         </div>
-                        <h4 class="text-2xl font-black text-blue-700 dark:text-blue-300">
+                        <h4 class="text-2xl font-black text-blue-light-500 dark:text-blue-light-300">
                             {{ $shipmentCount }}
                         </h4>
                     </div>
 
                     {{-- Total Amount --}}
                     <div
-                        class="flex flex-col justify-between items-start p-4 bg-gradient-to-br from-amber-50 rounded-2xl border border-amber-100 to-amber-100/50 dark:from-amber-500/10 dark:to-amber-500/5 dark:border-amber-500/20">
+                        class="flex flex-col justify-between items-start p-4 rounded-2xl border from-success-50 border-success-100 bg-success-to-br to-success-100/50 dark:from-success-500/10 dark:to-success-500/5 dark:border-success-500/20">
                         <div class="flex gap-2 items-center mb-2">
                             <svg class="w-5 h-5 text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -173,9 +174,9 @@
 
                     {{-- Payment Status --}}
                     <div
-                        class="flex flex-col items-start justify-between p-4 rounded-2xl {{ $isPaid ? 'bg-gradient-to-br from-success-50 to-success-100/50 border-success-100 dark:from-success-500/10 dark:to-success-500/5 dark:border-success-500/20' : 'bg-gradient-to-br from-rose-50 to-rose-100/50 border-rose-100 dark:from-rose-500/10 dark:to-rose-500/5 dark:border-rose-500/20' }} border">
+                        class="flex flex-col items-start justify-between p-4 rounded-2xl {{ $isPaid ? 'bg-success-to-br from-success-50 to-success-100/50 border-success-100 dark:from-success-500/10 dark:to-success-500/5 dark:border-success-500/20' : 'bg-success-to-br from-error-50 to-error-100/50 border-error-100 dark:from-error-500/10 dark:to-error-500/5 dark:border-error-500/20' }} border">
                         <div class="flex gap-2 items-center mb-2">
-                            <svg class="w-5 h-5 {{ $isPaid ? 'text-success-500' : 'text-rose-500' }}" fill="none"
+                            <svg class="w-5 h-5 {{ $isPaid ? 'text-success-500' : 'text-error-500' }}" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 @if ($isPaid)
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -186,12 +187,12 @@
                                 @endif
                             </svg>
                             <span
-                                class="text-xs font-bold {{ $isPaid ? 'text-success-500 dark:text-success-400' : 'text-rose-500 dark:text-rose-400' }}">حالة
+                                class="text-xs font-bold {{ $isPaid ? 'text-success-500 dark:text-success-400' : 'text-error-500 dark:text-error-400' }}">حالة
                                 الدفع</span>
                         </div>
                         <div class="flex flex-col gap-1">
                             <h4
-                                class="text-xl font-black {{ $isPaid ? 'text-success-700 dark:text-success-300' : 'text-rose-700 dark:text-rose-300' }}">
+                                class="text-xl font-black {{ $isPaid ? 'text-success-700 dark:text-success-300' : 'text-error-700 dark:text-error-300' }}">
                                 {{ $isPaid ? 'مسدد' : 'غير مسدد' }}
                             </h4>
                             @if (!$isPaid && $remainingAmount > 0)
@@ -220,7 +221,7 @@
                         </h2>
                         <div class="flex flex-wrap gap-y-2 gap-x-4 items-center mt-2">
                             <span
-                                class="inline-flex gap-1.5 items-center px-3 py-1 font-bold text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800 text-theme-xs dark:text-gray-300 dark:border-gray-700">
+                                class="inline-flex gap-2 items-center px-3 py-1 mx-2 font-bold text-gray-500 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800 text-theme-xs dark:text-gray-300 dark:border-gray-700">
                                 <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path
@@ -229,7 +230,7 @@
                                 <span dir="ltr">{{ $branch->phone }}</span>
                             </span>
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-gray-50 dark:bg-gray-800 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
+                                class="inline-flex items-center gap-2 mx-2  px-3 py-1 rounded-2xl  bg-gray-50 dark:bg-gray-800 text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
                                 <svg class="w-3.5 h-3.5 text-brand-500" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -240,7 +241,7 @@
                                 {{ $branch->city }} - {{ $branch->address }}
                             </span>
                             <span
-                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-2xl  bg-brand-50 dark:bg-brand-500/10 text-[10px] font-black uppercase text-brand-500 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20">
+                                class="inline-flex items-center gap-2 mx-2  px-3 py-1 rounded-2xl  bg-brand-50 dark:bg-brand-500/10 text-[10px] font-black uppercase text-brand-500 dark:text-brand-400 border border-brand-100 dark:border-brand-500/20">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
@@ -317,14 +318,16 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-50 dark:divide-gray-800 dark:bg-gray-900">
                             @forelse($packages as $package)
-                                <tr class="transition-colors duration-200 group hover:bg-brand-50/30 dark:hover:bg-gray-800/60">
+                                <tr
+                                    class="transition-colors duration-200 group hover:bg-brand-50/30 dark:hover:bg-gray-800/60">
 
                                     {{-- Package Number --}}
                                     <td class="px-6 py-4 align-top">
                                         <div class="flex gap-2 items-center">
                                             <div
                                                 class="flex justify-center items-center w-8 h-8 text-white rounded-2xl bg-brand-500 dark:bg-gray-800">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                 </svg>
@@ -351,8 +354,9 @@
                                     {{-- Shipment Count --}}
                                     <td class="px-6 py-4 align-top">
                                         <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-blue-700 bg-blue-50 rounded-2xl border border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 rounded-2xl border text-blue-light-700 bg-blue-light-50 border-blue-light-100 dark:bg-blue-light-500/10 dark:text-blue-light-400 dark:border-blue-light-500/20">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
@@ -388,7 +392,8 @@
                                         @if ($package->branch_is_paid)
                                             <span
                                                 class="inline-flex gap-1.5 items-center px-3 py-1.5 rounded-2xl border bg-success-50 text-success-700 border-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
@@ -398,7 +403,8 @@
                                             <button type="button"
                                                 @click="openPaymentModal({{ $pivotId }}, '{{ $package->tracking_number }}', {{ $package->branch_total_amount }}, {{ $package->branch_paid_amount }}, {{ $package->branch_remaining_amount }})"
                                                 class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-500 hover:bg-brand-500 text-white text-xs font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-95">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                                 </svg>
@@ -409,15 +415,15 @@
 
                                     {{-- Details Link --}}
                                     <td class="px-6 py-4 align-top">
-                                        <a href="{{ route('shipmentpackage.show', $package->id) }}"
-                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-500 hover:bg-brand-500 text-white text-[10px] font-bold rounded-xl shadow-sm transition-all hover:scale-[1.02] active:scale-95">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                 
+                                           <a href="{{ route('shipmentpackage.show', $package->id) }}"
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
+                                            title="عرض الشحنات">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            عرض التفاصيل
                                         </a>
                                     </td>
                                 </tr>
@@ -429,12 +435,14 @@
                                                 class="flex justify-center items-center mb-4 w-24 h-24 bg-gray-50 rounded-full border border-gray-100 dark:bg-gray-800 dark:border-gray-700">
                                                 <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor"
                                                     viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="1.5"
                                                         d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                                 </svg>
                                             </div>
                                             <h3 class="text-lg font-bold text-gray-900 dark:text-white">لا توجد حزم</h3>
-                                            <p class="mt-2 max-w-xs text-sm text-gray-400">لم يتم العثور على أي حزم متجهة لهذا
+                                            <p class="mt-2 max-w-xs text-sm text-gray-400">لم يتم العثور على أي حزم متجهة
+                                                لهذا
                                                 الفرع.</p>
                                         </div>
                                     </td>

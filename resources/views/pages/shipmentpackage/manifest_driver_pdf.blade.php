@@ -184,11 +184,16 @@
             </td>
 
             <td width="35%" style="text-align: left; vertical-align: top;" class="header-info-text">
-                <div style="font-weight: bold; color: #222; font-size: 10pt;">الفرع الرئيسي / حضرموت - القطن</div>
+                <div style="font-weight: bold; font-size: 9px; color: #333; margin-bottom: 4px;">
+                    فرع  / القطن -عمارة شظي - خلف بنك التظامن
+                </div>
+                <div style="font-weight: bold; font-size: 9px; color: #000;">
+                    781216757 - 773136727 - 730831802
+                </div>
+                <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
                 <div style="margin-top: 2px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
                 <div class="header-phones">
-                    781216757 - 730831802<br>
-                    773136727 - 781989021
+                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
             </td>
         </tr>
@@ -242,7 +247,7 @@
                     <td>
                         @switch($shipment->payment_method)
                             @case('prepaid')
-                                <span class="text-success-500 font-bold">محاسب</span>
+                                <span class="font-bold text-success-500">محاسب</span>
                             @break
 
                             @case('cod')
@@ -268,7 +273,7 @@
                             @break
 
                             @case('customer_credit')
-                                <span class="text-orange-500 font-bold">على الحساب</span>
+                                <span class="font-bold text-orange-500">على الحساب</span>
                             @break
                         @endswitch
                     </td>
