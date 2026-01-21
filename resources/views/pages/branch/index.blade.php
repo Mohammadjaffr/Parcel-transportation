@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'قائمة الفروع')
+@section('title', 'قائمة المكاتب')
 
 @section('content')
     <x-modals.success-modal />
@@ -69,7 +69,7 @@
                 </div>
                 <div class="mt-3">
                     <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
-                        الفروع</span>
+                        المكاتب</span>
                     <h4 class="text-xl font-black dark:text-white">{{ $totalBranches }}</h4>
                 </div>
             </div>
@@ -113,7 +113,7 @@
         <div
             class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm gap-6">
             <div class="relative w-full group">
-                <input type="text" x-model="search" placeholder="ابحث باسم الفرع أو الرمز..."
+                <input type="text" x-model="search" placeholder="ابحث باسم المكتب أو الرمز..."
                     class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                 <div
                     class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
@@ -146,10 +146,10 @@
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
                             <th class="px-6 py-4">#</th>
                             <th class="px-6 py-4 text-center">الرمز</th>
-                            <th class="px-6 py-4">اسم الفرع</th>
+                            <th class="px-6 py-4">اسم المكتب</th>
                             <th class="px-6 py-4">المدينة / العنوان</th>
                             <th class="px-6 py-4">رقم الهاتف</th>
-                            <th class="px-6 py-4 text-center">عدد الحزم</th>
+                            <th class="px-6 py-4 text-center">عدد الباصات</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -261,7 +261,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-20 italic text-center text-gray-400">لا توجد فروع مسجلة
+                                <td colspan="7" class="py-20 italic text-center text-gray-400">لا توجد مكاتب مسجلة
                                     حالياً..</td>
                             </tr>
                         @endforelse

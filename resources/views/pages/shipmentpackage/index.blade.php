@@ -8,6 +8,7 @@
         search: '',
         openModal: false,
         selectedCount: 0,
+        selectedBranch: '',
         showRow(tracking, driver) {
             return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
                 driver.toLowerCase().includes(this.search.toLowerCase());
@@ -163,7 +164,7 @@
                     <div
                         class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-white/[0.02]">
                         <div>
-                            <h3 class="text-lg font-black text-gray-900 dark:text-white">تجميع شحنة جماعية</h3>
+                            <h3 class="text-lg font-black text-gray-900 dark:text-white">انشاء شحنة جديدة</h3>
                             <p class="text-[10px] text-brand-500 font-bold uppercase tracking-widest mt-0.5">فرع المصدر:
                                 {{ auth()->user()->branch_code }}</p>
                         </div>
@@ -241,11 +242,39 @@
                             <span class="text-[10px] font-bold text-gray-400" x-text="`المحدد (${selectedCount})`"></span>
                         </div>
 
+                        {{-- فلتر الفرع المستلم --}}
+                        <div class="mb-3">
+                            <select x-model="selectedBranch"
+                                class="px-3 w-full h-9 text-xs font-bold bg-gray-50 rounded-lg border-none dark:bg-gray-800 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                                <option value="">كل الفروع</option>
+                                @php
+                                    // الحصول على الفروع الفريدة وترتيبها
+                                    $uniqueBranches = $pendingShipments
+                                        ->pluck('receiverBranch')
+                                        ->filter()
+                                        ->unique('id')
+                                        ->sortBy('name')
+                                        ->values();
+                                @endphp
+                                @foreach ($uniqueBranches as $branch)
+                                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- حاوية الطرود بارتفاع ثابت وسكرول --}}
                         <div class="pr-1 space-y-2 custom-scrollbar"
-                            style="height: 250px; max-height: 250px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ccc #f1f1f1;">
-                            @forelse($pendingShipments as $shipment)
+                            style="height: 200px; max-height: 200px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ccc #f1f1f1;">
+                            @php
+                                // ترتيب الطرود حسب الفرع المستلم
+                                $sortedShipments = $pendingShipments->sortBy(function ($shipment) {
+                                    return $shipment->receiverBranch->name;
+                                });
+                            @endphp
+                            @forelse($sortedShipments as $shipment)
                                 <label
+                                    x-show="selectedBranch === '' || selectedBranch == '{{ $shipment->receiver_branch_id }}'"
+                                    x-transition.duration.200ms data-branch="{{ $shipment->receiver_branch_id }}"
                                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl cursor-pointer hover:bg-brand-50/50 dark:hover:bg-brand-500/10 transition-all border-2 border-transparent has-[:checked]:border-brand-500 group">
                                     <div class="flex gap-3 items-center">
                                         <input type="checkbox" name="selected_ids[]" value="{{ $shipment->id }}"
@@ -254,8 +283,9 @@
                                         <div class="flex flex-col">
                                             <span
                                                 class="text-xs font-bold text-gray-900 dark:text-white">#{{ $shipment->bond_number }}</span>
-                                            <span class="text-[10px] text-gray-500">{{ $shipment->senderCustomer->name }}
-                                                → {{ $shipment->receiverBranch->name }}</span>
+                                            <span class="text-[10px] text-gray-500">{{ $shipment->senderBranch->name }}
+                                                ←
+                                                {{ $shipment->receiverBranch->name }}</span>
                                         </div>
                                     </div>
                                     <div class="text-left">

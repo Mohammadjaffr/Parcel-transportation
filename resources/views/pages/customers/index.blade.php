@@ -93,7 +93,7 @@
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
                             <th class="px-6 py-4">العميل</th>
                             <th class="px-6 py-4">بيانات التواصل</th>
-                            <th class="px-6 py-4 text-center">الفرع</th>
+                            <th class="px-6 py-4 text-center">المكتب</th>
                             <th class="px-6 py-4 text-center">عدد الشحنات</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>

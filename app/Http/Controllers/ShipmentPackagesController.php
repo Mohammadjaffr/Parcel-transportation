@@ -21,6 +21,7 @@ class ShipmentPackagesController extends Controller
         $pendingShipments = Shipment::where('sender_branch_code', $branchCode)
             ->where('status', 'pending')
             ->whereNull('shipment_package_id')
+            ->with(['receiverBranch', 'senderBranch'])
             ->get();
 
         $packages = ShipmentPackage::whereHas('shipments', function ($query) use ($branchCode) {

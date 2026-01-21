@@ -125,18 +125,14 @@
                         <a href="{{ route('shipment.index') }}"
                             class="menu-item group {{ request()->routeIs('shipment.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
+                            {{-- أيقونة قائمة الطرود - clipboard list --}}
                             <svg class="{{ request()->routeIs('shipment.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                fill="currentColor" width="30" height="30" viewBox="0 0 24 24">
-                                <g>
-                                    <path
-                                        d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" fill="none" />
-                                    <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </g>
+                                width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -149,18 +145,14 @@
                         <a href="{{ route('shipmentpackage.index') }}"
                             class="menu-item group {{ request()->routeIs('shipmentpackage.index') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
+                            {{-- أيقونة إرسال الشحنات - truck/delivery --}}
                             <svg class="{{ request()->routeIs('shipmentpackage.index') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
-                                fill="none" width="30" height="30" viewBox="0 0 24 24">
-                                <g>
-                                    <path
-                                        d="M2 7H9M2 11H7M2 15H5M21 8.5V17C21 18.1046 20.1046 19 19 19H9C7.89543 19 7 18.1046 7 17V8.5L14 5L21 8.5Z"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                    <path d="M7 8.5L14 12L21 8.5" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round" />
-                                    <path d="M14 12V19" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </g>
+                                width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m5-1V7a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m-4 0v-1m4 1v-1m6 1a2 2 0 104 0m-4 0a2 2 0 114 0m-4 0v-1m4 1v-1"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" />
                             </svg>
 
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
@@ -178,7 +170,7 @@
                                 width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path
-                                    d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0Z"
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11  -4 0 2 2 0 014 0z"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>

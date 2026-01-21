@@ -29,7 +29,7 @@
                             الشحنات</span>
                         <div class="flex gap-1 items-baseline mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalCost, 2) }}
+                                {{ number_format($grandTotalCost) }}
                             </h4>
                             <span class="text-xs font-medium text-gray-400">ر.ي</span>
                         </div>
@@ -52,7 +52,7 @@
                             المسدد (لك)</span>
                         <div class="flex gap-1 items-baseline mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalPaid, 2) }}
+                                {{ number_format($grandTotalPaid) }}
                             </h4>
                             <span class="text-xs font-medium text-success-500">ر.ي</span>
                         </div>
@@ -75,7 +75,7 @@
                             المتبقي (عليك)</span>
                         <div class="flex gap-1 items-baseline mt-1">
                             <h4 class="text-2xl font-black text-gray-900 dark:text-white">
-                                {{ number_format($grandTotalRemaining, 2) }}
+                                {{ number_format($grandTotalRemaining) }}
                             </h4>
                             <span class="text-xs font-medium text-error-500">ر.ي</span>
                         </div>
@@ -353,7 +353,7 @@
                                         <div class="flex flex-col gap-2">
                                             <span
                                                 class="px-2 py-1 font-mono text-sm font-black text-gray-900 rounded-2xl bg-brand-50 dark:bg-gray-800 dark:text-white">
-                                                {{ number_format($shipment->total_amount, 2) }}
+                                                {{ number_format($shipment->total_amount) }}
                                                 <span class="text-[10px] text-gray-400 font-sans">ر.ي</span>
                                             </span>
 
@@ -362,13 +362,13 @@
                                                     @if ($paidAmount > 0)
                                                         <span
                                                             class="text-[10px] font-bold text-success-500 bg-success-50 px-2 py-1 rounded-xl border border-success-100 dark:border-success-500/20">
-                                                            مدفوع: {{ number_format($paidAmount, 2) }} ر.ي
+                                                            مدفوع: {{ number_format($paidAmount) }} ر.ي
                                                         </span>
                                                     @endif
                                                     @if ($isUnpaid)
                                                         <span
                                                             class="text-[10px] font-bold text-error-500 bg-error-50 px-2 py-1 rounded-xl border border-error-100 dark:border-error-500/20">
-                                                            متبقي: {{ number_format($remainingAmount, 2) }} ر.ي
+                                                            متبقي: {{ number_format($remainingAmount) }} ر.ي
                                                         </span>
                                                     @endif
                                                     <div
@@ -402,7 +402,7 @@
                                             @elseif ($isSender && $shipment->payment_method == 'partial_payment' && $paidAmount > 0)
                                                 <span
                                                     class="text-[10px] font-bold text-success-500 bg-success-50 px-2 py-1 rounded-xl border border-success-100 dark:border-success-500/20">
-                                                    مدفوع: {{ number_format($paidAmount, 2) }} ر.ي
+                                                    مدفوع: {{ number_format($paidAmount) }} ر.ي
                                                 </span>
                                             @endif
                                         </div>
