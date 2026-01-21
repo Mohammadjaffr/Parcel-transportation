@@ -60,23 +60,9 @@ class UserSeeder extends Seeder
             'whatsapp_number' => '966500000002',
             'phone_verified_at'=> now(),
             'password' => '12121212',
-            'type' => 'admin',
+            'type' => 'super_admin',
             'branch_code' => 'ADN',
         ]);
-        // Driver::create([
-        //     'name' => 'محمد صالح',
-        //     'phone' => '967780236524',
-        //     'city' => 'المكلا',
-        //     'status' => 'active',
-        // ]);
-        // Driver::create([
-        //     'name' => 'سالم علي',
-        //     'phone' => '967780236564',
-        //     'city' => 'القطن',
-        //     'status' => 'active',
-        // ]);
-        
-   
         
     }
 }

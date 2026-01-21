@@ -11,17 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create transaction_categories table
-        Schema::create('transaction_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->enum('type', ['in', 'out']);
-            $table->string('code', 50)->unique()->nullable()->comment('System hook code, e.g., SHIPMENT_PAYMENT');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-        });
-
-        // Create transactions table
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->string('branch_code');
@@ -31,7 +20,8 @@ return new class extends Migration
             $table->string('reference_number', 50)->nullable();
             $table->string('attachment_path')->nullable();
             $table->unsignedBigInteger('created_by');
-            $table->unsignedBigInteger('shipment_id')->nullable()->comment('Link to shipment if applicable');
+            $table->unsignedBigInteger('shipment_id')->nullable();
+            $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
             $table->timestamps();
 
             // Foreign key constraints
@@ -68,6 +58,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('transactions');
-        Schema::dropIfExists('transaction_categories');
     }
 };

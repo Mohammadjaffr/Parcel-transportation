@@ -13,7 +13,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
-use App\Http\Controllers\SystemSettingsController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -40,10 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class, 'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
     Route::get('/shipments/{id}/thermal', [InvoiceController::class, 'printThermal'])
         ->name('shipment.printThermal');
-
-    Route::resource('systems', SystemSettingsController::class);
-    Route::post('/system-settings/auto-assign', [SystemSettingsController::class, 'updateAutoAssignSetting'])
-        ->name('system-settings.auto-assign.update');
     Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
 
     Route::get('/whatsapp/sender/{id}', [WhatsAppController::class, 'openForSender'])
@@ -169,7 +164,7 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store']);
     
     // Transaction Category Settings
-    Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit']);
+    Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit'])->middleware('super.admin');
     
     // Daily Cash Closing
     Route::get('/closings/export', [CashClosingController::class, 'export'])->name('closings.export');

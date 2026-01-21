@@ -180,7 +180,7 @@
                             </span>
                         </a>
                     </li>
-
+                    @if (Auth::user()->type == 'super_admin')
                     <li>
                         <a href="{{ route('transaction-categories.index') }}"
                             class="menu-item group {{ request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
@@ -202,7 +202,7 @@
                             </span>
                         </a>
                     </li>
-
+                    @endif
                     {{-- رابط الإقفال اليومي --}}
                     <li>
                         <a href="{{ route('closings.index') }}"
