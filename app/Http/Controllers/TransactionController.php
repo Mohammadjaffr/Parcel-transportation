@@ -156,4 +156,52 @@ class TransactionController extends Controller
         return redirect()->route('transactions.index')
             ->with('success', 'Transaction created successfully.');
     }
+
+    /**
+     * Generate PDF Receipt for a transaction
+     */
+    public function generateReceipt($id)
+    {
+        $user = Auth::user();
+        
+        // Get transaction with relationships
+        $transaction = Transaction::with(['category', 'branch', 'customer', 'user', 'shipment'])
+            ->where('branch_code', $user->branch_code)
+            ->findOrFail($id);
+        
+        // Initialize TCPDF
+        $pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8');
+        
+        // PDF Configuration
+        $pdf->SetCreator('نظام إدارة الشحنات');
+        $pdf->SetAuthor($user->name);
+        $pdf->SetTitle('سند رقم ' . $transaction->id);
+        $pdf->SetSubject(($transaction->category && $transaction->category->type == 'in') ? 'سند قبض' : 'سند صرف');
+        
+        // RTL Configuration  
+        $pdf->setRTL(true);
+        $pdf->SetFont('dejavusans', '', 10);
+        
+        // Remove default header/footer
+        $pdf->setPrintHeader(false);
+        $pdf->setPrintFooter(false);
+        
+        // Margins
+        $pdf->SetMargins(15, 15, 15);
+        
+        // Add Page
+        $pdf->AddPage();
+        
+        // Render View
+        $html = view('pdf.transaction-receipt', [
+            'transaction' => $transaction,
+        ])->render();
+        
+        // Write HTML to PDF
+        $pdf->writeHTML($html, true, false, true, false, '');
+        
+        // Output PDF to browser
+        $filename = 'receipt_' . $transaction->id . '.pdf';
+        return $pdf->Output($filename, 'I'); // 'I' = inline display in browser
+    }
 }

@@ -162,6 +162,8 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
 
     // Cash Box / Petty Cash Transactions
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store']);
+    Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'generateReceipt'])
+        ->name('transactions.receipt');
     
     // Transaction Category Settings
     Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit'])->middleware('super.admin');
