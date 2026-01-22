@@ -3,7 +3,7 @@
     isLoading: false,
     selectedType: '{{ old('type', '') }}',
     selectedCategory: '{{ old('transaction_category_id', '') }}'
-}">
+}" @open-transaction-modal.window="isModalOpen = true">
 
     {{-- Open Modal Button --}}
     <button @click="isModalOpen = true"
@@ -11,7 +11,7 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
         </svg>
-        إضافة معاملة
+        إضافة سند
     </button>
 
     {{-- Modal Backdrop & Container --}}
@@ -40,7 +40,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">إضافة معاملة جديدة</h4>
+                    <h4 class="text-lg font-bold text-gray-900 dark:text-white">إضافة سند جديدة</h4>
                     <p class="text-xs text-gray-500 dark:text-gray-400">تسجيل حركة مالية في صندوق النقدية</p>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                     {{-- Type Selection --}}
                     <div>
                         <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                            نوع المعاملة <span class="text-error-500">*</span>
+                            نوع السند <span class="text-error-500">*</span>
                         </label>
 
                         <div class="flex gap-3">
@@ -78,7 +78,7 @@
                                 <span
                                     :class="selectedType === 'in' ? 'text-success-600 dark:text-success-400' :
                                         'text-gray-600 dark:text-gray-300'"
-                                    class="text-sm font-bold transition-colors">إيراد / دخل</span>
+                                    class="text-sm font-bold transition-colors">سند قبض</span>
                             </button>
 
                             {{-- Expense Option --}}
@@ -100,7 +100,7 @@
                                 <span
                                     :class="selectedType === 'out' ? 'text-error-600 dark:text-error-400' :
                                         'text-gray-600 dark:text-gray-300'"
-                                    class="text-sm font-bold transition-colors">مصروف / خروج</span>
+                                    class="text-sm font-bold transition-colors">سند صرف</span>
                             </button>
                         </div>
                     </div>
@@ -280,7 +280,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M5 13l4 4L19 7" />
                         </svg>
-                        <span x-text="isLoading ? 'جاري الحفظ...' : 'حفظ المعاملة'"></span>
+                        <span x-text="isLoading ? 'جاري الحفظ...' : 'حفظ السند'"></span>
                     </button>
                 </div>
             </form>

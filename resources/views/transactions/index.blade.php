@@ -11,8 +11,9 @@
         <div class="flex gap-6">
 
             {{-- Current Balance (All) --}}
-            <div @click="filterType = 'all'" :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'all'"
+                :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
@@ -31,8 +32,9 @@
             </div>
 
             {{-- Total Income --}}
-            <div @click="filterType = 'in'" :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'in'"
+                :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -50,8 +52,9 @@
             </div>
 
             {{-- Total Expenses --}}
-            <div @click="filterType = 'out'" :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
-                                'border-gray-100 dark:border-gray-800'"
+            <div @click="filterType = 'out'"
+                :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
+                    'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -80,7 +83,8 @@
                         <div class="flex gap-3 items-center mb-3">
                             <div
                                 class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
-                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
@@ -101,6 +105,137 @@
                                 <input type="date" name="end_date" id="end_date"
                                     class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
                                     value="{{ $endDate->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Category Filter Section --}}
+                    @php
+                        $selectedCategoryId = request('category_id');
+                        $selectedCategoryName = 'جميع الفئات';
+                        if ($selectedCategoryId) {
+                            $selectedCategory = $categories->find($selectedCategoryId);
+                            if ($selectedCategory) {
+                                $selectedCategoryName = $selectedCategory->name;
+                            }
+                        }
+                    @endphp
+                    <div class="flex-1" x-data="{
+                        open: false,
+                        search: '',
+                        selectedCategory: {{ $selectedCategoryId ? $selectedCategoryId : 'null' }},
+                        selectedCategoryName: '{{ $selectedCategoryName }}',
+                        categories: {{ $categories->toJson() }},
+                        get filteredCategories() {
+                            if (!this.search) return this.categories;
+                            return this.categories.filter(cat =>
+                                cat.name.toLowerCase().includes(this.search.toLowerCase())
+                            );
+                        },
+                        selectCategory(category) {
+                            if (category) {
+                                this.selectedCategory = category.id;
+                                this.selectedCategoryName = category.name;
+                            } else {
+                                this.selectedCategory = null;
+                                this.selectedCategoryName = 'جميع الفئات';
+                            }
+                            this.open = false;
+                            this.search = '';
+                        }
+                    }" @click.outside="open = false">
+                        <div class="flex gap-3 items-center mb-3">
+                            <div
+                                class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
+                                <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">الفئة</span>
+                        </div>
+
+                        <div class="relative">
+                            {{-- Hidden Input --}}
+                            <input type="hidden" name="category_id" :value="selectedCategory"
+                                x-show="selectedCategory !== null">
+
+                            {{-- Custom Dropdown Button --}}
+                            <button type="button" @click="open = !open"
+                                class="flex justify-between items-center px-3 w-full h-11 text-sm text-right rounded-xl border transition-all bg-brand-50 border-brand-200 dark:bg-brand-900 dark:border-brand-700 hover:border-brand-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                                <span x-text="selectedCategoryName" class="font-semibold"></span>
+                                <svg class="w-4 h-4 transition-transform text-brand-400" :class="open && 'rotate-180'"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            {{-- Dropdown Menu --}}
+                            <div x-show="open" x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95" style="display: none;"
+                                class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-xl dark:bg-gray-800 dark:border-gray-700">
+
+                                {{-- Search Input --}}
+                                <div class="p-2 border-b border-gray-100 dark:border-gray-700">
+                                    <input type="text" x-model="search" placeholder="ابحث عن فئة..."
+                                        class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-white focus:outline-none focus:border-brand-400"
+                                        @click.stop>
+                                </div>
+
+                                {{-- Categories List --}}
+                                <div class="overflow-y-auto" style="max-height: 320px; overflow-x: hidden;">
+                                    {{-- All Categories Option --}}
+                                    <div @click="selectCategory(null)"
+                                        :class="selectedCategory === null && 'bg-brand-50 dark:bg-brand-500/10'"
+                                        class="flex justify-between items-center px-4 py-2.5 text-sm transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 dark:text-white">
+                                        <span class="font-semibold">جميع الفئات</span>
+                                    </div>
+
+                                    {{-- Category Items --}}
+                                    <template x-for="category in filteredCategories" :key="category.id">
+                                        <div @click="selectCategory(category)"
+                                            :class="selectedCategory === category.id && 'bg-brand-50 dark:bg-brand-500/10'"
+                                            class="flex justify-between items-center px-4 py-2.5 text-sm transition-colors cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                            <span class="font-semibold text-gray-700 dark:text-gray-200"
+                                                x-text="category.name"></span>
+                                            {{-- Type Indicator --}}
+                                            <template x-if="category.type === 'in'">
+                                                <span
+                                                    class="inline-flex gap-1 items-center px-2 py-1 text-xs font-bold rounded-md bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                                    </svg>
+                                                    إيراد
+                                                </span>
+                                            </template>
+                                            <template x-if="category.type === 'out'">
+                                                <span
+                                                    class="inline-flex gap-1 items-center px-2 py-1 text-xs font-bold rounded-md bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                                    </svg>
+                                                    مصروف
+                                                </span>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    {{-- No Results --}}
+                                    <div x-show="filteredCategories.length === 0"
+                                        class="px-4 py-6 text-sm text-center text-gray-400 dark:text-gray-500">
+                                        لا توجد نتائج
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -165,7 +300,8 @@
                         <div class="flex gap-3 items-center mb-3">
                             <div
                                 class="flex justify-center items-center w-8 h-8 rounded-lg bg-warning-50 dark:bg-warning-500/10">
-                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-warning-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
@@ -384,7 +520,8 @@
                                     @if ($transaction->category->type === 'in')
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M7 11l5-5m0 0l5 5m-5-5v12" />
                                             </svg>
@@ -393,7 +530,8 @@
                                     @else
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M17 13l-5 5m0 0l-5-5m5 5V6" />
                                             </svg>
@@ -425,7 +563,8 @@
                                         <a href="{{ asset($transaction->attachment_path) }}" download
                                             class="inline-flex justify-center items-center w-8 h-8 rounded-lg transition-all text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
                                             title="تحميل المرفق">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
@@ -443,9 +582,10 @@
                                 <td class="px-6 py-4">
                                     <div class="flex gap-2 justify-center">
                                         <a href="{{ route('transactions.receipt', $transaction->id) }}" target="_blank"
-                                            class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-white rounded-lg transition-all duration-200 bg-brand-500 hover:bg-brand-600 shadow-sm hover:shadow-md"
+                                            class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-white rounded-lg shadow-sm transition-all duration-200 bg-brand-500 hover:bg-brand-600 hover:shadow-md"
                                             title="طباعة سند">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                             </svg>
@@ -488,7 +628,7 @@
 
     @if (session('success'))
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 window.dispatchEvent(new CustomEvent('open-success-modal', {
                     detail: {
                         message: '{{ session('success') }}'
@@ -500,7 +640,7 @@
 
     @if (session('error'))
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 window.dispatchEvent(new CustomEvent('open-error-modal', {
                     detail: {
                         message: '{{ session('error') }}'
@@ -515,7 +655,7 @@
 
     {{-- Charts Initialization --}}
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             // === 1. Expenses Breakdown Pie Chart ===
             const expensesCtx = document.getElementById('expensesChart');
             if (expensesCtx) {
@@ -562,7 +702,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function (context) {
+                                    label: function(context) {
                                         let label = context.label || '';
                                         if (label) label += ': ';
                                         label += new Intl.NumberFormat('en-US', {
@@ -604,19 +744,19 @@
                     data: {
                         labels: formattedDates,
                         datasets: [{
-                            label: 'إيرادات',
-                            data: incomeData,
-                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                            borderColor: 'rgba(34, 197, 94, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'مصروفات',
-                            data: expenseData,
-                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1
-                        }
+                                label: 'إيرادات',
+                                data: incomeData,
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                borderColor: 'rgba(34, 197, 94, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'مصروفات',
+                                data: expenseData,
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                borderColor: 'rgba(239, 68, 68, 1)',
+                                borderWidth: 1
+                            }
                         ]
                     },
                     options: {
@@ -648,7 +788,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function (context) {
+                                    label: function(context) {
                                         let label = context.dataset.label || '';
                                         if (label) label += ': ';
                                         label += new Intl.NumberFormat('en-US', {
@@ -685,7 +825,7 @@
                     endDate = yesterday;
                     break;
 
-                // === فلاتر أسبوعية ===
+                    // === فلاتر أسبوعية ===
                 case 'thisWeek':
                     const dayOfWeek = today.getDay();
                     startDate = new Date(today);
@@ -702,7 +842,7 @@
                     endDate.setDate(startDate.getDate() + 6); // نهاية الأسبوع الماضي
                     break;
 
-                // === فلاتر شهرية ===
+                    // === فلاتر شهرية ===
                 case 'thisMonth':
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -723,13 +863,13 @@
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                     break;
 
-                // === فلاتر سنوية ===
+                    // === فلاتر سنوية ===
                 case 'thisYear':
                     startDate = new Date(today.getFullYear(), 0, 1);
                     endDate = new Date(today.getFullYear(), 11, 31);
                     break;
 
-                // === فلتر الكل ===
+                    // === فلتر الكل ===
                 case 'allTime':
                     startDate = new Date(today.getFullYear() - 10, 0, 1);
                     endDate = today;

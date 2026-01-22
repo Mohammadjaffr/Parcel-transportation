@@ -245,19 +245,19 @@
                         {{-- فلتر الفرع المستلم --}}
                         <div class="mb-3">
                             <select x-model="selectedBranch"
-                                class="px-3 w-full h-9 text-xs font-bold bg-gray-50 rounded-lg border-none dark:bg-gray-800 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                                class="flex justify-between items-center px-3 w-full h-11 text-sm text-right bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 hover:border-brand-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                                 <option value="">كل الفروع</option>
                                 @php
-                                    // الحصول على الفروع الفريدة وترتيبها
+                                    // استخراج الفروع الفريدة من الطرود المعلقة وترتيبها أبجدياً
                                     $uniqueBranches = $pendingShipments
                                         ->pluck('receiverBranch')
                                         ->filter()
-                                        ->unique('id')
+                                        ->unique('code')
                                         ->sortBy('name')
                                         ->values();
                                 @endphp
                                 @foreach ($uniqueBranches as $branch)
-                                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                    <option value="{{ $branch->code }}">{{ $branch->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -273,8 +273,8 @@
                             @endphp
                             @forelse($sortedShipments as $shipment)
                                 <label
-                                    x-show="selectedBranch === '' || selectedBranch == '{{ $shipment->receiver_branch_id }}'"
-                                    x-transition.duration.200ms data-branch="{{ $shipment->receiver_branch_id }}"
+                                    x-show="selectedBranch === '' || selectedBranch == '{{ $shipment->receiver_branch_code }}'"
+                                    x-transition.duration.200ms data-branch="{{ $shipment->receiver_branch_code }}"
                                     class="flex items-center justify-between p-3 bg-gray-50 dark:bg-white/[0.03] rounded-xl cursor-pointer hover:bg-brand-50/50 dark:hover:bg-brand-500/10 transition-all border-2 border-transparent has-[:checked]:border-brand-500 group">
                                     <div class="flex gap-3 items-center">
                                         <input type="checkbox" name="selected_ids[]" value="{{ $shipment->id }}"

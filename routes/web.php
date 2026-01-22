@@ -44,6 +44,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/whatsapp/sender/{id}', [WhatsAppController::class, 'openForSender'])
         ->name('whatsapp.sender');
 
+    Route::get('/whatsapp/receiver/{id}', [WhatsAppController::class, 'openForReceiver'])
+        ->name('whatsapp.receiver');
+
+    Route::get('/whatsapp/branch-manifest/{id}/{branchCode?}', [WhatsAppController::class, 'sendBranchManifest'])
+        ->name('whatsapp.branchManifest');
+
+    Route::get('/whatsapp/driver-manifest/{id}', [WhatsAppController::class, 'sendDriverManifest'])
+        ->name('whatsapp.driverManifest');
+
     Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])
         ->name('shipment.adminlog');
     Route::resource('drivers', DriverController::class);
@@ -57,9 +66,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/reports/revenue/pdf', [ReportController::class, 'exportRevenuePDF'])
         ->name('reports.revenue.pdf');
-
-    Route::get('/whatsapp/receiver/{id}', [WhatsAppController::class, 'openForReceiver'])
-        ->name('whatsapp.receiver');
 
     Route::get('/shipment/{id}/invoice', [InvoiceController::class, 'printInvoice'])->name('shipment.invoice');
     Route::get('/shipments/select-customer', [ShipmentController::class, 'selectCustomer'])

@@ -36,6 +36,9 @@ class TransactionController extends Controller
 
         // Type filter (in = income, out = expense)
         $typeFilter = $request->input('type');
+        
+        // Category filter
+        $categoryFilter = $request->input('category_id');
 
         // Build transactions query
         $transactionsQuery = Transaction::where('branch_code', $branchCode)
@@ -47,6 +50,11 @@ class TransactionController extends Controller
             $transactionsQuery->whereHas('category', function ($query) use ($typeFilter) {
                 $query->where('type', $typeFilter);
             });
+        }
+        
+        // Apply category filter if provided
+        if ($categoryFilter) {
+            $transactionsQuery->where('transaction_category_id', $categoryFilter);
         }
 
         $transactions = $transactionsQuery->latest()->paginate(15);

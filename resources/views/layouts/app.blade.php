@@ -15,30 +15,26 @@
 
 </head>
 
-<body
-    x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }"
-    x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
-$watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))"
-    :class="{ 'dark bg-gray-900': darkMode === true }">
+<body x-data="{ page: 'ecommerce', 'loaded': true, 'darkMode': false, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }" x-init="darkMode = JSON.parse(localStorage.getItem('darkMode'));
+$watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(value)))" :class="{ 'dark bg-gray-900': darkMode === true }">
     <!-- ===== Preloader Start ===== -->
-    <div x-show="loaded"
-        x-init="window.addEventListener('DOMContentLoaded', () => { setTimeout(() => loaded = false, 500) })"
-        class="fixed left-0 top-0 z-999999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black">
-        <div class="h-16 w-16 animate-spin rounded-full border-4 border-solid border-brand-500 border-t-transparent">
+    <div x-show="loaded" x-init="window.addEventListener('DOMContentLoaded', () => { setTimeout(() => loaded = false, 500) })"
+        class="flex fixed top-0 left-0 justify-center items-center w-screen h-screen bg-white z-999999 dark:bg-black">
+        <div class="w-16 h-16 rounded-full border-4 border-solid animate-spin border-brand-500 border-t-transparent">
         </div>
     </div>
 
     <!-- ===== Preloader End ===== -->
 
     <!-- ===== Page Wrapper Start ===== -->
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex overflow-hidden h-screen">
         <!-- ===== Sidebar Start ===== -->
         @include('layouts.sidebar')
 
         <!-- ===== Sidebar End ===== -->
 
         <!-- ===== Content Area Start ===== -->
-        <div class="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
+        <div class="flex overflow-y-auto overflow-x-hidden relative flex-col flex-1">
             <!-- Small Device Overlay Start -->
             <div @click="sidebarToggle = false" :class="sidebarToggle ? 'block lg:hidden' : 'hidden'"
                 class="fixed w-full h-screen z-9 bg-gray-900/50"></div>
@@ -64,9 +60,22 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
         <!-- ===== Content Area End ===== -->
     </div>
     <!-- ===== Page Wrapper End ===== -->
+
+    {{-- Global Closing Modal --}}
+    @php
+        $systemBalance = $systemBalance ?? 0;
+    @endphp
+ <div style="position: absolute; width: 0; height: 0; overflow: hidden;">
+                 @include('closings.create-closing-modal')
+
+        @php $categories = $categories ?? collect(); @endphp
+        @include('transactions.create-transaction-modal')
+   </div>
+       
+
     @yield('script')
     <script defer src="{{ asset('tailadmin/build/bundle.js') }}"></script>
-    
+
 </body>
 
 </html>

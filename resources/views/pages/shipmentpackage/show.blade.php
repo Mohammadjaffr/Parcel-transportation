@@ -112,26 +112,149 @@
         </div>
 
         <div class="space-y-4">
-            <div class="flex justify-between items-center px-4 my-4">
-                <h3 class="text-lg font-black tracking-widest text-gray-900 uppercase dark:text-white">قائمة الطرود الملحقة
+            <div class="px-4 my-4">
+                {{-- العنوان --}}
+                <h3 class="mb-6 text-lg font-black tracking-widest text-gray-900 uppercase dark:text-white">
+                    كشوف الحمولة للفروع
                 </h3>
-                <a href="{{ route('shipmentpackage.printD', $package->id) }}" target="_blank"
-                    class="flex gap-2 items-center px-6 h-12 font-black text-white rounded-xl shadow-lg transition-all bg-success-500 hover:bg-black active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    طباعة كشف الحمولة للفرع
-                </a>
-                <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
-                    class="flex gap-2 items-center px-6 h-12 font-black text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-black active:scale-95">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    طباعة كشف الحمولة لسائق
-                </a>
 
+                @php
+                    // استخراج الفروع الفريدة مع عدد الطرود والمبالغ
+                    $branchesWithCounts = $package->shipments
+                        ->groupBy('receiver_branch_code')
+                        ->map(function ($shipments) {
+                            return [
+                                'branch' => $shipments->first()->receiverBranch,
+                                'count' => $shipments->count(),
+                                'total' => $shipments->sum('total_amount'),
+                            ];
+                        });
+                @endphp
+
+                {{-- شبكة البطاقات للفروع --}}
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    @foreach ($branchesWithCounts as $branchCode => $data)
+                        {{-- بطاقة الفرع --}}
+                        <div
+                            class="group relative p-5 bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm hover:shadow-md transition-all overflow-hidden">
+                            {{-- خلفية gradient خفيفة --}}
+                            <div
+                                class="absolute inset-0 bg-gradient-to-br to-transparent opacity-0 transition-opacity pointer-events-none from-success-50/30 dark:from-success-500/5 group-hover:opacity-100">
+                            </div>
+
+                            <div class="relative z-10">
+                                {{-- رأس البطاقة --}}
+                                <div class="flex gap-3 items-start mb-4">
+                                    <div
+                                        class="flex justify-center items-center w-12 h-12 rounded-xl bg-success-50 text-success-600 dark:bg-success-500/10 shrink-0">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="text-base font-black text-gray-900 truncate dark:text-white">
+                                            {{ $data['branch']->name }}
+                                        </h4>
+                                        <p class="mt-0.5 text-xs font-bold text-gray-400 uppercase">
+                                            كود: {{ $branchCode }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- الإحصائيات --}}
+                                <div class="grid grid-cols-2 gap-3 mb-4">
+                                    <div
+                                        class="px-3 py-2 rounded-xl border bg-warning-50 dark:bg-warning-500/10 border-warning-100 dark:border-warning-500/20">
+                                        <p
+                                            class="text-[9px] font-black text-warning-600 dark:text-warning-400 uppercase tracking-wider">
+                                            عدد الطرود
+                                        </p>
+                                        <p class="mt-0.5 text-lg font-black text-warning-600 dark:text-warning-400">
+                                            {{ $data['count'] }}
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="px-3 py-2 rounded-xl border bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20">
+                                        <p
+                                            class="text-[9px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+                                            المبلغ الإجمالي
+                                        </p>
+                                        <p class="mt-0.5 text-lg font-black text-brand-600 dark:text-brand-400">
+                                            {{ number_format($data['total']) }} <span class="text-xs">ر.ي</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {{-- الأزرار --}}
+                                <div class="flex gap-2">
+                                    {{-- زر الطباعة --}}
+                                    <a href="{{ route('shipmentpackage.printD', $package->id) }}" target="_blank"
+                                        class="flex flex-1 gap-2 justify-center items-center px-4 h-10 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-success-500 hover:bg-success-600 hover:shadow-md active:scale-95">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        <span>طباعة PDF</span>
+                                    </a>
+
+                                    {{-- زر واتساب --}}
+                                    <a href="{{ route('whatsapp.branchManifest', [$package->id, $branchCode]) }}"
+                                        target="_blank"
+                                        class="inline-flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-success-50 text-success-600 hover:bg-success-500 hover:text-white hover:shadow-md active:scale-95 dark:bg-success-500/10"
+                                        title="إرسال لـ {{ $data['branch']->name }} عبر واتساب">
+                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                            <path
+                                                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- فاصل --}}
+                <div class="my-8 border-t border-gray-100 dark:border-gray-800"></div>
+
+                {{-- كشف السائق --}}
+                <div class="flex flex-col gap-3 my-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h3 class="text-lg font-black tracking-widest text-gray-900 uppercase dark:text-white">
+                            كشف الحمولة للسائق
+                        </h3>
+                        <p class="mt-1 text-xs font-bold text-gray-500 dark:text-gray-400">
+                            جميع الطرود في الرحلة
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
+                            class="flex gap-2 items-center px-5 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all bg-brand-500 hover:bg-brand-600 hover:shadow-lg active:scale-95">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            <span>طباعة كشف السائق</span>
+                        </a>
+
+                        <a href="{{ route('whatsapp.driverManifest', $package->id) }}" target="_blank"
+                            class="inline-flex justify-center items-center w-11 h-11 rounded-xl transition-all bg-brand-50 text-brand-500 hover:bg-brand-500 hover:text-white hover:shadow-md active:scale-95 dark:bg-brand-500/10"
+                            title="مشاركة عبر واتساب">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {{-- العنوان الأصلي --}}
+            <div class="px-4 mt-8">
+                <h3 class="text-lg font-black tracking-widest text-gray-900 uppercase dark:text-white">
+                    قائمة الطرود الملحقة
+                </h3>
             </div>
 
 
@@ -206,12 +329,13 @@
                                     <td
                                         class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                         <a href="{{ route('shipment.show', $shipment->id) }}"
-                                            class="inline-flex p-2 text-gray-400 rounded-xl transition-all hover:text-brand-500 hover:bg-brand-50" title="عرض تفاصيل الطرد">
+                                            class="inline-flex p-2 text-gray-400 rounded-xl transition-all hover:text-brand-500 hover:bg-brand-50"
+                                            title="عرض تفاصيل الطرد">
                                             <svg class="w-5 h-5 text-gray-400 transition-colors group-hover:text-brand-500"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>  
+                                            </svg>
                                         </a>
                                     </td>
                                 </tr>

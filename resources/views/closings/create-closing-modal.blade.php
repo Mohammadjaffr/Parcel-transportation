@@ -22,7 +22,7 @@
             this.transferredAmount = '0';
         }
     }
-}">
+}" @open-closing-modal.window="isModalOpen = true">
 
     {{-- Open Modal Button --}}
     <button @click="isModalOpen = true"
