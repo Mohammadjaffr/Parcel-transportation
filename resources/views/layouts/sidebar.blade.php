@@ -100,7 +100,8 @@
                     @endif
                     <!-- Menu Item Calendar -->
 
-                    <!-- Menu Item Profile -->
+                    <!-- Menu Item branch -->
+                   
                     <li>
                         <a href="{{ route('branch.index') }}"
                             @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
@@ -121,7 +122,6 @@
                             </span>
                         </a>
                     </li>
-
 
 
                     <!-- Menu Item Forms -->
@@ -167,7 +167,7 @@
                             </span>
                         </a>
                     </li>
-
+                    @if (Auth::user()->type != 'user')
                     <li>
                         <a href="{{ route('transactions.index') }}"
                             class="menu-item group {{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
@@ -189,6 +189,7 @@
                             </span>
                         </a>
                     </li>
+                    @endif
                     @if (Auth::user()->type == 'super_admin')
                         <li>
                             <a href="{{ route('transaction-categories.index') }}"
@@ -231,6 +232,7 @@
                             </span>
                         </a>
                     </li>
+                    @if (Auth::user()->type != 'user')
                     {{-- رابط الإقفال اليومي --}}
                     <li>
                         <a href="{{ route('closings.index') }}"
@@ -253,6 +255,7 @@
                             </span>
                         </a>
                     </li>
+                    @endif
 
                     <li>
                         <button @click="window.dispatchEvent(new CustomEvent('open-transaction-modal'))"
@@ -266,6 +269,7 @@
                             <span class="menu-item-text">إضافة سندات</span>
                         </button>
                     </li>
+                    @if (Auth::user()->type != 'user')
                     <li>
                         <button @click="window.dispatchEvent(new CustomEvent('open-closing-modal'))"
                             class="w-full text-right menu-item group menu-item-inactive">
@@ -278,6 +282,7 @@
                             <span class="menu-item-text">إضافة إقفال</span>
                         </button>
                     </li>
+                    @endif
                     <!-- Menu Item Forms -->
 
 

@@ -6,6 +6,7 @@ use App\Http\Middleware\DriverMiddleware;
 use App\Http\Middleware\SanctumApiAuthMiddleware;
 use App\Http\Middleware\VerifyAppAccessMiddleware;
 use App\Http\Middleware\SuperAdminMiddleware;
+use App\Http\Middleware\AdminMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
@@ -23,6 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             "auth.sanctum.api" => SanctumApiAuthMiddleware::class,
             "verify.app.access" => VerifyAppAccessMiddleware::class,
             "super.admin" => SuperAdminMiddleware::class,
+            "admin" => AdminMiddleware::class,
         ]);
         $middleware->appendToGroup('api', [
             'verify.app.access', 

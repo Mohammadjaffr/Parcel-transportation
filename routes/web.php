@@ -31,8 +31,17 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::resource('users', UserController::class);
-    Route::resource('branch', BranchController::class);
+    Route::resource('users', UserController::class)->middleware('admin');
+    
+    // Branch routes with super admin middleware for create and store
+    Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
+    Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('super.admin');
+    Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware('super.admin');
+    Route::get('branch/{branch}', [BranchController::class, 'show'])->name('branch.show');
+    Route::get('branch/{branch}/edit', [BranchController::class, 'edit'])->name('branch.edit');
+    Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
+    Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
+    
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
