@@ -63,63 +63,116 @@ class WhatsAppService
     {
         $codText = '';
         if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $codText = "\n💰 مبلغ الدفع عند الاستلام: ".number_format($shipment->cod_amount, 2).' ريال';
+            $codText = "\n💰 *مبلغ الدفع عند الاستلام:* ".number_format($shipment->cod_amount, 2).' ر.ي';
         }
 
-        $branchName = $shipment->branch ? $shipment->branch->name : 'المكتب الرئيسي';
+        $senderName = $shipment->senderCustomer->name ?? 'غير محدد';
+        $senderCity = $shipment->senderBranch->name ?? 'غير محدد';
+        $receiverName = $shipment->receiverCustomer->name ?? 'غير محدد';
+        $receiverCity = $shipment->receiverBranch->name ?? 'غير محدد';
+        $currentDateTime = now()->format('Y-m-d | h:i A');
 
-        return "📦 *تأكيد شحن الطرد*
+        return "🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-📮 *رقم التتبع:* {$shipment->id}
+📦 *تأكيد استلام طردك*
+
+� *رقم التتبع:* {$shipment->tracking_number}
+
+👤 *المرسل:* {$shipment->sender_name}
+📍 *مدينة المرسل:* {$shipment->from_city}
+
 👤 *المستلم:* {$shipment->receiver_name}
-📍 *مدينة المستلم:* {$shipment->to_city}
-🏢 *المكتب:* {$branchName}
-📊 *نوع الطرد:* {$shipment->package_type}
-⚖️ *الوزن:* {$shipment->weight} كجم".
-        ($shipment->notes ? "\n📝 *ملاحظات:* {$shipment->notes}" : '').'
-🕒 *تاريخ الشحن:* '.now()->format('Y-m-d H:i')."
-✅ *الحالة:* تم استلام الطرد{$codText}
+� *مدينة المستلم:* {$shipment->to_city}
 
-شكراً لثقتك بنا! 🌟";
+�📊 *نوع الطرد:* {$shipment->package_type}
+⚖️ *الوزن:* {$shipment->weight} كجم{$codText}
+
+� *تاريخ الشحن:* {$currentDateTime}
+✅ *الحالة:* تم استلام الطرد وجاري التجهيز
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+� *مكتب الزاجل - فرع المكلا*
+الموقع: أربعين شقة - بجانب بنك الإمجاد
+📞 للتواصل: 774996316 | 772038561 | 735637947
+
+🔍 *للتتبع:* تواصل معنا على الأرقام أعلاه
+
+⚠️ *تنبيهات هامة:*
+• غير مسؤولين عن الإجراءات الأمنية
+• غير مسؤولين عن الأشياء الثمينة
+• غير مسؤولين عن بقاء الطرود +شهر
+• غير مسؤولين عن الحريق وحوادث السير
+• يرجى التأكد من بيانات السند
+
+شكراً لثقتك بنا! 💚";
     }
 
     public function createReceiverMessage(Shipment $shipment)
     {
         $codText = '';
         if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $codText = "\n💰 *مطلوب منك:* ".number_format($shipment->cod_amount, 2).' ريال (دفع عند الاستلام)';
+            $codText = "\n💰 *المبلغ المطلوب:* ".number_format($shipment->cod_amount, 2).' ر.ي (دفع عند الاستلام)';
         }
 
         $paymentMethodText = [
-            'cash' => '💳 مدفوع',
+            'cash' => '💳 مدفوع مسبقاً',
             'cod' => '💵 دفع عند الاستلام',
             'online' => '💻 مدفوع إلكترونياً',
         ][$shipment->payment_method] ?? '💳 مدفوع';
 
-        $branchName = $shipment->branch ? $shipment->branch->name : 'المكتب الرئيسي';
+        $senderName = $shipment->senderCustomer->name ?? 'غير محدد';
+        $senderCity = $shipment->senderBranch->name ?? 'غير محدد';
+        $receiverName = $shipment->receiverCustomer->name ?? 'غير محدد';
+        $receiverCity = $shipment->receiverBranch->name ?? 'غير محدد';
+        $currentDateTime = now()->format('Y-m-d | h:i A');
 
-        return "📦 *إشعار استلام طرد*
+        return "🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
+━━━━━━━━━━━━━━━━━━━━━━━━
 
-مرحباً {$shipment->receiver_name} 👋
+📦 *إشعار وصول طرد*
 
-📮 *رقم التتبع:* {$shipment->tracking_number}
+عزيزي/عزيزتي *{$shipment->receiver_name}* 👋
+
+� *رقم التتبع:* {$shipment->tracking_number}
+
 👤 *المرسل:* {$shipment->sender_name}
 📍 *مدينة المرسل:* {$shipment->from_city}
-🏢 *المكتب:* {$branchName}
+
+👤 *المستلم:* {$receiverName}
+📍 *مدينة المستلم:* {$receiverCity}
+
 📊 *نوع الطرد:* {$shipment->package_type}
 ⚖️ *الوزن:* {$shipment->weight} كجم
-💸 *طريقة الدفع:* {$paymentMethodText}{$codText}".
-        ($shipment->notes ? "\n📝 *ملاحظات:* {$shipment->notes}" : '').'
-⏰ *التوقيت:* سيتم التوصيل خلال 24-48 ساعة عمل
+💸 *طريقة الدفع:* {$paymentMethodText}{$codText}
 
-يرجى التأكد من وجود شخص لاستلام الطرد.
-يمكنك تتبع شحنتك عبر الرقم أعلاه. 🔍';
+� *تاريخ الشحن:* {$currentDateTime}
+✅ *الحالة:* في الطريق إليك
+⏱️ *التوصيل المتوقع:* خلال 24-48 ساعة عمل
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 *مكتب الزاجل - فرع المكلا*
+الموقع: أربعين شقة - بجانب بنك الإمجاد
+📞 للتواصل: 774996316 | 772038561 | 735637947
+
+🔍 *للتتبع:* تواصل معنا على الأرقام أعلاه
+
+⚠️ *تنبيهات هامة:*
+• يرجى التواجد لاستلام الطرد
+• غير مسؤولين عن الإجراءات الأمنية
+• غير مسؤولين عن الأشياء الثمينة
+• غير مسؤولين عن بقاء الطرود +شهر
+• غير مسؤولين عن الحريق وحوادث السير
+• يرجى التأكد من بيانات السند
+
+نتمنى لك يوماً سعيداً! �";
     }
 
     /**
      * Get WhatsApp link for Branch Manifest
-     * @param mixed $package ShipmentPackage instance
-     * @param string|null $branchCode Optional branch code to filter shipments
+     *
+     * @param  mixed  $package  ShipmentPackage instance
+     * @param  string|null  $branchCode  Optional branch code to filter shipments
      */
     public function getBranchManifestLink($package, $branchCode = null)
     {
@@ -135,26 +188,43 @@ class WhatsAppService
             $shipmentCount = $package->shipments->count();
             $totalAmount = $package->shipments->sum('total_amount');
         }
-        
+
         $phone = $branch?->phone ?? null;
 
         if (! $phone || ! $branch) {
             return null;
         }
 
-        $pdfLink = route('shipmentpackage.printD', $package->id);
+        $pdfLink = asset('storage/manifests/Manifest-Branch-'.$package->tracking_number.'.pdf');
+        $currentDateTime = now()->format('Y-m-d | h:i A');
 
-        $message = "📋 *كشف الحمولة للفرع*
+        $message = "🌟 *الزاجل للنقل السريع* 🌟
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 *كشف الحمولة للفرع*
 
 🆔 *رقم الرحلة:* {$package->tracking_number}
 🏢 *المكتب:* {$branch->name}
-📦 *عدد الطرود:* {$shipmentCount}
+📦 *عدد الطرود:* {$shipmentCount} طرد
 💰 *إجمالي المبالغ:* ".number_format($totalAmount)." ر.ي
 
-🔗 *رابط الكشف (PDF):*
+� *التاريخ والوقت:* {$currentDateTime}
+✅ *الحالة:* جاهز للمراجعة
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+�🔗 *رابط الكشف (PDF):*
 {$pdfLink}
 
-يرجى مراجعة الكشف والتأكد من كافة التفاصيل. ✅";
+📍 *مكتب الزاجل - فرع المكلا*
+الموقع: أربعين شقة - بجانب بنك الإمجاد
+📞 للتواصل: 774996316 | 772038561 | 735637947
+
+⚠️ *يرجى:*
+• مراجعة الكشف والتأكد من كافة التفاصيل
+• التأكد من بيانات السند قبل المغادرة
+• التواصل فوراً في حال وجود أي استفسار
+
+شكراً لتعاونكم 💚";
 
         return $this->createWhatsAppLink($phone, $message);
     }
@@ -170,19 +240,39 @@ class WhatsAppService
             return null;
         }
 
-        $pdfLink = route('shipmentpackage.print', $package->id);
+        $pdfLink = asset('storage/manifests/Manifest-Driver-'.$package->tracking_number.'.pdf');
+        $currentDateTime = now()->format('Y-m-d | h:i A');
+        $totalParcels = $package->shipments->count();
+        $totalAmount = $package->shipments->sum('total_amount');
 
-        $message = "🚚 *كشف الحمولة للسائق*
+        $message = "🌟 *الزاجل للنقل السريع* 🌟
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚚 *كشف الحمولة للسائق*
 
 🆔 *رقم الرحلة:* {$package->tracking_number}
 👤 *السائق:* {$package->driver_name}
-📦 *عدد الطرود:* {$package->shipments->count()}
-💰 *إجمالي المبالغ:* ".number_format($package->shipments->sum('total_amount'))." ر.ي
+📦 *عدد الطرود:* {$totalParcels} طرد
+💰 *إجمالي المبالغ:* ".number_format($totalAmount)." ر.ي
 
-🔗 *رابط الكشف (PDF):*
+� *التاريخ والوقت:* {$currentDateTime}
+✅ *الحالة:* جاهز للتوصيل
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+�🔗 *رابط الكشف (PDF):*
 {$pdfLink}
 
-يرجى التحقق من كافة الطرود قبل البدء بالتوصيل. 🚛✅";
+📍 *مكتب الزاجل - فرع المكلا*
+الموقع: أربعين شقة - بجانب بنك الإمجاد
+📞 للتواصل: 774996316 | 772038561 | 735637947
+
+⚠️ *تعليمات مهمة:*
+• التحقق من كافة الطرود قبل البدء
+• التأكد من بيانات كل طرد
+• الالتزام بمواعيد التوصيل
+• التواصل فوراً في حال أي طارئ
+
+بالتوفيق في رحلتك! 🚛💚";
 
         return $this->createWhatsAppLink($phone, $message);
     }

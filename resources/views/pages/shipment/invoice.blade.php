@@ -179,7 +179,7 @@
                 <div class="header-title">الزاجل</div>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
                 <div class="header-info">الى جميع المحافظات ودول الخليج</div>
-                <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
+                <div class="header-info"    </div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>

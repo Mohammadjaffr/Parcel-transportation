@@ -60,6 +60,7 @@
                             d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                     </svg>
                 </div>
+
                 <div class="mt-3">
                     <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
                         الفائض (الزيادة)</span>
@@ -97,9 +98,9 @@
         <div
             class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-5">
             <form method="GET" action="{{ route('closings.index') }}" id="filterForm">
+                {{-- Filter Header --}}
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-end">
-
-                    {{-- Date Range --}}
+                    {{-- Date Range Section --}}
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
                             <div
@@ -133,16 +134,58 @@
                     {{-- Quick Filters --}}
                     @php
                         $now = now();
+
+                        // ========== فلاتر يومية ==========
+                        $isToday =
+                            $startDate->isSameDay($now->copy()->startOfDay()) &&
+                            $endDate->isSameDay($now->copy()->endOfDay());
+
+                        $isYesterday =
+                            $startDate->isSameDay($now->copy()->subDay()->startOfDay()) &&
+                            $endDate->isSameDay($now->copy()->subDay()->endOfDay());
+
+                        // ========== فلاتر أسبوعية ==========
+                        $isThisWeek =
+                            $startDate->isSameDay($now->copy()->startOfWeek()) &&
+                            $endDate->isSameDay($now->copy()->endOfWeek());
+
+                        $isLastWeek =
+                            $startDate->isSameDay($now->copy()->subWeek()->startOfWeek()) &&
+                            $endDate->isSameDay($now->copy()->subWeek()->endOfWeek());
+
+                        // ========== فلاتر شهرية ==========
                         $isThisMonth =
                             $startDate->isSameDay($now->copy()->startOfMonth()) &&
                             $endDate->isSameDay($now->copy()->endOfMonth());
+
                         $isLastMonth =
                             $startDate->isSameDay($now->copy()->subMonth()->startOfMonth()) &&
                             $endDate->isSameDay($now->copy()->subMonth()->endOfMonth());
+
+                        $isLast3Months =
+                            $startDate->isSameDay($now->copy()->subMonths(3)->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->endOfMonth());
+
+                        $isLast6Months =
+                            $startDate->isSameDay($now->copy()->subMonths(6)->startOfMonth()) &&
+                            $endDate->isSameDay($now->copy()->endOfMonth());
+
+                        // ========== فلاتر سنوية ==========
                         $isThisYear =
                             $startDate->isSameDay($now->copy()->startOfYear()) &&
                             $endDate->isSameDay($now->copy()->endOfYear());
-                        $isAllTime = !$isThisMonth && !$isLastMonth && !$isThisYear;
+
+                        // ========== فلتر الكل ==========
+                        $isAllTime =
+                            !$isToday &&
+                            !$isYesterday &&
+                            !$isThisWeek &&
+                            !$isLastWeek &&
+                            !$isThisMonth &&
+                            !$isLastMonth &&
+                            !$isLast3Months &&
+                            !$isLast6Months &&
+                            !$isThisYear;
                     @endphp
                     <div class="flex-1">
                         <div class="flex gap-3 items-center mb-3">
@@ -157,18 +200,52 @@
                             <span class="text-sm font-bold text-gray-700 dark:text-gray-300">فلاتر سريعة</span>
                         </div>
                         <div class="flex flex-wrap gap-2">
+                            {{-- اليوم --}}
+                            <button type="button" onclick="setDateRange('today')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isToday ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                اليوم
+                            </button>
+                            {{-- أمس --}}
+                            <button type="button" onclick="setDateRange('yesterday')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isYesterday ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                أمس
+                            </button>
+                            {{-- الأسبوع الحالي --}}
+                            <button type="button" onclick="setDateRange('thisWeek')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisWeek ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                الأسبوع الحالي
+                            </button>
+                            {{-- الأسبوع الماضي --}}
+                            <button type="button" onclick="setDateRange('lastWeek')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLastWeek ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                الأسبوع الماضي
+                            </button>
+                            {{-- الشهر الحالي --}}
                             <button type="button" onclick="setDateRange('thisMonth')"
                                 class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الشهر الحالي
                             </button>
+                            {{-- الشهر الماضي --}}
                             <button type="button" onclick="setDateRange('lastMonth')"
                                 class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLastMonth ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الشهر الماضي
                             </button>
+                            {{-- آخر 3 أشهر --}}
+                            <button type="button" onclick="setDateRange('last3Months')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLast3Months ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                آخر 3 أشهر
+                            </button>
+                            {{-- آخر 6 أشهر --}}
+                            <button type="button" onclick="setDateRange('last6Months')"
+                                class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isLast6Months ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                                آخر 6 أشهر
+                            </button>
+                            {{-- هذه السنة --}}
                             <button type="button" onclick="setDateRange('thisYear')"
                                 class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isThisYear ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 هذه السنة
                             </button>
+                            {{-- الكل --}}
                             <button type="button" onclick="setDateRange('allTime')"
                                 class="px-3 py-2 text-xs font-bold rounded-lg transition-all {{ $isAllTime ? 'text-brand-600 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10' : 'text-gray-600 bg-gray-100 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
                                 الكل
@@ -339,26 +416,82 @@
             let startDate, endDate;
 
             switch (preset) {
+                // === فلاتر يومية ===
+                case 'today':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    break;
+
+                case 'yesterday':
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    startDate = yesterday;
+                    endDate = yesterday;
+                    break;
+
+                    // === فلاتر أسبوعية ===
+                case 'thisWeek':
+                    // الأحد = 0, السبت = 6
+                    const currentDay = today.getDay();
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - currentDay);
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+
+                case 'lastWeek':
+                    // حساب بداية الأسبوع الحالي ثم الرجوع 7 أيام
+                    const lastWeekCurrentDay = today.getDay();
+                    const thisWeekStart = new Date(today);
+                    thisWeekStart.setDate(today.getDate() - lastWeekCurrentDay);
+                    startDate = new Date(thisWeekStart);
+                    startDate.setDate(thisWeekStart.getDate() - 7);
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999);
+                    break;
+
+                    // === فلاتر شهرية ===
                 case 'thisMonth':
                     startDate = new Date(today.getFullYear(), today.getMonth(), 1);
                     endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
                     break;
+
                 case 'lastMonth':
                     startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
                     endDate = new Date(today.getFullYear(), today.getMonth(), 0);
                     break;
+
+                case 'last3Months':
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+
+                case 'last6Months':
+                    startDate = new Date(today.getFullYear(), today.getMonth() - 6, 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+
+                    // === فلاتر سنوية ===
                 case 'thisYear':
                     startDate = new Date(today.getFullYear(), 0, 1);
                     endDate = new Date(today.getFullYear(), 11, 31);
                     break;
+
+                    // === فلتر الكل ===
                 case 'allTime':
                     startDate = new Date(today.getFullYear() - 10, 0, 1);
                     endDate = today;
                     break;
+
                 default:
                     return;
             }
 
+            // تنسيق التواريخ وإرسال النموذج
             const formatDate = (date) =>
                 `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 

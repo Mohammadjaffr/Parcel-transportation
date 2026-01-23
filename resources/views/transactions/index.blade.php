@@ -827,19 +827,27 @@
 
                     // === فلاتر أسبوعية ===
                 case 'thisWeek':
-                    const dayOfWeek = today.getDay();
+                    // الأحد = 0, السبت = 6
+                    const currentDay = today.getDay();
                     startDate = new Date(today);
-                    startDate.setDate(today.getDate() - dayOfWeek); // بداية الأسبوع (الأحد)
+                    startDate.setDate(today.getDate() - currentDay);
+                    startDate.setHours(0, 0, 0, 0);
                     endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6); // نهاية الأسبوع (السبت)
+                    endDate.setDate(startDate.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999);
                     break;
 
                 case 'lastWeek':
-                    const lastWeekDay = today.getDay();
-                    startDate = new Date(today);
-                    startDate.setDate(today.getDate() - lastWeekDay - 7); // بداية الأسبوع الماضي
+                    // حساب بداية الأسبوع الحالي ثم الرجوع 7 أيام
+                    const lastWeekCurrentDay = today.getDay();
+                    const thisWeekStart = new Date(today);
+                    thisWeekStart.setDate(today.getDate() - lastWeekCurrentDay);
+                    startDate = new Date(thisWeekStart);
+                    startDate.setDate(thisWeekStart.getDate() - 7);
+                    startDate.setHours(0, 0, 0, 0);
                     endDate = new Date(startDate);
-                    endDate.setDate(startDate.getDate() + 6); // نهاية الأسبوع الماضي
+                    endDate.setDate(startDate.getDate() + 6);
+                    endDate.setHours(23, 59, 59, 999);
                     break;
 
                     // === فلاتر شهرية ===
