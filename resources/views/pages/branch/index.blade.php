@@ -225,9 +225,6 @@
                                             </svg>
                                         </a>
 
-<<<<<<< Updated upstream
-                                        {{-- <button type="button" @click="openEditModal('{{ $branch->code }}')"
-=======
                                         {{-- زر التعديل --}}
                                         <button type="button" @click="openEditModal('{{ $branch->code }}')"
 >>>>>>> Stashed changes
@@ -249,7 +246,7 @@
                                         <a href="{{ route('branch.edit', $branch->code) }}"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="تعديل">
-                                             <template x-if="isFetching !== '{{ $branch->code }}'">
+                                            <template x-if="isFetching !== '{{ $branch->code }}'">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor"
                                                     stroke-width="2" viewBox="0 0 24 24">
                                                     <path
@@ -258,11 +255,8 @@
                                             </template>
                                             <template x-if="isFetching === '{{ $branch->code }}'">
                                                 <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                        stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                    </path>
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
                                             </template>
                                         </a>    
