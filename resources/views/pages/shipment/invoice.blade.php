@@ -26,7 +26,7 @@
 
         /* Header Styling */
         .header-title {
-            font-size: 26px;
+            font-size: 35px;
             font-weight: bold;
             color: #fb6514;
             margin-bottom: 3px;
@@ -179,7 +179,7 @@
                 <div class="header-title">الزاجل</div>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
                 <div class="header-info">الى جميع المحافظات ودول الخليج</div>
-                <div class="header-info"    </div>
+                <div class="header-info">رقم السند: {{ $shipment->bond_number }}</div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
@@ -187,7 +187,7 @@
 
             <!-- Center: Logo -->
             <td style="width: 30%; text-align: center;">
-                <img src="{{ public_path('images/new.svg') }}" style="width: 110px; height: auto;">
+                <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
             </td>
 
             <!-- Left: Branch Info -->
@@ -323,7 +323,7 @@
                 </td>
                 <td style="text-align: right;">
                     <span class="data-label">الرمز:</span>
-                    <span class="code-box">{{ $shipment->code }}</span>
+                    <span class="code-box">{{ $shipment->code ?? '....' }}</span>
                 </td>
             </tr>
 
@@ -337,7 +337,7 @@
                 <td colspan="2" style="text-align: right;">
                     <span class="data-label">نوع الرسالة:</span>
                     <span class="dotted-line" style="min-width: 450px;">
-                        {{ $shipment->package_type }}
+                        {{ $shipment->package_type ?? '....' }}
                     </span>
                 </td>
             </tr>
@@ -345,7 +345,7 @@
                 <td colspan="2" style="text-align: right;">
                     <span class="data-label">ملاحظات:</span>
                     <span class="dotted-line" style="min-width: 450px;">
-                        {{ $shipment->notes }}
+                        {{ $shipment->notes ?? '....' }}
                     </span>
                 </td>
             </tr>

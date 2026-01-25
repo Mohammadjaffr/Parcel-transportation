@@ -497,8 +497,8 @@
                                 class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
                                 <td class="px-6 py-4">
                                     <span
-                                        class="inline-flex justify-center items-center w-8 h-8 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg dark:bg-gray-800 dark:text-gray-300">
-                                        {{ $loop->iteration + ($transactions->currentPage() - 1) * $transactions->perPage() }}
+                                        class="inline-flex justify-center items-center w-24 h-8 text-xs font-bold text-gray-50 rounded-lg bg-brand-50 dark:bg-gray-800 dark:text-gray-300">
+                                        {{ $transaction->receipt_number ?? '#' . $transaction->id }}
                                     </span>
                                 </td>
 

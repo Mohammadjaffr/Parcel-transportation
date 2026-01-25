@@ -28,7 +28,7 @@
 
         .brand-name {
             color: #fb6514;
-            font-size: 26pt;
+            font-size: 32pt;
             font-weight: bold;
             margin: 0;
             line-height: 1;
@@ -36,7 +36,7 @@
 
         .brand-subtitle {
             color: #333;
-            font-size: 12pt;
+            font-size: 15pt;
             font-weight: bold;
             margin-top: 5px;
         }
@@ -45,14 +45,14 @@
             background-color: #333;
             color: #fff;
             padding: 4px 15px;
-            font-size: 11pt;
+            font-size: 13pt;
             display: inline-block;
             margin-top: 10px;
             border-radius: 4px;
         }
 
         .header-info-text {
-            font-size: 9pt;
+            font-size: 11pt;
             color: #555;
             line-height: 1.6;
         }
@@ -60,7 +60,7 @@
         .header-phones {
             color: #fb6514;
             font-weight: bold;
-            font-size: 10pt;
+            font-size: 12pt;
             margin-top: 5px;
         }
 
@@ -84,12 +84,12 @@
             color: #fb6514;
             font-weight: bold;
             width: 90px;
-            font-size: 10pt;
+            font-size: 12pt;
         }
 
         .value {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 13pt;
             color: #222;
         }
 
@@ -106,14 +106,14 @@
             text-align: center;
             border: 1px solid #333;
             padding: 8px 4px;
-            font-size: 9.5pt;
+            font-size: 11.5pt;
         }
 
         .manifest-table td {
             border: 1px solid #ddd;
             padding: 6px 4px;
             text-align: center;
-            font-size: 9pt;
+            font-size: 11pt;
             vertical-align: middle;
         }
 
@@ -136,7 +136,7 @@
         }
 
         .sig-title {
-            font-size: 10pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #333;
             margin-bottom: 35px;
@@ -149,7 +149,7 @@
         }
 
         .notes-cell {
-            font-size: 8pt;
+            font-size: 10pt;
             color: #666;
             max-width: 150px;
         }
@@ -158,7 +158,7 @@
             margin-top: 15px;
             text-align: left;
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 13pt;
             padding: 5px 10px;
             background-color: #eee;
         }
@@ -173,27 +173,27 @@
                 <h1 class="brand-name">الـزاجـل</h1>
                 <div class="brand-subtitle">للنقل والشحن السريع</div>
                 <div class="document-title-badge">كشف حمولة الرسائل</div>
-                <div style="font-size: 8.5pt; margin-top: 8px; color: #666;">
+                <div style="font-size: 10.5pt; margin-top: 8px; color: #666;">
                     تاريخ الطباعة: {{ date('Y-m-d H:i') }}<br>
                     رقم التتبع: <span style="color:#000; font-weight:bold;">{{ $package->tracking_number }}</span>
                 </div>
             </td>
 
             <td width="30%" style="text-align: center; vertical-align: middle;">
-                <img src="{{ public_path('images/new.svg') }}" style="width: 90px; height: auto;">
+                <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
             </td>
 
             <td width="35%" style="text-align: left; vertical-align: top;" class="header-info-text">
-                <div style="font-weight: bold; font-size: 9px; color: #333; margin-bottom: 4px;">
-                    فرع  / القطن -عمارة شظي - خلف بنك التظامن
+                <div style="font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px;">
+                    فرع / القطن -عمارة شظي - خلف بنك التظامن
                 </div>
                 <div style="font-weight: bold; font-size: 9px; color: #000;">
                     781216757 - 773136727 - 730831802
                 </div>
                 <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
-                <div style="margin-top: 2px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
+                <div style="margin-top: 2px; font-size: 12px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
                 <div class="header-phones">
-                     للتواصل / 774996316 - 772038561<br>735637947
+                    للتواصل / 774996316 - 772038561<br>735637947
                 </div>
             </td>
         </tr>
@@ -208,8 +208,8 @@
                 <td class="value" style="direction: ltr; text-align: right;">{{ $package->driver_phone }}</td>
             </tr>
             <tr>
-                <td class="label">فرع المصدر:</td>
-                <td class="value">{{ auth()->user()->branch_name ?? 'المركز الرئيسي' }}</td>
+                <td class="label">فرع المرسل:</td>
+                <td class="value">{{ $package->shipments->first()->senderBranch->name ?? 'المكلا' }}</td>
                 <td class="label">إجمالي الطرود:</td>
                 <td class="value">{{ $package->shipments->count() }} طرد صادر</td>
             </tr>
@@ -304,7 +304,7 @@
     </table>
 
     <div
-        style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8pt; color: #999; border-top: 1px solid #eee; padding-top: 5px;">
+        style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10pt; color: #999; border-top: 1px solid #eee; padding-top: 5px;">
         نظام الزاجل الذكي - طبع بواسطة: {{ auth()->user()->name }} - التاريخ: {{ date('Y-m-d H:i') }}
     </div>
 

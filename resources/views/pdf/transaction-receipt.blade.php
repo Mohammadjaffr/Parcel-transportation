@@ -28,7 +28,7 @@
 
         .brand-name {
             color: #fb6514;
-            font-size: 26pt;
+            font-size: 32pt;
             font-weight: bold;
             margin: 0;
             line-height: 1;
@@ -36,7 +36,7 @@
 
         .brand-subtitle {
             color: #333;
-            font-size: 12pt;
+            font-size: 15pt;
             font-weight: bold;
             margin-top: 5px;
         }
@@ -45,7 +45,7 @@
             background-color: #333;
             color: #fff;
             padding: 4px 15px;
-            font-size: 11pt;
+            font-size: 13pt;
             display: inline-block;
             margin-top: 10px;
             margin-left: 10px;
@@ -53,7 +53,7 @@
         }
 
         .header-info-text {
-            font-size: 9pt;
+            font-size: 11pt;
             color: #555;
             line-height: 1.6;
         }
@@ -61,7 +61,7 @@
         .header-phones {
             color: #fb6514;
             font-weight: bold;
-            font-size: 10pt;
+            font-size: 12pt;
             margin-top: 5px;
         }
 
@@ -88,12 +88,12 @@
             color: #fb6514;
             font-weight: bold;
             width: 120px;
-            font-size: 10pt;
+            font-size: 12pt;
         }
 
         .value {
             font-weight: bold;
-            font-size: 11pt;
+            font-size: 13pt;
             color: #222;
         }
 
@@ -109,14 +109,14 @@
         }
 
         .amount-highlight-box .amount-label {
-            font-size: 11pt;
+            font-size: 13pt;
             color: #333;
             font-weight: bold;
             margin-bottom: 8px;
         }
 
         .amount-highlight-box .amount-value {
-            font-size: 18pt;
+            font-size: 22pt;
             font-weight: bold;
             color: {{ $transaction->category && $transaction->category->type == 'in' ? '#2e7d32' : '#c62828' }};
         }
@@ -136,7 +136,7 @@
         }
 
         .sig-title {
-            font-size: 10pt;
+            font-size: 12pt;
             font-weight: bold;
             color: #333;
             margin-bottom: 35px;
@@ -154,7 +154,7 @@
             margin-top: 30px;
             padding-top: 15px;
             border-top: 1px solid #ddd;
-            font-size: 8.5pt;
+            font-size: 10pt;
             color: #666;
             text-align: center;
             line-height: 1.6;
@@ -176,22 +176,23 @@
                         سند صرف
                     @endif
                 </div>
-                <div style="font-size: 8.5pt; margin-top: 8px; color: #666;">
+                <div style="font-size: 10.5pt; margin-top: 8px; color: #666;">
                     {{ $transaction->category && $transaction->category->type == 'in' ? 'Payment Receipt' : 'Payment Voucher' }}<br>
-                    رقم السند: {{ $transaction->id }}
+                    رقم السند: {{ $transaction->receipt_number ?? $transaction->id }}
                 </div>
             </td>
             <td width="30%" style="text-align: center; vertical-align: middle;">
-                <img src="{{ public_path('images/new.svg') }}" style="width: 90px; height: auto;">
+                <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
             </td>
             <td width="35%" style="text-align: left; vertical-align: top;" class="header-info-text">
-                <div style="font-weight: bold; font-size: 9px; color: #333; margin-bottom: 4px;">
-                    فرع / المكلا - اربعين شقة - بجانب بنك المجاد
+                <div style="font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px;">
+                    فرع / القطن -عمارة شظي - خلف بنك التضامن
                 </div>
                 <div style="font-weight: bold; font-size: 9px; color: #000;">
                     781216757 - 773136727 - 730831802
                 </div>
-                <div style="margin-top: 2px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
+                <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك المجاد</div>
+                <div style="margin-top: 2px; font-size: 12px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>

@@ -9,10 +9,10 @@
 
             {{-- شريط التابات --}}
             {{-- <div class="mb-6 border-b border-gray-200 dark:border-gray-700"> --}}
-                {{-- <nav class="flex gap-2"> --}}
+            {{-- <nav class="flex gap-2"> --}}
 
-                    {{-- التاب الأول --}}
-                    {{-- <button type="button" @click="activeTab = 'sender'"
+            {{-- التاب الأول --}}
+            {{-- <button type="button" @click="activeTab = 'sender'"
                         :class="activeTab === 'sender'
                             ?
                             'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
@@ -21,8 +21,8 @@
                         مرسل الطرد
                     </button> --}}
 
-                    {{-- التاب الثاني --}}
-                    {{-- <button type="button" @click="activeTab = 'receiver'"
+            {{-- التاب الثاني --}}
+            {{-- <button type="button" @click="activeTab = 'receiver'"
                         :class="activeTab === 'receiver'
                             ?
                             'border-b-2 border-brand-500 text-brand-500 dark:text-brand-400' :
@@ -31,32 +31,25 @@
                         مستلم الطرد
                     </button> --}}
 
-                {{-- </nav> --}}
+            {{-- </nav> --}}
             {{-- </div> --}}
 
             {{-- =================== التاب الأول: مرسل الطرد =================== --}}
             <form x-show="activeTab === 'sender'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
-            
-                // prepaid
                 prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
                 prepaid_reference: '{{ old('prepaid_reference') }}',
-            
-                // partial
                 partial_amount: '{{ old('partial_amount') }}',
                 partial_method: '{{ old('partial_payment_method', 'cash') }}',
                 partial_reference: '{{ old('partial_reference') }}',
-            
                 isSubmitting: false
-            }"
+              }"
                 x-effect="
-        if (payment_method !== 'partial_payment') partial_amount = '';
-        if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
-
-        // نظف حقول المقدم/الجزئي حسب الحالة حتى لا تُرسل بالغلط
-        if (payment_method !== 'prepaid') prepaid_reference = '';
-        if (payment_method !== 'partial_payment') partial_reference = '';
-    "
+                    if (payment_method !== 'partial_payment') partial_amount = '';
+                    if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
+                    if (payment_method !== 'prepaid') prepaid_reference = '';
+                    if (payment_method !== 'partial_payment') partial_reference = '';
+                "
                 action="{{ route('shipment.store') }}" @submit="isSubmitting = true" method="POST">
 
                 @csrf
@@ -67,14 +60,28 @@
 
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
 
-                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
+                        <div
+                            class="flex justify-between items-center pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
+                            <h3 class="flex gap-2 items-center text-base font-bold text-gray-800 dark:text-white">
+                                <span class="w-1 h-5 rounded-full bg-brand-500"></span>
+                                بيانات المرسل
+                            </h3>
+
+                            <button type="button" x-show="isLocked" x-cloak @click="reset()"
+                                class="flex gap-2 items-center px-3 py-2 text-xs font-medium rounded-lg transition-all bg-error-50 text-error-500 group hover:bg-error-100 hover:shadow-sm dark:bg-error-500/10 dark:text-error-400 dark:hover:bg-error-500/20">
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover:-rotate-180" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    </path>
+                                </svg>
+                                <span>إعادة تعيين</span>
+                            </button>
+                        </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
-                                من</label>
-                            <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
-                                disabled>
+                            {{-- <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                                من</label> --}}
                             <input type="hidden" name="sender_branch_code" value="{{ auth()->user()->branch_code }}">
                             @error('sender_branch_code')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
@@ -85,14 +92,16 @@
                         @error('sender_customer_id')
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
-<div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+
+                        <div class="relative mt-3">
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
 
                             <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
-                                    <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
+                                    <button type="button" @click="!isLocked && (openCountry = !openCountry)"
+                                        :disabled="isLocked"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-75"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -121,22 +130,21 @@
                                     </div>
                                 </div>
 
-                                <input type="text" x-model="localNumber"
+                                <input type="text" x-model="localNumber" :disabled="isLocked"
                                     @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
-                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    @focus="!isLocked && (open = true; query = localNumber; search())"
+                                    @keydown.escape="open=false"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                     placeholder="7XXXXXXXX">
                             </div>
 
                             <div x-show="open && results.length > 0" x-transition @click.outside="open = false"
                                 class="overflow-hidden absolute right-0 z-50 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700">
-
                                 <template x-if="loading">
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
-
                                 <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c); open = false"
+                                    <button type="button" @click="select(c)"
                                         class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
@@ -150,32 +158,30 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+
                         <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
-                            <span>
-                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
-                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
-                                للتواصل.
-                            </span>
+                            <span>ملاحظة: سيتم اعتماد هذا الرقم كرقم <span
+                                    class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.</span>
                         </p>
+
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                            <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
-                                value="{{ old('sender_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <input type="text" name="sender_name" x-model="selectedName" :disabled="isLocked"
+                                @input="selectedId=''" value="{{ old('sender_name') }}"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                 placeholder="اسم المرسل">
                             @error('sender_name')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        
-
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
                             <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -188,7 +194,23 @@
 
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
-                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المستلم</h3>
+                        <div class="flex justify-between items-end">
+                            <h3 class="flex gap-2 items-center text-base font-bold text-gray-800 dark:text-white">
+                                <span class="w-1 h-5 rounded-full bg-brand-500"></span>
+                                بيانات المستلم
+                            </h3>
+
+                            <button type="button" x-show="isLocked" x-cloak @click="reset()"
+                                class="flex gap-2 items-center px-3 py-2 text-xs font-medium rounded-lg transition-all bg-error-50 text-error-500 group hover:bg-error-100 hover:shadow-sm dark:bg-error-500/10 dark:text-error-400 dark:hover:bg-error-500/20">
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover:-rotate-180" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    </path>
+                                </svg>
+                                <span>إعادة تعيين</span>
+                            </button>
+                        </div>
 
                         <input type="hidden" name="receiver_customer_id" x-model="selectedId">
                         @error('receiver_customer_id')
@@ -196,7 +218,7 @@
                         @enderror
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 إلى</label>
                             <select name="receiver_branch_code"
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
@@ -214,14 +236,16 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+
                         <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
 
                             <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
-                                    <button type="button" @click="openCountry = !openCountry"
-                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500"
+                                    <button type="button" @click="!isLocked && (openCountry = !openCountry)"
+                                        :disabled="isLocked"
+                                        class="flex gap-2 items-center px-3 py-2.5 h-11 bg-white rounded-lg border border-gray-300 dark:bg-dark-900 dark:border-gray-500 hover:border-brand-500 focus:border-brand-500 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-75"
                                         style="min-width: 100px;">
                                         <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
                                             class="w-5 h-auto rounded-sm">
@@ -252,10 +276,11 @@
                                     </div>
                                 </div>
 
-                                <input type="text" x-model="localNumber"
+                                <input type="text" x-model="localNumber" :disabled="isLocked"
                                     @input.debounce.350ms="updatePhone(); query = localNumber; search(); selectedId=''"
-                                    @focus="open = true; query = localNumber; search()" @keydown.escape="open=false"
-                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    @focus="!isLocked && (open = true; query = localNumber; search())"
+                                    @keydown.escape="open=false"
+                                    class="flex-1 px-4 py-2.5 h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                     placeholder="7XXXXXXXX">
                             </div>
 
@@ -265,7 +290,7 @@
                                     <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
                                 </template>
                                 <template x-for="c in results" :key="c.id">
-                                    <button type="button" @click="select(c); open = false"
+                                    <button type="button" @click="select(c)"
                                         class="px-4 py-3 w-full text-right border-b border-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700">
                                         <div class="text-sm font-semibold text-gray-800 dark:text-white" x-text="c.name">
                                         </div>
@@ -279,31 +304,30 @@
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
+
                         <p class="flex gap-2 items-center mt-2 text-xs text-warning-500 dark:text-warning/90">
                             <svg class="w-4 h-4 text-warning-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M20.52 3.48A11.86 11.86 0 0012 0 11.93 11.93 0 000 12a11.88 11.88 0 001.67 6.06L0 24l6.12-1.6A12 12 0 0012 24a11.93 11.93 0 0012-12 11.9 11.9 0 00-3.48-8.52z" />
                             </svg>
-                            <span>
-                                ملاحظة: سيتم اعتماد هذا الرقم كرقم
-                                <span class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
-                                للتواصل.
-                            </span>
+                            <span>ملاحظة: سيتم اعتماد هذا الرقم كرقم <span
+                                    class="font-semibold text-success-500 dark:text-success-400">واتساب</span>
+                                للتواصل.</span>
                         </p>
+
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
-                            <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
-                                value="{{ old('receiver_name') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <input type="text" name="receiver_name" x-model="selectedName" :disabled="isLocked"
+                                @input="selectedId=''" value="{{ old('receiver_name') }}"
+                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500"
                                 placeholder="اسم المستلم">
                             @error('receiver_name')
                                 <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                             @enderror
                         </div>
 
-
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
                             <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -320,7 +344,7 @@
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
                                 الطرد</label>
                             <input type="text" name="package_type" value="{{ old('package_type') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -331,7 +355,7 @@
                         </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
                                 المبلغ</label>
                             <input type="number" name="total_amount" value="{{ old('total_amount') }}" step="0.01"
                                 min="0"
@@ -343,9 +367,9 @@
                         </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
                                 الطرد</label>
-                            <input type="text" name="code" value="{{ old('code') }}" step="0.01"
+                            <input type="text" name="code" value="{{ old('code') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
                                 placeholder="QWR123">
                             @error('code')
@@ -405,14 +429,14 @@
 
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                    <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
-                                        @change="payment_method='customer_credit'"
-                                        {{ old('payment_method') == 'customer_credit' ? 'checked' : '' }}>
+                                    <input class="sr-only" type="radio" name="payment_method"
+                                        value="customer_cerrorit" @change="payment_method='customer_cerrorit'"
+                                        {{ old('payment_method') == 'customer_cerrorit' ? 'checked' : '' }}>
                                     <span
-                                        :class="payment_method === 'customer_credit' ? 'border-brand-500 bg-brand-500' :
+                                        :class="payment_method === 'customer_cerrorit' ? 'border-brand-500 bg-brand-500' :
                                             'bg-transparent border-gray-300 dark:border-gray-700'"
                                         class="flex h-5 w-5 items-center justify-center rounded-full border-[1.25px]">
-                                        <span :class="payment_method === 'customer_credit' ? 'block' : 'hidden'"
+                                        <span :class="payment_method === 'customer_cerrorit' ? 'block' : 'hidden'"
                                             class="w-2 h-2 bg-white rounded-full"></span>
                                     </span>
                                     آجل على حساب العميل
@@ -461,7 +485,7 @@
                                 <template x-if="prepaid_method === 'bank_transfer'">
                                     <div class="mt-4">
                                         <label
-                                            class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
+                                            class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
                                             الإيداع</label>
                                         <input type="text" name="prepaid_reference" x-model="prepaid_reference"
                                             placeholder="أدخل رقم الإيداع"
@@ -483,11 +507,11 @@
 
                             <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
                                 x-show="payment_method==='partial_payment'" x-transition>
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">المبلغ
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">المبلغ
                                     المدفوع من المرسل الآن</label>
                                 <input type="number" name="partial_amount" x-model="partial_amount"
                                     :disabled="payment_method !== 'partial_payment'"
-                                    :required="payment_method === 'partial_payment'" min="0.01" step="0.01"
+                                    :requierror="payment_method === 'partial_payment'" min="0.01" step="0.01"
                                     placeholder="0.00"
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-400 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500 @error('partial_amount') border-error-500 @enderror">
                                 @error('partial_amount')
@@ -532,7 +556,7 @@
                                     <template x-if="partial_method === 'bank_transfer'">
                                         <div class="mt-4">
                                             <label
-                                                class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
+                                                class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
                                                 الإيداع</label>
                                             <input type="text" name="partial_reference" x-model="partial_reference"
                                                 placeholder="أدخل رقم الإيداع"
@@ -544,30 +568,12 @@
                                     </template>
                                 </div>
                             </div>
-
-                            {{-- <div class="p-4 mt-2 rounded-xl border border-gray-200 dark:border-gray-700"
-                                x-show="payment_method==='customer_credit'" x-transition>
-                                <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
-                                    حالة مديونية العميل
-                                </label>
-                                <select name="customer_debt_status"
-                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
-                                    <option value="pending" @selected(old('customer_debt_status', 'pending') == 'pending')>قيد الانتظار</option>
-                                    <option value="overdue" @selected(old('customer_debt_status') == 'overdue')>مديون</option>
-                                    <option value="partially_paid" @selected(old('customer_debt_status') == 'partially_paid')>مدفوع جزئيا</option>
-                                    <option value="fully_paid" @selected(old('customer_debt_status') == 'fully_paid')>مدفوع بالكامل</option>
-                                </select>
-
-                                @error('customer_debt_status')
-                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                                @enderror
-                            </div> --}}
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-6">
-                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
                         class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">{{ old('notes') }}</textarea>
                     @error('notes')
@@ -594,20 +600,168 @@
                 </div>
             </form>
 
+            <script>
+                document.addEventListener('alpine:init', () => {
+                    Alpine.data('customerPicker', (url, initialPhone = '', initialName = '', initialId = '') => ({
+                        query: '',
+                        open: false,
+                        loading: false,
+                        results: [],
+
+                        selectedId: initialId,
+                        selectedName: initialName,
+                        selectedPhone: '',
+
+                        isLocked: false,
+
+                        countryCode: '+967',
+                        countryFlag: 'ye',
+                        localNumber: '',
+
+                        openCountry: false,
+                        countries: [{
+                                code: '+967',
+                                flag: 'ye'
+                            },
+                            {
+                                code: '+966',
+                                flag: 'sa'
+                            },
+                            {
+                                code: '+971',
+                                flag: 'ae'
+                            },
+                            {
+                                code: '+965',
+                                flag: 'kw'
+                            },
+                            {
+                                code: '+974',
+                                flag: 'qa'
+                            },
+                            {
+                                code: '+968',
+                                flag: 'om'
+                            }
+                        ],
+
+                        init() {
+                            if (initialPhone) {
+                                this.parsePhone(initialPhone);
+                            }
+                            // Lock fields if initialId exists (from Laravel validation or edit mode)
+                            if (initialId) {
+                                this.isLocked = true;
+                            }
+                        },
+
+                        parsePhone(phone) {
+                            if (!phone) {
+                                this.setCountry('+967');
+                                this.localNumber = '';
+                                this.selectedPhone = '';
+                                return;
+                            }
+
+                            const found = this.countries.find(c => phone.startsWith(c.code));
+
+                            if (found) {
+                                this.countryCode = found.code;
+                                this.countryFlag = found.flag;
+                                this.localNumber = phone.substring(found.code.length);
+                            } else {
+                                this.setCountry('+967');
+                                this.localNumber = phone;
+                            }
+                            this.updateHidden();
+                        },
+
+                        setCountry(code) {
+                            const country = this.countries.find(c => c.code === code);
+                            if (country) {
+                                this.countryCode = country.code;
+                                this.countryFlag = country.flag;
+                            }
+                            this.updatePhone();
+                            this.openCountry = false;
+                        },
+
+                        updatePhone() {
+                            this.updateHidden();
+                            this.selectedId = ''; // Reset ID when user types a new number
+                        },
+
+                        updateHidden() {
+                            this.selectedPhone = this.countryCode + this.localNumber;
+                        },
+
+                        async search() {
+                            const q = (this.query || '').trim();
+                            this.open = true;
+
+                            if (q.length < 2) {
+                                this.results = [];
+                                this.loading = false;
+                                return;
+                            }
+
+                            this.loading = true;
+
+                            try {
+                                const res = await fetch(`${url}?q=${encodeURIComponent(q)}`, {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                });
+
+                                if (!res.ok) throw new Error('Search failed');
+                                this.results = await res.json();
+                            } catch (e) {
+                                console.error(e);
+                                this.results = [];
+                            } finally {
+                                this.loading = false;
+                            }
+                        },
+
+                        select(c) {
+                            this.selectedId = c.id;
+                            this.selectedName = c.name ?? '';
+                            this.parsePhone(c.phone ?? '');
+
+                            this.query = this.selectedName;
+                            this.open = false;
+                            this.results = [];
+                            this.isLocked = true; // Lock fields after selection
+                        },
+
+                        reset() {
+                            this.selectedId = '';
+                            this.selectedName = '';
+                            this.selectedPhone = '';
+                            this.localNumber = '';
+                            this.query = '';
+                            this.isLocked = false; // Unlock fields
+                            this.setCountry('+967');
+                        }
+                    }));
+                });
+            </script>
+
             {{-- =================== التاب الثاني: مستلم الطرد) =================== --}}
-            <form x-show="activeTab === 'receiver'" x-cloak x-data="{
+            {{-- <form x-show="activeTab === 'receiver'" x-cloak x-data="{
                 payment_method: '{{ old('payment_method', 'prepaid') }}',
                 prepaid_method: '{{ old('prepaid_payment_method', 'cash') }}',
                 partial_amount: '{{ old('partial_amount') }}',
                 prepaid_reference: '{{ old('prepaid_reference') }}',
                 isSubmitting: false
-            }"
-                x-effect="
-        // تنظيف القيم حسب طريقة الدفع
-        if (payment_method !== 'partial_payment') partial_amount = '';
-        if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
-        if (payment_method !== 'prepaid' && payment_method !== 'partial_payment') prepaid_reference = '';
-    "
+               }"
+                                x-effect="
+                        // تنظيف القيم حسب طريقة الدفع
+                        if (payment_method !== 'partial_payment') partial_amount = '';
+                        if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
+                        if (payment_method !== 'prepaid' && payment_method !== 'partial_payment') prepaid_reference = '';
+                    "
                 action="{{ route('shipment.store') }}" @submit="isSubmitting = true" method="POST"
                 enctype="multipart/form-data">
                 @csrf
@@ -622,7 +776,7 @@
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">بيانات المرسل</h3>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 من</label>
                             <select name="sender_branch_code"
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
@@ -647,7 +801,7 @@
                         @enderror
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="sender_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('sender_name') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -658,7 +812,7 @@
                         </div>
 
                         <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
                             <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
@@ -729,7 +883,7 @@
                             </span>
                         </p>
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
                                 العسل</label>
                             <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -750,7 +904,7 @@
                         @enderror
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
                                 إلى</label>
                             <input type="text" value="{{ auth()->user()->branch->name ?? '' }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm bg-gray-100 rounded-lg border dark:text-gray-400 dark:bg-gray-700"
@@ -762,7 +916,7 @@
                         </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الاسم</label>
                             <input type="text" name="receiver_name" x-model="selectedName" @input="selectedId=''"
                                 value="{{ old('receiver_name') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -773,7 +927,7 @@
                         </div>
 
                         <div class="relative mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
                                 بالرقم)</label>
                             <div class="flex gap-2" dir="ltr">
                                 <div class="relative" @click.outside="openCountry = false">
@@ -844,7 +998,7 @@
                             </span>
                         </p>
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
                                 العسل</label>
                             <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -861,7 +1015,7 @@
                         <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
                                 الطرد</label>
                             <input type="text" name="package_type" value="{{ old('package_type') }}"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -872,7 +1026,7 @@
                         </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
                                 المبلغ</label>
                             <input type="number" name="total_amount" value="{{ old('total_amount') }}" step="0.01"
                                 min="0"
@@ -884,7 +1038,7 @@
                         </div>
 
                         <div class="mt-3">
-                            <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
+                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
                                 الطرد</label>
                             <input type="text" name="code" value="{{ old('code') }}" step="0.01"
                                 class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
@@ -970,7 +1124,7 @@
                                 @enderror
 
                                 <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">
                                         رقم السند / رقم التحويل / رقم الإيداع
                                     </label>
                                     <input type="text" name="prepaid_reference" x-model="prepaid_reference"
@@ -993,7 +1147,7 @@
                 </div>
 
                 <div class="mt-6">
-                    <label class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
+                    <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الملاحظات</label>
                     <textarea placeholder="اكتب ملاحظاتك..." rows="4" name="notes"
                         class="px-4 py-2.5 w-full h-auto text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 resize-none hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white">{{ old('notes') }}</textarea>
                     @error('notes')
@@ -1018,141 +1172,5 @@
                         </span>
                     </button>
                 </div>
-            </form>
-
-
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('customerPicker', (url, initialPhone = '', initialName = '', initialId = '') => ({
-                query: '',
-                open: false,
-                loading: false,
-                results: [],
-
-                selectedId: initialId,
-                selectedName: initialName,
-                selectedPhone: '',
-
-                countryCode: '+967',
-                countryFlag: 'ye',
-                localNumber: '',
-
-                openCountry: false,
-                countries: [{
-                        code: '+967',
-                        flag: 'ye'
-                    },
-                    {
-                        code: '+966',
-                        flag: 'sa'
-                    },
-                    {
-                        code: '+971',
-                        flag: 'ae'
-                    },
-                    {
-                        code: '+965',
-                        flag: 'kw'
-                    },
-                    {
-                        code: '+974',
-                        flag: 'qa'
-                    },
-                    {
-                        code: '+968',
-                        flag: 'om'
-                    }
-                ],
-
-                init() {
-                    if (initialPhone) {
-                        this.parsePhone(initialPhone);
-                    }
-                },
-
-                parsePhone(phone) {
-                    if (!phone) {
-                        this.setCountry('+967');
-                        this.localNumber = '';
-                        this.selectedPhone = '';
-                        return;
-                    }
-
-                    const found = this.countries.find(c => phone.startsWith(c.code));
-
-                    if (found) {
-                        this.countryCode = found.code;
-                        this.countryFlag = found.flag;
-                        this.localNumber = phone.substring(found.code.length);
-                    } else {
-                        this.setCountry('+967');
-                        this.localNumber = phone;
-                    }
-                    this.updateHidden();
-                },
-
-                setCountry(code) {
-                    const country = this.countries.find(c => c.code === code);
-                    if (country) {
-                        this.countryCode = country.code;
-                        this.countryFlag = country.flag;
-                    }
-                    this.updatePhone();
-                    this.openCountry = false;
-                },
-
-                updatePhone() {
-                    this.updateHidden();
-                    this.selectedId = '';
-                },
-
-                updateHidden() {
-                    this.selectedPhone = this.countryCode + this.localNumber;
-                },
-
-                async search() {
-                    const q = (this.query || '').trim();
-                    this.open = true;
-
-                    if (q.length < 2) {
-                        this.results = [];
-                        this.loading = false;
-                        return;
-                    }
-
-                    this.loading = true;
-
-                    try {
-                        const res = await fetch(`${url}?q=${encodeURIComponent(q)}`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-
-                        if (!res.ok) throw new Error('Search failed');
-                        this.results = await res.json();
-                    } catch (e) {
-                        console.error(e);
-                        this.results = [];
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                select(c) {
-                    this.selectedId = c.id;
-                    this.selectedName = c.name ?? '';
-                    this.parsePhone(c.phone ?? '');
-
-                    this.query = this.selectedName;
-                    this.open = false;
-                    this.results = [];
-                }
-            }));
-        });
-    </script>
-
-@endsection
+            {{-- </form> --}}
+        @endsection

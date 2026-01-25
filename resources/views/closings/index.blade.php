@@ -116,7 +116,8 @@
                         <div class="grid grid-cols-2 gap-3">
                             <div class="relative">
                                 <label for="start_date"
-                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">من</label>
+                                    class="absolute -top-2 right-3 px-1 text-[10px] font-bold text-gray-400 bg-white dark:bg-gray-900">
+                                    من</label>
                                 <input type="date" name="start_date" id="start_date"
                                     class="px-3 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-900 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
                                     value="{{ $startDate->format('Y-m-d') }}">
@@ -341,22 +342,22 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span
-                                        class="font-mono text-sm text-gray-500 dark:text-gray-400">{{ number_format($closing->expected_balance, 2) }}</span>
+                                        class="font-mono text-sm text-gray-500 dark:text-gray-400">{{ number_format($closing->expected_balance) }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span
-                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($closing->actual_cash, 2) }}</span>
+                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ number_format($closing->actual_cash) }}</span>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     @if ($closing->difference < 0)
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-bold rounded-lg text-error-500 bg-error-50 dark:bg-error-500/10 dark:text-error-400">
-                                            {{ number_format($closing->difference, 2) }}
+                                            {{ number_format($closing->difference) }}
                                         </span>
                                     @elseif($closing->difference > 0)
                                         <span
                                             class="inline-flex px-2 py-1 text-xs font-bold text-blue-500 bg-blue-50 rounded-lg dark:bg-blue-500/10 dark:text-blue-400">
-                                            +{{ number_format($closing->difference, 2) }}
+                                            +{{ number_format($closing->difference) }}
                                         </span>
                                     @else
                                         <span
@@ -367,7 +368,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <span
-                                        class="font-bold text-success-500 dark:text-success-400">{{ number_format($closing->transferred_amount, 2) }}</span>
+                                        class="font-bold text-success-500 dark:text-success-400">{{ number_format($closing->transferred_amount) }}</span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <p class="text-xs text-gray-500 max-w-[200px] truncate"

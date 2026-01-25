@@ -10,6 +10,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
+        'receipt_number',
         'branch_code',
         'transaction_category_id',
         'amount',
@@ -92,5 +93,34 @@ class Transaction extends Model
         return $query->whereHas('category', function ($q) {
             $q->where('type', 'out');
         });
+    }
+
+    /**
+     * Generate unique receipt number based on transaction type
+     * Format: REC-YYYY-NNNNN for income, PAY-YYYY-NNNNN for expense
+     */
+    public static function generateReceiptNumber($transactionType)
+    {
+        $year = now()->year;
+        $prefix = $transactionType === 'in' ? 'REC' : 'PAY';
+        
+        // Get the last receipt number for this type and year
+        $lastTransaction = self::whereHas('category', function ($q) use ($transactionType) {
+            $q->where('type', $transactionType);
+        })
+        ->where('receipt_number', 'like', "{$prefix}-{$year}-%")
+        ->orderBy('receipt_number', 'desc')
+        ->first();
+
+        if ($lastTransaction && $lastTransaction->receipt_number) {
+            // Extract the sequence number and increment
+            $parts = explode('-', $lastTransaction->receipt_number);
+            $sequence = intval($parts[2] ?? 0) + 1;
+        } else {
+            // Start from 1
+            $sequence = 1;
+        }
+
+        return sprintf('%s-%s-%05d', $prefix, $year, $sequence);
     }
 }

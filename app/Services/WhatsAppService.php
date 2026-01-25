@@ -61,38 +61,61 @@ class WhatsAppService
 
     public function createSenderMessage(Shipment $shipment)
     {
-        $codText = '';
-        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $codText = "\n💰 *مبلغ الدفع عند الاستلام:* ".number_format($shipment->cod_amount, 2).' ر.ي';
-        }
-
-        $senderName = $shipment->senderCustomer->name ?? 'غير محدد';
-        $senderCity = $shipment->senderBranch->name ?? 'غير محدد';
-        $receiverName = $shipment->receiverCustomer->name ?? 'غير محدد';
-        $receiverCity = $shipment->receiverBranch->name ?? 'غير محدد';
         $currentDateTime = now()->format('Y-m-d | h:i A');
 
-        return "🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
+        $message = "🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 📦 *تأكيد استلام طردك*
 
-� *رقم التتبع:* {$shipment->tracking_number}
+🔢 *رقم التتبع:* {$shipment->tracking_number}";
 
-👤 *المرسل:* {$shipment->sender_name}
-📍 *مدينة المرسل:* {$shipment->from_city}
+        // إضافة المرسل إذا كان موجود
+        if ($shipment->senderCustomer && $shipment->senderCustomer->name) {
+            $message .= "\n\n👤 *المرسل:* {$shipment->senderCustomer->name}";
+            if ($shipment->senderCustomer->phone) {
+                $message .= "\n📞 *جوال المرسل:* {$shipment->senderCustomer->phone}";
+            }
+        }
 
-👤 *المستلم:* {$shipment->receiver_name}
-� *مدينة المستلم:* {$shipment->to_city}
+        // إضافة مدينة المرسل إذا كانت موجودة
+        if ($shipment->senderBranch && $shipment->senderBranch->name) {
+            $message .= "\n📍 *من فرع:* {$shipment->senderBranch->name}";
+        }
 
-�📊 *نوع الطرد:* {$shipment->package_type}
-⚖️ *الوزن:* {$shipment->weight} كجم{$codText}
+        // إضافة المستلم إذا كان موجود
+        if ($shipment->receiverCustomer && $shipment->receiverCustomer->name) {
+            $message .= "\n\n👤 *المستلم:* {$shipment->receiverCustomer->name}";
+            if ($shipment->receiverCustomer->phone) {
+                $message .= "\n📞 *جوال المستلم:* {$shipment->receiverCustomer->phone}";
+            }
+        }
 
-� *تاريخ الشحن:* {$currentDateTime}
+        // إضافة مدينة المستلم إذا كانت موجودة
+        if ($shipment->receiverBranch && $shipment->receiverBranch->name) {
+            $message .= "\n📍 *إلى فرع:* {$shipment->receiverBranch->name}";
+        }
+
+        // إضافة نوع الطرد إذا كان موجود
+        if ($shipment->package_type) {
+            $message .= "\n\n� *نوع الطرد:* {$shipment->package_type}";
+        }
+
+        // إضافة الوزن إذا كان موجود
+        if ($shipment->weight) {
+            $message .= "\n⚖️ *الوزن:* {$shipment->weight} كجم";
+        }
+
+        // إضافة مبلغ الدفع عند الاستلام إذا وجد
+        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
+            $message .= "\n💰 *مبلغ الدفع عند الاستلام:* ".number_format($shipment->cod_amount, 2).' ر.ي';
+        }
+
+        $message .= "\n\n📅 *تاريخ الشحن:* {$currentDateTime}
 ✅ *الحالة:* تم استلام الطرد وجاري التجهيز
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
-� *مكتب الزاجل - فرع المكلا*
+🏢 *مكتب الزاجل - فرع المكلا*
 الموقع: أربعين شقة - بجانب بنك الإمجاد
 📞 للتواصل: 774996316 | 772038561 | 735637947
 
@@ -100,53 +123,80 @@ class WhatsAppService
 
 ⚠️ *تنبيهات هامة:*
 • غير مسؤولين عن الإجراءات الأمنية
-• غير مسؤولين عن الأشياء الثمينة
-• غير مسؤولين عن بقاء الطرود +شهر
+• داخل الطردغير مسؤولين عن الأشياء الثمينة
+• غير مسؤولين عن بقاء الطرود اكثر من شهر
 • غير مسؤولين عن الحريق وحوادث السير
 • يرجى التأكد من بيانات السند
 
 شكراً لثقتك بنا! 💚";
+
+        return $message;
     }
 
     public function createReceiverMessage(Shipment $shipment)
     {
-        $codText = '';
-        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $codText = "\n💰 *المبلغ المطلوب:* ".number_format($shipment->cod_amount, 2).' ر.ي (دفع عند الاستلام)';
+        $currentDateTime = now()->format('Y-m-d | h:i A');
+
+        $message = '🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 *إشعار وصول طرد*';
+
+        // اسم المستلم في التحية
+        if ($shipment->receiverCustomer && $shipment->receiverCustomer->name) {
+            $message .= "\n\nعزيزي/عزيزتي *{$shipment->receiverCustomer->name}* 👋";
         }
 
+        $message .= "\n\n🔢 *رقم التتبع:* {$shipment->tracking_number}";
+
+        // معلومات المرسل
+        if ($shipment->senderCustomer && $shipment->senderCustomer->name) {
+            $message .= "\n\n👤 *المرسل:* {$shipment->senderCustomer->name}";
+            if ($shipment->senderCustomer->phone) {
+                $message .= "\n📞 *جوال المرسل:* {$shipment->senderCustomer->phone}";
+            }
+        }
+
+        if ($shipment->senderBranch && $shipment->senderBranch->name) {
+            $message .= "\n📍 *من فرع:* {$shipment->senderBranch->name}";
+        }
+
+        // معلومات المستلم
+        if ($shipment->receiverCustomer && $shipment->receiverCustomer->name) {
+            $message .= "\n\n👤 *المستلم:* {$shipment->receiverCustomer->name}";
+            if ($shipment->receiverCustomer->phone) {
+                $message .= "\n📞 *جوال المستلم:* {$shipment->receiverCustomer->phone}";
+            }
+        }
+
+        if ($shipment->receiverBranch && $shipment->receiverBranch->name) {
+            $message .= "\n📍 *إلى فرع:* {$shipment->receiverBranch->name}";
+        }
+
+        // نوع الطرد والوزن
+        if ($shipment->package_type) {
+            $message .= "\n\n📊 *نوع الطرد:* {$shipment->package_type}";
+        }
+
+        if ($shipment->weight) {
+            $message .= "\n⚖️ *الوزن:* {$shipment->weight} كجم";
+        }
+
+        // طريقة الدفع
         $paymentMethodText = [
             'cash' => '💳 مدفوع مسبقاً',
             'cod' => '💵 دفع عند الاستلام',
             'online' => '💻 مدفوع إلكترونياً',
         ][$shipment->payment_method] ?? '💳 مدفوع';
 
-        $senderName = $shipment->senderCustomer->name ?? 'غير محدد';
-        $senderCity = $shipment->senderBranch->name ?? 'غير محدد';
-        $receiverName = $shipment->receiverCustomer->name ?? 'غير محدد';
-        $receiverCity = $shipment->receiverBranch->name ?? 'غير محدد';
-        $currentDateTime = now()->format('Y-m-d | h:i A');
+        $message .= "\n💸 *طريقة الدفع:* {$paymentMethodText}";
 
-        return "🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
-━━━━━━━━━━━━━━━━━━━━━━━━
+        // مبلغ الدفع عند الاستلام
+        if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
+            $message .= "\n💰 *المبلغ المطلوب:* ".number_format($shipment->cod_amount, 2).' ر.ي';
+        }
 
-📦 *إشعار وصول طرد*
-
-عزيزي/عزيزتي *{$shipment->receiver_name}* 👋
-
-� *رقم التتبع:* {$shipment->tracking_number}
-
-👤 *المرسل:* {$shipment->sender_name}
-📍 *مدينة المرسل:* {$shipment->from_city}
-
-👤 *المستلم:* {$receiverName}
-📍 *مدينة المستلم:* {$receiverCity}
-
-📊 *نوع الطرد:* {$shipment->package_type}
-⚖️ *الوزن:* {$shipment->weight} كجم
-💸 *طريقة الدفع:* {$paymentMethodText}{$codText}
-
-� *تاريخ الشحن:* {$currentDateTime}
+        $message .= "\n\n📅 *تاريخ الشحن:* {$currentDateTime}
 ✅ *الحالة:* في الطريق إليك
 ⏱️ *التوصيل المتوقع:* خلال 24-48 ساعة عمل
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -165,7 +215,9 @@ class WhatsAppService
 • غير مسؤولين عن الحريق وحوادث السير
 • يرجى التأكد من بيانات السند
 
-نتمنى لك يوماً سعيداً! �";
+نتمنى لك يوماً سعيداً! 💚";
+
+        return $message;
     }
 
     /**

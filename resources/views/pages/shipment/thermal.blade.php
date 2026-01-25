@@ -52,28 +52,28 @@
 
         .company-cell {
             width: 38%;
-            font-size: 4.5pt;
+            font-size: 5.5pt;
             line-height: 1.05;
         }
 
         .header-title {
-            font-size: 6.5pt;
+            font-size: 18pt;
             font-weight: bold;
             margin-bottom: 0.2mm;
         }
 
         .header-subtitle {
-            font-size: 4.8pt;
+            font-size: 6pt;
             margin-bottom: 0.1mm;
         }
 
         .header-extra {
-            font-size: 4.2pt;
+            font-size: 5.2pt;
             margin-bottom: 0.05mm;
         }
 
         .header-phones {
-            font-size: 4pt;
+            font-size: 5pt;
             font-weight: bold;
             margin-top: 0.2mm;
             direction: ltr;
@@ -96,7 +96,7 @@
         .branch-cell {
             width: 38%;
             text-align: left;
-            font-size: 5pt;
+            font-size: 6pt;
             font-weight: bold;
             line-height: 1.15;
         }
@@ -111,29 +111,29 @@
         .info-grid td {
             padding: 0.1mm 0.5mm;
             border-bottom: 0.5px solid #eee;
-            font-size: 5.5pt;
+            font-size: 6.5pt;
         }
 
         .label {
-            font-size: 5.5pt;
+            font-size: 6.5pt;
             font-weight: bold;
             color: #fb6514;
             white-space: nowrap;
         }
 
         .value {
-            font-size: 6.5pt;
+            font-size: 7.5pt;
             font-weight: 800;
         }
 
         .value-small {
-            font-size: 6pt;
+            font-size: 7pt;
             font-weight: 700;
         }
 
         /* ===== الإدارة العامة (مضغوطة) ===== */
         .admin-text {
-            font-size: 4.5pt;
+            font-size: 5.5pt;
             font-weight: 700;
             text-align: center;
             margin-top: 1mm;
@@ -182,7 +182,7 @@
 
                 <td class="branch-cell">
                     <div style="font-weight: bold;  margin-bottom: 5px;">
-                        فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن
+                        فرع / القطن -عمارة شظي - خلف بنك التظامن
                     </div>
                     <div style="font-weight: bold; ">
                         781216757 - 773136727 - 730831802

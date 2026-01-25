@@ -150,8 +150,15 @@ class TransactionController extends Controller
             $attachmentPath = $this->imageService->saveImage($request->file('attachment'), 'transactions');
         }
 
+        // Get the transaction category to determine type (in/out)
+        $category = TransactionCategory::findOrFail($validated['transaction_category_id']);
+        
+        // Generate unique receipt number based on transaction type
+        $receiptNumber = Transaction::generateReceiptNumber($category->type);
+
         // Create transaction for the current branch
         Transaction::create([
+            'receipt_number' => $receiptNumber,
             'branch_code' => Auth::user()->branch_code,
             'transaction_category_id' => $validated['transaction_category_id'],
             'amount' => $validated['amount'],
