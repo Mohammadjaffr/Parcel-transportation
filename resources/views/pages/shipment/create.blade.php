@@ -43,7 +43,7 @@
                 partial_method: '{{ old('partial_payment_method', 'cash') }}',
                 partial_reference: '{{ old('partial_reference') }}',
                 isSubmitting: false
-              }"
+            }"
                 x-effect="
                     if (payment_method !== 'partial_payment') partial_amount = '';
                     if (!['prepaid','partial_payment'].includes(payment_method)) prepaid_method = 'cash';
@@ -55,7 +55,29 @@
                 @csrf
                 <input type="hidden" name="entry_type" value="sender">
                 <input type="hidden" name="active_tab" value="sender">
+                <div class="my-4 space-y-4">
 
+                    <div class="mt-3">
+                        <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
+                            إلى<span class="w-1 h-5 rounded-full bg-brand-500"></span></label>
+                        <select name="receiver_branch_code"
+                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
+                            <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>اختر الجهة
+                            </option>
+                            @foreach ($branches as $branch)
+                                @continue($branch->code === auth()->user()->branch_code)
+                                <option value="{{ $branch->code }}"
+                                    {{ old('receiver_branch_code') == $branch->code ? 'selected' : '' }}>
+                                    {{ $branch->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('receiver_branch_code')
+                            <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                </div>
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-2">
 
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('sender_phone') }}', '{{ old('sender_name') }}', '{{ old('sender_customer_id') }}')">
@@ -180,21 +202,13 @@
                             @enderror
                         </div>
 
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
-                                العسل</label>
-                            <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="0">
-                            @error('no_honey_jars')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
+
                     </div>
 
                     <div class="space-y-4" x-data="customerPicker('{{ route('customers.search') }}', '{{ old('receiver_phone') }}', '{{ old('receiver_name') }}', '{{ old('receiver_customer_id') }}')">
 
-                        <div class="flex justify-between items-end">
+                        <div
+                            class="flex justify-between items-center pb-3 mb-4 border-b border-gray-100 dark:border-gray-700">
                             <h3 class="flex gap-2 items-center text-base font-bold text-gray-800 dark:text-white">
                                 <span class="w-1 h-5 rounded-full bg-brand-500"></span>
                                 بيانات المستلم
@@ -217,25 +231,7 @@
                             <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                         @enderror
 
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الجهة
-                                إلى</label>
-                            <select name="receiver_branch_code"
-                                class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border dark:text-gray-400 dark:bg-dark-900 dark:border-gray-500">
-                                <option value="" {{ old('receiver_branch_code') ? '' : 'selected' }}>اختر الجهة
-                                </option>
-                                @foreach ($branches as $branch)
-                                    @continue($branch->code === auth()->user()->branch_code)
-                                    <option value="{{ $branch->code }}"
-                                        {{ old('receiver_branch_code') == $branch->code ? 'selected' : '' }}>
-                                        {{ $branch->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('receiver_branch_code')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
+
 
                         <div class="relative mt-3">
                             <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">الهاتف (ابحث
@@ -326,55 +322,67 @@
                             @enderror
                         </div>
 
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
-                                العسل</label>
-                            <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="0">
-                            @error('no_gallons_honey')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
+
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-2 xl:grid-cols-2">
-                    <div class="space-y-4 w-full md:col-span-2">
-                        <h3 class="text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
+                    <div class="w-full xl:col-span-2">
+                        <h3 class="mb-4 text-sm font-bold text-gray-700 dark:text-gray-400">تفاصيل الطرد</h3>
 
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
-                                الطرد</label>
-                            <input type="text" name="package_type" value="{{ old('package_type') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="مثال: كرتون / شنطة / ...">
-                            @error('package_type')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
-                                المبلغ</label>
-                            <input type="number" name="total_amount" value="{{ old('total_amount') }}" step="0.01"
-                                min="0"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="0.00">
-                            @error('total_amount')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mt-3">
-                            <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
-                                الطرد</label>
-                            <input type="text" name="code" value="{{ old('code') }}"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
-                                placeholder="QWR123">
-                            @error('code')
-                                <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
-                            @enderror
+                        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">نوع
+                                    الطرد</label>
+                                <input type="text" name="package_type" value="{{ old('package_type') }}"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    placeholder="مثال: كرتون / شنطة / ...">
+                                @error('package_type')
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد قروف
+                                    العسل</label>
+                                <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    placeholder="0">
+                                @error('no_honey_jars')
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">عدد جوالين
+                                    العسل</label>
+                                <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    placeholder="0">
+                                @error('no_gallons_honey')
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                @enderror
+                            </div>
+                                <div class="md:col-span-2">
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
+                                    الطرد</label>
+                                <input type="text" name="code" value="{{ old('code') }}"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    placeholder="QWR123">
+                                @error('code')
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div >
+                                <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
+                                    المبلغ</label>
+                                <input type="number" name="total_amount" value="{{ old('total_amount') }}"
+                                    step="0.01" min="0"
+                                    class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 hover:border-brand-500 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-500 dark:text-white"
+                                    placeholder="0.00">
+                                @error('total_amount')
+                                    <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        
                         </div>
                     </div>
 
@@ -484,8 +492,7 @@
 
                                 <template x-if="prepaid_method === 'bank_transfer'">
                                     <div class="mt-4">
-                                        <label
-                                            class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
+                                        <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رقم
                                             الإيداع</label>
                                         <input type="text" name="prepaid_reference" x-model="prepaid_reference"
                                             placeholder="أدخل رقم الإيداع"
