@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\BranchTransaction;
-use App\Models\CustomerPayment;
 use App\Models\Shipment;
-use Illuminate\Support\Facades\DB;
+use App\Models\Transaction;
 use InvalidArgumentException;
+use App\Models\CustomerPayment;
+use App\Models\BranchTransaction;
+use Illuminate\Support\Facades\DB;
+use App\Services\TransactionService;
+use Illuminate\Support\Facades\Auth;
 
 class ShipmentPaymentService
 {
@@ -77,6 +80,14 @@ class ShipmentPaymentService
                 'دفعة مقدمة تلقائية للشحنة رقم ' . $shipment->bond_number,
                 $referenceNumber
             );
+            TransactionService::recordShipmentPayment(
+                $shipment,
+                $shipment->total_amount,
+                Auth::user()->branch_code, 
+                $paymentType,              
+                $referenceNumber,
+                $shipment->sender_customer_id
+            );
 
             $shipment->customer_debt_status = 'fully_paid';
             $shipment->save();
@@ -104,6 +115,14 @@ class ShipmentPaymentService
                 $paymentType,
                 'دفعة جزئية تلقائية للشحنة رقم ' . $shipment->bond_number,
                 $referenceNumber
+            );
+            TransactionService::recordShipmentPayment(
+                $shipment,
+                $paidAmount,               
+                Auth::user()->branch_code,
+                $paymentType,
+                $referenceNumber,
+                $shipment->sender_customer_id
             );
 
             $shipment->customer_debt_status = 'partially_paid';
@@ -169,5 +188,24 @@ class ShipmentPaymentService
             'type'                 => 'cod',
             'description'          => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
         ]);
+    }
+
+   public function voidShipmentTransactions(Shipment $shipment): void
+    {
+        // 1. حذف المدفوعات من سجل العميل
+        CustomerPayment::where('shipment_id', $shipment->id)->delete();
+
+        // 2. حذف المعاملات من الصندوق
+        // ✅ التعديل هنا: نستخدم whereHas للبحث داخل جدول التصنيفات المرتبط
+        Transaction::where('shipment_id', $shipment->id)
+            ->whereHas('category', function($q) {
+                $q->where('type', 'in'); // البحث داخل جدول transaction_categories
+            })
+            ->delete();
+
+        // 3. تصفير الشحنة
+        $shipment->customer_debt_status = null;
+        $shipment->partial_amount = null;
+        $shipment->save();
     }
 }

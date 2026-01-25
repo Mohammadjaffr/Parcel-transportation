@@ -21,7 +21,7 @@ class TransactionService
      * @return Transaction
      * @throws Exception
      */
-    public static function recordShipmentPayment(Shipment $shipment, float $amount, string $branchCode): Transaction
+    public static function recordShipmentPayment(Shipment $shipment, float $amount, string $branchCode, string $paymentMethod = 'cash', ?string $referenceNumber = null, ?int $customerId = null): Transaction
     {
         // Find the SHIPMENT_PAYMENT category
         $category = TransactionCategory::where('code', 'SHIPMENT_PAYMENT')
@@ -38,8 +38,11 @@ class TransactionService
             'transaction_category_id' => $category->id,
             'amount' => $amount,
             'description' => "استلام دفعة للشحنة رقم {$shipment->bond_number}",
+            'payment_method' => $paymentMethod,
+            'reference_number' => $referenceNumber, 
             'created_by' => auth()->id() ?? 1, // Fallback to system user if no auth
             'shipment_id' => $shipment->id,
+            'customer_id' => $customerId,
         ]);
 
         return $transaction;

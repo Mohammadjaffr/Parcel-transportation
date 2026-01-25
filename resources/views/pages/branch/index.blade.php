@@ -123,7 +123,7 @@
                     </svg>
                 </div>
             </div>
-            @if (Auth::user()->type == 'super_admin')
+            @if (Auth::user()->type != 'user')
                 <div class="flex w-full md:justify-end">
                     <button @click="createModalOpen = true"
                         class="flex gap-2 justify-center items-center px-8 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-500 shadow-brand-500/20 active:scale-95 md:w-auto">

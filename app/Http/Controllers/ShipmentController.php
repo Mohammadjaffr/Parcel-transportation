@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\WebResponseClass;
-use App\Models\AdminActivity;
+use Exception;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Shipment;
-use App\Services\AdminLoggerService;
-use App\Services\ShipmentPaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Models\AdminActivity;
+use App\Classes\WebResponseClass;
+use Illuminate\Support\Facades\DB;
+use App\Models\CashRegisterClosing;
+use App\Services\AdminLoggerService;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ShipmentPaymentService;
+use Illuminate\Support\Facades\Validator;
 
 class ShipmentController extends Controller
 {
@@ -492,23 +495,29 @@ class ShipmentController extends Controller
 
     public function updatePaymentMethod(Request $request, $id)
     {
+    
         $shipment = Shipment::findOrFail($id);
+        $shipmentDate = $shipment->created_at->format('Y-m-d');
+        $isDayClosed = CashRegisterClosing::where('branch_code', $shipment->created_branch_code) // أو sender_branch_code حسب منطقك
+            ->whereDate('created_at', $shipmentDate)
+            ->exists();
+        if ($isDayClosed) {
+            return WebResponseClass::sendError(
+                'لقد تم "إقفال الصندوق" (Daily Closing) لتاريخ هذه الشحنة (' . $shipmentDate . '). ',
+                'عذراً، لا يمكن تعديل طريقة الدفع.',
+                 
+            );
+        }
 
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
             'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
-
-            // يظهر عند prepaid أو partial_payment
             'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
-
-            // رقم الإيداع (نخليه nullable هنا، وبنلزمّه في after حسب الشروط الدقيقة)
             'prepaid_reference' => 'nullable|string|max:255',
-
-            // للآجل فقط
             'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
         ]);
-
-        $validator->after(function ($validator) use ($request, $shipment) {
+            
+            $validator->after(function ($validator) use ($request, $shipment) {
 
             $paymentMethod = $request->payment_method ?? $shipment->payment_method;
             $payType = $request->prepaid_payment_method ?? null;
@@ -534,29 +543,29 @@ class ShipmentController extends Controller
                 }
             }
         });
+       
 
         if ($validator->fails()) {
             return WebResponseClass::sendValidationError($validator);
         }
-
+         
         $data = $validator->validated();
-
-        // ✅ تحديث حقول الشحنة الأساسية
-        $shipment->payment_method = $data['payment_method'];
-
-        if ($shipment->payment_method === 'customer_credit') {
-            $shipment->customer_debt_status = $data['customer_debt_status'] ?? 'pending';
-        } else {
-            $shipment->customer_debt_status = null;
-        }
-
-        $shipment->save();
-
-        // ✅ إذا COD أو آجل: احذف أي دفعات مسجلة
+        try {
+            DB::beginTransaction();
+            
+            // مهما كان النوع القديم، نحذفه من الصندوق ومن مدفوعات العملاء
+            $this->shipmentPaymentService->voidShipmentTransactions($shipment);
+            // ✅ تحديث حقول الشحنة الأساسية
+            $shipment->payment_method = $data['payment_method'];
+            if ($shipment->payment_method === 'customer_credit') {
+                $shipment->customer_debt_status = $data['customer_debt_status'] ?? 'pending';
+            } else {
+                $shipment->customer_debt_status = null;
+            }
+             $shipment->save();
+              // ✅ إذا COD أو آجل: احذف أي دفعات مسجلة
         if (in_array($shipment->payment_method, ['cod', 'customer_credit'])) {
-            // استخدم العلاقة الصحيحة عندك (customerPayments أو payments)
-            $shipment->customerPayments()->delete();
-
+            DB::commit();
             return WebResponseClass::sendResponse(
                 'تم التحديث!',
                 'تم تحديث بيانات الدفع بنجاح.',
@@ -564,11 +573,9 @@ class ShipmentController extends Controller
                 'shipment.index'
             );
         }
-
         // ✅ تحديد المبلغ المدفوع الآن
         $paidAmount = null;
-
-        if ($shipment->payment_method === 'prepaid') {
+         if ($shipment->payment_method === 'prepaid') {
             $paidAmount = (float) $shipment->total_amount;
         }
 
@@ -577,7 +584,6 @@ class ShipmentController extends Controller
         }
 
         $paymentType = $data['prepaid_payment_method'] ?? 'cash';
-
         // ✅ الاستدعاء الصحيح حسب Service (4 باراميترات)
         $this->shipmentPaymentService->handlePaymentForNewShipment(
             $shipment,
@@ -585,13 +591,26 @@ class ShipmentController extends Controller
             $paidAmount,
             $data['prepaid_reference'] ?? null
         );
-
+        DB::commit();
         return WebResponseClass::sendResponse(
             'تم التحديث!',
             'تم تحديث بيانات الدفع بنجاح.',
             'حسناً',
             'shipment.index'
         );
+        
+
+        } catch (Exception $e) {
+           DB::rollBack();
+            return WebResponseClass::sendExceptionError($e);
+        }
+
+
+       
+
+        
+
+        
     }
 
     /* ========== 7- حذف الطرد ========== */

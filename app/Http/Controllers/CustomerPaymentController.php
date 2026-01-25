@@ -95,7 +95,10 @@ class CustomerPaymentController extends Controller
             TransactionService::recordShipmentPayment(
                 shipment: $shipment,
                 amount: $data['amount'],
-                branchCode: $user->branch_code
+                branchCode: $user->branch_code,
+                paymentMethod: $data['payment_method'],
+                referenceNumber: $data['reference_number'] ?? null,
+                customerId: $shipment->sender_customer_id
             );
             
             // تحديث حالة الدين للشحنة إذا تم السداد بالكامل

@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
         ]);
         
         User::create([
-            'name' => 'العار',
+            'name' => 'سعيد العويد',
             'phone' => '967774996316',
             'whatsapp_number' => '967774996316',
             'phone_verified_at'=> now(),

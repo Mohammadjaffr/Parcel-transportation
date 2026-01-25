@@ -3,6 +3,8 @@
 @section('Breadcrumb', 'تعديل طرد')
 
 @section('content')
+    @include('components.modals.error-modal')
+    @include('components.modals.success-modal')
 
     <div class="p-6 bg-white rounded-lg shadow-sm dark:bg-gray-800" x-data="{
         payment_method: @js(old('payment_method', $shipment->payment_method)),

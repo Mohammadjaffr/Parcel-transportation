@@ -35,8 +35,8 @@ Route::middleware('auth')->group(function () {
     
     // Branch routes with super admin middleware for create and store
     Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
-    Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('super.admin');
-    Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware('super.admin');
+    Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('admin');
+    Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware('admin');
     Route::get('branch/{branch}', [BranchController::class, 'show'])->name('branch.show');
     Route::get('branch/{branch}/edit', [BranchController::class, 'edit'])->name('branch.edit');
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
