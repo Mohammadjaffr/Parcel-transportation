@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Shipment;
 use App\Models\Transaction;
+use App\Models\BranchLedger;
 use InvalidArgumentException;
 use App\Models\CustomerPayment;
 use App\Models\BranchTransaction;
@@ -173,21 +174,70 @@ class ShipmentPaymentService
         );
     }
 
+    /**
+     * Create COD/Partial branch transaction on delivery.
+     * Records cash in receiver's box AND creates double-entry ledger.
+     */
     public function createCodBranchTransactionOnDelivery(Shipment $shipment): void
     {
+        // Guard 1: Must be delivered
+        if ($shipment->status !== 'delivered') {
+            return;
+        }
+
+        // Guard 2: Must be COD or Partial Payment
+        if (!in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
+            return;
+        }
+
+        // Guard 3: Idempotency - prevent duplicate ledger entries
+        if (BranchLedger::where('shipment_id', $shipment->id)->exists()) {
+            return;
+        }
+
+        // Calculate collected amount (what receiver branch physically collected)
         $totalPaid = $shipment->customerPayments()->sum('amount');
-        $outstanding = max($shipment->total_amount - $totalPaid, 0);
+        $collectedAmount = (float) max($shipment->total_amount - $totalPaid, 0);
 
-        if ($outstanding <= 0) return;
+        // Guard 4: Nothing to collect
+        if ($collectedAmount <= 0) {
+            return;
+        }
 
-        BranchTransaction::create([
-            'shipment_id'          => $shipment->id,
-            'sender_branch_code'   => $shipment->receiver_branch_code,
-            'receiver_branch_code' => $shipment->sender_branch_code,
-            'amount'               => $outstanding,
-            'type'                 => 'cod',
-            'description'          => 'تحصيل مبلغ شحنة رقم ' . $shipment->tracking_number,
-        ]);
+        DB::transaction(function () use ($shipment, $collectedAmount) {
+            // A. Record cash entering the Receiver Branch's physical box
+            TransactionService::recordShipmentPayment(
+                shipment: $shipment,
+                amount: $collectedAmount,
+                branchCode: $shipment->receiver_branch_code,
+                paymentMethod: 'cash',
+                referenceNumber: null,
+                customerId: $shipment->receiver_customer_id
+            );
+
+            // B. Create double-entry ledger records
+            // Receiver Branch: DEBIT (they OWE this money to sender)
+            BranchLedger::create([
+                'branch_code' => $shipment->receiver_branch_code,
+                'related_branch_code' => $shipment->sender_branch_code,
+                'shipment_id' => $shipment->id,
+                'type' => 'shipment_cod',
+                'debit' => $collectedAmount,
+                'credit' => 0,
+                'description' => "تحصيل مبلغ شحنة COD رقم {$shipment->bond_number}",
+            ]);
+
+            // Sender Branch: CREDIT (they ARE OWED this money from receiver)
+            BranchLedger::create([
+                'branch_code' => $shipment->sender_branch_code,
+                'related_branch_code' => $shipment->receiver_branch_code,
+                'shipment_id' => $shipment->id,
+                'type' => 'shipment_cod',
+                'debit' => 0,
+                'credit' => $collectedAmount,
+                'description' => "استحقاق من فرع {$shipment->receiver_branch_code} لشحنة رقم {$shipment->bond_number}",
+            ]);
+        });
     }
 
    public function voidShipmentTransactions(Shipment $shipment): void

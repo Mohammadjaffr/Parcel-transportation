@@ -1,5 +1,5 @@
 {{-- Clear Branch Balance Modal - يظهر فقط للفروع المديونة --}}
-@props(['branch', 'branchBalance'])
+@props(['branch', 'branchCredit', 'branchDebit'])
 
 <div x-data="{
     isModalOpen: false,
@@ -70,10 +70,17 @@
                                     {{ $branch->code }}
                                 </p>
                             </div>
-                            <div class="text-left">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">المبلغ المستحق</span>
-                                <p class="text-lg font-black text-error-500">{{ number_format($branchBalance) }} <span
-                                        class="text-xs">ر.ي</span></p>
+                            <div class="text-left space-y-1">
+                                <div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">له (دائن)</span>
+                                    <p class="text-sm font-black text-green-600">{{ number_format($branchCredit) }}
+                                        <span class="text-xs">ر.ي</span></p>
+                                </div>
+                                <div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">عليه (مدين)</span>
+                                    <p class="text-sm font-black text-red-500">{{ number_format($branchDebit) }} <span
+                                            class="text-xs">ر.ي</span></p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -138,7 +145,7 @@
                         <div class="relative">
                             <input type="number" name="amount"
                                 class="pr-4 pl-14 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-800 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white placeholder:text-gray-400"
-                                step="0.01" min="0.01" placeholder="0.00" value="{{ $branchBalance }}" required>
+                                step="0.01" min="0.01" placeholder="0.00" required>
                             <span
                                 class="absolute left-4 top-1/2 text-xs font-bold -translate-y-1/2 text-brand-500">ر.ي</span>
                         </div>

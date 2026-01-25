@@ -54,4 +54,15 @@ class Branch extends Model
     {
         return $this->hasMany(Transaction::class, 'branch_code', 'code');
     }
+    // علاقة الفرع بدفتر الأستاذ (باعتباره صاحب القيد)
+    public function ledgers()
+    {
+        return $this->hasMany(BranchLedger::class, 'branch_code', 'code');
+    }
+    // دالة مساعدة لحساب الرصيد الحالي (اختياري)
+    public function getCurrentBalanceAttribute()
+    {
+        // الرصيد = (له) - (عليه)
+        return $this->ledgers()->sum('credit') - $this->ledgers()->sum('debit');
+    }
 }

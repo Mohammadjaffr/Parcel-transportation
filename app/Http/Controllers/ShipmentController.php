@@ -649,11 +649,11 @@ class ShipmentController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        try {
             $request->validate([
                 'status' => 'required|in:pending,in_transit,delivered,cancelled,returned',
             ]);
-
+        try {
+            DB::beginTransaction();
             $shipment = Shipment::findOrFail($id);
             $shipment->update([
                 'status' => $request->status,
@@ -663,13 +663,14 @@ class ShipmentController extends Controller
                 $paymentService = app(ShipmentPaymentService::class);
                 $paymentService->createCodBranchTransactionOnDelivery($shipment);
             }
-
+            DB::commit();
             return response()->json([
                 'success' => true,
                 'success_title' => 'تم التحديث!',
                 'success_message' => 'تم تحديث حالة الطرد بنجاح.',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'error_message' => $e->getMessage(),

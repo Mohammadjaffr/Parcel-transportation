@@ -21,6 +21,8 @@ class BranchController extends Controller
         $totalCities = $allBranches->pluck('city')->unique()->count();
         $branches = Branch::where('code', '!=', auth()->user()->branch_code)
             ->withCount(['receivingPackages'])
+            ->withSum('ledgers as total_debit', 'debit')
+            ->withSum('ledgers as total_credit', 'credit')
             ->latest()
             ->paginate(10);
 

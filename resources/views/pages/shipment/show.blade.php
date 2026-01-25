@@ -367,7 +367,8 @@
                                 </div>
                             @endif
                         </div>
-                        {{-- <div class="mt-6" x-data="{
+                        @if($shipment->status === 'in_transit')
+                        <div class="mt-6" x-data="{
                             status: '{{ $shipment->status }}',
                             updating: false,
                             updateStatus() {
@@ -396,12 +397,12 @@
                             <div class="relative">
                                 <select x-model="status" @change="updateStatus()" :disabled="updating"
                                     class="py-3 pr-10 pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 appearance-none cursor-pointer focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-900 dark:border-gray-500 dark:text-white dark:focus:ring-brand-500 dark:focus:border-brand-500 disabled:opacity-50">
-                                    <option value="">اختر الحالة</option>
-                                    <option value="pending">قيد الانتظار</option>
+                                    {{-- <option value="">اختر الحالة</option>
+                                    <option value="pending">قيد الانتظار</option> --}}
                                     <option value="in_transit">في الطريق</option>
                                     <option value="delivered">تم التسليم</option>
-                                    <option value="cancelled">ملغي</option>
-                                    <option value="returned">مرتجع</option>
+                                    {{-- <option value="cancelled">ملغي</option>
+                                    <option value="returned">مرتجع</option> --}}
                                 </select>
                                 <div
                                     class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-500 pointer-events-none">
@@ -421,7 +422,8 @@
                                 </svg>
                                 جاري التحديث...
                             </div>
-                        </div> --}}
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Status Update Card -->
