@@ -227,7 +227,6 @@
 
                                         {{-- زر التعديل --}}
                                         <button type="button" @click="openEditModal('{{ $branch->code }}')"
->>>>>>> Stashed changes
                                             :disabled="isFetching === '{{ $branch->code }}'"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="تعديل">
