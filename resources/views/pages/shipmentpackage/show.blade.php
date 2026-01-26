@@ -247,6 +247,17 @@
                             </svg>
                         </a>
                     </div>
+                   {{-- زر تحويل كافة طرود الرحلة إلى "تم الاستلام" --}}
+<form action="{{ route('shipmentpackage.mark-all-delivered', $package->id) }}" method="POST" 
+      onsubmit="return confirm('تحذير: سيتم تحويل حالة جميع الطرود في هذه الرحلة ({{ $package->shipments->count() }} طرد) إلى تم الاستلام. هل أنت متأكد؟')" 
+      class="inline-block">
+    @csrf
+    @method('PATCH')
+    <button type="submit" class="flex gap-2 items-center px-5 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all bg-success-500 hover:bg-success-600 hover:shadow-lg active:scale-95">
+        <i class="fas fa-check-double"></i>
+        <span>توصيل كافة الطرود</span>
+    </button>
+</form>
                 </div>
             </div>
 

@@ -246,7 +246,9 @@
                 المبلغ المدفوع
             @endif
         </div>
-        <div class="amount-value">{{ number_format($transaction->amount, 2) }} ر.ي</div>
+        <div class="amount-value"><span dir="ltr" class="font-bold text-red-600">
+                {{ number_format($transaction->amount) }}
+            </span> ر.ي</div>
     </div>
 
     {{-- البيان --}}

@@ -188,6 +188,9 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::get('/closings', [CashClosingController::class, 'index'])->name('closings.index');
     Route::get('/closings/create', [CashClosingController::class, 'create'])->name('closings.create');
     Route::post('/closings', [CashClosingController::class, 'store'])->name('closings.store');
+
+    Route::patch('/shipment-packages/{id}/mark-all-delivered', [ShipmentPackagesController::class, 'markAllDelivered'])
+    ->name('shipmentpackage.mark-all-delivered');
 });
 
 
