@@ -3,53 +3,65 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipment;
-use App\Models\ShipmentPackage;
 use Illuminate\Http\Request;
+use App\Models\ShipmentPackage;
 use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\DB;
+use App\Services\ShipmentPaymentService;
+
 class ShipmentPackagesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function markAllDelivered($id)
-{
-    try {
-        DB::beginTransaction();
+    {
+        try {
+            DB::beginTransaction();
 
-        $package = ShipmentPackage::with('shipments')->findOrFail($id);
+            $package = ShipmentPackage::findOrFail($id);
 
-        // جلب الطرود التي لم تسلم بعد فقط لتجنب تكرار العمليات
-        $shipmentsToUpdate = $package->shipments()->where('status', '!=', 'delivered')->get();
+            // حساب عدد الطرود التي سيتم تحديثها
+            $countToUpdate = $package->shipments()->where('status', '!=', 'delivered')->count();
 
-        if ($shipmentsToUpdate->isEmpty()) {
-            return back()->with('info', 'جميع الطرود في هذه الرحلة مستلمة بالفعل.');
+            if ($countToUpdate === 0) {
+                DB::rollBack(); // لا داعي لالتزام العملية إذا لم يكن هناك تغيير
+                return back()->with('info', 'جميع الطرود في هذه الرحلة مستلمة بالفعل.');
+            }
+
+            // معالجة الطرود على دفعات لتجنب استهلاك الذاكرة
+            $package->shipments()
+                ->where('status', '!=', 'delivered')
+                ->chunkById(500, function ($shipments) {
+                    foreach ($shipments as $shipment) {
+                        $shipment->update([
+                            'status' => 'delivered',
+                            // 'delivered_at' => now(), 
+                        ]);
+                        if ( in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
+                            $paymentService = app(ShipmentPaymentService::class);
+                            $paymentService->createCodBranchTransactionOnDelivery($shipment);
+                        }
+                        
+                        // هنا يمكنك إضافة منطق السندات المالية أو كشوفات الفروع إذا لزم الأمر
+                    }
+                });
+
+            DB::commit();
+
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                ' تم تحويل حالة ' . $countToUpdate . ' طرد إلى تم الاستلام بنجاح.',
+                'حسناً',
+                'shipmentpackage.show',
+                ['shipmentpackage' => $id]
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return WebResponseClass::sendExceptionError($e);
         }
-
-        foreach ($shipmentsToUpdate as $shipment) {
-            $shipment->update([
-                'status' => 'delivered',
-                // 'delivered_at' => now(), // أضف هذا الحقل إذا كان موجوداً في قاعدة بياناتك
-            ]);
-            
-            // هنا يمكنك إضافة منطق السندات المالية أو كشوفات الفروع إذا لزم الأمر
-        }
-
-        DB::commit();
-
-        return WebResponseClass::sendResponse(
-            'تم التحديث!',
-            ' تم تحويل حالة ' . $shipmentsToUpdate->count() . ' طرد إلى تم الاستلام بنجاح.',
-            'حسناً',
-            'shipmentpackage.show',
-            ['shipmentpackage' => $id]
-        );
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return WebResponseClass::sendExceptionError($e);
     }
-}
     public function index()
     {
         /** @var \App\Models\User $user */
