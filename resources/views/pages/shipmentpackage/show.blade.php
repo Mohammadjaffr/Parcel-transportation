@@ -189,7 +189,7 @@
                                 {{-- الأزرار --}}
                                 <div class="flex gap-2">
                                     {{-- زر الطباعة --}}
-                                    <a href="{{ route('shipmentpackage.printD', $package->id) }}" target="_blank"
+                                    <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
                                         class="flex flex-1 gap-2 justify-center items-center px-4 h-10 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-success-500 hover:bg-success-600 hover:shadow-md active:scale-95">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -229,7 +229,7 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <a href="{{ route('shipmentpackage.print', $package->id) }}" target="_blank"
+                        <a href="{{ route('shipmentpackage.printD', $package->id) }}" target="_blank"
                             class="flex gap-2 items-center px-5 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all bg-brand-500 hover:bg-brand-600 hover:shadow-lg active:scale-95">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -247,17 +247,18 @@
                             </svg>
                         </a>
                     </div>
-                   {{-- زر تحويل كافة طرود الرحلة إلى "تم الاستلام" --}}
-<form action="{{ route('shipmentpackage.mark-all-delivered', $package->id) }}" method="POST" 
-      onsubmit="return confirm('تحذير: سيتم تحويل حالة جميع الطرود في هذه الرحلة ({{ $package->shipments->count() }} طرد) إلى تم الاستلام. هل أنت متأكد؟')" 
-      class="inline-block">
-    @csrf
-    @method('PATCH')
-    <button type="submit" class="flex gap-2 items-center px-5 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all bg-success-500 hover:bg-success-600 hover:shadow-lg active:scale-95">
-        <i class="fas fa-check-double"></i>
-        <span>توصيل كافة الطرود</span>
-    </button>
-</form>
+                    {{-- زر تحويل كافة طرود الرحلة إلى "تم الاستلام" --}}
+                    <form action="{{ route('shipmentpackage.mark-all-delivered', $package->id) }}" method="POST"
+                        onsubmit="return confirm('تحذير: سيتم تحويل حالة جميع الطرود في هذه الرحلة ({{ $package->shipments->count() }} طرد) إلى تم الاستلام. هل أنت متأكد؟')"
+                        class="inline-block">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit"
+                            class="flex gap-2 items-center px-5 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all bg-success-500 hover:bg-success-600 hover:shadow-lg active:scale-95">
+                            <i class="fas fa-check-double"></i>
+                            <span>توصيل كافة الطرود</span>
+                        </button>
+                    </form>
                 </div>
             </div>
 

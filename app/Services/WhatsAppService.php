@@ -8,6 +8,12 @@ use App\Models\Shipment;
 
 class WhatsAppService
 {
+    protected $sendPDFService;
+
+    public function __construct(SendPDFService $sendPDFService)
+    {
+        $this->sendPDFService = $sendPDFService;
+    }
     public function createWhatsAppLink($phone, $message)
     {
         $formattedPhone = $this->formatPhone($phone);
@@ -30,16 +36,16 @@ class WhatsAppService
 
         // إذا بدأ بـ 0 (مثال: 077) -> نحذف الصفر ونضيف 967
         if (str_starts_with($phone, '0')) {
-            $phone = '967'.substr($phone, 1);
+            $phone = '967' . substr($phone, 1);
         }
         // إذا بدأ بـ 7 مباشرة وكان طوله 9 أرقام (مثال: 771234567) -> نضيف 967
         elseif (strlen($phone) === 9 && str_starts_with($phone, '7')) {
-            $phone = '967'.$phone;
+            $phone = '967' . $phone;
         }
         // إذا لم يبدأ بـ 967 (ولم تنطبق الشروط السابقة)، نضيفها احتياطاً
         // (تنبيه: هذا يعتمد على منطق نظامك، هل كل الأرقام يمنية؟)
         elseif (! str_starts_with($phone, '967')) {
-            $phone = '967'.$phone;
+            $phone = '967' . $phone;
         }
 
         return $phone;
@@ -108,11 +114,17 @@ class WhatsAppService
 
         // إضافة مبلغ الدفع عند الاستلام إذا وجد
         if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $message .= "\n💰 *مبلغ الدفع عند الاستلام:* ".number_format($shipment->cod_amount, 2).' ر.ي';
+            $message .= "\n💰 *مبلغ الدفع عند الاستلام:* " . number_format($shipment->cod_amount, 2) . ' ر.ي';
         }
+        $pdfLink = $this->sendPDFService->generateAndUploadManifest($shipment, 'pages.shipment.invoice', 'shipment', 'P');
 
+        if (! $pdfLink) {
+            return null;
+        }
         $message .= "\n\n📅 *تاريخ الشحن:* {$currentDateTime}
 ✅ *الحالة:* تم استلام الطرد وجاري التجهيز
+🔗 *رابط السند (PDF):*
+{$pdfLink}
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
 🏢 *مكتب الزاجل - فرع المكلا*
@@ -136,6 +148,7 @@ class WhatsAppService
     public function createReceiverMessage(Shipment $shipment)
     {
         $currentDateTime = now()->format('Y-m-d | h:i A');
+
 
         $message = '🌟 *مرحباً بك في الزاجل للنقل السريع* 🌟
 ━━━━━━━━━━━━━━━━━━━━━━━━
@@ -193,11 +206,19 @@ class WhatsAppService
 
         // مبلغ الدفع عند الاستلام
         if ($shipment->payment_method === 'cod' && $shipment->cod_amount > 0) {
-            $message .= "\n💰 *المبلغ المطلوب:* ".number_format($shipment->cod_amount, 2).' ر.ي';
+            $message .= "\n💰 *المبلغ المطلوب:* " . number_format($shipment->cod_amount) . ' ر.ي';
+        }
+        $pdfLink = $this->sendPDFService->generateAndUploadManifest($shipment, 'pages.shipment.invoice', 'shipment', 'P');
+
+        if (! $pdfLink) {
+            return null;
         }
 
         $message .= "\n\n📅 *تاريخ الشحن:* {$currentDateTime}
 ✅ *الحالة:* في الطريق إليك
+
+🔗 *رابط السند (PDF):*
+{$pdfLink}
 ⏱️ *التوصيل المتوقع:* خلال 24-48 ساعة عمل
 ━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -247,7 +268,12 @@ class WhatsAppService
             return null;
         }
 
-        $pdfLink = asset('storage/manifests/Manifest-Branch-'.$package->tracking_number.'.pdf');
+        // $pdfLink = asset('storage/manifests/Manifest-Branch-'.$package->tracking_number.'.pdf');
+        $pdfLink = $this->sendPDFService->generateAndUploadManifest($package, 'pages.shipmentpackage.manifest_pdf');
+
+        if (!$pdfLink) {
+            return null;
+        }
         $currentDateTime = now()->format('Y-m-d | h:i A');
 
         $message = "🌟 *الزاجل للنقل السريع* 🌟
@@ -258,7 +284,7 @@ class WhatsAppService
 🆔 *رقم الرحلة:* {$package->tracking_number}
 🏢 *المكتب:* {$branch->name}
 📦 *عدد الطرود:* {$shipmentCount} طرد
-💰 *إجمالي المبالغ:* ".number_format($totalAmount)." ر.ي
+💰 *إجمالي المبالغ:* " . number_format($totalAmount) . " ر.ي
 
 � *التاريخ والوقت:* {$currentDateTime}
 ✅ *الحالة:* جاهز للمراجعة
@@ -292,7 +318,12 @@ class WhatsAppService
             return null;
         }
 
-        $pdfLink = asset('storage/manifests/Manifest-Driver-'.$package->tracking_number.'.pdf');
+        // $pdfLink = asset('storage/manifests/Manifest-Driver-'.$package->tracking_number.'.pdf');
+        $pdfLink = $this->sendPDFService->generateAndUploadManifest($package, 'pages.shipmentpackage.manifest_driver_pdf');
+
+        if (!$pdfLink) {
+            return null;
+        }
         $currentDateTime = now()->format('Y-m-d | h:i A');
         $totalParcels = $package->shipments->count();
         $totalAmount = $package->shipments->sum('total_amount');
@@ -305,7 +336,7 @@ class WhatsAppService
 🆔 *رقم الرحلة:* {$package->tracking_number}
 👤 *السائق:* {$package->driver_name}
 📦 *عدد الطرود:* {$totalParcels} طرد
-💰 *إجمالي المبالغ:* ".number_format($totalAmount)." ر.ي
+💰 *إجمالي المبالغ:* " . number_format($totalAmount) . " ر.ي
 
 � *التاريخ والوقت:* {$currentDateTime}
 ✅ *الحالة:* جاهز للتوصيل

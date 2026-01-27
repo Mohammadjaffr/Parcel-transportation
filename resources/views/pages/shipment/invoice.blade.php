@@ -26,7 +26,7 @@
 
         /* Header Styling */
         .header-title {
-            font-size: 35px;
+            font-size: 45px;
             font-weight: bold;
             color: #fb6514;
             margin-bottom: 3px;
@@ -44,6 +44,8 @@
             color: #555;
             margin-top: 3px;
             line-height: 1.4;
+            font-weight: bold;
+         
         }
 
         .header-phones {
@@ -54,20 +56,20 @@
         }
 
         .header-separator {
-            border-bottom: 2px solid #fb6514;
-            margin: 12px 0;
+            border-bottom: 3px solid #fb6514;
+            margin: 15px 0;
         }
 
         /* Title Box */
         .receipt-title-box {
             background-color: #fb6514;
             color: #fff;
-            padding: 8px 20px;
+            padding: 10px 30px;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: bold;
             display: inline-block;
-            margin: 8px auto;
+            margin: 10px auto;
             box-shadow: 0 2px 4px rgba(251, 101, 20, 0.3);
         }
 
@@ -89,14 +91,14 @@
             margin: 15px 0;
             padding: 8px;
             background: #fff8f4;
-            border: 2px solid #fb6514;
+            /* border: 2px solid #fb6514; */
             border-radius: 8px;
             color: #fb6514;
         }
 
         /* Main Content Box */
         .main-box {
-            border: 2px solid #fb6514;
+            border: 2px solid #000;
             border-radius: 12px;
             padding: 20px;
             margin: 15px 0;
@@ -179,7 +181,7 @@
                 <div class="header-title">الزاجل</div>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
                 <div class="header-info">الى جميع المحافظات ودول الخليج</div>
-                <div class="header-info">رقم السند: {{ $shipment->bond_number }}</div>
+                <div class="header-info">رقم السند: <span style="color: #fb6514;">{{ $shipment->bond_number }}</span></div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
@@ -193,15 +195,17 @@
             <!-- Left: Branch Info -->
             <td style="width: 35%; text-align: left; padding-right: 10px;">
                 <div style="font-weight: bold; font-size: 13px; color: #333; margin-bottom: 4px;">
-                    فرع الرئيسي / القطن -عمارة شظي - خلف بنك التظامن
+                    فرع / القطن -عمارة شظي - خلف بنك التظامن
                 </div>
                 <div style="font-weight: bold; font-size: 12px; color: #000;">
                     781216757 - 773136727 - 730831802
                 </div>
-                <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
+                <div class="header-info">فرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
+                 <div style="margin-top: 5px; font-size: 12px; font-weight: bold;">خدمة الشحن إلى جميع المحافظات ودول
+                    الخليج</div>
             </td>
         </tr>
     </table>

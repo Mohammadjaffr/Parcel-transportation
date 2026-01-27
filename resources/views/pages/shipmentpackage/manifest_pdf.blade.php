@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+
+
+
 <html lang="ar" dir="rtl">
 
 <head>
@@ -18,7 +20,6 @@
             margin: 10mm;
         }
 
-
         /* الهيدر الاحترافي */
         .header-table {
             width: 100%;
@@ -29,7 +30,7 @@
 
         .brand-name {
             color: #fb6514;
-            font-size: 32pt;
+            font-size: 45pt;
             font-weight: bold;
             margin: 0;
             line-height: 1;
@@ -176,12 +177,16 @@
                 <div class="document-title-badge">كشف حمولة الرسائل</div>
                 <div style="font-size: 10.5pt; margin-top: 8px; color: #666;">
                     تاريخ الطباعة: {{ date('Y-m-d H:i') }}<br>
-                    رقم التتبع: <span style="color:#000; font-weight:bold;">{{ $package->tracking_number }}</span>
+                    رقم التتبع: <span
+                        style="background-color: #ffd8b1; padding: 2px 8px; border-radius: 4px; color:#000; font-weight:bold;">{{ $package->tracking_number }}</span>
                 </div>
             </td>
 
             <td width="30%" style="text-align: center; vertical-align: middle;">
                 <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
+                <div
+                    style="font-size: 16pt; font-weight: bold; margin-top: 10px; color: #333; border: 2px solid #333; display: inline-block; padding: 2px 15px; border-radius: 5px;">
+                    كشف الفرع</div>
             </td>
 
             <td width="35%" style="text-align: left; vertical-align: top;" class="header-info-text">
@@ -192,22 +197,23 @@
                     781216757 - 773136727 - 730831802
                 </div>
                 <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
-                <div style="margin-top: 2px; font-size: 12px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
+                <div style="margin-top: 5px; font-size: 12px; font-weight: bold;">خدمة الشحن إلى جميع المحافظات ودول
+                    الخليج</div>
             </td>
         </tr>
     </table>
 
     <div class="trip-info-box">
         <table class="trip-info-table">
-            {{-- <tr>
-                {{-- <td class="label">اسم السائق:</td> --}}
-            {{-- <td class="value">{{ $package->driver_name }}</td> --}}
-            {{-- <td class="label">رقم الجوال:</td> --}}
-            {{-- <td class="value" style="direction: ltr; text-align: right;">{{ $package->driver_phone }}</td> --}}
-            {{-- </tr> --}}
+            <tr>
+                <td class="label">اسم السائق:</td>
+                <td class="value">{{ $package->driver_name }}</td>
+                <td class="label">رقم الجوال:</td>
+                <td class="value" style="direction: ltr; text-align: right;">{{ $package->driver_phone }}</td>
+            </tr>
             <tr>
                 <td class="label">فرع المرسل:</td>
                 <td class="value">{{ $package->shipments->first()->senderBranch->name ?? 'المكلا' }}</td>
@@ -220,14 +226,15 @@
     <table class="manifest-table">
         <thead>
             <tr>
-                <th width="8%">السند</th>
-                <th width="12%">المرسل</th>
-                <th width="12%">جوال المرسل</th>
-                <th width="12%">المستلم</th>
-                <th width="12%">جوال المستلم</th>
-                <th width="12%">من</th>
-                <th width="12%">إلى</th>
+                <th width="10%">السند</th>
+                <th width="10%">المرسل</th>
+                <th width="10%">جوال المرسل</th>
+                <th width="10%">المستلم</th>
+                <th width="10%">جوال المستلم</th>
+                <th width="10%">من</th>
+                <th width="10%">إلى</th>
                 <th width="10%">نوع الطرد</th>
+                <th width="10%">المبلغ</th>
                 <th width="10%">ملاحظات</th>
             </tr>
         </thead>
@@ -244,6 +251,40 @@
                     <td style="font-weight: bold; background-color: #fff4ee;">{{ $shipment->receiverBranch->name }}
                     </td>
                     <td>{{ $shipment->package_type }}</td>
+                    <td>
+                        @switch($shipment->payment_method)
+                            @case('prepaid')
+                                <span class="font-bold text-success-500">محاسب</span>
+                            @break
+
+                            @case('cod')
+                                الإجمالي:
+                                <span class="font-bold">
+                                    {{ number_format($shipment->total_amount, 0) }}
+                                </span>
+                            @break
+
+                            @case('partial_payment')
+                                الإجمالي:
+                                <span class="font-bold">
+                                    {{ number_format($shipment->total_amount, 0) }}
+                                </span>
+
+                                <div class="text-success-500">
+                                    محاسب:
+                                    {{ number_format($shipment->partial_amount, 0) }}
+                                </div>
+
+                                المتبقي:
+                                {{ number_format($shipment->total_amount - $shipment->partial_amount, 0) }}
+                            @break
+
+                            @case('customer_credit')
+                                <span class="font-bold text-orange-500">على الحساب</span>
+                            @break
+                        @endswitch
+                    </td>
+
                     <td class="notes-cell">{{ $shipment->notes ?? '-' }}</td>
                 </tr>
             @endforeach
@@ -277,3 +318,7 @@
 </body>
 
 </html>
+
+
+
+

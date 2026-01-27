@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use App\Services\WhatsAppService;
+use App\Classes\WebResponseClass;
 
 class WhatsAppController extends Controller
 {
@@ -48,7 +49,8 @@ class WhatsAppController extends Controller
         $link = $this->whatsAppService->getBranchManifestLink($package, $branchCode);
 
         if (! $link) {
-            return redirect()->back()->with('error', 'رقم هاتف المكتب غير متوفر');
+         
+            return WebResponseClass::sendValidationError('فشل في إنشاء الرابط: تأكد من وجود رقم الفرع أو المحاولة مرة أخرى.');
         }
 
         return redirect()->away($link);
@@ -59,11 +61,16 @@ class WhatsAppController extends Controller
      */
     public function sendDriverManifest($id)
     {
-        $package = ShipmentPackage::with('shipments')->findOrFail($id);
+        $package = ShipmentPackage::with(['shipments.senderCustomer', 'shipments.receiverCustomer', 'shipments.receiverBranch', 'shipments.senderBranch'])->findOrFail($id);
+
+        if (!$package->driver_phone) {
+            return WebResponseClass::sendValidationError('رقم هاتف السائق غير متوفر');
+        }
+
         $link = $this->whatsAppService->getDriverManifestLink($package);
 
         if (! $link) {
-            return redirect()->back()->with('error', 'رقم هاتف السائق غير متوفر');
+            return WebResponseClass::sendValidationError('فشل إنشاء ملف PDF أو رفعه. المحاولة مرة أخرى.');
         }
 
         return redirect()->away($link);

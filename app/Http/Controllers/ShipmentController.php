@@ -604,13 +604,6 @@ class ShipmentController extends Controller
            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
-
-
-       
-
-        
-
-        
     }
 
     /* ========== 7- حذف الطرد ========== */
