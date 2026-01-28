@@ -45,7 +45,7 @@
             margin-top: 3px;
             line-height: 1.4;
             font-weight: bold;
-         
+
         }
 
         .header-phones {
@@ -167,6 +167,22 @@
             display: inline-block;
             margin-top: 3px;
         }
+
+        /* تنسيق مربع رقم السند */
+        .box {
+            border: 2px solid #fb6514;
+            /* حدود سوداء سميكة */
+            color: #000;
+            /* لون النص برتقالي */
+            padding: 2px 6px;
+            /* إضافة مسافة داخلية حتى لا يلتصق النص بالحدود */
+            font-weight: bold;
+            /* خط عريض */
+            display: inline-block;
+            /* لضمان ظهور الحدود بشكل صحيح حول النص */
+            border-radius: 4px;
+            /* (اختياري) زوايا دائرية خفيفة */
+        }
     </style>
 
 </head>
@@ -181,10 +197,11 @@
                 <div class="header-title">الزاجل</div>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
                 <div class="header-info">الى جميع المحافظات ودول الخليج</div>
-                <div class="header-info">رقم السند: <span style="color: #fb6514;">{{ $shipment->bond_number }}</span></div>
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
+                <div class="box">رقم السند: <span class="box">{{ $shipment->bond_number }}</span></div>
+
             </td>
 
             <!-- Center: Logo -->
@@ -204,7 +221,7 @@
                 <div class="header-phones">
                     للتواصل / 774996316 - 772038561<br>735637947
                 </div>
-                 <div style="margin-top: 5px; font-size: 12px; font-weight: bold;">خدمة الشحن إلى جميع المحافظات ودول
+                <div style="margin-top: 5px; font-size: 12px; font-weight: bold;">خدمة الشحن إلى جميع المحافظات ودول
                     الخليج</div>
             </td>
         </tr>

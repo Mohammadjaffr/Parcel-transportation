@@ -57,9 +57,10 @@
         }
 
         .header-title {
-            font-size: 18pt;
+             font-size: 30px;
             font-weight: bold;
-            margin-bottom: 0.2mm;
+            color: #fb6514;
+            margin-bottom: 3px;
         }
 
         .header-subtitle {
@@ -177,7 +178,7 @@
                 </td>
 
                 <td class="logo-cell">
-                    <img src="{{ public_path('images/new.svg') }}">
+                    <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
                 </td>
 
                 <td class="branch-cell">
@@ -191,6 +192,9 @@
                     <div class="header-phones">
                         735637947 للتواصل / 774996316 - 772038561<br>
 
+                    </div>
+                    <div style="font-weight: bold; margin-top: 4px;border: 2px solid #fb6514;color: #000;text-align: center">
+                        رقم السند: {{ $shipment->bond_number ?? '...' }}
                     </div>
                 </td>
             </tr>
@@ -232,16 +236,19 @@
             <tr>
                 <td><span class="label">من فرع:</span></td>
                 <td><span class="value-small">{{ $shipment->senderBranch->name ?? '...' }}</span></td>
-                <td><span class="label">إلى فرع:</span></td>
+                   <td><span class="label">إلى فرع:</span></td>
                 <td><span class="value-small">{{ $shipment->receiverBranch->name ?? '...' }}</span></td>
+                <td><span class="label"></span></td>
+                <td><span class="value-small"></span></td>
+             
             </tr>
         </table>
 
         <!-- ===== الإدارة العامة + الشروط (تظهر بالكامل) ===== -->
         <div class="admin-text">
-            <div class="phones">
+            <div class="phones" style="font-size: 7px;">
                 أرقام الإدارة العامة لجميع الفروع:
-                <span class="nums">781216757 - 773136727 - 774996316 - 773374176</span>
+                <span class="nums" style="font-size: 7px;color: #fb6514;">781216757 - 773136727 - 774996316 - 773374176</span>
             </div>
 
             <div class="note">
