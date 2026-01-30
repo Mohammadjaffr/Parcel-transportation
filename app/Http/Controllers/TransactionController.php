@@ -161,6 +161,27 @@ class TransactionController extends Controller
 
         // Get the transaction category to determine type (in/out)
         $category = TransactionCategory::findOrFail($validated['transaction_category_id']);
+        if ($category->type === 'out'){
+            $branchCode = Auth::user()->branch_code;
+            // حساب مجموع الداخل (Income)
+            $totalIn = Transaction::where('branch_code', $branchCode)
+                ->whereHas('category', function ($q) {
+                    $q->where('type', 'in');
+                })->sum('amount');
+            $totalOut = Transaction::where('branch_code', $branchCode)
+                ->whereHas('category', function ($q) {
+                    $q->where('type', 'out');
+                })->sum('amount');
+            $currentBalance = $totalIn - $totalOut;
+            if ($currentBalance < $validated['amount']) {
+                return back()
+                    ->withErrors([
+                        'amount' => 'عذراً، رصيد الصندوق الحالي (' . number_format($currentBalance, 2) . ') لا يكفي لإتمام عملية الصرف هذه.'
+                    ])
+                    ->withInput()
+                    ->with('transaction_modal_open', true);
+            }
+        }
 
         // Generate unique receipt number based on transaction type
         $receiptNumber = Transaction::generateReceiptNumber($category->type);
