@@ -1,5 +1,5 @@
 <div x-data="{
-    isModalOpen: @if ($errors->any() || session('closing_modal_open')) true @else false @endif,
+    isModalOpen: @if (session('closing_modal_open')) true @else false @endif,
     isLoading: false,
     systemBalance: {{ $systemBalance ?? 0 }},
     actualCash: '',

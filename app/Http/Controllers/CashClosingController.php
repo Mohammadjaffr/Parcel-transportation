@@ -41,11 +41,20 @@ class CashClosingController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'actual_cash' => 'required|numeric|min:0',
             'transferred_amount' => 'required|numeric|min:0',
             'notes' => 'nullable|string|max:1000',
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('closing_modal_open', true);
+        }
+
+        $validated = $validator->validated();
 
         $branchCode = Auth::user()->branch_code;
 
@@ -69,7 +78,10 @@ class CashClosingController extends Controller
 
         // Validate transferred amount doesn't exceed actual cash
         if ($transferredAmount > $actualCash) {
-            return back()->withErrors(['transferred_amount' => 'Transferred amount cannot exceed actual cash counted.']);
+            return back()
+                ->withErrors(['transferred_amount' => 'Transferred amount cannot exceed actual cash counted.'])
+                ->withInput()
+                ->with('closing_modal_open', true);
         }
 
         $remainingCash = $actualCash - $transferredAmount;
@@ -142,10 +154,11 @@ class CashClosingController extends Controller
 
             return redirect()->route('transactions.index')
                 ->with('success', 'Cash register closed successfully. Balance transferred to HQ.');
-
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Error processing closing: ' . $e->getMessage()]);
+            return back()
+                ->withErrors(['error' => 'Error processing closing: ' . $e->getMessage()])
+                ->with('closing_modal_open', true);
         }
     }
 
@@ -157,12 +170,12 @@ class CashClosingController extends Controller
         $branchCode = Auth::user()->branch_code;
 
         // Date Range (Same logic as index)
-        $startDate = $request->input('start_date') 
-            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+        $startDate = $request->input('start_date')
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
             : now()->startOfMonth();
-        
-        $endDate = $request->input('end_date') 
-            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+
+        $endDate = $request->input('end_date')
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay()
             : now()->endOfMonth();
 
         $fileName = 'closings_' . now()->format('Y-m-d') . '.csv';
@@ -217,12 +230,12 @@ class CashClosingController extends Controller
         $branchCode = Auth::user()->branch_code;
 
         // Date Range
-        $startDate = $request->input('start_date') 
-            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+        $startDate = $request->input('start_date')
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
             : now()->startOfMonth();
-        
-        $endDate = $request->input('end_date') 
-            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+
+        $endDate = $request->input('end_date')
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay()
             : now()->endOfMonth();
 
         // Status filter
@@ -250,11 +263,11 @@ class CashClosingController extends Controller
             ->paginate(15);
 
         return view('closings.index', compact(
-            'closings', 
-            'startDate', 
-            'endDate', 
-            'totalTransferred', 
-            'totalShortage', 
+            'closings',
+            'startDate',
+            'endDate',
+            'totalTransferred',
+            'totalShortage',
             'totalSurplus'
         ));
     }

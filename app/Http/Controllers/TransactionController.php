@@ -26,17 +26,17 @@ class TransactionController extends Controller
 
         // === Date Range Filter ===
         // Default to current month if no dates provided
-        $startDate = $request->input('start_date') 
-            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay() 
+        $startDate = $request->input('start_date')
+            ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
             : now()->startOfMonth();
-        
-        $endDate = $request->input('end_date') 
-            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay() 
+
+        $endDate = $request->input('end_date')
+            ? \Carbon\Carbon::parse($request->input('end_date'))->endOfDay()
             : now()->endOfMonth();
 
         // Type filter (in = income, out = expense)
         $typeFilter = $request->input('type');
-        
+
         // Category filter
         $categoryFilter = $request->input('category_id');
 
@@ -51,7 +51,7 @@ class TransactionController extends Controller
                 $query->where('type', $typeFilter);
             });
         }
-        
+
         // Apply category filter if provided
         if ($categoryFilter) {
             $transactionsQuery->where('transaction_category_id', $categoryFilter);
@@ -109,11 +109,11 @@ class TransactionController extends Controller
         $systemBalance = $balance;
 
         return view('transactions.index', compact(
-            'transactions', 
-            'balance', 
-            'income', 
-            'expense', 
-            'expensesByCategory', 
+            'transactions',
+            'balance',
+            'income',
+            'expense',
+            'expensesByCategory',
             'dailyTrend',
             'startDate',
             'endDate',
@@ -137,13 +137,22 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'transaction_category_id' => 'required|exists:transaction_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:1000',
             'reference_number' => 'nullable|string|max:50',
             'attachment' => 'nullable|image|max:2048', // Max 2MB
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('transaction_modal_open', true);
+        }
+
+        $validated = $validator->validated();
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
@@ -152,7 +161,7 @@ class TransactionController extends Controller
 
         // Get the transaction category to determine type (in/out)
         $category = TransactionCategory::findOrFail($validated['transaction_category_id']);
-        
+
         // Generate unique receipt number based on transaction type
         $receiptNumber = Transaction::generateReceiptNumber($category->type);
 
@@ -178,43 +187,43 @@ class TransactionController extends Controller
     public function generateReceipt($id)
     {
         $user = Auth::user();
-        
+
         // Get transaction with relationships
         $transaction = Transaction::with(['category', 'branch', 'customer', 'user', 'shipment'])
             ->where('branch_code', $user->branch_code)
             ->findOrFail($id);
-        
+
         // Initialize TCPDF
         $pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8');
-        
+
         // PDF Configuration
         $pdf->SetCreator('نظام إدارة الشحنات');
         $pdf->SetAuthor($user->name);
         $pdf->SetTitle('سند رقم ' . $transaction->id);
         $pdf->SetSubject(($transaction->category && $transaction->category->type == 'in') ? 'سند قبض' : 'سند صرف');
-        
+
         // RTL Configuration  
         $pdf->setRTL(true);
         $pdf->SetFont('dejavusans', '', 10);
-        
+
         // Remove default header/footer
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
-        
+
         // Margins
         $pdf->SetMargins(15, 15, 15);
-        
+
         // Add Page
         $pdf->AddPage();
-        
+
         // Render View
         $html = view('pdf.transaction-receipt', [
             'transaction' => $transaction,
         ])->render();
-        
+
         // Write HTML to PDF
         $pdf->writeHTML($html, true, false, true, false, '');
-        
+
         // Output PDF to browser
         $filename = 'receipt_' . $transaction->id . '.pdf';
         return $pdf->Output($filename, 'I'); // 'I' = inline display in browser

@@ -1,5 +1,5 @@
 <div x-data="{
-    isModalOpen: @if ($errors->any() || session('transaction_modal_open')) true @else false @endif,
+    isModalOpen: @if (session('transaction_modal_open')) true @else false @endif,
     isLoading: false,
     selectedType: '{{ old('type', '') }}',
     selectedCategory: '{{ old('transaction_category_id', '') }}'
