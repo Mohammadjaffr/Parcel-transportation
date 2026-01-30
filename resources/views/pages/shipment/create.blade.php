@@ -438,7 +438,7 @@
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
                                     <input class="sr-only" type="radio" name="payment_method"
-                                        value="customer_cerrorit" @change="payment_method='customer_cerrorit'"
+                                        value="customer_credit" @change="payment_method='customer_cerrorit'"
                                         {{ old('payment_method') == 'customer_cerrorit' ? 'checked' : '' }}>
                                     <span
                                         :class="payment_method === 'customer_cerrorit' ? 'border-brand-500 bg-brand-500' :

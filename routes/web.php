@@ -17,6 +17,7 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\FinanceSettlementController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -32,7 +33,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::resource('users', UserController::class)->middleware('admin');
-    
+
     // Branch routes with super admin middleware for create and store
     Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
     Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('admin');
@@ -41,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('branch/{branch}/edit', [BranchController::class, 'edit'])->name('branch.edit');
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
-    
+
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
@@ -86,7 +87,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/shipments/store-customer', [ShipmentController::class, 'storeCustomer'])
         ->name('shipments.storeCustomer');
 
-    
+
     Route::get('/customers/search', [CustomerController::class, 'search'])
         ->name('customers.search');
     Route::get('/customers/{id}/comprehensive-report', [CustomerController::class, 'comprehensiveReport'])
@@ -109,9 +110,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/customers', [CustomerFinanceController::class, 'index'])->name('finance.customers.index');
     Route::get('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'createSettlement'])->name('finance.customers.settle');
     Route::post('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'storeSettlement'])->name('finance.customers.storeSettlement');
-// صفحة عرض تفاصيل العميل
-Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, 'show'])
-    ->name('finance.customers.show');
+    // صفحة عرض تفاصيل العميل
+    Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, 'show'])
+        ->name('finance.customers.show');
     // مالية الفروع
     Route::get('/finance/branches', [BranchFinanceController::class, 'index'])
         ->name('finance.branches.index');
@@ -122,7 +123,7 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::get('/finance/settlements/create', [BranchFinanceController::class, 'createSettlement'])
         ->name('finance.settlements.create');
 
-    Route::post('/finance/settlements', [BranchFinanceController::class, 'storeSettlement'])
+    Route::post('/finance/settlements', [FinanceSettlementController::class, 'store'])
         ->name('finance.settlements.store');
 
     Route::get('/api/branches/{branch}/balance', [BranchFinanceController::class, 'apiBranchBalance'])
@@ -163,9 +164,9 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
         ->name('reports.revenue');
 
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
-    Route::get('/shipmentpackage/print/{id}',[ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
+    Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 
-    Route::get('/shipmentpackage/print-driver/{id}',[ShipmentPackagesController::class, 'printManifestD'])->name('shipmentpackage.printD');
+    Route::get('/shipmentpackage/print-driver/{id}', [ShipmentPackagesController::class, 'printManifestD'])->name('shipmentpackage.printD');
 
     // دفعات الحزم للفروع
     Route::post('/branch-package-payment', [App\Http\Controllers\BranchPackagePaymentController::class, 'store'])
@@ -179,10 +180,10 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store']);
     Route::get('/transactions/{transaction}/receipt', [TransactionController::class, 'generateReceipt'])
         ->name('transactions.receipt');
-    
+
     // Transaction Category Settings
     Route::resource('transaction-categories', TransactionCategoryController::class)->except(['show', 'create', 'edit'])->middleware('super.admin');
-    
+
     // Daily Cash Closing
     Route::get('/closings/export', [CashClosingController::class, 'export'])->name('closings.export');
     Route::get('/closings', [CashClosingController::class, 'index'])->name('closings.index');
@@ -190,7 +191,7 @@ Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, '
     Route::post('/closings', [CashClosingController::class, 'store'])->name('closings.store');
 
     Route::patch('/shipment-packages/{id}/mark-all-delivered', [ShipmentPackagesController::class, 'markAllDelivered'])
-    ->name('shipmentpackage.mark-all-delivered');
+        ->name('shipmentpackage.mark-all-delivered');
 });
 
 

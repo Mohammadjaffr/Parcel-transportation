@@ -206,14 +206,14 @@ class ShipmentPaymentService
 
         DB::transaction(function () use ($shipment, $collectedAmount) {
             // A. Record cash entering the Receiver Branch's physical box
-            TransactionService::recordShipmentPayment(
-                shipment: $shipment,
-                amount: $collectedAmount,
-                branchCode: $shipment->receiver_branch_code,
-                paymentMethod: 'cash',
-                referenceNumber: null,
-                customerId: $shipment->receiver_customer_id
-            );
+            // TransactionService::recordShipmentPayment(
+            //     shipment: $shipment,
+            //     amount: $collectedAmount,
+            //     branchCode: $shipment->receiver_branch_code,
+            //     paymentMethod: 'cash',
+            //     referenceNumber: null,
+            //     customerId: $shipment->receiver_customer_id
+            // );
 
             // B. Create double-entry ledger records
             // Receiver Branch: DEBIT (they OWE this money to sender)

@@ -29,7 +29,7 @@ return new class extends Migration
                   ->onDelete('cascade');
             
             // Reference to the shipment
-            $table->foreignId('shipment_id')
+            $table->foreignId('shipment_id')->nullable()
                   ->constrained('shipments')
                   ->onDelete('cascade');
             
