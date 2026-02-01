@@ -495,7 +495,7 @@ class ShipmentController extends Controller
 
     public function updatePaymentMethod(Request $request, $id)
     {
-    
+
         $shipment = Shipment::findOrFail($id);
         $shipmentDate = $shipment->created_at->format('Y-m-d');
         $isDayClosed = CashRegisterClosing::where('branch_code', $shipment->created_branch_code) // أو sender_branch_code حسب منطقك
@@ -505,7 +505,7 @@ class ShipmentController extends Controller
             return WebResponseClass::sendError(
                 'لقد تم "إقفال الصندوق" (Daily Closing) لتاريخ هذه الشحنة (' . $shipmentDate . '). ',
                 'عذراً، لا يمكن تعديل طريقة الدفع.',
-                 
+
             );
         }
 
@@ -516,8 +516,8 @@ class ShipmentController extends Controller
             'prepaid_reference' => 'nullable|string|max:255',
             'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
         ]);
-            
-            $validator->after(function ($validator) use ($request, $shipment) {
+
+        $validator->after(function ($validator) use ($request, $shipment) {
 
             $paymentMethod = $request->payment_method ?? $shipment->payment_method;
             $payType = $request->prepaid_payment_method ?? null;
@@ -543,16 +543,16 @@ class ShipmentController extends Controller
                 }
             }
         });
-       
+
 
         if ($validator->fails()) {
             return WebResponseClass::sendValidationError($validator);
         }
-         
+
         $data = $validator->validated();
         try {
             DB::beginTransaction();
-            
+
             // مهما كان النوع القديم، نحذفه من الصندوق ومن مدفوعات العملاء
             $this->shipmentPaymentService->voidShipmentTransactions($shipment);
             // ✅ تحديث حقول الشحنة الأساسية
@@ -562,9 +562,35 @@ class ShipmentController extends Controller
             } else {
                 $shipment->customer_debt_status = null;
             }
-             $shipment->save();
-              // ✅ إذا COD أو آجل: احذف أي دفعات مسجلة
-        if (in_array($shipment->payment_method, ['cod', 'customer_credit'])) {
+            $shipment->save();
+            // ✅ إذا COD أو آجل: احذف أي دفعات مسجلة
+            if (in_array($shipment->payment_method, ['cod', 'customer_credit'])) {
+                DB::commit();
+                return WebResponseClass::sendResponse(
+                    'تم التحديث!',
+                    'تم تحديث بيانات الدفع بنجاح.',
+                    'حسناً',
+                    'shipment.index'
+                );
+            }
+            // ✅ تحديد المبلغ المدفوع الآن
+            $paidAmount = null;
+            if ($shipment->payment_method === 'prepaid') {
+                $paidAmount = (float) $shipment->total_amount;
+            }
+
+            if ($shipment->payment_method === 'partial_payment') {
+                $paidAmount = (float) $data['partial_amount'];
+            }
+
+            $paymentType = $data['prepaid_payment_method'] ?? 'cash';
+            // ✅ الاستدعاء الصحيح حسب Service (4 باراميترات)
+            $this->shipmentPaymentService->handlePaymentForNewShipment(
+                $shipment,
+                $paymentType,
+                $paidAmount,
+                $data['prepaid_reference'] ?? null
+            );
             DB::commit();
             return WebResponseClass::sendResponse(
                 'تم التحديث!',
@@ -572,36 +598,8 @@ class ShipmentController extends Controller
                 'حسناً',
                 'shipment.index'
             );
-        }
-        // ✅ تحديد المبلغ المدفوع الآن
-        $paidAmount = null;
-         if ($shipment->payment_method === 'prepaid') {
-            $paidAmount = (float) $shipment->total_amount;
-        }
-
-        if ($shipment->payment_method === 'partial_payment') {
-            $paidAmount = (float) $data['partial_amount'];
-        }
-
-        $paymentType = $data['prepaid_payment_method'] ?? 'cash';
-        // ✅ الاستدعاء الصحيح حسب Service (4 باراميترات)
-        $this->shipmentPaymentService->handlePaymentForNewShipment(
-            $shipment,
-            $paymentType,
-            $paidAmount,
-            $data['prepaid_reference'] ?? null
-        );
-        DB::commit();
-        return WebResponseClass::sendResponse(
-            'تم التحديث!',
-            'تم تحديث بيانات الدفع بنجاح.',
-            'حسناً',
-            'shipment.index'
-        );
-        
-
         } catch (Exception $e) {
-           DB::rollBack();
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -642,9 +640,9 @@ class ShipmentController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-            $request->validate([
-                'status' => 'required|in:pending,in_transit,delivered,cancelled,returned',
-            ]);
+        $request->validate([
+            'status' => 'required|in:pending,in_transit,delivered,cancelled,returned',
+        ]);
         try {
             DB::beginTransaction();
             $shipment = Shipment::findOrFail($id);
@@ -657,17 +655,123 @@ class ShipmentController extends Controller
                 $paymentService->createCodBranchTransactionOnDelivery($shipment);
             }
             DB::commit();
-            return response()->json([
-                'success' => true,
-                'success_title' => 'تم التحديث!',
-                'success_message' => 'تم تحديث حالة الطرد بنجاح.',
-            ]);
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث حالة الطرد بنجاح.',
+                'حسناً',
+                'shipment.index'
+            );
         } catch (Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'error_message' => $e->getMessage(),
-            ], 500);
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    /**
+     * ========== إرجاع شحنة ==========
+     * Return a shipment (after delivery attempt failed)
+     */
+    public function returnShipment(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $shipment = Shipment::findOrFail($id);
+
+            // التحقق من أن الحالة تسمح بالإرجاع
+            if (!in_array($shipment->status, ['delivered', 'in_transit'])) {
+                return WebResponseClass::sendError(
+                    'لا يمكن إرجاع شحنة في هذه الحالة. الحالة الحالية: ' . $shipment->status,
+                    'خطأ',
+                    'حسناً'
+                );
+            }
+
+            // عكس قيود BranchLedger إذا كانت الشحنة مسلمة
+            if ($shipment->status === 'delivered') {
+                $this->shipmentPaymentService->reverseShipmentLedger($shipment, $request->reason);
+            }
+
+            // تحديث حالة الشحنة
+            $shipment->status = 'returned';
+            $shipment->notes = ($shipment->notes ? $shipment->notes . "\n" : '') . 'سبب الإرجاع: ' . $request->reason;
+            $shipment->save();
+
+            // تسجيل النشاط
+            AdminLoggerService::log('إرجاع شحنة', 'Shipment', 'تم إرجاع الشحنة رقم ' . $shipment->bond_number . ' - السبب: ' . $request->reason, $shipment->id);
+
+            DB::commit();
+
+            return WebResponseClass::sendResponse(
+                'تم الإرجاع!',
+                'تم إرجاع الشحنة بنجاح وعكس القيود المالية.',
+                'حسناً',
+                'shipment.index'
+            );
+        } catch (Exception $e) {
+            DB::rollBack();
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    /**
+     * ========== إلغاء شحنة ==========
+     * Cancel a shipment (before or during transit)
+     */
+    public function cancelShipment(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'reason' => 'required|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $shipment = Shipment::findOrFail($id);
+
+            // التحقق من أن الحالة تسمح بالإلغاء
+            if (!in_array($shipment->status, ['pending', 'in_transit'])) {
+                return WebResponseClass::sendError(
+                    'لا يمكن إلغاء شحنة في هذه الحالة. الحالة الحالية: ' . $shipment->status,
+                    'خطأ',
+                    'حسناً'
+                );
+            }
+
+            // إلغاء جميع المعاملات المالية
+            $this->shipmentPaymentService->cancelShipmentTransactions($shipment);
+
+            // تحديث حالة الشحنة
+            $shipment->status = 'cancelled';
+            $shipment->notes = ($shipment->notes ? $shipment->notes . "\n" : '') . 'سبب الإلغاء: ' . $request->reason;
+            $shipment->save();
+
+            // تسجيل النشاط
+            AdminLoggerService::log('إلغاء شحنة', 'Shipment', 'تم إلغاء الشحنة رقم ' . $shipment->bond_number . ' - السبب: ' . $request->reason, $shipment->id);
+
+            DB::commit();
+
+            return WebResponseClass::sendResponse(
+                'تم الإلغاء!',
+                'تم إلغاء الشحنة بنجاح وحذف المعاملات المالية.',
+                'حسناً',
+                'shipment.index'
+            );
+        } catch (Exception $e) {
+            DB::rollBack();
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 }

@@ -84,8 +84,8 @@ class ShipmentPaymentService
             TransactionService::recordShipmentPayment(
                 $shipment,
                 $shipment->total_amount,
-                Auth::user()->branch_code, 
-                $paymentType,              
+                Auth::user()->branch_code,
+                $paymentType,
                 $referenceNumber,
                 $shipment->sender_customer_id
             );
@@ -119,7 +119,7 @@ class ShipmentPaymentService
             );
             TransactionService::recordShipmentPayment(
                 $shipment,
-                $paidAmount,               
+                $paidAmount,
                 Auth::user()->branch_code,
                 $paymentType,
                 $referenceNumber,
@@ -240,7 +240,7 @@ class ShipmentPaymentService
         });
     }
 
-   public function voidShipmentTransactions(Shipment $shipment): void
+    public function voidShipmentTransactions(Shipment $shipment): void
     {
         // 1. حذف المدفوعات من سجل العميل
         CustomerPayment::where('shipment_id', $shipment->id)->delete();
@@ -248,7 +248,7 @@ class ShipmentPaymentService
         // 2. حذف المعاملات من الصندوق
         // ✅ التعديل هنا: نستخدم whereHas للبحث داخل جدول التصنيفات المرتبط
         Transaction::where('shipment_id', $shipment->id)
-            ->whereHas('category', function($q) {
+            ->whereHas('category', function ($q) {
                 $q->where('type', 'in'); // البحث داخل جدول transaction_categories
             })
             ->delete();
@@ -257,5 +257,63 @@ class ShipmentPaymentService
         $shipment->customer_debt_status = null;
         $shipment->partial_amount = null;
         $shipment->save();
+    }
+
+    /**
+     * عكس قيود BranchLedger عند إرجاع شحنة تم تسليمها
+     * Reverse COD ledger entries when a delivered shipment is returned
+     */
+    public function reverseShipmentLedger(Shipment $shipment, string $reason = ''): void
+    {
+        // التحقق من وجود قيود أصلية للشحنة
+        $originalEntries = BranchLedger::where('shipment_id', $shipment->id)
+            ->where('type', 'shipment_cod')
+            ->get();
+
+        if ($originalEntries->isEmpty()) {
+            return; // لا توجد قيود لعكسها
+        }
+
+        DB::transaction(function () use ($shipment, $reason, $originalEntries) {
+            foreach ($originalEntries as $entry) {
+                // إنشاء قيد عكسي
+                BranchLedger::create([
+                    'branch_code' => $entry->branch_code,
+                    'related_branch_code' => $entry->related_branch_code,
+                    'shipment_id' => $shipment->id,
+                    'type' => 'shipment_return',
+                    'debit' => $entry->credit,   // عكس: الدائن يصبح مدين
+                    'credit' => $entry->debit,   // عكس: المدين يصبح دائن
+                    'description' => "إرجاع شحنة رقم {$shipment->bond_number}" . ($reason ? " - السبب: {$reason}" : ''),
+                ]);
+            }
+        });
+    }
+
+    /**
+     * إلغاء شحنة وحذف جميع المعاملات المالية المرتبطة
+     * Cancel shipment and void all related transactions
+     */
+    public function cancelShipmentTransactions(Shipment $shipment): void
+    {
+        DB::transaction(function () use ($shipment) {
+            // 1. حذف المدفوعات من سجل العميل
+            CustomerPayment::where('shipment_id', $shipment->id)->delete();
+
+            // 2. حذف المعاملات من الصندوق
+            Transaction::where('shipment_id', $shipment->id)->delete();
+
+            // 3. حذف قيود BranchLedger
+            BranchLedger::where('shipment_id', $shipment->id)->delete();
+
+            // 4. حذف معاملات العميل
+            \App\Models\CustomerTransaction::where('shipment_id', $shipment->id)->delete();
+
+            // 5. تصفير الشحنة
+            $shipment->customer_debt_status = null;
+            $shipment->partial_amount = null;
+            $shipment->shipment_package_id = null; // فك الربط من الرحلة
+            $shipment->save();
+        });
     }
 }

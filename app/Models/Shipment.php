@@ -27,6 +27,7 @@ class Shipment extends Model
         'no_honey_jars',
         'no_gallons_honey',
         'bond_number',
+        'shipment_package_id',
     ];
 
     public function logs()

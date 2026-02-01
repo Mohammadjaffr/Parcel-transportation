@@ -24,7 +24,7 @@ return new class extends Migration
             $table->string('bond_number')->unique();
             $table->string('no_gallons_honey')->nullable();
             $table->string('no_honey_jars')->nullable();
-            $table->enum('status', ['pending', 'in_transit', 'delivered'])->default('pending');
+            $table->enum('status', ['pending', 'in_transit', 'delivered', 'cancelled', 'returned'])->default('pending');
             $table->enum('customer_debt_status', ['pending', 'partially_paid', 'fully_paid', 'overdue'])->nullable()->default('pending');
             $table->decimal('weight', 8, 2)->nullable();
             $table->enum('payment_method', ['prepaid', 'cod', 'customer_credit', 'partial_payment'])->default('prepaid');

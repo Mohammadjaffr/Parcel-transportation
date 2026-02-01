@@ -38,11 +38,11 @@ class ShipmentPackagesController extends Controller
                             'status' => 'delivered',
                             // 'delivered_at' => now(), 
                         ]);
-                        if ( in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
+                        if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
                             $paymentService = app(ShipmentPaymentService::class);
                             $paymentService->createCodBranchTransactionOnDelivery($shipment);
                         }
-                        
+
                         // هنا يمكنك إضافة منطق السندات المالية أو كشوفات الفروع إذا لزم الأمر
                     }
                 });
@@ -56,7 +56,6 @@ class ShipmentPackagesController extends Controller
                 'shipmentpackage.show',
                 ['shipmentpackage' => $id]
             );
-
         } catch (\Exception $e) {
             DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
@@ -217,5 +216,60 @@ class ShipmentPackagesController extends Controller
         $pdf->writeHTML($html, true, false, true, false, '');
 
         return $pdf->Output('Manifest-' . $package->tracking_number . '.pdf', 'I');
+    }
+
+    /**
+     * Unlink a shipment from its package (return to pending status)
+     */
+    public function unlinkFromPackage(Request $request, $shipmentId)
+    {
+        try {
+            $shipment = Shipment::findOrFail($shipmentId);
+
+            // التحقق من أن الطرد مرتبط برحلة
+            if (!$shipment->shipment_package_id) {
+                return WebResponseClass::sendError(
+                    'هذا الطرد غير مرتبط بأي رحلة',
+                    'خطأ',
+                    'حسناً'
+                );
+            }
+
+            // التحقق من أن الطرد ليس مسلماً أو ملغياً أو مرتجعاً
+            if (in_array($shipment->status, ['delivered', 'cancelled', 'returned'])) {
+                return WebResponseClass::sendError(
+                    'لا يمكن فك ربط طرد في حالة: ' . $shipment->status,
+                    'خطأ',
+                    'حسناً'
+                );
+            }
+
+            // حفظ معرف الرحلة قبل فك الربط
+            $packageId = $shipment->shipment_package_id;
+
+            // حساب عدد الطرود المتبقية في الرحلة (باستثناء الطرد الحالي)
+            $remainingCount = Shipment::where('shipment_package_id', $packageId)
+                ->where('id', '!=', $shipmentId)
+                ->count();
+
+            // فك ربط الطرد من الرحلة وإرجاعه لحالة قيد الانتظار
+            $shipment->shipment_package_id = null;
+            $shipment->status = 'pending';
+            $shipment->save();
+
+            // تحديد الرابط للتوجيه
+            $redirectUrl = $remainingCount > 0
+                ? route('shipmentpackage.show', $packageId)
+                : route('shipmentpackage.index');
+
+            return WebResponseClass::sendResponse(
+                'تم فك الربط',
+                'تم فك ربط الطرد #' . $shipment->bond_number . ' من الرحلة وإعادته لحالة قيد الانتظار',
+                'حسناً',
+                $redirectUrl
+            );
+        } catch (\Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
 }

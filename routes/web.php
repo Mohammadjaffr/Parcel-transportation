@@ -46,6 +46,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
+    Route::patch('/shipment/{id}/return', [ShipmentController::class, 'returnShipment'])
+        ->name('shipment.return');
+    Route::patch('/shipment/{id}/cancel', [ShipmentController::class, 'cancelShipment'])
+        ->name('shipment.cancel');
+
     Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class, 'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
     Route::get('/shipments/{id}/thermal', [InvoiceController::class, 'printThermal'])
         ->name('shipment.printThermal');
@@ -192,6 +197,9 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/shipment-packages/{id}/mark-all-delivered', [ShipmentPackagesController::class, 'markAllDelivered'])
         ->name('shipmentpackage.mark-all-delivered');
+
+    Route::patch('/shipment-packages/{shipmentId}/unlink', [ShipmentPackagesController::class, 'unlinkFromPackage'])
+        ->name('shipmentpackage.unlink');
 });
 
 
