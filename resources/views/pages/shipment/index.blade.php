@@ -104,6 +104,41 @@
                     </h4>
                 </div>
             </div>
+
+            <div @click="filterStatus = 'cancelled'"
+                :class="filterStatus === 'cancelled' ? 'border-error-500 ring-2 ring-error-500/20' : 'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+</svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">تم
+                        الإلغاء</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $requests->where('status', 'cancelled')->count() }}
+                    </h4>
+                </div>
+            </div>
+
+            <div @click="filterStatus = 'returned'"
+                :class="filterStatus === 'returned' ? 'border-gray-500 ring-2 ring-gray-500/20' : 'border-gray-100'"
+                class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-500/10 text-gray-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 19l-7-7 7-7" />
+                    </svg>
+                </div>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">تم
+                        الإرجاع</span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $requests->where('status', 'returned')->count() }}
+                    </h4>
+                </div>
+            </div>
         </div>
 
         <div
@@ -208,11 +243,15 @@
                                             'pending' => 'bg-warning-500 shadow-warning-500/20',
                                             'in_transit' => 'bg-blue-light-500 shadow-blue-500/20',
                                             'delivered' => 'bg-success-500 shadow-success-500/20',
+                                            'cancelled' => 'bg-error-500 shadow-error-500/20',
+                                            'returned' => 'bg-gray-500 shadow-gray-500/20',
                                         ];
                                         $labels = [
                                             'pending' => 'قيد الانتظار',
                                             'in_transit' => 'في الطريق',
                                             'delivered' => 'تم التسليم',
+                                            'cancelled' => 'تم الإلغاء',
+                                            'returned' => 'تم الإرجاع',
                                         ];
                                     @endphp
                                     <span
