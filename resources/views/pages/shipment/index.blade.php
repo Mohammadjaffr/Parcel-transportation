@@ -6,14 +6,14 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-        search: '',
-        filterStatus: 'all',
-        showRow(status, bond, sender, receiver) {
-            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-            return matchesSearch && matchesStatus;
-        }
-    }">
+            search: '',
+            filterStatus: 'all',
+            showRow(status, bond, sender, receiver) {
+                const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+                const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+                return matchesSearch && matchesStatus;
+            }
+        }">
 
         {{-- Tabs --}}
         {{-- <div class="flex p-1 mb-6 bg-gray-100 rounded-xl dark:bg-gray-800 w-fit">
@@ -66,9 +66,8 @@
                 </div>
             </div>
 
-            <div @click="filterStatus = 'in_transit'"
-                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                    'border-gray-100'"
+            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                        'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -111,8 +110,8 @@
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-</svg>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </div>
                 <div class="mt-3">
                     <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">تم
@@ -128,8 +127,7 @@
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-500/10 text-gray-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 19l-7-7 7-7" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </div>
                 <div class="mt-3">
@@ -267,25 +265,26 @@
                                     </span>
                                 </td>
 
-                                <td
-                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                <td class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-1 justify-center items-center">
-                                        <a href="{{ route('shipment.show', $request->id) }} " title="عرض الشحنة"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path
-                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </a>
-                                        <a href="{{ route('shipment.invoice', $request->id) }}" target="_blank"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path
-                                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                                            </svg>
-                                        </a>
+                                        @if ($request->status !== 'cancelled')
+                                            <a href="{{ route('shipment.show', $request->id) }} " title="عرض الشحنة"
+                                                class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </a>
+                                            <a href="{{ route('shipment.invoice', $request->id) }}" target="_blank"
+                                                class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                </svg>
+                                            </a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

@@ -573,47 +573,27 @@
                     </p>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">سبب الإلغاء *</label>
-                    <textarea x-model="cancelReason" rows="3"
-                        class="px-4 py-3 w-full text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-error-500 focus:border-transparent"
-                        placeholder="مثال: طلب العميل، خطأ في البيانات..."></textarea>
-                </div>
+                <form action="{{ route('shipment.cancel', $shipment->id) }}" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="mb-6">
+                        <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">سبب الإلغاء *</label>
+                        <textarea name="reason" rows="3" required
+                            class="px-4 py-3 w-full text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-error-500 focus:border-transparent"
+                            placeholder="مثال: طلب العميل، خطأ في البيانات..."></textarea>
+                    </div>
 
-                <div class="flex gap-3">
-                    <button @click="cancelModalOpen = false"
-                        class="flex-1 px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                        تراجع
-                    </button>
-                    <button
-                        @click="
-                        if (!cancelReason.trim()) { alert('يرجى إدخال سبب الإلغاء'); return; }
-                        cancelLoading = true;
-                        fetch('/shipment/{{ $shipment->id }}/cancel', {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                            body: JSON.stringify({ reason: cancelReason })
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            cancelLoading = false;
-                            if (data.success) { cancelModalOpen = false; alert(data.success_message); setTimeout(() => window.location.reload(), 1000); }
-                            else { alert(data.error_message || 'حدث خطأ'); }
-                        })
-                        .catch(() => { cancelLoading = false; alert('حدث خطأ في الاتصال'); });
-                    "
-                        :disabled="cancelLoading"
-                        class="flex flex-1 gap-2 justify-center items-center px-4 py-3 text-sm font-bold text-white rounded-xl bg-error-500 hover:bg-error-600 disabled:opacity-50">
-                        <svg x-show="cancelLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        <span x-text="cancelLoading ? 'جاري الإلغاء...' : 'تأكيد الإلغاء'"></span>
-                    </button>
-                </div>
+                    <div class="flex gap-3">
+                        <button type="button" @click="cancelModalOpen = false"
+                            class="flex-1 px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                            تراجع
+                        </button>
+                        <button type="submit"
+                            class="flex flex-1 gap-2 justify-center items-center px-4 py-3 text-sm font-bold text-white rounded-xl bg-error-500 hover:bg-error-600">
+                            تأكيد الإلغاء
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

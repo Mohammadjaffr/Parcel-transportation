@@ -272,6 +272,14 @@ class ShipmentController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
 
+        if ($shipment->status === 'cancelled') {
+            return WebResponseClass::sendError(
+                'عذراً، لا يمكن تعديل شحنة ملغية.',
+                'خطأ!',
+                'حسناً'
+            );
+        }
+
         // يحدد أي جزء نحدثه
         $section = $request->input('section', 'all');
 
@@ -497,6 +505,14 @@ class ShipmentController extends Controller
     {
 
         $shipment = Shipment::findOrFail($id);
+
+        if ($shipment->status === 'cancelled') {
+            return WebResponseClass::sendError(
+                'عذراً، لا يمكن تعديل طريقة دفع لشحنة ملغية.',
+                'خطأ!',
+                'حسناً'
+            );
+        }
         $shipmentDate = $shipment->created_at->format('Y-m-d');
         $isDayClosed = CashRegisterClosing::where('branch_code', $shipment->created_branch_code) // أو sender_branch_code حسب منطقك
             ->whereDate('created_at', $shipmentDate)
@@ -767,7 +783,7 @@ class ShipmentController extends Controller
                 'تم الإلغاء!',
                 'تم إلغاء الشحنة بنجاح وحذف المعاملات المالية.',
                 'حسناً',
-                'shipment.index'
+                null
             );
         } catch (Exception $e) {
             DB::rollBack();
