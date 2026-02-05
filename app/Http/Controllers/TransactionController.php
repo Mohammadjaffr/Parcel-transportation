@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
-use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ImageService;
+use App\Classes\WebResponseClass;
+use App\Models\TransactionCategory;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class TransactionController extends Controller
 {
@@ -137,7 +139,7 @@ class TransactionController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'transaction_category_id' => 'required|exists:transaction_categories,id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:1000',
@@ -198,8 +200,12 @@ class TransactionController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('transactions.index')
-            ->with('success', 'Transaction created successfully.');
+        return WebResponseClass::sendResponse(
+            'تمت الإضافة!',
+            'تم إضافة المعاملة بنجاح.',
+            'حسناً',
+            'transactions.index'
+        );
     }
 
     /**

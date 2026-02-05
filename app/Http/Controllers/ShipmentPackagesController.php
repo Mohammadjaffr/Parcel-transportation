@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Shipment;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Models\ShipmentPackage;
 use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\DB;
 use App\Services\ShipmentPaymentService;
+use Illuminate\Support\Facades\Validator;
+
 class ShipmentPackagesController extends Controller
 {
     /**
@@ -152,7 +154,7 @@ class ShipmentPackagesController extends Controller
                 'حسناً',
                 'shipmentpackage.index'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -273,7 +275,7 @@ class ShipmentPackagesController extends Controller
                 'حسناً',
                 $redirectUrl
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
     }

@@ -38,26 +38,11 @@ class CustomerPaymentController extends Controller
         
         // التحقق من صحة البيانات
         $validator = Validator::make($request->all(), [
-            'amount' => [
-                'required',
-                'numeric',
-                'min:0.01',
-                'max:' . $remainingAmount
-            ],
-            'payment_method' => 'required|in:cash,bank_transfer',
-            'reference_number' => 'required_if:payment_method,bank_transfer|nullable|string|max:255',
-            'notes' => 'nullable|string|max:1000',
-            'attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ], [
-            'amount.required' => 'المبلغ مطلوب',
-            'amount.numeric' => 'المبلغ يجب أن يكون رقماً',
-            'amount.min' => 'المبلغ يجب أن يكون أكبر من صفر',
-            'amount.max' => 'المبلغ أكبر من المبلغ المتبقي',
-            'payment_method.required' => 'طريقة الدفع مطلوبة',
-            'payment_method.in' => 'طريقة الدفع غير صحيحة',
-            'reference_number.required_if' => 'رقم المرجع مطلوب عند التحويل البنكي',
-            'attachment.mimes' => 'الملف يجب أن يكون صورة أو PDF',
-            'attachment.max' => 'حجم الملف يجب ألا يتجاوز 2 ميجابايت',
+            'amount' => ['required','numeric','min:0.01','max:' . $remainingAmount],
+            'payment_method' => ['required', 'in:cash,bank_transfer'],
+            'reference_number' => ['required_if:payment_method,bank_transfer', 'nullable', 'string', 'max:255'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'attachment' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ]);
         
         if ($validator->fails()) {

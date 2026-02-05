@@ -226,11 +226,17 @@ class ShipmentController extends Controller
 
     public function storeCustomer(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'role' => 'required|in:sender,receiver',
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:20'],
+            'role' => ['required', 'in:sender,receiver'],
         ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
+
+        $data = $validator->validated();
 
         $customer = Customer::create([
             'name' => $data['name'],

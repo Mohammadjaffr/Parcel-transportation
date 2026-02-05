@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TransactionCategory;
 use Illuminate\Http\Request;
+use App\Classes\WebResponseClass;
 
 class TransactionCategoryController extends Controller
 {
@@ -35,8 +36,12 @@ class TransactionCategoryController extends Controller
             'is_active' => true,
         ]);
 
-        return redirect()->route('transaction-categories.index')
-            ->with('success', 'Category created successfully.');
+        return WebResponseClass::sendResponse(
+            'تمت الإضافة!',
+            'تم إضافة التصنيف بنجاح.',
+            'حسناً',
+            'transaction-categories.index'
+        );
     }
 
     /**
@@ -50,8 +55,12 @@ class TransactionCategoryController extends Controller
                 'is_active' => !$transactionCategory->is_active,
             ]);
 
-            return redirect()->route('transaction-categories.index')
-                ->with('success', 'Category status updated successfully.');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث التصنيف بنجاح.',
+                'حسناً',
+                'transaction-categories.index'
+            );
         }
 
         // If updating name - validate uniqueness excluding current category
@@ -63,8 +72,12 @@ class TransactionCategoryController extends Controller
             'name' => $validated['name'],
         ]);
 
-        return redirect()->route('transaction-categories.index')
-            ->with('success', 'Category updated successfully.');
+        return WebResponseClass::sendResponse(
+            'تم التحديث!',
+            'تم تحديث التصنيف بنجاح.',
+            'حسناً',
+            'transaction-categories.index'
+        );
     }
 
     /**
@@ -74,13 +87,23 @@ class TransactionCategoryController extends Controller
     {
         // Check if category has transactions
         if ($transactionCategory->transactions()->count() > 0) {
-            return redirect()->route('transaction-categories.index')
-                ->with('error', 'Cannot delete category. It has ' . $transactionCategory->transactions()->count() . ' transaction(s) linked to it.');
+            return WebResponseClass::sendResponse(
+                'خطأ!',
+                'لا يمكن حذف التصنيف لوجود معاملات مرتبطة به.',
+                'حسناً',
+                null,
+                false,
+                'error'
+            );
         }
 
         $transactionCategory->delete();
 
-        return redirect()->route('transaction-categories.index')
-            ->with('success', 'Category deleted successfully.');
+        return WebResponseClass::sendResponse(
+            'تم الحذف!',
+            'تم حذف التصنيف بنجاح.',
+            'حسناً',
+            'transaction-categories.index'
+        );
     }
 }

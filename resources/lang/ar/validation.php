@@ -138,6 +138,14 @@ return [
     ],
 
     'attributes' => [
+        'address' => 'المنطقة',
+        'amount' => 'المبلغ',
+        'attachment' => 'المرفق',
+        'city' => 'المدينة',
+        'reference_number' => 'رقم المرجع',
+        'role' => 'الدور',
+        'code' => 'رمز الفرع',
+        'status' => 'الحالة',
         'type' => 'النوع',
         'description' => 'الوصف',
         'max_passengers' => 'عدد الأشخاص',

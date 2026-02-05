@@ -29,15 +29,10 @@ class DriverController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'   => 'required|string|max:255',
-            'phone'  => 'required|string|max:20',
-            'city'   => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
-        ], [
-            'name.required' => 'اسم السائق مطلوب',
-            'status.required' => 'حالة السائق مطلوبة',
-            'phone.required' => 'رقم الهاتف مطلوب',
-            'city.required' => 'مدينة السائق مطلوبة',
+            'name'   => ['required', 'string', 'max:255'],
+            'phone'  => ['required', 'string', 'max:20'],
+            'city'   => ['required', 'string', 'max:255'],
+            'status' => ['required', 'in:active,inactive'],
         ]);
 
         if ($validator->fails()){
@@ -85,10 +80,10 @@ class DriverController extends Controller
         $driver = Driver::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'   => 'required|string|max:255',
-            'phone'  => 'nullable|string|max:20',
-            'city'   => 'nullable|string|max:255',
-            'status' => 'required|in:active,inactive'
+            'name'   => ['required', 'string', 'max:255'],
+            'phone'  => ['nullable', 'string', 'max:20'],
+            'city'   => ['nullable', 'string', 'max:255'],
+            'status' => ['required', 'in:active,inactive'],
         ]);
 
         if ($validator->fails()){

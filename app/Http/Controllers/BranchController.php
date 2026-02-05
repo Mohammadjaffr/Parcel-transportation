@@ -40,17 +40,11 @@ class BranchController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'name'   => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city'   => 'required|string|max:255',
-            'phone'  => 'required|string|max:50',
-            'code' => 'required|string|max:50|unique:branches,code',
-        ], [
-            'name.required'   => 'حقل اسم الفرع مطلوب.',
-            'address.required' => 'حقل المنطقة مطلوب.',
-            'city.required'   => 'حقل المدينة مطلوب.',
-            'phone.required'  => 'حقل الهاتف مطلوب.',
-            'code.required'     => 'رمز الفرع مطلوب'
+            'name'    => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'city'    => ['required', 'string', 'max:255'],
+            'phone'   => ['required', 'string', 'max:50'],
+            'code'    => ['required', 'string', 'max:50', 'unique:branches,code'],
         ]);
 
         if ($validator->fails()) {
@@ -59,12 +53,12 @@ class BranchController extends Controller
 
         try {
             $branch = Branch::create($validator->validated());
-            AdminLoggerService::log(
-                'إنشاء فرع',
-                Branch::class,
-                $branch->id,
-                'تم إنشاء الفرع بنجاح'
-            );
+            // AdminLoggerService::log(
+            //     'إنشاء فرع',
+            //     Branch::class,
+            //     $branch->id,
+            //     'تم إنشاء الفرع بنجاح'
+            // );
 
 
             return WebResponseClass::sendResponse(
@@ -225,11 +219,11 @@ class BranchController extends Controller
         $branch = Branch::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'   => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'city'   => 'required|string|max:255',
-            'phone'  => 'required|string|max:50',
-            'code' => 'required|string|max:50',
+            'name'    => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'city'    => ['required', 'string', 'max:255'],
+            'phone'   => ['required', 'string', 'max:50'],
+            'code'    => ['required', 'string', 'max:50'],
         ]);
 
         if ($validator->fails()) {
