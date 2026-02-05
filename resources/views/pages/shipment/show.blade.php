@@ -12,15 +12,14 @@
 
     <!-- Success Modal Data Handler -->
     <div x-data="{
-        isSuccessModalOpen: false,
-        successTitle: '',
-        successMessage: '',
-    }"
-        @open-success-modal.window="
-            successTitle = $event.detail.title;
-            successMessage = $event.detail.message;
-            isSuccessModalOpen = true;
-        ">
+                isSuccessModalOpen: false,
+                successTitle: '',
+                successMessage: '',
+            }" @open-success-modal.window="
+                    successTitle = $event.detail.title;
+                    successMessage = $event.detail.message;
+                    isSuccessModalOpen = true;
+                ">
     </div>
 
     @php
@@ -30,17 +29,26 @@
     @endphp
 
     <div class="space-y-6" x-data="{
-        paymentModalOpen: false,
-        paymentData: { shipmentId: {{ $shipment->id }}, amount: {{ $remainingAmount }}, maxAmount: {{ $remainingAmount }}, paymentType: 'cash', referenceNumber: '', notes: '' },
-        paymentsListModalOpen: false,
-        paymentsList: {{ Js::from($shipment->payments) }},
-        returnModalOpen: false,
-        returnReason: '',
-        returnLoading: false,
-        cancelModalOpen: false,
-        cancelReason: '',
-        cancelLoading: false
-    }">
+                paymentModalOpen: false,
+                paymentData: { shipmentId: {{ $shipment->id }}, amount: {{ $remainingAmount }}, maxAmount: {{ $remainingAmount }}, paymentType: 'cash', referenceNumber: '', notes: '' },
+                paymentsListModalOpen: false,
+                paymentsList: {{ Js::from($shipment->payments) }},
+                returnModalOpen: false,
+                returnReason: '',
+                returnLoading: false,
+                cancelModalOpen: false,
+                cancelReason: '',
+                cancelLoading: false,
+                unlinkModalOpen: false,
+                selectedShipmentId: null,
+                selectedBondNumber: '',
+                unlinkLoading: false,
+                openUnlinkModal(shipmentId, bondNumber) {
+                    this.selectedShipmentId = shipmentId;
+                    this.selectedBondNumber = bondNumber;
+                    this.unlinkModalOpen = true;
+                }
+            }">
 
 
         <!-- Header Section -->
@@ -134,19 +142,20 @@
                     </a>
 
                     {{-- زر إرجاع الشحنة --}}
-                    @if (in_array($shipment->status, ['delivered', 'in_transit']))
-                        <button @click="returnModalOpen = true"
-                            class="flex gap-2 items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-warning-500 hover:bg-warning-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-warning-500">
+                    @if ($shipment->status === 'in_transit')
+                        <button @click="openUnlinkModal({{ $shipment->id }}, '{{ $shipment->bond_number }}')"
+                            class="inline-flex p-2 rounded-xl transition-all text-warning-500 hover:bg-warning-50"
+                            title="فك ربط الطرد من الرحلة">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
                             </svg>
-                            إرجاع
                         </button>
                     @endif
 
                     {{-- زر إلغاء الشحنة --}}
-                    @if (in_array($shipment->status, ['pending', 'in_transit']))
+                    @if (in_array($shipment->status, ['pending']))
                         <button @click="cancelModalOpen = true"
                             class="flex gap-2 items-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-error-500 hover:bg-error-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,8 +187,8 @@
                                     <a href="{{ route('customers.show', $shipment->senderCustomer->id) }}"
                                         class="p-2 rounded-lg transition-colors hover:bg-brand-500 text-brand-500 dark:hover:bg-gray-700 group"
                                         title="عرض ملف العميل">
-                                        <svg class="w-6 h-6 transition-colors text-brand-500 hover:text-brand-500"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-6 h-6 transition-colors text-brand-500 hover:text-brand-500" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
@@ -206,7 +215,8 @@
                             </div>
                             <div>
                                 <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-                                    {{ $shipment->senderCustomer->name ?? 'غير محدد' }}</h4>
+                                    {{ $shipment->senderCustomer->name ?? 'غير محدد' }}
+                                </h4>
                                 <div class="text-sm text-gray-500 dir-ltr dark:text-gray-400">
                                     {{ $shipment->senderCustomer->phone ?? '-' }}
                                 </div>
@@ -261,9 +271,11 @@
                             </div>
                             <div>
                                 <h4 class="text-base font-semibold text-gray-900 dark:text-white">
-                                    {{ $shipment->receiverCustomer->name ?? 'غير محدد' }}</h4>
+                                    {{ $shipment->receiverCustomer->name ?? 'غير محدد' }}
+                                </h4>
                                 <div class="text-sm text-gray-500 dir-ltr dark:text-gray-400">
-                                    {{ $shipment->receiverCustomer->phone ?? '-' }}</div>
+                                    {{ $shipment->receiverCustomer->phone ?? '-' }}
+                                </div>
                             </div>
                         </div>
                         <div
@@ -347,14 +359,12 @@
                                     {{-- <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
                                         <div class="flex justify-between items-center mb-3">
                                             <span class="text-sm text-gray-500 dark:text-gray-400">المبلغ المتبقي</span>
-                                            <span
-                                                class="text-lg font-bold text-error-500">{{ number_format($remainingAmount, 2) }}
+                                            <span class="text-lg font-bold text-error-500">{{ number_format($remainingAmount, 2) }}
                                                 ر.ي</span>
                                         </div>
                                         <button @click="openPaymentModal({{ $shipment->id }}, {{ $remainingAmount }})"
                                             class="flex gap-1.5 justify-center items-center px-3 w-full h-10 text-sm font-bold text-white rounded-lg shadow-sm transition-all bg-brand-500 hover:bg-brand-500">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                                             </svg>
@@ -366,8 +376,7 @@
                                 <div class="pt-3 border-t border-gray-100 dark:border-gray-700">
                                     <div class="flex justify-between items-center">
                                         <span class="text-sm text-gray-500 dark:text-gray-400">المبلغ المدفوع</span>
-                                        <span
-                                            class="text-lg font-bold text-success-500">{{ number_format($paidAmount, 2) }}
+                                        <span class="text-lg font-bold text-success-500">{{ number_format($paidAmount, 2) }}
                                             ر.ي</span>
                                     </div>
                                 </div>
@@ -375,29 +384,29 @@
                         </div>
                         @if ($shipment->status === 'in_transit')
                             <div class="mt-6" x-data="{
-                                status: '{{ $shipment->status }}',
-                                updating: false,
-                                updateStatus() {
-                                    this.updating = true;
-                                    fetch('{{ route('shipment.updateStatus', $shipment->id) }}', {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                                            body: JSON.stringify({ status: this.status })
-                                        })
-                                        .then(r => r.json())
-                                        .then(data => {
-                                            this.updating = false;
-                                            if (data.success) {
-                                                $dispatch('open-success-modal', { title: data.success_title, message: data.success_message });
-                                                setTimeout(() => window.location.reload(), 1500);
-                                            }
-                                        })
-                                        .catch(() => {
-                                            this.updating = false;
-                                            alert('Error');
-                                        });
-                                }
-                            }">
+                                                status: '{{ $shipment->status }}',
+                                                updating: false,
+                                                updateStatus() {
+                                                    this.updating = true;
+                                                    fetch('{{ route('shipment.updateStatus', $shipment->id) }}', {
+                                                            method: 'PATCH',
+                                                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                                                            body: JSON.stringify({ status: this.status })
+                                                        })
+                                                        .then(r => r.json())
+                                                        .then(data => {
+                                                            this.updating = false;
+                                                            if (data.success) {
+                                                                $dispatch('open-success-modal', { title: data.success_title, message: data.success_message });
+                                                                setTimeout(() => window.location.reload(), 1500);
+                                                            }
+                                                        })
+                                                        .catch(() => {
+                                                            this.updating = false;
+                                                            alert('Error');
+                                                        });
+                                                }
+                                            }">
                                 <h3 class="mb-4 text-sm font-bold text-gray-700 dark:text-gray-300">تحديث الحالة السريع
                                 </h3>
 
@@ -405,11 +414,11 @@
                                     <select x-model="status" @change="updateStatus()" :disabled="updating"
                                         class="py-3 pr-10 pl-4 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 appearance-none cursor-pointer focus:ring-brand-500 focus:border-brand-500 dark:bg-gray-900 dark:border-gray-500 dark:text-white dark:focus:ring-brand-500 dark:focus:border-brand-500 disabled:opacity-50">
                                         {{-- <option value="">اختر الحالة</option>
-                                    <option value="pending">قيد الانتظار</option> --}}
+                                        <option value="pending">قيد الانتظار</option> --}}
                                         <option value="in_transit">في الطريق</option>
                                         <option value="delivered">تم التسليم</option>
                                         {{-- <option value="cancelled">ملغي</option>
-                                    <option value="returned">مرتجع</option> --}}
+                                        <option value="returned">مرتجع</option> --}}
                                     </select>
                                     <div
                                         class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-500 pointer-events-none">
@@ -421,8 +430,8 @@
                                 </div>
                                 <div x-show="updating" class="flex gap-1 items-center mt-2 text-xs text-brand-500">
                                     <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                         </path>
@@ -438,8 +447,7 @@
 
                 </div>
                 <!-- Shipment Info -->
-                <div
-                    class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                <div class="p-6 bg-white rounded-xl border border-gray-200 shadow-sm dark:bg-gray-800 dark:border-gray-700">
                     <h3 class="mb-5 text-lg font-bold text-gray-900 dark:text-white">تفاصيل الشحنة</h3>
                     <div class="grid grid-cols-2 gap-6 xl:grid-cols-3">
                         {{-- <div class="p-4 bg-gray-50 rounded-xl dark:bg-gray-700">
@@ -450,17 +458,20 @@
                         <div class="p-4 rounded-xl bg-brand-50 dark:bg-gray-700">
                             <div class="mb-1 text-xs text-brand-500 dark:text-gray-400">النوع</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">
-                                {{ $shipment->package_type ?? '-' }}</div>
+                                {{ $shipment->package_type ?? '-' }}
+                            </div>
                         </div>
                         <div class="p-4 rounded-xl bg-brand-50 dark:bg-gray-700">
                             <div class="mb-1 text-xs text-brand-500 dark:text-gray-400">عدد الجوالين</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">
-                                {{ $shipment->no_gallons_honey ?? 0 }}</div>
+                                {{ $shipment->no_gallons_honey ?? 0 }}
+                            </div>
                         </div>
                         <div class="p-4 rounded-xl bg-brand-50 dark:bg-gray-700">
                             <div class="mb-1 text-xs text-brand-500 dark:text-gray-400">عدد القروف</div>
                             <div class="text-lg font-bold text-gray-900 dark:text-white">
-                                {{ $shipment->no_honey_jars ?? 0 }}</div>
+                                {{ $shipment->no_honey_jars ?? 0 }}
+                            </div>
                         </div>
                     </div>
 
@@ -482,120 +493,11 @@
 
 
         {{-- Return Shipment Modal --}}
-        <div x-show="returnModalOpen" class="flex fixed inset-0 justify-center items-center p-4 z-99999" x-cloak
-            x-transition>
-            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]" @click="returnModalOpen = false">
-            </div>
-            <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-2xl dark:bg-gray-800">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">إرجاع الشحنة</h3>
-                    <button @click="returnModalOpen = false"
-                        class="p-2 text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4 mb-4 rounded-lg bg-warning-50 dark:bg-warning-500/10">
-                    <p class="text-sm text-warning-700 dark:text-warning-400">
-                        <strong>تنبيه:</strong> سيتم عكس جميع القيود المالية المرتبطة بهذه الشحنة.
-                    </p>
-                </div>
-
-                <div class="mb-6">
-                    <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">سبب الإرجاع *</label>
-                    <textarea x-model="returnReason" rows="3"
-                        class="px-4 py-3 w-full text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-warning-500 focus:border-transparent"
-                        placeholder="مثال: رفض المستلم، عنوان خاطئ، تلف الشحنة..."></textarea>
-                </div>
-
-                <div class="flex gap-3">
-                    <button @click="returnModalOpen = false"
-                        class="flex-1 px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                        إلغاء
-                    </button>
-                    <button
-                        @click="
-                        if (!returnReason.trim()) { alert('يرجى إدخال سبب الإرجاع'); return; }
-                        returnLoading = true;
-                        fetch('/shipment/{{ $shipment->id }}/return', {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                            body: JSON.stringify({ reason: returnReason })
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            returnLoading = false;
-                            if (data.success) { returnModalOpen = false; alert(data.success_message); setTimeout(() => window.location.reload(), 1000); }
-                            else { alert(data.error_message || 'حدث خطأ'); }
-                        })
-                        .catch(() => { returnLoading = false; alert('حدث خطأ في الاتصال'); });
-                    "
-                        :disabled="returnLoading"
-                        class="flex flex-1 gap-2 justify-center items-center px-4 py-3 text-sm font-bold text-white rounded-xl bg-warning-500 hover:bg-warning-600 disabled:opacity-50">
-                        <svg x-show="returnLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        <span x-text="returnLoading ? 'جاري الإرجاع...' : 'تأكيد الإرجاع'"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        {{-- @include('pages.shipment.modals.return-modal', ['shipment' => $shipment]) --}}
 
         {{-- Cancel Shipment Modal --}}
-        <div x-show="cancelModalOpen" class="flex fixed inset-0 justify-center items-center p-4 z-99999" x-cloak
-            x-transition>
-            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]" @click="cancelModalOpen = false">
-            </div>
-            <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-2xl dark:bg-gray-800">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">إلغاء الشحنة</h3>
-                    <button @click="cancelModalOpen = false"
-                        class="p-2 text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4 mb-4 rounded-lg bg-error-50 dark:bg-error-500/10">
-                    <p class="text-sm text-error-700 dark:text-error-400">
-                        <strong>تحذير:</strong> سيتم حذف جميع المعاملات المالية المرتبطة بهذه الشحنة وفك ربطها من الرحلة.
-                    </p>
-                </div>
-
-                <form action="{{ route('shipment.cancel', $shipment->id) }}" method="POST">
-                    @csrf
-                    @method('PATCH')
-                    <div class="mb-6">
-                        <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">سبب الإلغاء *</label>
-                        <textarea name="reason" rows="3" required
-                            class="px-4 py-3 w-full text-sm rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-error-500 focus:border-transparent"
-                            placeholder="مثال: طلب العميل، خطأ في البيانات..."></textarea>
-                    </div>
-
-                    <div class="flex gap-3">
-                        <button type="button" @click="cancelModalOpen = false"
-                            class="flex-1 px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                            تراجع
-                        </button>
-                        <button type="submit"
-                            class="flex flex-1 gap-2 justify-center items-center px-4 py-3 text-sm font-bold text-white rounded-xl bg-error-500 hover:bg-error-600">
-                            تأكيد الإلغاء
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        @include('pages.shipment.modals.cancel-shipment-modal', ['shipment' => $shipment])
+        @include('pages.shipmentpackage.modals.unlink-modal')
     </div>
 @endsection
 
@@ -647,17 +549,17 @@
                     }
                     this.returnLoading = true;
                     fetch('/shipment/' + shipmentId + '/return', {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .content
-                            },
-                            body: JSON.stringify({
-                                reason: this.returnReason
-                            })
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .content
+                        },
+                        body: JSON.stringify({
+                            reason: this.returnReason
                         })
+                    })
                         .then(r => r.json())
                         .then(data => {
                             this.returnLoading = false;
@@ -686,17 +588,17 @@
                     }
                     this.cancelLoading = true;
                     fetch('/shipment/' + shipmentId + '/cancel', {
-                            method: 'PATCH',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                    .content
-                            },
-                            body: JSON.stringify({
-                                reason: this.cancelReason
-                            })
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .content
+                        },
+                        body: JSON.stringify({
+                            reason: this.cancelReason
                         })
+                    })
                         .then(r => r.json())
                         .then(data => {
                             this.cancelLoading = false;

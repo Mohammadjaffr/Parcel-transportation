@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use App\Models\Shipment;
@@ -40,7 +41,7 @@ class TransactionService
             'description' => "استلام دفعة للشحنة رقم {$shipment->bond_number}",
             'payment_method' => $paymentMethod,
             'reference_number' => $referenceNumber, 
-            'created_by' => auth()->id() ?? 1, // Fallback to system user if no auth
+            'created_by' => Auth::id() ?? 1, // Fallback to system user if no auth
             'shipment_id' => $shipment->id,
             'customer_id' => $customerId,
         ]);

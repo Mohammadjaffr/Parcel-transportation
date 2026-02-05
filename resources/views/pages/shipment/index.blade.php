@@ -6,14 +6,15 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-            search: '',
-            filterStatus: 'all',
-            showRow(status, bond, sender, receiver) {
-                const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-                const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-                return matchesSearch && matchesStatus;
-            }
-        }">
+                    isLoading: false,
+                    search: '',
+                    filterStatus: 'all',
+                    showRow(status, bond, sender, receiver) {
+                        const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+                        const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+                        return matchesSearch && matchesStatus;
+                    }
+                }" @pageshow.window="isLoading = false">
 
         {{-- Tabs --}}
         {{-- <div class="flex p-1 mb-6 bg-gray-100 rounded-xl dark:bg-gray-800 w-fit">
@@ -67,7 +68,7 @@
             </div>
 
             <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                        'border-gray-100'"
+                                'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -155,13 +156,21 @@
             </div>
 
             <div class="flex w-full md:justify-end">
-                <a href="{{ route('shipment.create') }}"
+                <a href="{{ route('shipment.create') }}" @click="isLoading = true"
+                    :class="isLoading ? 'opacity-75 cursor-not-allowed pointer-events-none' : ''"
                     class="flex gap-2 justify-center items-center px-8 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95 md:w-auto">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg x-show="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    تسجيل طرد جديد
+                    <svg x-show="isLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"
+                        style="display: none;">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <span x-text="isLoading ? 'جاري التحويل...' : 'تسجيل طرد جديد'"></span>
                 </a>
             </div>
         </div>

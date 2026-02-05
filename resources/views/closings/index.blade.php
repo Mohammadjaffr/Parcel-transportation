@@ -85,13 +85,6 @@
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">مراجعة تقارير جرد الصندوق والتحويلات</p>
                 </div>
             </div>
-            <a href="{{ route('transactions.index') }}"
-                class="inline-flex gap-2 items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                العودة للمعاملات
-            </a>
         </div>
 
         {{-- Filter Toolbar --}}

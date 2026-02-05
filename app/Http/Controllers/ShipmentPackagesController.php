@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Shipment;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use App\Models\ShipmentPackage;
 use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\DB;
 use App\Services\ShipmentPaymentService;
-
 class ShipmentPackagesController extends Controller
 {
     /**
@@ -103,13 +103,18 @@ class ShipmentPackagesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
     public function store(Request $request)
     {
-        $request->validate([
-            'driver_name' => 'required|string|max:255',
-            'driver_phone' => 'required|string|max:20',
-            'selected_ids' => 'required|array|min:1',
+        $validator = Validator::make($request->all(), [
+            'driver_name' => ['required', 'string', 'max:255'],
+            'driver_phone' => ['required', 'string', 'min:9', 'max:20'],
+            'selected_ids' => ['required', 'array', 'min:1'],
         ]);
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
 
         try {
             $package = ShipmentPackage::create([
@@ -259,8 +264,8 @@ class ShipmentPackagesController extends Controller
 
             // تحديد الرابط للتوجيه
             $redirectUrl = $remainingCount > 0
-                ? route('shipmentpackage.show', $packageId)
-                : route('shipmentpackage.index');
+                ? null
+                : 'shipmentpackage.index';
 
             return WebResponseClass::sendResponse(
                 'تم فك الربط',

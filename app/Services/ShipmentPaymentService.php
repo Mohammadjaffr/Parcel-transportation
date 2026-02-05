@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Shipment;
 use App\Models\Transaction;
 use App\Models\BranchLedger;
+use App\Models\CashRegisterClosing;
+use App\Models\TransactionCategory;
 use InvalidArgumentException;
 use App\Models\CustomerPayment;
 use App\Models\BranchTransaction;
@@ -301,7 +303,34 @@ class ShipmentPaymentService
             CustomerPayment::where('shipment_id', $shipment->id)->delete();
 
             // 2. حذف المعاملات من الصندوق
-            Transaction::where('shipment_id', $shipment->id)->delete();
+            // 2. معالجة المعاملات المالية (الصندوق)
+            $transactions = Transaction::where('shipment_id', $shipment->id)->get();
+
+            foreach ($transactions as $transaction) {
+                // التحقق مما إذا كانت المعاملة "إيراد" (in)
+                if ($transaction->category && $transaction->category->type === 'in') {
+                    
+                    // التحقق من توفر رصيد في الصندوق قبل الإرجاع
+                    $currentBalance = TransactionService::calculateBranchBalance($transaction->branch_code);
+                    if ($currentBalance < $transaction->amount) {
+                        throw new \Exception("عذرًا، لا يوجد رصيد كافٍ في الصندوق لاسترجاع مبلغ الشحنة ({$transaction->amount} ر.ي). الرصيد الحالي: {$currentBalance} ر.ي");
+                    }
+
+                    // جلب فئة "إرجاع شحنة" من السيدر
+                    $refundCategory = TransactionCategory::where('code', 'SHIPMENT_REFUND')->firstOrFail();
+
+                    Transaction::create([
+                        'branch_code'             => $transaction->branch_code,
+                        'transaction_category_id' => $refundCategory->id,
+                        'amount'                  => $transaction->amount,
+                        'description'             => 'عكس عملية شحنة ملغية رقم ' . $shipment->bond_number,
+                        'created_by'              => Auth::id() ?? $transaction->created_by, // المستخدم الحالي أو صاحب المعاملة الأصلية
+                        'customer_id'             => $transaction->customer_id,
+                        'shipment_id'             => $shipment->id, // نربطها بالشحنة أيضاً
+                        'reference_number'        => $transaction->reference_number,
+                    ]);
+                }
+            }
 
             // 3. حذف قيود BranchLedger
             BranchLedger::where('shipment_id', $shipment->id)->delete();

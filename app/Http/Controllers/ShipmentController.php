@@ -758,7 +758,7 @@ class ShipmentController extends Controller
             $shipment = Shipment::findOrFail($id);
 
             // التحقق من أن الحالة تسمح بالإلغاء
-            if (!in_array($shipment->status, ['pending', 'in_transit'])) {
+            if (!in_array($shipment->status, ['pending'])) {
                 return WebResponseClass::sendError(
                     'لا يمكن إلغاء شحنة في هذه الحالة. الحالة الحالية: ' . $shipment->status,
                     'خطأ',
@@ -783,7 +783,7 @@ class ShipmentController extends Controller
                 'تم الإلغاء!',
                 'تم إلغاء الشحنة بنجاح وحذف المعاملات المالية.',
                 'حسناً',
-                null
+                'shipment.index'
             );
         } catch (Exception $e) {
             DB::rollBack();

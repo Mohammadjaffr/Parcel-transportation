@@ -38,9 +38,8 @@
             </div>
 
             {{-- بطاقة: في الطريق --}}
-            <div @click="filterStatus = 'in_transit'"
-                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                    'border-gray-100'"
+            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                        'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -146,8 +145,7 @@
                         <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
                             @forelse ($last24Shipments as $shipment)
                                 <tr class="transition-all group hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                                    x-show="filterStatus === 'all' || filterStatus === '{{ $shipment->status }}'"
-                                    x-transition>
+                                    x-show="filterStatus === 'all' || filterStatus === '{{ $shipment->status }}'" x-transition>
                                     {{-- ID --}}
                                     <td class="px-6 py-4 text-sm text-right">
                                         <span
@@ -169,10 +167,8 @@
                                                     {{ Str::limit($shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '-'), 20) }}
                                                 </span>
                                                 <span class="flex gap-1 items-center text-xs text-brand-500">
-                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
+                                                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                     </svg>
                                                     {{ optional($shipment->package)->driver_name ?? 'لم يعين' }}
@@ -260,15 +256,17 @@
 
                                     {{-- Actions --}}
                                     <td class="px-4 py-4 text-right">
-                                        <a href="{{ route('shipment.show', $shipment->id) }}"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
-                                            title="عرض التفاصيل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path
-                                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </a>
+                                        @if($shipment->status !== 'cancelled')
+                                            <a href="{{ route('shipment.show', $shipment->id) }}"
+                                                class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
+                                                title="عرض التفاصيل">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -308,7 +306,7 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const options = {
                 chart: {
                     type: "bar",
@@ -383,7 +381,7 @@
                 tooltip: {
                     theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
                     y: {
-                        formatter: function(val) {
+                        formatter: function (val) {
                             return val + " ر.ي";
                         }
                     }

@@ -4,29 +4,18 @@
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
-    <div class="flex gap-2 justify-end my-4 w-full">
-        <a href="{{ route('shipmentpackage.index') }}"
-            class="flex gap-3 justify-center items-center px-3 h-12 text-sm font-black bg-white rounded-2xl border border-gray-200 shadow-sm transition-all duration-300 text-brand-500 group dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-brand-500 dark:hover:text-brand-400 active:scale-95">
 
-            <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-
-            <span>العودة لقائمة الشحنات</span>
-        </a>
-    </div>
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-        unlinkModalOpen: false,
-        selectedShipmentId: null,
-        selectedBondNumber: '',
-        unlinkLoading: false,
-        openUnlinkModal(id, bondNumber) {
-            this.selectedShipmentId = id;
-            this.selectedBondNumber = bondNumber;
-            this.unlinkModalOpen = true;
-        }
-    }">
+            unlinkModalOpen: false,
+            selectedShipmentId: null,
+            selectedBondNumber: '',
+            unlinkLoading: false,
+            openUnlinkModal(id, bondNumber) {
+                this.selectedShipmentId = id;
+                this.selectedBondNumber = bondNumber;
+                this.unlinkModalOpen = true;
+            }
+        }">
 
         <div
             class="bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
@@ -44,28 +33,29 @@
                     <div>
                         <div class="flex gap-3 items-center">
                             <h2 class="text-2xl font-black text-brand-500 bg-brand-50 dark:text-white">رحلة رقم:
-                                {{ $package->tracking_number }}</h2>
-                            @php
-                                $statusColors = [
-                                    'pending' =>
-                                        'bg-warning-50 text-warning-500 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
-                                    'in_transit' =>
-                                        'bg-blue-light-500 shadow-blue-500/20 text-white border-blue-light-200 dark:bg-blue-light-500/10 dark:text-blue-light-400 dark:border-blue-light-500/20',
-                                    'delivered' =>
-                                        'bg-success-50 text-success-500 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
-                                    'cancelled' =>
-                                        'bg-error-50 text-error-500 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20',
-                                    'returned' =>
-                                        'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
-                                ];
-                                $statusText = [
-                                    'pending' => 'قيد الانتظار',
-                                    'in_transit' => 'في الطريق',
-                                    'delivered' => 'تم التسليم',
-                                    'cancelled' => 'ملغي',
-                                    'returned' => 'مرتجع',
-                                ];
-                            @endphp
+                                {{ $package->tracking_number }}
+                            </h2>
+        @php
+            $statusColors = [
+                'pending' =>
+                    'bg-warning-50 text-warning-500 border-warning-200 dark:bg-warning-500/10 dark:text-warning-400 dark:border-warning-500/20',
+                'in_transit' =>
+                    'bg-blue-light-500 shadow-blue-500/20 text-white border-blue-light-200 dark:bg-blue-light-500/10 dark:text-blue-light-400 dark:border-blue-light-500/20',
+                'delivered' =>
+                    'bg-success-50 text-success-500 border-success-200 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/20',
+                'cancelled' =>
+                    'bg-error-50 text-error-500 border-error-200 dark:bg-error-500/10 dark:text-error-400 dark:border-error-500/20',
+                'returned' =>
+                    'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
+            ];
+            $statusText = [
+                'pending' => 'قيد الانتظار',
+                'in_transit' => 'في الطريق',
+                'delivered' => 'تم التسليم',
+                'cancelled' => 'ملغي',
+                'returned' => 'مرتجع',
+            ];
+        @endphp
                             @if ($package->shipments->first())
                                 <span
                                     class="px-3 py-1 {{ $statusColors[$package->shipments->first()->status] }} rounded-lg text-[10px] font-black uppercase tracking-widest animate-pulse">{{ $statusText[$package->shipments->first()->status] }}</span>
@@ -76,7 +66,8 @@
                             @endif
                         </div>
                         <p class="mt-1 text-sm font-bold tracking-tighter text-gray-500 uppercase">تاريخ الإنشاء:
-                            {{ $package->created_at->format('Y-m-d H:i') }}</p>
+                            {{ $package->created_at->format('Y-m-d H:i') }}
+                        </p>
                     </div>
 
                 </div>
@@ -369,8 +360,7 @@
                                             <a href="{{ route('shipment.show', $shipment->id) }}"
                                                 class="inline-flex p-2 text-gray-400 rounded-xl transition-all hover:text-brand-500 hover:bg-brand-50"
                                                 title="عرض تفاصيل الطرد">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -384,10 +374,8 @@
                                                     @click="openUnlinkModal({{ $shipment->id }}, '{{ $shipment->bond_number }}')"
                                                     class="inline-flex p-2 rounded-xl transition-all text-warning-500 hover:bg-warning-50"
                                                     title="فك ربط الطرد من الرحلة">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                             d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
                                                         </path>
                                                     </svg>
@@ -405,70 +393,7 @@
 
 
         {{-- Unlink Shipment from Package Modal --}}
-        <div x-show="unlinkModalOpen" class="flex fixed inset-0 justify-center items-center p-4 z-99999" x-cloak
-            x-transition>
-            <div class="fixed inset-0 w-full h-full bg-gray-400/50 backdrop-blur-[32px]" @click="unlinkModalOpen = false">
-            </div>
-            <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-2xl dark:bg-gray-800">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">فك ربط الطرد #<span
-                            x-text="selectedBondNumber"></span></h3>
-                    <button @click="unlinkModalOpen = false"
-                        class="p-2 text-gray-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="p-4 mb-4 rounded-lg bg-warning-50 dark:bg-warning-500/10">
-                    <p class="text-sm text-warning-700 dark:text-warning-400">
-                        <strong>تنبيه:</strong> سيتم فك ربط هذا الطرد من الرحلة الحالية وإعادته لحالة "قيد الانتظار" ليتم
-                        إضافته
-                        لرحلة أخرى.
-                    </p>
-                </div>
-
-                <div class="flex gap-3">
-                    <button @click="unlinkModalOpen = false"
-                        class="flex-1 px-4 py-3 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
-                        إلغاء
-                    </button>
-                    <button
-                        @click="
-                        unlinkLoading = true;
-                        fetch('/shipment-packages/' + selectedShipmentId + '/unlink', {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-                        })
-                        .then(r => r.json())
-                        .then(data => {
-                            unlinkLoading = false;
-                            if (data.success) { 
-                                unlinkModalOpen = false; 
-                                alert(data.success_message); 
-                                setTimeout(() => window.location.href = data.redirect_url, 1000); 
-                            }
-                            else { alert(data.error_message || 'حدث خطأ'); }
-                        })
-                        .catch(() => { unlinkLoading = false; alert('حدث خطأ في الاتصال'); });
-                    "
-                        :disabled="unlinkLoading"
-                        class="flex flex-1 gap-2 justify-center items-center px-4 py-3 text-sm font-bold text-white rounded-xl bg-warning-500 hover:bg-warning-600 disabled:opacity-50">
-                        <svg x-show="unlinkLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        <span x-text="unlinkLoading ? 'جاري فك الربط...' : 'تأكيد فك الربط'"></span>
-                    </button>
-                </div>
-            </div>
-        </div>
+        @include('pages.shipmentpackage.modals.unlink-modal')
 
     </div>
     </div>

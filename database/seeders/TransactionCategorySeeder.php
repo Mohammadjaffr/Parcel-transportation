@@ -65,6 +65,12 @@ class TransactionCategorySeeder extends Seeder
                 'is_active' => true,
             ],
             [
+                'name' => 'إرجاع شحنة',
+                'type' => 'out',
+                'code' => 'SHIPMENT_REFUND',
+                'is_active' => true,
+            ],
+            [
                 'name' => 'تحويل لحساب العمقي',
                 'type' => 'out',
                 'code' => null,
