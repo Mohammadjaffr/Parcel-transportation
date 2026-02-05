@@ -11,17 +11,7 @@ class UserSeeder extends Seeder
      * Run the database seeds.
      */
     public function run(): void
-    {
-        User::create([
-            'name' => 'عوض لشرم',
-            'phone' => '967780236551',
-            'whatsapp_number' => '966500000001',
-            'phone_verified_at'=> now(),
-            'password' => '12121212',
-            'type' => 'user',
-            'branch_code' => 'QTN',
-        ]);
-        
+    { 
         User::create([
             'name' => 'سعيد العويد',
             'phone' => '967774996316',
@@ -37,7 +27,7 @@ class UserSeeder extends Seeder
             'phone' => '967780236552',
             'whatsapp_number' => '966500000002',
             'phone_verified_at'=> now(),
-            'password' => '12121212',
+            'password' => '14171417Nn',
             'type' => 'super_admin',
             'branch_code' => 'ADN',
         ]);

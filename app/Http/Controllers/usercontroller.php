@@ -14,11 +14,7 @@ class UserController extends Controller
      */
     public function index()
     {
-
-        $users = User::paginate(10);
-
-
-
+        $users = User::where('type', '!=', 'super_admin')->paginate(10);
         return view('pages.users.index', compact('users'));
     }
 
@@ -37,10 +33,10 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone',
-            'whatsapp_number' => 'nullable|string',
-            'password' => 'required|string|min:6',
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'unique:users,phone'],
+            'whatsapp_number' => ['nullable', 'string'],
+            'password' => ['required', 'string', 'min:6'],
         ]);
        
         User::create([

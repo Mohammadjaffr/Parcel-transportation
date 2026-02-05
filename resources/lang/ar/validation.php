@@ -145,6 +145,8 @@ return [
         'name' => 'الاسم',
         'email' => 'البريد الإلكتروني',
         'password' => 'كلمة المرور',
+        'phone' => 'رقم الهاتف',
+        'whatsapp_number' => 'رقم الواتساب',
         
         // Shipment fields
         'sender_customer_id' => 'العميل المرسل',
