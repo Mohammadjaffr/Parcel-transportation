@@ -17,6 +17,7 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\FinanceSettlementController;
 use Illuminate\Support\Facades\Route;
 
@@ -200,6 +201,10 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/shipment-packages/{shipmentId}/unlink', [ShipmentPackagesController::class, 'unlinkFromPackage'])
         ->name('shipmentpackage.unlink');
+
+    // Database Backup
+    Route::post('/backup/upload', [BackupController::class, 'uploadBackup'])
+        ->name('backup.upload');
 });
 
 
