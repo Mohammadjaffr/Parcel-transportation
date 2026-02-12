@@ -1,9 +1,16 @@
 @extends('layouts.app')
 @section('title', 'الصندوق - إدارة المعاملات')
-
+@section('Breadcrumb', 'إدارة المعاملات')
+@section('addButton')
+    <div class="flex flex-wrap gap-2">
+        @include('closings.create-closing-modal')
+        @include('transactions.create-transaction-modal')
+        <x-modals.success-modal />
+        <x-modals.error-modal />
+    </div>
+@endsection
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
+
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{ filterType: 'all' }">
 
@@ -12,7 +19,7 @@
 
             {{-- Current Balance (All) --}}
             <div @click="filterType = 'all'" :class="filterType === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' :
-                        'border-gray-100 dark:border-gray-800'"
+                                'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-500">
@@ -32,7 +39,7 @@
 
             {{-- Total Income --}}
             <div @click="filterType = 'in'" :class="filterType === 'in' ? 'border-success-500 ring-2 ring-success-500/20' :
-                        'border-gray-100 dark:border-gray-800'"
+                                'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
@@ -51,7 +58,7 @@
 
             {{-- Total Expenses --}}
             <div @click="filterType = 'out'" :class="filterType === 'out' ? 'border-error-500 ring-2 ring-error-500/20' :
-                        'border-gray-100 dark:border-gray-800'"
+                                'border-gray-100 dark:border-gray-800'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
@@ -117,29 +124,29 @@
                         }
                     @endphp
                     <div class="flex-1" x-data="{
-                            open: false,
-                            search: '',
-                            selectedCategory: {{ $selectedCategoryId ? $selectedCategoryId : 'null' }},
-                            selectedCategoryName: '{{ $selectedCategoryName }}',
-                            categories: {{ $categories->toJson() }},
-                            get filteredCategories() {
-                                if (!this.search) return this.categories;
-                                return this.categories.filter(cat =>
-                                    cat.name.toLowerCase().includes(this.search.toLowerCase())
-                                );
-                            },
-                            selectCategory(category) {
-                                if (category) {
-                                    this.selectedCategory = category.id;
-                                    this.selectedCategoryName = category.name;
-                                } else {
-                                    this.selectedCategory = null;
-                                    this.selectedCategoryName = 'جميع الفئات';
-                                }
-                                this.open = false;
-                                this.search = '';
-                            }
-                        }" @click.outside="open = false">
+                                    open: false,
+                                    search: '',
+                                    selectedCategory: {{ $selectedCategoryId ? $selectedCategoryId : 'null' }},
+                                    selectedCategoryName: '{{ $selectedCategoryName }}',
+                                    categories: {{ $categories->toJson() }},
+                                    get filteredCategories() {
+                                        if (!this.search) return this.categories;
+                                        return this.categories.filter(cat =>
+                                            cat.name.toLowerCase().includes(this.search.toLowerCase())
+                                        );
+                                    },
+                                    selectCategory(category) {
+                                        if (category) {
+                                            this.selectedCategory = category.id;
+                                            this.selectedCategoryName = category.name;
+                                        } else {
+                                            this.selectedCategory = null;
+                                            this.selectedCategoryName = 'جميع الفئات';
+                                        }
+                                        this.open = false;
+                                        this.search = '';
+                                    }
+                                }" @click.outside="open = false">
                         <div class="flex gap-3 items-center mb-3">
                             <div
                                 class="flex justify-center items-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-500/10">
@@ -369,249 +376,288 @@
         </div>
 
         {{-- Analytics Charts --}}
+        {{-- Analytics Charts --}}
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
             {{-- Expenses Breakdown (Pie Chart) --}}
-            <div
-                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-                <div class="flex gap-3 items-center mb-6">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
-                        <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-                        </svg>
+            {{-- 1. أضفنا x-data للتحكم في الحالة --}}
+            <div x-data="{ open: false }"
+                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6 h-fit transition-all duration-300">
+
+                {{-- 2. جعلنا الرأس قابل للضغط وأضفنا تنسيق المؤشر --}}
+                <div @click="open = !open" class="flex justify-between items-center cursor-pointer group">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10">
+                            <svg class="w-5 h-5 text-error-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                            </svg>
+                        </div>
+                        <h3
+                            class="text-lg font-bold text-gray-900 transition-colors dark:text-white group-hover:text-brand-500">
+                            تحليل المصروفات حسب الفئة
+                        </h3>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">تحليل المصروفات حسب الفئة</h3>
+
+                    {{-- أيقونة السهم للدلالة على الفتح والإغلاق --}}
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-300 transform"
+                        :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </div>
-                <div class="relative" style="height: 280px;">
+
+                {{-- 3. منطقة الرسم البياني تظهر فقط عند الفتح --}}
+                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="relative mt-6" style="height: 280px;">
                     <canvas id="expensesChart"></canvas>
                 </div>
             </div>
 
             {{-- Daily Movement (Bar Chart) --}}
-            <div
-                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6">
-                <div class="flex gap-3 items-center mb-6">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
+            {{-- نفس التعديلات للبطاقة الثانية --}}
+            <div x-data="{ open: false }"
+                class="bg-white dark:bg-white/[0.03] rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm p-6 h-fit transition-all duration-300">
+
+                <div @click="open = !open" class="flex justify-between items-center cursor-pointer group">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                            <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3
+                                class="text-lg font-bold text-gray-900 transition-colors dark:text-white group-hover:text-brand-500">
+                                الحركة اليومية
+                            </h3>
+                            {{-- ملاحظة: التاريخ سيظهر دائماً مع العنوان، إذا أردت إخفاءه ضعه داخل الديف السفلي --}}
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ $startDate->format('Y-m-d') }} - {{ $endDate->format('Y-m-d') }}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">الحركة اليومية</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $startDate->format('Y-m-d') }} -
-                            {{ $endDate->format('Y-m-d') }}
-                        </p>
-                    </div>
+
+                    {{-- أيقونة السهم --}}
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-300 transform"
+                        :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </div>
-                <div class="relative" style="height: 280px;">
+
+                <div x-show="open" x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                    class="relative mt-6" style="height: 280px;">
                     <canvas id="dailyTrendChart"></canvas>
                 </div>
             </div>
         </div>
 
-        {{-- Actions Bar --}}
-        <div
-            class="flex flex-col gap-4 justify-between items-start p-5 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
-            <div class="flex gap-3 items-center">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                    <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-base font-bold text-gray-900 dark:text-white">قائمة المعاملات</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        <span class="font-bold text-brand-500">{{ $transactions->total() }}</span> معاملة
-                    </p>
-                </div>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                {{-- <a href="{{ route('transaction-categories.index') }}"
-                    class="inline-flex gap-1.5 items-center px-4 h-10 text-xs font-bold text-gray-600 bg-gray-100 rounded-xl transition-all duration-200 dark:text-gray-300 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                    الفئات
-                </a> --}}
-                @include('closings.create-closing-modal')
-                @include('transactions.create-transaction-modal')
-            </div>
-        </div>
-
         {{-- Transactions Table --}}
-        <div
-            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full min-w-[800px]">
-                    <thead class="bg-gray-50/80 dark:bg-gray-900/50">
-                        <tr>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
-                                #</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
-                                التاريخ</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
-                                الفئة</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                النوع</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                المبلغ</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
-                                الوصف</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                رقم الإيداع</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                المرفق</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
-                                المستخدم</th>
-                            <th
-                                class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
-                        @forelse ($transactions as $transaction)
-                            <tr x-show="filterType === 'all' || filterType === '{{ $transaction->category->type }}'"
-                                x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
-                                x-transition:enter-end="opacity-100"
-                                class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="inline-flex justify-center items-center w-24 h-8 text-xs font-bold text-gray-50 rounded-lg bg-brand-50 dark:bg-gray-800 dark:text-gray-300">
-                                        {{ $transaction->receipt_number ?? '#' . $transaction->id }}
-                                    </span>
-                                </td>
+        <div x-data="{ open: true }"
+            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden transition-all duration-300">
 
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col">
-                                        <span
-                                            class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $transaction->created_at->format('Y-m-d') }}</span>
-                                        <span
-                                            class="mt-0.5 text-xs text-gray-400">{{ $transaction->created_at->format('h:i A') }}</span>
-                                    </div>
-                                </td>
+            {{-- Header Section: Clickable --}}
+            <div @click="open = !open" class="flex justify-between items-center p-5 cursor-pointer select-none group">
 
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ $transaction->category->name }}</span>
-                                </td>
+                {{-- Right Side: Title & Icon --}}
+                <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
+                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2
+                            class="text-base font-bold text-gray-900 transition-colors dark:text-white group-hover:text-brand-500">
+                            قائمة المعاملات
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            <span class="font-bold text-brand-500">{{ $transactions->total() }}</span> معاملة
+                        </p>
+                    </div>
+                </div>
 
-                                <td class="px-6 py-4 text-center">
-                                    @if ($transaction->category->type === 'in')
-                                        <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M7 11l5-5m0 0l5 5m-5-5v12" />
-                                            </svg>
-                                            إيراد
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M17 13l-5 5m0 0l-5-5m5 5V6" />
-                                            </svg>
-                                            مصروف
-                                        </span>
-                                    @endif
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="text-lg font-black {{ $transaction->category->type === 'in' ? 'text-success-500' : 'text-error-500' }}">
-                                        {{ $transaction->category->type === 'in' ? '+' : '-' }}{{ number_format($transaction->amount) }}
-                                    </span>
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm text-gray-500 dark:text-gray-400">{{ $transaction->description ?? '—' }}</span>
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                        {{ $transaction->reference_number ?? '—' }}
-                                    </span>
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    @if ($transaction->attachment_path)
-                                        <a href="{{ asset($transaction->attachment_path) }}" download
-                                            class="inline-flex justify-center items-center w-8 h-8 rounded-lg transition-all text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
-                                            title="تحميل المرفق">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </a>
-                                    @else
-                                        <span class="text-gray-400">—</span>
-                                    @endif
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $transaction->user->name }}</span>
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <div class="flex gap-2 justify-center">
-                                        <a href="{{ route('transactions.receipt', $transaction->id) }}" target="_blank"
-                                            class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-white rounded-lg shadow-sm transition-all duration-200 bg-brand-500 hover:bg-brand-600 hover:shadow-md"
-                                            title="طباعة سند">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                            </svg>
-                                            سند
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="py-16 text-center">
-                                    <div class="flex flex-col items-center">
-                                        <div
-                                            class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
-                                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                            </svg>
-                                        </div>
-                                        <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">لا توجد معاملات
-                                            مسجلة حالياً</p>
-                                        <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">ابدأ بإضافة معاملة جديدة
-                                        </p>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                {{-- Left Side: Arrow Icon --}}
+                <svg class="w-5 h-5 text-gray-400 transition-transform duration-300 transform"
+                    :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
             </div>
 
-            @if ($transactions->hasPages())
-                <div class="p-6 border-t border-gray-100 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
-                    {{ $transactions->links() }}
+            {{-- Body Section: Table & Pagination (Hidden/Shown) --}}
+            <div x-show="open" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+
+                <div class="overflow-x-auto border-t border-gray-100 dark:border-gray-800">
+                    <table class="w-full min-w-[800px]">
+                        <thead class="bg-gray-50/80 dark:bg-gray-900/50">
+                            <tr>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                    #</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                    التاريخ</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                    الفئة</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                    النوع</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                    المبلغ</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                    الوصف</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                    رقم الإيداع</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                    المرفق</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                                    المستخدم</th>
+                                <th
+                                    class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
+                                    الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            @forelse ($transactions as $transaction)
+                                <tr x-show="filterType === 'all' || filterType === '{{ $transaction->category->type }}'"
+                                    class="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="inline-flex justify-center items-center w-24 h-8 text-xs font-bold text-gray-50 rounded-lg bg-brand-50 dark:bg-gray-800 dark:text-gray-300">
+                                            {{ $transaction->receipt_number ?? '#' . $transaction->id }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <span
+                                                class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $transaction->created_at->format('Y-m-d') }}</span>
+                                            <span
+                                                class="mt-0.5 text-xs text-gray-400">{{ $transaction->created_at->format('h:i A') }}</span>
+                                        </div>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="text-sm font-bold text-gray-900 dark:text-white">{{ $transaction->category->name }}</span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if ($transaction->category->type === 'in')
+                                            <span
+                                                class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                                                </svg>
+                                                إيراد
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-full bg-error-50 text-error-600 dark:bg-error-500/10 dark:text-error-400">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                                                </svg>
+                                                مصروف
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        <span
+                                            class="text-lg font-black {{ $transaction->category->type === 'in' ? 'text-success-500' : 'text-error-500' }}">
+                                            {{ $transaction->category->type === 'in' ? '+' : '-' }}{{ number_format($transaction->amount) }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="text-sm text-gray-500 dark:text-gray-400">{{ $transaction->description ?? '—' }}</span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            {{ $transaction->reference_number ?? '—' }}
+                                        </span>
+                                    </td>
+
+                                    <td class="px-6 py-4 text-center">
+                                        @if ($transaction->attachment_path)
+                                            <a href="{{ asset($transaction->attachment_path) }}" download
+                                                class="inline-flex justify-center items-center w-8 h-8 rounded-lg transition-all text-brand-500 bg-brand-50 hover:bg-brand-100 dark:bg-brand-500/10 dark:hover:bg-brand-500/20"
+                                                title="تحميل المرفق">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">—</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $transaction->user->name }}</span>
+                                    </td>
+
+                                    <td class="px-6 py-4">
+                                        <div class="flex gap-2 justify-center">
+                                            <a href="{{ route('transactions.receipt', $transaction->id) }}" target="_blank"
+                                                class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-white rounded-lg shadow-sm transition-all duration-200 bg-brand-500 hover:bg-brand-600 hover:shadow-md"
+                                                title="طباعة سند">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                                </svg>
+                                                سند
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="py-16 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <div
+                                                class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-100 rounded-2xl dark:bg-gray-800">
+                                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                </svg>
+                                            </div>
+                                            <p class="text-sm font-semibold text-gray-600 dark:text-gray-400">لا توجد معاملات
+                                                مسجلة حالياً</p>
+                                            <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">ابدأ بإضافة معاملة جديدة
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
-            @endif
+
+                @if ($transactions->hasPages())
+                    <div class="p-6 border-t border-gray-100 bg-gray-50/50 dark:bg-gray-900/50 dark:border-gray-800">
+                        {{ $transactions->links() }}
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 

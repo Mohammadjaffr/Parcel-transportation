@@ -1,10 +1,23 @@
 @extends('layouts.app')
 @section('title', 'قائمة المكاتب')
-
-@section('content')
+@section('Breadcrumb', 'إدارة المكاتب')
+@section('addButton')
     <x-modals.success-modal />
     <x-modals.error-modal />
-
+    @if (Auth::user()->type != 'user')
+        <div class="flex w-full md:justify-end">
+            <button @click="$dispatch('open-create-modal')"
+                class="flex gap-2 justify-center items-center px-3 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-500 shadow-brand-500/20 active:scale-95 md:w-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                 إضافة فرع جديد
+            </button>
+        </div>
+    @endif
+@endsection
+@section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
         search: '',
         filterCity: 'all',
@@ -48,7 +61,7 @@
                 this.isFetching = null;
             }
         }
-    }">
+    }" @open-create-modal.window="createModalOpen = true">
 
         {{-- Modal إضافة فرع --}}
         @include('pages.branch.create-branch-modal')
@@ -104,8 +117,12 @@
         </div>
 
         {{-- قسم البحث والأزرار --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm gap-6">
-            <div class="relative w-full group">
+        
+
+        {{-- الجدول --}}
+        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-4 rounded-2xl gap-6">
+            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <input type="text" x-model="search" placeholder="ابحث باسم المكتب أو الرمز..."
                     class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                 <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
@@ -115,22 +132,8 @@
                     </svg>
                 </div>
             </div>
-            @if (Auth::user()->type != 'user')
-                <div class="flex w-full md:justify-end">
-                    <button @click="createModalOpen = true"
-                        class="flex gap-2 justify-center items-center px-8 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-500 shadow-brand-500/20 active:scale-95 md:w-auto">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        إضافة فرع جديد
-                    </button>
-                </div>
-            @endif
+           
         </div>
-
-        {{-- الجدول --}}
-        <div class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>

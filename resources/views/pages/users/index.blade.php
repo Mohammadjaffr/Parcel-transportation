@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'إدارة المستخدمين')
+@section('Breadcrumb', 'إدارة المستخدمين')
 @section('addButton')
     @include('pages.users.create-user-modal')
     <x-modals.success-modal />
@@ -65,9 +66,13 @@
             </div>
         </div>
 
+        
+
         <div
-            class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-            <div class="relative group ">
+            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div
+            class="w-full bg-white dark:bg-white/[0.03] p-4 rounded-2xl">
+            <div class="relative group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <input type="text" x-model="search" @input.debounce.300ms="filterNow"
                     placeholder="ابحث بالاسم أو رقم الهاتف..."
                     class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
@@ -80,9 +85,6 @@
                 </div>
             </div>
         </div>
-
-        <div
-            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full border-separate border-spacing-y-3 text-right">
                     <thead>

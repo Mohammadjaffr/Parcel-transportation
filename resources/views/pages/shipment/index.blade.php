@@ -1,10 +1,35 @@
 @extends('layouts.app')
 @section('title', 'قائمة الطرود')
-
-@section('content')
+@section('Breadcrumb', 'إدارة الطرود')
+@section('addButton')
     <x-modals.success-modal />
     <x-modals.error-modal />
 
+    <div class="flex w-full md:justify-end" 
+         x-data="{ isLoading: false }" 
+         @pageshow.window="isLoading = false"> 
+         
+        <a href="{{ route('shipment.create') }}" 
+           @click="isLoading = true"
+           :class="isLoading ? 'opacity-75 cursor-not-allowed pointer-events-none' : ''"
+           class="flex gap-2 justify-center items-center px-3 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95 md:w-auto">
+            
+            {{-- الأيقونة العادية --}}
+            <svg x-show="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            
+            {{-- أيقونة التحميل --}}
+            <svg x-show="isLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" style="display: none;">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            
+            <span x-text="isLoading ? 'جاري التحويل...' : 'تسجيل طرد جديد'"></span>
+        </a>
+    </div>
+@endsection
+@section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
                     isLoading: false,
                     search: '',
@@ -140,10 +165,13 @@
             </div>
         </div>
 
-        <div
-            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm gap-6">
 
-            <div class="relative w-full group">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div
+            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] py-4 px-6 rounded-2xl ">
+
+            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <input type="text" x-model="search" placeholder="ابحث برقم السند، المرسل أو المستلم..."
                     class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                 <div
@@ -153,30 +181,8 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </div>
-            </div>
-
-            <div class="flex w-full md:justify-end">
-                <a href="{{ route('shipment.create') }}" @click="isLoading = true"
-                    :class="isLoading ? 'opacity-75 cursor-not-allowed pointer-events-none' : ''"
-                    class="flex gap-2 justify-center items-center px-8 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95 md:w-auto">
-                    <svg x-show="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <svg x-show="isLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"
-                        style="display: none;">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    <span x-text="isLoading ? 'جاري التحويل...' : 'تسجيل طرد جديد'"></span>
-                </a>
-            </div>
+            </div> 
         </div>
-
-        <div
-            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>

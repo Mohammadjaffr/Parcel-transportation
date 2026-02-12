@@ -1,15 +1,17 @@
 @extends('layouts.app')
 @section('title', 'إدارة العملاء')
+@section('Breadcrumb', 'إدارة العملاء')
 @section('addButton')
     @include('pages.customers.create-customer-modal')
+    <x-modals.success-modal />
+    <x-modals.error-modal />
 @endsection
 
 
 @section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="customerRegistry()">
         @include('pages.customers.edit-customer-modal')
-        <x-modals.success-modal />
-        <x-modals.error-modal />
+       
 
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             <div @click="filterStatus = 'all'"
@@ -68,9 +70,13 @@
             </div>
         </div>
 
+        
+
         <div
-            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm gap-6">
-            <div class="relative w-full group">
+            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            <div
+            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-4">
+            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <input type="text" x-model="search" placeholder="ابحث باسم العميل أو رقم الهاتف..."
                     class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none shadow-inner transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                 <div
@@ -80,13 +86,7 @@
                     </svg>
                 </div>
             </div>
-
-            <div class="flex md:justify-end">
-            </div>
         </div>
-
-        <div
-            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>

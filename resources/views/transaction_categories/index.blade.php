@@ -1,10 +1,14 @@
 @extends('layouts.app')
-@section('title', 'إعدادات فئات المعاملات')
-
-@section('content')
+@section('title', 'إدارة فئات المعاملات')
+@section('Breadcrumb', 'إدارة فئات المعاملات')
+@section('addButton')
+    @include('transaction_categories.modals.create-category-modal')  
     <x-modals.success-modal />
     <x-modals.error-modal />
     <x-modals.warning-modal />
+@endsection
+@section('content')
+   
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
                     filterType: 'all',
@@ -112,40 +116,18 @@
                 </div>
             </div>
         </div>
-        {{-- Header --}}
-        <div
-            class="flex flex-col gap-4 justify-between items-start p-6 bg-white rounded-2xl border border-gray-100 md:flex-row md:items-center dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm">
-            <div class="flex gap-4 items-center">
-                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                    <svg class="w-6 h-6 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">إدارة فئات المعاملات</h2>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">إضافة وتعديل فئات الإيرادات والمصروفات</p>
-                </div>
-            </div>
-            <div class="flex gap-3">
-                {{-- Add Category Modal Button --}}
-                @include('transaction_categories.modals.create-category-modal')
 
-                <a href="{{ route('transactions.index') }}"
-                    class="flex gap-2 justify-center items-center px-5 h-11 text-sm font-semibold rounded-xl transition-all duration-200 text-brand-500 bg-brand-50 dark:text-brand-400 dark:bg-brand-500/10 hover:bg-brand-100 dark:hover:bg-brand-500/20">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                    العودة للمعاملات
-                </a>
-            </div>
-        </div>
+        
 
-        {{-- Search Bar --}}
+
+
+        {{-- Categories Table --}}
         <div
-            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm p-6">
-            <div class="relative">
+            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
+            {{-- Search Bar --}}
+        <div
+            class="bg-white rounded-2xl p-3 ">
+            <div class="relative  border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <div class="flex absolute inset-y-0 right-0 items-center pr-4 pointer-events-none">
                     <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -153,7 +135,7 @@
                     </svg>
                 </div>
                 <input type="text" x-model="searchQuery"
-                    class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
+                    class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl"
                     placeholder="ابحث عن فئة بالاسم...">
                 <div x-show="searchQuery.length > 0" class="flex absolute inset-y-0 left-0 items-center pl-4">
                     <button @click="searchQuery = ''"
@@ -169,29 +151,6 @@
                 </div>
             </div>
         </div>
-
-
-
-        {{-- Categories Table --}}
-        <div
-            class="bg-white rounded-2xl border border-gray-100 dark:bg-white/[0.03] dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div
-                class="flex flex-col gap-4 justify-between p-6 border-b border-gray-100 md:flex-row md:items-center dark:border-gray-800">
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10">
-                        <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">الفئات الموجودة</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">إجمالي <span
-                                class="font-bold text-brand-500">{{ $categories->count() }}</span> فئة</p>
-                    </div>
-                </div>
-            </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[700px]">
                     <thead class="bg-gray-50/80 dark:bg-gray-900/50">

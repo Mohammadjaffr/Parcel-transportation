@@ -1,5 +1,19 @@
 @extends('layouts.app')
 @section('title', 'إدارة الرحلات والشحنات')
+@section('Breadcrumb', 'إدارة الرحلات والشحنات')
+@section('addButton')
+    @if ($pendingShipments->count() > 0)
+        <button @click="$dispatch('open-new-trip')"
+            class="flex gap-2 justify-center items-center px-4 h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="3" />
+            </svg>
+            تجهيز رحلة جديدة
+        </button>
+    @endif
+    <x-modals.success-modal />
+    <x-modals.error-modal />
+@endsection
 
 @section('style')
     <style>
@@ -44,8 +58,7 @@
 @endsection
 
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
+    
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
                 search: '',
                 openModal: false,
@@ -55,48 +68,67 @@
                     return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
                         driver.toLowerCase().includes(this.search.toLowerCase());
                 }
-            }">
+            }" @open-new-trip.window="openModal = true">
 
-        <div
-            class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-            <div class="flex gap-4 items-center xl:col-span-4">
+        <div class="flex gap-6 mb-6">
+
+            {{-- بطاقة: الطرود قيد الانتظار) --}}
+            <div @click="filterStatus = 'all'"
+                :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-lg bg-brand-500 shadow-brand-500/30 shrink-0">
+                    class="flex justify-center items-center w-10 h-10 bg-gray-50 rounded-xl dark:bg-gray-800 text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                     </svg>
                 </div>
-                <div>
-                    <h2 class="text-xl font-black leading-tight text-gray-900 dark:text-white">شحنات الرحلات</h2>
-                    <p class="italic font-bold tracking-widest text-gray-500 uppercase text-theme-xs">تجميع وإدارة الشحن
-                        الجماعي</p>
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">
+                        طرد بانتظار الشحن</span></span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $pendingShipments->count() }}</h4>
                 </div>
             </div>
 
-            <div class="flex flex-col gap-4 justify-end xl:col-span-8 md:flex-row">
+            {{-- بطاقة: عدد جميع الشحنات  --}}
+            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                        'border-gray-100'"
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex gap-4 items-center px-6 py-3 rounded-2xl border bg-brand-50 dark:bg-brand-500/10 border-brand-100 dark:border-brand-500/20">
-                    <span
-                        class="text-2xl font-black text-brand-600 dark:text-brand-400">{{ $pendingShipments->count() }}</span>
-                    <span class="text-xs font-bold leading-tight text-gray-500 uppercase">طرد بانتظار <br>الشحن</span>
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                    </svg>
                 </div>
-
-                @if ($pendingShipments->count() > 0)
-                    <button @click="openModal = true"
-                        class="flex gap-2 justify-center items-center px-8 h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="3" />
-                        </svg>
-                        تجهيز رحلة جديدة
-                    </button>
-                @endif
+                <div class="mt-3">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي الشحنات
+                        </span>
+                    <h4 class="text-xl font-black dark:text-white">{{ $packages->count() }}</h4>
+                </div>
             </div>
+
+            
+            <div class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
+
+            </div>
+
+            
+            <div class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
+
+            </div>
+
         </div>
 
+        
+
         <div
-            class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
-            <div class="relative w-full group">
+            class="overflow-hidden bg-white rounded-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-800 shadow-theme-sm">
+            <div
+            class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl ">
+            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
                 <input type="text" x-model="search" placeholder="ابحث برقم التتبع، اسم السائق..."
                     class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                 <div
@@ -108,9 +140,6 @@
                 </div>
             </div>
         </div>
-
-        <div
-            class="overflow-hidden bg-white rounded-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-800 shadow-theme-sm">
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
