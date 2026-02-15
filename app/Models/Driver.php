@@ -12,12 +12,7 @@ class Driver extends Model
     protected $fillable = [
         'name',
         'phone',
-        'city',
-        'status',
     ];
-    public function shipments()
-{
-    return $this->hasMany(Shipment::class);
-}
+
 
 }

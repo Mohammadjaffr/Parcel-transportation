@@ -19,6 +19,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\FinanceSettlementController;
+use App\Http\Controllers\ReceiptHeaderController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -205,6 +206,10 @@ Route::middleware('auth')->group(function () {
     // Database Backup
     Route::post('/backup/upload', [BackupController::class, 'uploadBackup'])
         ->name('backup.upload');
+
+    // بيانات الاستلام
+    Route::get('/receipts/create', [ReceiptHeaderController::class, 'create'])->name('receipts.create');
+    Route::post('/receipts', [ReceiptHeaderController::class, 'store'])->name('receipts.store');
 });
 
 

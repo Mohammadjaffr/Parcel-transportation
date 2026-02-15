@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Driver;
-use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use App\Classes\WebResponseClass;
+use App\Services\AdminLoggerService;
+use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
 {
@@ -30,9 +31,7 @@ class DriverController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name'   => ['required', 'string', 'max:255'],
-            'phone'  => ['required', 'string', 'max:20'],
-            'city'   => ['required', 'string', 'max:255'],
-            'status' => ['required', 'in:active,inactive'],
+            'phone'  => ['nullable', 'string', 'max:20'],
         ]);
 
         if ($validator->fails()){
@@ -41,21 +40,13 @@ class DriverController extends Controller
 
         try {
             $driver = Driver::create($validator->validated());
-
-            AdminLoggerService::log(
-                'إضافة سائق',
-                'Driver',
-                $driver->id,
-                "تم إضافة السائق {$driver->name}"
-            );
-
             return WebResponseClass::sendResponse(
                 'تمت الإضافة!',
                 'تم حفظ السائق بنجاح.',
                 'حسناً',
                 'drivers.index'
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -82,8 +73,6 @@ class DriverController extends Controller
         $validator = Validator::make($request->all(), [
             'name'   => ['required', 'string', 'max:255'],
             'phone'  => ['nullable', 'string', 'max:20'],
-            'city'   => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:active,inactive'],
         ]);
 
         if ($validator->fails()){
