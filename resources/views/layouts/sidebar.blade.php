@@ -190,7 +190,7 @@
                         </a>
                     </li>
                     @endif
-                    @if (Auth::user()->type == 'super_admin')
+                    @if (Auth::user()->type != 'user')
                         <li>
                             <a href="{{ route('transaction-categories.index') }}"
                                 class="menu-item group {{ request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
