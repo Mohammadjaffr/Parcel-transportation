@@ -27,7 +27,7 @@ class BackupController extends Controller
         $dbUser = env('DB_USERNAME', 'root');
         $dbPass = env('DB_PASSWORD', '');
         $dbName = env('DB_DATABASE', 'laravel');
-        $dbHost = env('DB_HOST', '127.0.0.1');
+        $dbHost = env('DB_HOST', '127.0.0.1'); 
 
         // تحقق هام: لا يمكن عمل نسخة بدون اسم قاعدة بيانات
         if (empty($dbName)) {
