@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'إدارة الرحلات والشحنات')
-@section('Breadcrumb', 'إدارة الرحلات والشحنات')
+@section('Breadcrumb', 'إدارة الرحلات والشحنات المرسله')
 @section('addButton')
     @if ($pendingShipments->count() > 0)
         <button @click="$dispatch('open-new-trip')"
@@ -58,17 +58,17 @@
 @endsection
 
 @section('content')
-    
+
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                search: '',
-                openModal: false,
-                selectedCount: 0,
-                selectedBranch: '',
-                showRow(tracking, driver) {
-                    return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
-                        driver.toLowerCase().includes(this.search.toLowerCase());
-                }
-            }" @open-new-trip.window="openModal = true">
+                        search: '',
+                        openModal: false,
+                        selectedCount: 0,
+                        selectedBranch: '',
+                        showRow(tracking, driver) {
+                            return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
+                                driver.toLowerCase().includes(this.search.toLowerCase());
+                        }
+                    }" @open-new-trip.window="openModal = true">
 
         <div class="flex gap-6 mb-6">
 
@@ -90,9 +90,9 @@
                 </div>
             </div>
 
-            {{-- بطاقة: عدد جميع الشحنات  --}}
+            {{-- بطاقة: عدد جميع الشحنات --}}
             <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                        'border-gray-100'"
+                                'border-gray-100'"
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -104,42 +104,44 @@
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي الشحنات
-                        </span>
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
+                        الشحنات
+                    </span>
                     <h4 class="text-xl font-black dark:text-white">{{ $packages->count() }}</h4>
                 </div>
             </div>
 
-            
-            <div class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
+
+            <div
+                class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
 
             </div>
 
-            
-            <div class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
+
+            <div
+                class="flex m:hidden flex-col items-start justify-between rounded-xl transition hover:shadow-md flex-1 min-w-[150px] sm:min-w-[180px] lg:min-w-[200px]">
 
             </div>
 
         </div>
 
-        
+
 
         <div
             class="overflow-hidden bg-white rounded-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-800 shadow-theme-sm">
-            <div
-            class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl ">
-            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
-                <input type="text" x-model="search" placeholder="ابحث برقم التتبع، اسم السائق..."
-                    class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
-                <div
-                    class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <div class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl ">
+                <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                    <input type="text" x-model="search" placeholder="ابحث برقم التتبع، اسم السائق..."
+                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                    <div
+                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-        </div>
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
@@ -192,7 +194,9 @@
                                             <svg class="w-5 h-5 text-gray-400 transition-colors group-hover:text-brand-500"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
                                         </a>
                                     </div>

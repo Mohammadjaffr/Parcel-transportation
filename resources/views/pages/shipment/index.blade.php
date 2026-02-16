@@ -5,41 +5,40 @@
     <x-modals.success-modal />
     <x-modals.error-modal />
 
-    <div class="flex w-full md:justify-end" 
-         x-data="{ isLoading: false }" 
-         @pageshow.window="isLoading = false"> 
-         
-        <a href="{{ route('shipment.create') }}" 
-           @click="isLoading = true"
-           :class="isLoading ? 'opacity-75 cursor-not-allowed pointer-events-none' : ''"
-           class="flex gap-2 justify-center items-center px-3 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95 md:w-auto">
-            
+    <div class="flex w-full md:justify-end" x-data="{ isLoading: false }" @pageshow.window="isLoading = false">
+
+        <a href="{{ route('shipment.create') }}" @click="isLoading = true"
+            :class="isLoading ? 'opacity-75 cursor-not-allowed pointer-events-none' : ''"
+            class="flex gap-2 justify-center items-center px-3 w-full h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-brand-500 hover:bg-brand-600 shadow-brand-500/20 active:scale-95 md:w-auto">
+
             {{-- الأيقونة العادية --}}
             <svg x-show="!isLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            
+
             {{-- أيقونة التحميل --}}
             <svg x-show="isLoading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" style="display: none;">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                </path>
             </svg>
-            
+
             <span x-text="isLoading ? 'جاري التحويل...' : 'تسجيل طرد جديد'"></span>
         </a>
     </div>
 @endsection
 @section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                    isLoading: false,
-                    search: '',
-                    filterStatus: 'all',
-                    showRow(status, bond, sender, receiver) {
-                        const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
-                        const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
-                        return matchesSearch && matchesStatus;
-                    }
-                }" @pageshow.window="isLoading = false">
+                        isLoading: false,
+                        search: '',
+                        filterStatus: 'all',
+                        showRow(status, bond, sender, receiver) {
+                            const matchesSearch = bond.includes(this.search) || sender.includes(this.search) || receiver.includes(this.search);
+                            const matchesStatus = this.filterStatus === 'all' || status === this.filterStatus;
+                            return matchesSearch && matchesStatus;
+                        }
+                    }" @pageshow.window="isLoading = false">
 
         {{-- Tabs --}}
         {{-- <div class="flex p-1 mb-6 bg-gray-100 rounded-xl dark:bg-gray-800 w-fit">
@@ -93,7 +92,7 @@
             </div>
 
             <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                                'border-gray-100'"
+                                    'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -168,21 +167,20 @@
 
         <div
             class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div
-            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] py-4 px-6 rounded-2xl ">
+            <div class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] py-4 px-6 rounded-2xl ">
 
-            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
-                <input type="text" x-model="search" placeholder="ابحث برقم السند، المرسل أو المستلم..."
-                    class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
-                <div
-                    class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                    <input type="text" x-model="search" placeholder="ابحث برقم السند، المرسل أو المستلم..."
+                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                    <div
+                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
-            </div> 
-        </div>
+            </div>
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
@@ -287,8 +285,10 @@
                                                 class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                     viewBox="0 0 24 24">
-                                                    <path
-                                                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                 </svg>
                                             </a>
                                             <a href="{{ route('shipment.invoice', $request->id) }}" target="_blank"

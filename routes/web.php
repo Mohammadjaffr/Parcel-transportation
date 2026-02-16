@@ -208,8 +208,14 @@ Route::middleware('auth')->group(function () {
         ->name('backup.upload');
 
     // بيانات الاستلام
+    Route::get('/receipts', [ReceiptHeaderController::class, 'index'])->name('receipts.index');
     Route::get('/receipts/create', [ReceiptHeaderController::class, 'create'])->name('receipts.create');
     Route::post('/receipts', [ReceiptHeaderController::class, 'store'])->name('receipts.store');
+    Route::get('/receipts/{receipt}', [ReceiptHeaderController::class, 'show'])->name('receipts.show');
+    Route::get('/receipts/{receipt}/edit', [ReceiptHeaderController::class, 'edit'])->name('receipts.edit');
+    Route::put('/receipts/{receipt}', [ReceiptHeaderController::class, 'update'])->name('receipts.update');
+    Route::put('/receipt-items/{item}/toggle-delivery', [ReceiptHeaderController::class, 'toggleDelivery'])->name('receipt-items.toggle-delivery');
+    Route::post('/receipts/{receipt}/add-item', [ReceiptHeaderController::class, 'addItem'])->name('receipts.add-item');
 });
 
 

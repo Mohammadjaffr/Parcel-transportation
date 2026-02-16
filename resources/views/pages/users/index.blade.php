@@ -66,25 +66,24 @@
             </div>
         </div>
 
-        
+
 
         <div
             class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div
-            class="w-full bg-white dark:bg-white/[0.03] p-4 rounded-2xl">
-            <div class="relative group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
-                <input type="text" x-model="search" @input.debounce.300ms="filterNow"
-                    placeholder="ابحث بالاسم أو رقم الهاتف..."
-                    class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
-                <div
-                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <div class="w-full bg-white dark:bg-white/[0.03] p-4 rounded-2xl">
+                <div class="relative group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                    <input type="text" x-model="search" @input.debounce.300ms="filterNow"
+                        placeholder="ابحث بالاسم أو رقم الهاتف..."
+                        class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
+                    <div
+                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-        </div>
             <div class="overflow-x-auto px-4 pb-4">
                 <table class="w-full border-separate border-spacing-y-3 text-right">
                     <thead>
@@ -158,7 +157,7 @@
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
                                                     viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
                                             </template>
                                         </button>

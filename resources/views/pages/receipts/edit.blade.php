@@ -1,72 +1,77 @@
 @extends('layouts.app')
-@section('title', 'استلام شحنات')
-@section('Breadcrumb', 'بيان استلام شحنات')
+@section('title', 'تعديل بيان الاستلام')
+@section('Breadcrumb', 'تعديل بيان الاستلام')
 @section('content')
     <x-modals.success-modal />
     <x-modals.error-modal />
 
-    <form action="{{ route('receipts.store') }}" method="POST" x-data="{
-                                                                    isSubmitting: false,
+    <form action="{{ route('receipts.update', $receipt->id) }}" method="POST" x-data="{
+                                            isSubmitting: false,
 
-                                                                    {{-- ========== Driver Combobox (Select or Auto-Create) ========== --}}
-                                                                    driver_id: '{{ old('driver_id', '') }}',
-                                                                    driver_name: '{{ old('driver_name', '') }}',
-                                                                    localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : '' }}',
-                                                                    selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                    countryOpen: false,
-                                                                    countrySearch: '',
-                                                                    countries: [
-                                                                        { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                        { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                                                                    ],
-                                                                    get filteredCountries() {
-                                                                        if (this.countrySearch === '') return this.countries;
-                                                                        return this.countries.filter(c => c.name.toLowerCase().includes(this.countrySearch.toLowerCase()) || c.dial_code.includes(this.countrySearch));
-                                                                    },
-                                                                    get fullPhone() {
-                                                                        return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
-                                                                    },
-                                                                    driverOpen: false,
-                                                                    drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
-                                                                    get filteredDrivers() {
-                                                                        if (this.localPhoneNumber.trim() === '') return this.drivers;
-                                                                        const s = this.localPhoneNumber.trim();
-                                                                        return this.drivers.filter(d => d.phone && d.phone.includes(s));
-                                                                    },
-                                                                    selectDriver(driver) {
-                                                                        this.driver_id = driver.id;
-                                                                        this.driver_name = driver.name;
-                                                                        // Parse phone: strip known dial codes to fill localPhoneNumber
-                                                                        let p = driver.phone || '';
-                                                                        const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
-                                                                        for (const code of codes) {
-                                                                            if (p.startsWith(code)) {
-                                                                                this.selectedCountry = this.countries.find(c => c.dial_code === '+' + code);
-                                                                                p = p.substring(code.length);
-                                                                                break;
-                                                                            }
-                                                                        }
-                                                                        this.localPhoneNumber = p;
-                                                                        this.driverOpen = false;
-                                                                    },
-                                                                    onPhoneInput() {
-                                                                        this.driver_id = null;
-                                                                        this.driver_name = '';
-                                                                        this.driverOpen = true;
-                                                                    },
+                                            {{-- ========== Driver Combobox ========== --}}
+                                            driver_id: '{{ old('driver_id', $receipt->driver_id) }}',
+                                            driver_name: '{{ old('driver_name', $receipt->driver->name ?? '') }}',
+                                            localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : preg_replace('/^(967|966)/', '', $receipt->driver->phone ?? '') }}',
+                                            selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                            countryOpen: false,
+                                            countrySearch: '',
+                                            countries: [
+                                                { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
+                                            ],
+                                            get filteredCountries() {
+                                                if (this.countrySearch === '') return this.countries;
+                                                return this.countries.filter(c => c.name.toLowerCase().includes(this.countrySearch.toLowerCase()) || c.dial_code.includes(this.countrySearch));
+                                            },
+                                            get fullPhone() {
+                                                return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
+                                            },
+                                            driverOpen: false,
+                                            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
+                                            get filteredDrivers() {
+                                                if (this.localPhoneNumber.trim() === '') return this.drivers;
+                                                const s = this.localPhoneNumber.trim();
+                                                return this.drivers.filter(d => d.phone && d.phone.includes(s));
+                                            },
+                                            selectDriver(driver) {
+                                                this.driver_id = driver.id;
+                                                this.driver_name = driver.name;
+                                                let p = driver.phone || '';
+                                                const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
+                                                for (const code of codes) {
+                                                    if (p.startsWith(code)) {
+                                                        this.selectedCountry = this.countries.find(c => c.dial_code === '+' + code);
+                                                        p = p.substring(code.length);
+                                                        break;
+                                                    }
+                                                }
+                                                this.localPhoneNumber = p;
+                                                this.driverOpen = false;
+                                            },
+                                            onPhoneInput() {
+                                                this.driver_id = null;
+                                                this.driver_name = '';
+                                                this.driverOpen = true;
+                                            },
 
-                                                                    {{-- ========== Dynamic Items ========== --}}
-                                                                    items: [
-                                                                        { number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: 'carton', item_notes: '' }
-                                                                    ],
-                                                                    addItem() {
-                                                                        this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: 'carton', item_notes: '' });
-                                                                    },
-                                                                    removeItem(index) {
-                                                                        if (this.items.length > 1) this.items.splice(index, 1);
-                                                                    }
-                                                                }" @submit="isSubmitting = true">
+                                            {{-- ========== Dynamic Items ========== --}}
+                                            items: @js($receipt->items->map(fn($item) => [
+                                                'number' => $item->number,
+                                                'sender_name' => $item->sender_name ?? '',
+                                                'receiver_name' => $item->receiver_name,
+                                                'receiver_phone' => $item->receiver_phone,
+                                                'package_type' => $item->package_type,
+                                                'item_notes' => $item->item_notes ?? '',
+                                            ])),
+                                            addItem() {
+                                                this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: '', item_notes: '' });
+                                            },
+                                            removeItem(index) {
+                                                if (this.items.length > 1) this.items.splice(index, 1);
+                                            }
+                                        }" @submit="isSubmitting = true">
         @csrf
+        @method('PUT')
 
         <div class="space-y-6">
 
@@ -82,36 +87,33 @@
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">بيانات الاستلام</h3>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات الاستلام</h3>
                     </div>
                 </div>
 
                 <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                    {{-- السائق (Combobox: بحث برقم الهاتف) --}}
+                    {{-- السائق --}}
                     <div class="md:col-span-2">
                         <label class="block mb-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
                             السائق <span class="text-error-500">*</span>
                         </label>
 
-                        {{-- Hidden input: sends driver_id (null if new) --}}
                         <input type="hidden" name="driver_id" :value="driver_id">
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                            {{-- رقم الهاتف (Searchable Combobox with Country Code) --}}
+                            {{-- رقم الهاتف --}}
                             <div class="relative">
                                 <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
                                     رقم الهاتف <span class="text-error-500">*</span>
                                 </label>
 
-                                {{-- Hidden input: full phone number (dial_code + local) --}}
                                 <input type="hidden" name="driver_phone" :value="fullPhone">
 
                                 <div class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible"
                                     :class="driver_id ? 'border-green-300 dark:border-green-600 bg-green-50 dark:bg-green-900/20' : ''">
 
-                                    {{-- Country code button --}}
                                     <button type="button" @click="countryOpen = !countryOpen"
                                         class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
                                         <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
@@ -125,13 +127,11 @@
                                         </svg>
                                     </button>
 
-                                    {{-- Phone number input --}}
                                     <input type="tel" x-model="localPhoneNumber" @input="onPhoneInput()"
                                         @focus="driverOpen = true" @click.outside="driverOpen = false"
                                         placeholder="780236551" dir="ltr" autocomplete="off"
                                         class="flex-grow bg-transparent px-3 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
 
-                                    {{-- Selected indicator --}}
                                     <div x-show="driver_id" class="flex items-center px-2 pointer-events-none">
                                         <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
                                             <path fill-rule="evenodd"
@@ -178,7 +178,6 @@
                                         </div>
                                     </template>
 
-                                    {{-- No match hint --}}
                                     <div x-show="filteredDrivers.length === 0"
                                         class="flex items-center gap-2 px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
                                         <svg class="w-4 h-4 text-brand-500 shrink-0" fill="none" stroke="currentColor"
@@ -210,7 +209,6 @@
                             </div>
                         </div>
 
-                        {{-- New driver badge --}}
                         <p x-show="localPhoneNumber.trim().length > 0 && !driver_id"
                             class="mt-1.5 text-xs text-brand-500 dark:text-brand-400 flex items-center gap-1">
                             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
@@ -226,23 +224,21 @@
                         @enderror
                     </div>
 
-                    {{-- رقم السند + الفرع المرسل (نفس الصف) --}}
+                    {{-- رقم السند + المكتب المرسل --}}
                     <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {{-- رقم السند --}}
                         <div>
                             <label for="receipt_number"
                                 class="block mb-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
                                 رقم السند <span class="text-error-500">*</span>
                             </label>
-                            <input type="text" name="number" id="receipt_number" value="{{ old('number') }}"
-                                placeholder="أدخل رقم السند" required
+                            <input type="text" name="number" id="receipt_number"
+                                value="{{ old('number', $receipt->number) }}" placeholder="أدخل رقم السند" required
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                             @error('number')
                                 <p class="mt-1 text-xs text-error-500">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        {{-- المكتب المرسل --}}
                         <div>
                             <label for="source_branch_code"
                                 class="block mb-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -252,7 +248,8 @@
                                 class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                 <option value="">-- اختر الفرع المرسل --</option>
                                 @foreach ($branches as $branch)
-                                    <option value="{{ $branch->code }}" {{ old('source_branch_code') == $branch->code ? 'selected' : '' }}>
+                                    <option value="{{ $branch->code }}"
+                                        {{ old('source_branch_code', $receipt->source_branch_code) == $branch->code ? 'selected' : '' }}>
                                         {{ $branch->name }} ({{ $branch->code }})
                                     </option>
                                 @endforeach
@@ -271,7 +268,7 @@
                         </label>
                         <textarea name="general_notes" id="general_notes" rows="3"
                             placeholder="ملاحظات إضافية على بيان الاستلام..."
-                            class="px-4 py-2.5 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all resize-none">{{ old('general_notes') }}</textarea>
+                            class="px-4 py-2.5 w-full text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all resize-none">{{ old('general_notes', $receipt->general_notes) }}</textarea>
                         @error('general_notes')
                             <p class="mt-1 text-xs text-error-500">{{ $message }}</p>
                         @enderror
@@ -309,12 +306,11 @@
                     </button>
                 </div>
 
-                <div class="p-6" style="display: flex; flex-wrap: wrap; gap: 16px;">
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <template x-for="(item, index) in items" :key="index">
-                        <div style="flex: 0 0 calc(50% - 8px);"
+                        <div
                             class="relative p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
 
-                            {{-- Item number badge --}}
                             <div class="flex items-center justify-between mb-4">
                                 <span
                                     class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400">
@@ -333,130 +329,151 @@
                                 </button>
                             </div>
 
-                            <div>
-                                {{-- رقم السند + اسم المرسل --}}
-                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                                    <div style="flex: 1;">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            رقم السند <span class="text-error-500">*</span>
-                                        </label>
-                                        <input type="text" :name="`items[${index}][number]`" x-model="item.number"
-                                            placeholder="مثال: 1001"
-                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {{-- رقم السند --}}
+                                <div>
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        رقم السند <span class="text-error-500">*</span>
+                                    </label>
+                                    <input type="text" :name="`items[${index}][number]`" x-model="item.number"
+                                        placeholder="مثال: 1001"
+                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                </div>
+
+                                {{-- اسم المرسل --}}
+                                <div>
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        اسم المرسل
+                                    </label>
+                                    <input type="text" :name="`items[${index}][sender_name]`" x-model="item.sender_name"
+                                        placeholder="اسم المرسل"
+                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                </div>
+
+                                {{-- اسم المستلم --}}
+                                <div>
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        اسم المستلم <span class="text-error-500">*</span>
+                                    </label>
+                                    <input type="text" :name="`items[${index}][receiver_name]`"
+                                        x-model="item.receiver_name" placeholder="اسم المستلم"
+                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                </div>
+
+                                {{-- رقم هاتف المستلم --}}
+                                <div x-data="{
+                                                                    rcOpen: false,
+                                                                    rcSearch: '',
+                                                                    rcCountries: [
+                                                                        { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                                        { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
+                                                                        { name: 'UAE', code: 'AE', dial_code: '+971' },
+                                                                        { name: 'Oman', code: 'OM', dial_code: '+968' },
+                                                                        { name: 'Kuwait', code: 'KW', dial_code: '+965' },
+                                                                        { name: 'Bahrain', code: 'BH', dial_code: '+973' },
+                                                                        { name: 'Qatar', code: 'QA', dial_code: '+974' },
+                                                                        { name: 'Egypt', code: 'EG', dial_code: '+20' },
+                                                                        { name: 'Jordan', code: 'JO', dial_code: '+962' },
+                                                                        { name: 'Iraq', code: 'IQ', dial_code: '+964' },
+                                                                    ],
+                                                                    rcSelected: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                                    rcLocal: '',
+                                                                    get rcFiltered() {
+                                                                        if (this.rcSearch === '') return this.rcCountries;
+                                                                        return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
+                                                                    }
+                                                                }"
+                                    x-init="
+                                        // Parse existing phone to extract local number
+                                        let existingPhone = item.receiver_phone || '';
+                                        const dialCodes = rcCountries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
+                                        for (const code of dialCodes) {
+                                            if (existingPhone.startsWith(code)) {
+                                                rcSelected = rcCountries.find(c => c.dial_code === '+' + code);
+                                                existingPhone = existingPhone.substring(code.length);
+                                                break;
+                                            }
+                                        }
+                                        rcLocal = existingPhone;
+                                        // Watch for future changes only (not on init)
+                                        $watch('rcLocal', () => { item.receiver_phone = rcSelected.dial_code.replace('+', '') + rcLocal; });
+                                        $watch('rcSelected', () => { item.receiver_phone = rcSelected.dial_code.replace('+', '') + rcLocal; });
+                                    "
+                                    class="relative">
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        رقم هاتف المستلم <span class="text-error-500">*</span>
+                                    </label>
+
+                                    <input type="hidden" :name="`items[${index}][receiver_phone]`"
+                                        :value="item.receiver_phone">
+
+                                    <div
+                                        class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible">
+                                        <button type="button" @click="rcOpen = !rcOpen"
+                                            class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
+                                            <img :src="`https://flagcdn.com/w20/${rcSelected.code.toLowerCase()}.png`"
+                                                alt="Flag" class="w-5 h-auto">
+                                            <span class="text-xs font-bold text-gray-500"
+                                                x-text="rcSelected.dial_code"></span>
+                                            <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+
+                                        <input type="tel" x-model="rcLocal" placeholder="780236551" dir="ltr"
+                                            autocomplete="off"
+                                            class="flex-grow bg-transparent px-3 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
                                     </div>
-                                    <div style="flex: 1;">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            اسم المرسل
-                                        </label>
-                                        <input type="text" :name="`items[${index}][sender_name]`" x-model="item.sender_name"
-                                            placeholder="اسم المرسل"
-                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+
+                                    <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
+                                        class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60">
+                                        <input type="text" x-model="rcSearch" placeholder="ابحث عن الدولة..."
+                                            class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
+                                        <div class="overflow-y-auto max-h-48">
+                                            <template x-for="country in rcFiltered" :key="country.code">
+                                                <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
+                                                    class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
+                                                    <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
+                                                        alt="" class="w-5">
+                                                    <span
+                                                        class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
+                                                        x-text="country.name"></span>
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400"
+                                                        x-text="country.dial_code"></span>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
 
-                                {{-- اسم المستلم + رقم هاتف المستلم --}}
-                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                                    <div style="flex: 1;">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            اسم المستلم <span class="text-error-500">*</span>
-                                        </label>
-                                        <input type="text" :name="`items[${index}][receiver_name]`"
-                                            x-model="item.receiver_name" placeholder="اسم المستلم"
-                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                    </div>
-                                    <div style="flex: 1;" x-data="{
-                                                                                            rcOpen: false,
-                                                                                            rcSearch: '',
-                                                                                            rcCountries: [
-                                                                                                { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                                                { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                                                                                            ],
-                                                                                            rcSelected: { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                                            rcLocal: '',
-                                                                                            get rcFiltered() {
-                                                                                                if (this.rcSearch === '') return this.rcCountries;
-                                                                                                return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
-                                                                                            }
-                                                                                        }"
-                                        x-effect="item.receiver_phone = rcSelected.dial_code.replace('+', '') + rcLocal"
-                                        class="relative">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            رقم هاتف المستلم <span class="text-error-500">*</span>
-                                        </label>
-
-                                        {{-- Hidden input: full phone --}}
-                                        <input type="hidden" :name="`items[${index}][receiver_phone]`"
-                                            :value="item.receiver_phone">
-
-                                        <div
-                                            class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible">
-                                            {{-- Country code button --}}
-                                            <button type="button" @click="rcOpen = !rcOpen"
-                                                class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
-                                                <img :src="`https://flagcdn.com/w20/${rcSelected.code.toLowerCase()}.png`"
-                                                    alt="Flag" class="w-5 h-auto">
-                                                <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                        d="M19 9l-7 7-7-7" />
-                                                </svg>
-                                            </button>
-
-                                            {{-- Phone number input --}}
-                                            <input type="tel" x-model="rcLocal" placeholder="780236551" dir="ltr"
-                                                autocomplete="off"
-                                                class="flex-grow bg-transparent px-3 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
-                                        </div>
-
-                                        {{-- Country dropdown --}}
-                                        <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
-                                            class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60">
-                                            <input type="text" x-model="rcSearch" placeholder="ابحث عن الدولة..."
-                                                class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
-                                            <div class="overflow-y-auto max-h-48">
-                                                <template x-for="country in rcFiltered" :key="country.code">
-                                                    <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
-                                                        class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
-                                                            alt="" class="w-5">
-                                                        <span
-                                                            class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
-                                                            x-text="country.name"></span>
-                                                        <span class="text-xs text-gray-500 dark:text-gray-400"
-                                                            x-text="country.dial_code"></span>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
+                                {{-- نوع الطرد --}}
+                                <div>
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        نوع الطرد <span class="text-error-500">*</span>
+                                    </label>
+                                    <input type="text" :name="`items[${index}][package_type]`"
+                                        x-model="item.package_type" placeholder="مثال: كرتون، كيس، ظرف"
+                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                 </div>
 
-                                {{-- نوع الطرد + ملاحظات --}}
-                                <div style="display: flex; gap: 12px;">
-                                    <div style="flex: 1;">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            نوع الطرد <span class="text-error-500">*</span>
-                                        </label>
-                                        <input type="text" :name="`items[${index}][package_type]`"
-                                            placeholder="مثال: كرتون، كيس، ظرف"
-                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                    </div>
-                                    <div style="flex: 1;">
-                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                            ملاحظات
-                                        </label>
-                                        <input type="text" :name="`items[${index}][item_notes]`" x-model="item.item_notes"
-                                            placeholder="ملاحظات إضافية"
-                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                    </div>
+                                {{-- ملاحظات --}}
+                                <div>
+                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                        ملاحظات
+                                    </label>
+                                    <input type="text" :name="`items[${index}][item_notes]`" x-model="item.item_notes"
+                                        placeholder="ملاحظات إضافية"
+                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                 </div>
                             </div>
                         </div>
                     </template>
 
                     {{-- Empty state --}}
-                    <div x-show="items.length === 0" style="width: 100%;"
-                        class="text-center py-10 text-gray-400 dark:text-gray-500">
+                    <div x-show="items.length === 0"
+                        class="md:col-span-2 text-center py-10 text-gray-400 dark:text-gray-500">
                         <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -469,17 +486,19 @@
 
             {{-- ======================== Submit ======================== --}}
             <div class="flex items-center justify-end gap-3">
-                <a href="{{ route('receipts.create') }}"
+                <a href="{{ route('receipts.index') }}"
                     class="px-6 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
-                    إعادة تعيين
+                    إلغاء
                 </a>
                 <button type="submit" :disabled="isSubmitting"
                     class="px-6 py-2.5 text-sm font-bold text-white bg-brand-500 rounded-xl hover:bg-brand-600 shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2">
                     <svg x-show="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                        </path>
                     </svg>
-                    <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ بيان الاستلام'"></span>
+                    <span x-text="isSubmitting ? 'جاري التحديث...' : 'تحديث بيان الاستلام'"></span>
                 </button>
             </div>
 
