@@ -330,11 +330,12 @@
                     </button>
                 </div>
 
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="p-6" style="display: flex; flex-wrap: wrap; gap: 16px;">
                     <template x-for="(item, index) in items" :key="index">
-                        <div
+                        <div style="flex: 0 0 calc(50% - 8px);"
                             class="relative p-5 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-700">
 
+                            {{-- Item number badge --}}
                             <div class="flex items-center justify-between mb-4">
                                 <span
                                     class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400">
@@ -353,74 +354,74 @@
                                 </button>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {{-- رقم السند --}}
-                                <div>
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        رقم السند <span class="text-error-500">*</span>
-                                    </label>
-                                    <input type="text" :name="`items[${index}][number]`" x-model="item.number"
-                                        placeholder="مثال: 1001"
-                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                            <div>
+                                {{-- رقم السند + اسم المرسل --}}
+                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            رقم السند <span class="text-error-500">*</span>
+                                        </label>
+                                        <input type="text" :name="`items[${index}][number]`" x-model="item.number"
+                                            placeholder="مثال: 1001"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            اسم المرسل
+                                        </label>
+                                        <input type="text" :name="`items[${index}][sender_name]`" x-model="item.sender_name"
+                                            placeholder="اسم المرسل"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
                                 </div>
 
-                                {{-- اسم المرسل --}}
-                                <div>
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        اسم المرسل
-                                    </label>
-                                    <input type="text" :name="`items[${index}][sender_name]`" x-model="item.sender_name"
-                                        placeholder="اسم المرسل"
-                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                {{-- اسم المستلم + رقم هاتف المستلم --}}
+                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            اسم المستلم <span class="text-error-500">*</span>
+                                        </label>
+                                        <input type="text" :name="`items[${index}][receiver_name]`"
+                                            x-model="item.receiver_name" placeholder="اسم المستلم"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            رقم هاتف المستلم <span class="text-error-500">*</span>
+                                        </label>
+                                        <x-country-select 
+                                            dynamic-name="`items[${index}][receiver_phone]`"
+                                            model="item.receiver_phone" 
+                                        />
+                                    </div>
                                 </div>
 
-                                {{-- اسم المستلم --}}
-                                <div>
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        اسم المستلم <span class="text-error-500">*</span>
-                                    </label>
-                                    <input type="text" :name="`items[${index}][receiver_name]`"
-                                        x-model="item.receiver_name" placeholder="اسم المستلم"
-                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                </div>
-
-                                {{-- رقم هاتف المستلم --}}
-                                <div class="col-span-1">
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        رقم هاتف المستلم <span class="text-error-500">*</span>
-                                    </label>
-                                    <x-country-select 
-                                        dynamic-name="`items[${index}][receiver_phone]`"
-                                        model="item.receiver_phone" 
-                                    />
-                                </div>
-
-                                {{-- نوع الطرد --}}
-                                <div>
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        نوع الطرد <span class="text-error-500">*</span>
-                                    </label>
-                                    <input type="text" :name="`items[${index}][package_type]`"
-                                        x-model="item.package_type" placeholder="مثال: كرتون، كيس، ظرف"
-                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
-                                </div>
-
-                                {{-- ملاحظات --}}
-                                <div>
-                                    <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
-                                        ملاحظات
-                                    </label>
-                                    <input type="text" :name="`items[${index}][item_notes]`" x-model="item.item_notes"
-                                        placeholder="ملاحظات إضافية"
-                                        class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                {{-- نوع الطرد + ملاحظات --}}
+                                <div style="display: flex; gap: 12px;">
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            نوع الطرد <span class="text-error-500">*</span>
+                                        </label>
+                                        <input type="text" :name="`items[${index}][package_type]`"
+                                            x-model="item.package_type" placeholder="مثال: كرتون، كيس، ظرف"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            ملاحظات
+                                        </label>
+                                        <input type="text" :name="`items[${index}][item_notes]`" x-model="item.item_notes"
+                                            placeholder="ملاحظات إضافية"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </template>
 
                     {{-- Empty state --}}
-                    <div x-show="items.length === 0"
-                        class="md:col-span-2 text-center py-10 text-gray-400 dark:text-gray-500">
+                    <div x-show="items.length === 0" style="width: 100%;"
+                        class="text-center py-10 text-gray-400 dark:text-gray-500">
                         <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
