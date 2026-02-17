@@ -306,7 +306,40 @@ class ReceiptHeaderController extends Controller
                 'تم الإضافة!',
                 'تم إضافة الطرد بنجاح.',
                 'حسناً',
-                'receipts.index'
+            );
+        } catch (Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    /**
+     * تحديث بيانات طرد معين
+     */
+    public function updateItem(Request $request, $itemId)
+    {
+        $item = ReceiptItem::findOrFail($itemId);
+
+        $validated = $request->validate([
+            'number'         => ['required', 'string', 'max:255'],
+            'sender_name'    => ['nullable', 'string', 'max:255'],
+            'receiver_name'  => ['required', 'string', 'max:255'],
+            'receiver_phone' => ['required', 'string', 'max:20'],
+            'package_type'   => ['required', 'string', 'max:255'],
+            'item_notes'     => ['nullable', 'string', 'max:500'],
+        ], [
+            'number.required'         => 'رقم السند مطلوب.',
+            'receiver_name.required'  => 'اسم المستلم مطلوب.',
+            'receiver_phone.required' => 'رقم هاتف المستلم مطلوب.',
+            'package_type.required'   => 'نوع الطرد مطلوب.',
+        ]);
+
+        try {
+            $item->update($validated);
+
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات الطرد بنجاح.',
+                'حسناً',
             );
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);

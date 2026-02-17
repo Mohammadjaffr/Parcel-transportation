@@ -123,15 +123,7 @@
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
                                     <div class="flex flex-col gap-1">
-                                        <span
-                                            class="text-sm font-bold text-gray-600 dark:text-gray-400">{{ $customer->phone }}</span>
-                                        @if ($customer->whatsapp_number)
-                                            <span
-                                                class="text-[9px] text-success-500 font-black uppercase flex items-center gap-1">
-                                                <span class="w-1.5 h-1.5 rounded-full animate-pulse bg-success-500"></span>
-                                                متصل واتساب
-                                            </span>
-                                        @endif
+                                            <x-phone-number :value="$customer->phone" class="text-sm font-bold text-gray-600 dark:text-gray-400" />
                                     </div>
                                 </td>
 

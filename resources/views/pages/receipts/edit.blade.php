@@ -385,88 +385,14 @@
                                 </div>
 
                                 {{-- رقم هاتف المستلم --}}
-                                <div x-data="{
-                                                                    rcOpen: false,
-                                                                    rcSearch: '',
-                                                                    rcCountries: @js(array_values(config('countries'))),
-                                                                    rcSelected: null,
-                                                                    rcLocal: '',
-                                                                    init() {
-                                                                        this.rcSelected = this.rcCountries.find(c => c.code === 'YE') || this.rcCountries[0];
-                                                                    },
-                                                                    get rcFiltered() {
-                                                                        if (this.rcSearch === '') return this.rcCountries;
-                                                                        return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
-                                                                    }
-                                                                }"
-                                    x-init="
-                                        // Parse existing phone to extract local number
-                                        let existingPhone = item.receiver_phone || '';
-                                        const dialCodes = rcCountries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
-                                        for (const code of dialCodes) {
-                                            if (existingPhone.startsWith(code) || existingPhone.startsWith('+' + code)) {
-                                                rcSelected = rcCountries.find(c => c.dial_code === '+' + code);
-                                                existingPhone = existingPhone.replace(new RegExp('^(\\+)?' + code), '');
-                                                break;
-                                            }
-                                        }
-                                        rcLocal = existingPhone;
-                                        // Watch for future changes only (not on init)
-                                        $watch('rcLocal', () => { item.receiver_phone = rcSelected.dial_code.replace('+', '') + rcLocal; });
-                                        $watch('rcSelected', () => { item.receiver_phone = rcSelected.dial_code.replace('+', '') + rcLocal; });
-                                    "
-                                    class="relative">
+                                <div class="col-span-1">
                                     <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
                                         رقم هاتف المستلم <span class="text-error-500">*</span>
                                     </label>
-
-                                    <input type="hidden" :name="`items[${index}][receiver_phone]`"
-                                        :value="item.receiver_phone">
-
-                                    <div
-                                        class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-hidden">
-                                        <button type="button" @click="rcOpen = !rcOpen"
-                                            class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
-                                            
-                                            <template x-if="rcSelected">
-                                                <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="rcSelected.svg"></svg>
-                                            </template>
-
-                                            <span class="text-xs font-bold text-gray-500 dir-ltr"
-                                                x-text="rcSelected?.dial_code"></span>
-                                            <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-
-                                        <input type="tel" x-model="rcLocal" placeholder="780236551" dir="ltr"
-                                            autocomplete="off"
-                                            class="flex-grow bg-transparent px-3 text-sm text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
-                                    </div>
-
-                                    <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
-                                        class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60" 
-                                        style="display: none;">
-                                        <input type="text" x-model="rcSearch" placeholder="ابحث عن الدولة..."
-                                            class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
-                                        <div class="overflow-y-auto max-h-48 custom-scrollbar">
-                                            <template x-for="country in rcFiltered" :key="country.code">
-                                                <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
-                                                    class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                                    
-                                                    <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                                    
-                                                    <span
-                                                        class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
-                                                        x-text="country.name"></span>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400 font-mono dir-ltr"
-                                                        x-text="country.dial_code"></span>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    </div>
+                                    <x-country-select 
+                                        dynamic-name="`items[${index}][receiver_phone]`"
+                                        model="item.receiver_phone" 
+                                    />
                                 </div>
 
                                 {{-- نوع الطرد --}}

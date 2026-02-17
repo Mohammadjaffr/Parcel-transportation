@@ -216,6 +216,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/receipts/{receipt}', [ReceiptHeaderController::class, 'update'])->name('receipts.update');
     Route::put('/receipt-items/{item}/toggle-delivery', [ReceiptHeaderController::class, 'toggleDelivery'])->name('receipt-items.toggle-delivery');
     Route::post('/receipts/{receipt}/add-item', [ReceiptHeaderController::class, 'addItem'])->name('receipts.add-item');
+    Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
 });
 
 

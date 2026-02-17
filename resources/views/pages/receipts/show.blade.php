@@ -16,7 +16,8 @@
 @endsection
 
 @section('content')
-    <div class="space-y-6 font-outfit" dir="rtl" x-data="{ filter: 'all', showAddItemModal: false }"
+    <div class="space-y-6 font-outfit" dir="rtl"
+        x-data="{ filter: 'all', showAddItemModal: false, showEditItemModal: false, editingItem: null }"
         @open-add-item-modal.window="showAddItemModal = true">
         {{-- =================== Statistics Cards =================== --}}
         <div class="flex gap-6">
@@ -134,6 +135,7 @@
                             <th class="px-6 py-4 text-center">نوع الطرد</th>
                             <th class="px-6 py-4 text-right">ملاحظات</th>
                             <th class="px-6 py-4 text-center">حالة التسليم</th>
+                            <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -208,6 +210,18 @@
                                         </button>
                                     </form>
                                 </td>
+
+                                {{-- الإجراءات --}}
+                                <td class="px-6 py-4 text-center">
+                                    <button @click="editingItem = {{ $item }}; showEditItemModal = true"
+                                        class="p-2 text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-lg transition-all"
+                                        title="تعديل">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -229,6 +243,9 @@
 
         {{-- Modal: إضافة طرد --}}
         @include('pages.receipts.modals.add-item')
+
+        {{-- Modal: تعديل طرد --}}
+        @include('pages.receipts.modals.edit-item')
     </div>
 
     @if (session('success'))
