@@ -87,75 +87,138 @@
                 {{-- رقم الهاتف + ملاحظات --}}
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;" x-data="{
-                        rcOpen: false,
-                        rcSearch: '',
-                        rcCountries: [
-                            { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                            { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                            { name: 'UAE', code: 'AE', dial_code: '+971' },
-                            { name: 'Kuwait', code: 'KW', dial_code: '+965' },
-                            { name: 'Oman', code: 'OM', dial_code: '+968' },
-                            { name: 'Bahrain', code: 'BH', dial_code: '+973' },
-                            { name: 'Qatar', code: 'QA', dial_code: '+974' },
-                            { name: 'Egypt', code: 'EG', dial_code: '+20' },
-                            { name: 'Jordan', code: 'JO', dial_code: '+962' },
-                            { name: 'Iraq', code: 'IQ', dial_code: '+964' },
-                            { name: 'Turkey', code: 'TR', dial_code: '+90' },
-                        ],
-                        rcSelected: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                        rcSelected: { dial_code: '+967' }, // Default for initial calculate
                         rcLocal: '',
-                        get rcFiltered() {
-                            if (this.rcSearch === '') return this.rcCountries;
-                            return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
-                        },
                         get fullPhone() {
-                            return this.rcSelected.dial_code.replace('+', '') + this.rcLocal;
+                            // This computed property is used by the hidden input
+                            // The component updates rcSelected and rcLocal
+                            return (this.rcSelected?.dial_code || '+967').replace('+', '') + (this.rcLocal || '');
                         }
-                    }" class="relative">
+                    }">
                         <label class="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1">
                             رقم هاتف المستلم <span class="text-red-500">*</span>
                         </label>
 
                         {{-- Hidden input: full phone --}}
-                        <input type="hidden" name="receiver_phone" :value="fullPhone" required>
+                        <input type="hidden" name="receiver_phone" :value="fullPhone">
 
-                        <div
-                            class="flex h-[30px] w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible">
-                            {{-- Country code button --}}
-                            <button type="button" @click="rcOpen = !rcOpen"
-                                class="flex items-center gap-1 px-2 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
-                                <img :src="`https://flagcdn.com/w20/${rcSelected.code.toLowerCase()}.png`" alt="Flag"
-                                    class="w-4 h-auto">
-                                <svg class="h-2.5 w-2.5 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
+                        {{-- Reusable Component --}}
+                        {{-- We bind Alpine variables to the component's internal state --}}
+                        {{-- Since component has its own x-data scope, we need to sync.
+                        Actually, better approach:
+                        The component should accept x-model for the local number,
+                        and emit event or use a modelable for the selected country?
 
-                            {{-- Phone number input --}}
-                            <input type="tel" x-model="rcLocal" placeholder="7xxxxxxxx" dir="ltr" autocomplete="off"
-                                required
-                                class="flex-grow bg-transparent px-2 text-xs font-mono text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
-                        </div>
+                        Let's adjust usage to match the component's x-data.
+                        The component defines `localPhoneNumber` and `selectedCountry`.
+                        If we nest x-data, scopes don't share easily unless we use $dispatch or window global.
 
-                        {{-- Country dropdown --}}
-                        <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
-                            class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-48">
-                            <input type="text" x-model="rcSearch" placeholder="ابحث عن الدولة..."
-                                class="w-full px-3 py-1.5 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs">
-                            <div class="overflow-y-auto max-h-32">
-                                <template x-for="country in rcFiltered" :key="country.code">
-                                    <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
-                                        class="flex items-center gap-2 p-2 px-3 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
-                                            alt="Flag" class="w-4 h-auto">
-                                        <span class="text-xs font-bold text-gray-700 dark:text-gray-300"
-                                            x-text="country.name"></span>
-                                        <span class="text-[10px] text-gray-400 mr-auto"
-                                            x-text="country.dial_code"></span>
-                                    </div>
-                                </template>
+                        Better: Let the component handle the UI, and we just need the RESULT (full phone).
+                        If we put the hidden input INSIDE the component? No, name attribute needs to be flexible.
+
+                        Let's Refactor Component Strategy:
+                        The component currently HAS x-data.
+                        If we use it here inside another x-data, we have nested scopes.
+
+                        Simple fix: The component should PROBABLY not have `x-data` on the root if we want to control it
+                        from outside,
+                        OR we pass the parent's data objects to it.
+
+                        However, to keep it simple as requested:
+                        I will inline the logic using the SHARED CONFIG, but using the clean markup structure I
+                        designed?
+
+                        Wait, the user wants 'this dropdown' to contain countries from the file.
+                        The `x-country-select` I created has `x-data` which isolates it.
+
+                        Let's look at `x-country-select` again.
+                        It has `search`, `countries` from config.
+
+                        I will use `x-country-select` but I need to ensure `receiver_phone` is populated.
+                        The component I wrote doesn't emit the full phone.
+
+                        I should Update `x-country-select` to accept a `name` prop for the hidden input?
+                        Or better, just put the logic here using `config('countries')` directly,
+                        since the user asked for 'this dropdown' to use the file.
+
+                        Using the component is cleaner IF it handles the form submission value.
+
+                        Let's try to use the component and pass `name="receiver_phone"`.
+                        But the component I wrote has `input type="tel"` but no hidden input for full phone.
+
+                        Correction: I will Modify `x-country-select` to support `name` for full phone submission.
+
+                        For now, let's Replace this block with a version that uses `config('countries')` directly
+                        but keeps the local Alpine logic, just fetching data from config.
+                        This is safest to avoid component scope issues.
+                        --}}
+
+                        <div x-data="{
+                            rcOpen: false,
+                            rcSearch: '',
+                            rcCountries: @js(array_values(config('countries'))),
+                            rcSelected: null,
+                            rcLocal: '',
+                            init() {
+                                this.rcSelected = this.rcCountries.find(c => c.code === 'YE') || this.rcCountries[0];
+                            },
+                            get rcFiltered() {
+                                if (this.rcSearch === '') return this.rcCountries;
+                                return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
+                            },
+                            get fullPhone() {
+                                return (this.rcSelected?.dial_code.replace('+', '') || '') + this.rcLocal;
+                            }
+                        }" class="relative">
+
+                            {{-- Hidden input: full phone --}}
+                            <input type="hidden" name="receiver_phone" :value="fullPhone">
+
+                            <div
+                                class="flex h-[30px] w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible">
+                                {{-- Country code button --}}
+                                <button type="button" @click="rcOpen = !rcOpen"
+                                    class="flex items-center gap-1 px-2 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
+
+                                    <template x-if="rcSelected">
+                                        <svg class="w-4 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="rcSelected.svg"></svg>
+                                    </template>
+
+                                    <svg class="h-2.5 w-2.5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+
+                                {{-- Phone number input --}}
+                                <input type="tel" x-model="rcLocal" placeholder="7xxxxxxxx" dir="ltr" autocomplete="off"
+                                    required
+                                    class="flex-grow bg-transparent px-2 text-xs font-mono text-gray-800 dark:text-white focus:outline-none focus:ring-0 border-none rounded-l-lg text-left">
+                            </div>
+
+                            {{-- Country dropdown --}}
+                            <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
+                                class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-48"
+                                style="display: none;">
+                                <input type="text" x-model="rcSearch" placeholder="ابحث..."
+                                    class="w-full px-3 py-1.5 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-xs text-right">
+                                <div class="overflow-y-auto max-h-32 custom-scrollbar">
+                                    <template x-for="country in rcFiltered" :key="country.code">
+                                        <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
+                                            class="flex items-center gap-2 p-2 px-3 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
+
+                                            <svg class="w-4 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+
+                                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300"
+                                                x-text="country.name"></span>
+                                            <span class="text-[10px] text-gray-400 mr-auto font-mono dir-ltr"
+                                                x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </div>

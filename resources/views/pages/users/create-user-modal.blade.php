@@ -42,11 +42,9 @@
                         <div x-data="{
                             open: false,
                             search: '',
-                            countries: [
-                                { name: 'Yemen', code: 'YE', dial_code: '+967' }
-                            ],
+                            countries: @js(array_values(config('countries'))),
                             selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                            localPhoneNumber: '', // <-- 1. المتغير الجديد لتخزين رقم الجوال المحلي
+                            localPhoneNumber: '',
 
                             get filteredCountries() {
                                 if (this.search === '') return this.countries;
@@ -107,10 +105,10 @@
                             </div>
 
                             <p class="mt-1 text-xs text-warning-500 dark:text-warning/90">
-                               و سيتم استخدام هذا الرقم لتسجيل الدخول والتواصل واتساب.
+                                و سيتم استخدام هذا الرقم لتسجيل الدخول والتواصل واتساب.
                             </p>
                         </div>
-                        
+
                     </div>
 
 
@@ -124,11 +122,13 @@
                         <div x-data="{
                             open: false,
                             search: '',
-                            countries: [
-                                { name: 'Yemen', code: 'YE', dial_code: '+967' }
-                            ],
-                            selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                            countries: @js(array_values(config('countries'))),
+                            selectedCountry: null,
                             localPhoneNumber: '', // <-- 1. المتغير الجديد لتخزين رقم الجوال المحلي
+
+                            init() {
+                                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                            },
 
                             get filteredCountries() {
                                 if (this.search === '') return this.countries;
@@ -141,7 +141,7 @@
 
                             <!-- 2. الحقل المخفي الذي سيتم إرساله إلى الخادم -->
                             <input type="hidden" name="whatsapp_number"
-                                :value="selectedCountry.dial_code.replace('+', '') + localPhoneNumber">
+                                :value="selectedCountry?.dial_code.replace('+', '') + localPhoneNumber">
 
                             <!-- This is the main visible input group -->
                             <div
@@ -150,13 +150,11 @@
                                 <!-- The dropdown button -->
                                 <button type="button" @click="open = !open"
                                     class="flex items-center gap-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-r-lg border-l border-gray-300 dark:border-gray-600">
-                                    <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
-                                        alt="Flag" class="w-5 h-auto">
-                                    <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7" />
-                                    </svg>
+
+                                    <template x-if="selectedCountry">
+                                        <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                    </template>
                                 </button>
 
                                 <!-- 3. حقل الإدخال المرئي (تم ربطه بـ x-model وإزالة name) -->
@@ -168,20 +166,24 @@
 
                             <!-- The Dropdown Panel (no changes here) -->
                             <div x-show="open" @click.outside="open = false" x-transition
-                                class="absolute z-20 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60">
+                                class="absolute z-20 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60"
+                                style="display: none;">
 
                                 <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
-                                    class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                    class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
 
-                                <div class="overflow-y-auto max-h-48">
+                                <div class="overflow-y-auto max-h-48 custom-scrollbar">
                                     <template x-for="country in filteredCountries" :key="country.code">
                                         <div @click="selectedCountry = country; open = false"
                                             class="flex items-center gap-3 p-2 px-4 transition-colors duration-150 cursor-pointer hover:bg-sky-50 dark:hover:bg-gray-700">
-                                            <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
-                                                alt="" class="w-5">
+
+                                            <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+
                                             <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                                 x-text="country.name"></span>
-                                            <span class="text-xs tracking-wider text-gray-500 dark:text-gray-400"
+                                            <span
+                                                class="text-xs tracking-wider text-gray-500 dark:text-gray-400 font-mono dir-ltr"
                                                 x-text="country.dial_code"></span>
                                         </div>
                                     </template>

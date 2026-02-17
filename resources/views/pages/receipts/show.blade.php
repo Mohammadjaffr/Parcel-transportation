@@ -11,6 +11,8 @@
             إضافة طرد
         </button>
     </div>
+    <x-modals.success-modal />
+    <x-modals.error-modal />
 @endsection
 
 @section('content')
@@ -162,8 +164,8 @@
 
                                 {{-- رقم الهاتف --}}
                                 <td class="px-6 py-4">
-                                    <span class="text-sm font-mono text-gray-500 dark:text-gray-400"
-                                        dir="ltr">{{ $item->receiver_phone ?? '—' }}</span>
+                                    <x-phone-number :value="$item->receiver_phone ?? '—'"
+                                        class="text-sm text-gray-500 dark:text-gray-400" />
                                 </td>
 
                                 {{-- نوع الطرد --}}
@@ -182,14 +184,27 @@
                                 {{-- حالة التسليم --}}
                                 <td class="px-6 py-4 text-center">
                                     <form method="POST" action="{{ route('receipt-items.toggle-delivery', $item->id) }}"
-                                        class="inline-block">
+                                        class="inline-block" x-data="{ loading: false }" @submit="loading = true">
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit"
-                                            class="inline-flex gap-2 items-center px-4 py-2 text-xs font-bold rounded-full border-2 transition-all duration-200 {{ $item->is_delivered ? 'bg-success-50 text-success-600 border-success-200 hover:bg-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/30 dark:hover:bg-success-500/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700' }}">
-                                            <span
+                                        <button type="submit" :disabled="loading"
+                                            class="inline-flex gap-2 items-center px-4 py-2 text-xs font-bold rounded-full border-2 transition-all duration-200"
+                                            :class="loading ? 'opacity-70 cursor-not-allowed bg-gray-100 text-gray-400' : '{{ $item->is_delivered ? 'bg-success-50 text-success-600 border-success-200 hover:bg-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/30 dark:hover:bg-success-500/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700' }}'">
+
+                                            <svg x-show="loading" class="w-3 h-3 animate-spin"
+                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                    stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor"
+                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                </path>
+                                            </svg>
+
+                                            <span x-show="!loading"
                                                 class="w-2 h-2 rounded-full {{ $item->is_delivered ? 'bg-success-500' : 'bg-gray-400' }}"></span>
-                                            {{ $item->is_delivered ? 'تم التسليم' : 'لم يسلم' }}
+
+                                            <span
+                                                x-text="loading ? 'جاري التحويل...' : '{{ $item->is_delivered ? 'تم التسليم' : 'لم يسلم' }}'"></span>
                                         </button>
                                     </form>
                                 </td>

@@ -68,11 +68,12 @@
                     <div x-data="{
                         open: false,
                         search: '',
-                        countries: [
-                            { name: 'Yemen', code: 'YE', dial_code: '+967' }
-                        ],
-                        selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                        countries: @js(array_values(config('countries'))),
+                        selectedCountry: null,
                         localPhoneNumber: '',
+                        init() {
+                             this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                        },
                         get filteredCountries() {
                             if (this.search === '') return this.countries;
                             return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
@@ -81,16 +82,21 @@
 
                         {{-- Hidden input sent to server --}}
                         <input type="hidden" name="phone"
-                            :value="selectedCountry.dial_code.replace('+', '') + localPhoneNumber">
+                            :value="selectedCountry?.dial_code.replace('+', '') + localPhoneNumber">
 
                         <div
                             class="flex h-11 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-hidden">
                             {{-- Country code button --}}
                             <button type="button" @click="open = !open"
-                                class="flex items-center gap-2 px-3 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-xl">
-                                <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
-                                    alt="Flag" class="w-5 h-auto">
-                                <span class="text-xs font-bold text-gray-500" x-text="selectedCountry.dial_code"></span>
+                                class="flex items-center gap-2 px-3 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-xl shrink-0">
+
+                                <template x-if="selectedCountry">
+                                    <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                </template>
+
+                                <span class="text-xs font-bold text-gray-500 dir-ltr"
+                                    x-text="selectedCountry?.dial_code"></span>
                                 <svg class="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -107,18 +113,21 @@
 
                         {{-- Dropdown panel --}}
                         <div x-show="open" @click.outside="open = false" x-transition
-                            class="absolute z-20 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60">
+                            class="absolute z-20 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60"
+                            style="display: none;">
                             <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
                                 class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
-                            <div class="overflow-y-auto max-h-48">
+                            <div class="overflow-y-auto max-h-20 custom-scrollbar">
                                 <template x-for="country in filteredCountries" :key="country.code">
                                     <div @click="selectedCountry = country; open = false"
                                         class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`" alt=""
-                                            class="w-5">
+
+                                        <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+
                                         <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                             x-text="country.name"></span>
-                                        <span class="text-xs text-gray-500 dark:text-gray-400"
+                                        <span class="text-xs text-gray-500 dark:text-gray-400 font-mono dir-ltr"
                                             x-text="country.dial_code"></span>
                                     </div>
                                 </template>

@@ -57,25 +57,25 @@
 @section('content')
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                                    search: '',
-                                    searchType: 'all',
-                                    filterStatus: 'all',
-                                    showRow(number, driver, branch, itemNumbers, deliveryStatus) {
-                                        if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
-                                        const s = this.search.toLowerCase();
-                                        if (!s) return true;
-                                        if (this.searchType === 'receipt') {
-                                            return number.toLowerCase().includes(s);
-                                        } else if (this.searchType === 'item') {
-                                            return itemNumbers.toLowerCase().includes(s);
-                                        } else {
-                                            return number.toLowerCase().includes(s) ||
-                                                driver.toLowerCase().includes(s) ||
-                                                branch.toLowerCase().includes(s) ||
-                                                itemNumbers.toLowerCase().includes(s);
-                                        }
-                                    }
-                                }">
+                                            search: '',
+                                            searchType: 'all',
+                                            filterStatus: 'all',
+                                            showRow(number, driver, branch, itemNumbers, deliveryStatus) {
+                                                if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
+                                                const s = this.search.toLowerCase();
+                                                if (!s) return true;
+                                                if (this.searchType === 'receipt') {
+                                                    return number.toLowerCase().includes(s);
+                                                } else if (this.searchType === 'item') {
+                                                    return itemNumbers.toLowerCase().includes(s);
+                                                } else {
+                                                    return number.toLowerCase().includes(s) ||
+                                                        driver.toLowerCase().includes(s) ||
+                                                        branch.toLowerCase().includes(s) ||
+                                                        itemNumbers.toLowerCase().includes(s);
+                                                }
+                                            }
+                                        }">
 
         {{-- بطاقات إحصائية --}}
         <div class="flex gap-6 mb-6">
@@ -215,8 +215,8 @@
                                     <div class="flex flex-col">
                                         <span
                                             class="text-sm font-black text-gray-900 dark:text-white">{{ $receipt->driver->name ?? '—' }}</span>
-                                        <span
-                                            class="text-[10px] font-bold text-gray-400 font-mono">{{ $receipt->driver->phone ?? '' }}</span>
+                                        <x-phone-number :value="$receipt->driver->phone ?? ''"
+                                            class="text-[10px] font-bold text-gray-400" />
                                     </div>
                                 </td>
 

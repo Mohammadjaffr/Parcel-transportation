@@ -9,22 +9,42 @@
                                             isSubmitting: false,
 
                                             {{-- ========== Driver Combobox ========== --}}
+                                            // Updated driver phone logic with shared config
                                             driver_id: '{{ old('driver_id', $receipt->driver_id) }}',
                                             driver_name: '{{ old('driver_name', $receipt->driver->name ?? '') }}',
                                             localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : preg_replace('/^(967|966)/', '', $receipt->driver->phone ?? '') }}',
-                                            selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                            selectedCountry: null,
                                             countryOpen: false,
                                             countrySearch: '',
-                                            countries: [
-                                                { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                                            ],
+                                            countries: @js(array_values(config('countries'))),
+                                            init() {
+                                                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                                
+                                                // Try to detect country from existing parsed phone if possible, 
+                                                // but localPhoneNumber above is already stripped. 
+                                                // If we wanted to be smarter we'd check the original full number, 
+                                                // but for now defaulting to YE is consistent with previous behavior 
+                                                // or we can try to infer if the old number matches a known prefix (if it wasn't stripped).
+                                                
+                                                // Actually, let's fix the initial selectedCountry based on the OLD input if present.
+                                                // The old() or database value might have the prefix.
+                                                // The PHP code above strips 967 or 966. 
+                                                // If it was 966, we should select SA.
+                                                let rawPhone = '{{ old('driver_phone', $receipt->driver->phone ?? '') }}';
+                                                
+                                                if (rawPhone.startsWith('966') || rawPhone.startsWith('+966')) {
+                                                    this.selectedCountry = this.countries.find(c => c.code === 'SA');
+                                                } else if (rawPhone.startsWith('968') || rawPhone.startsWith('+968')) {
+                                                    this.selectedCountry = this.countries.find(c => c.code === 'OM');
+                                                }
+                                                 // Add other checks if needed or leave YE as default
+                                            },
                                             get filteredCountries() {
                                                 if (this.countrySearch === '') return this.countries;
                                                 return this.countries.filter(c => c.name.toLowerCase().includes(this.countrySearch.toLowerCase()) || c.dial_code.includes(this.countrySearch));
                                             },
                                             get fullPhone() {
-                                                return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
+                                                return this.selectedCountry ? (this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber) : '';
                                             },
                                             driverOpen: false,
                                             drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
@@ -39,9 +59,9 @@
                                                 let p = driver.phone || '';
                                                 const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
                                                 for (const code of codes) {
-                                                    if (p.startsWith(code)) {
+                                                    if (p.startsWith(code) || p.startsWith('+' + code)) {
                                                         this.selectedCountry = this.countries.find(c => c.dial_code === '+' + code);
-                                                        p = p.substring(code.length);
+                                                        p = p.replace(new RegExp('^(\\+)?' + code), '');
                                                         break;
                                                     }
                                                 }
@@ -116,10 +136,13 @@
 
                                     <button type="button" @click="countryOpen = !countryOpen"
                                         class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
-                                        <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
-                                            alt="Flag" class="w-5 h-auto">
-                                        <span class="text-xs font-bold text-gray-500"
-                                            x-text="selectedCountry.dial_code"></span>
+                                        
+                                        <template x-if="selectedCountry">
+                                            <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                        </template>
+
+                                        <span class="text-xs font-bold text-gray-500 dir-ltr"
+                                            x-text="selectedCountry?.dial_code"></span>
                                         <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -144,18 +167,19 @@
                                 {{-- Country dropdown --}}
                                 <div x-show="countryOpen" @click.outside="countryOpen = false" x-transition
                                     class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60"
-                                    style="top: 100%;">
+                                    style="top: 100%; display: none;">
                                     <input type="text" x-model="countrySearch" placeholder="ابحث عن الدولة..."
                                         class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
-                                    <div class="overflow-y-auto max-h-48">
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
                                         <template x-for="country in filteredCountries" :key="country.code">
                                             <div @click="selectedCountry = country; countryOpen = false; countrySearch = ''"
                                                 class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                                <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
-                                                    alt="" class="w-5">
+                                                
+                                                <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                                
                                                 <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                                     x-text="country.name"></span>
-                                                <span class="text-xs text-gray-500 dark:text-gray-400"
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 font-mono dir-ltr"
                                                     x-text="country.dial_code"></span>
                                             </div>
                                         </template>
@@ -364,20 +388,12 @@
                                 <div x-data="{
                                                                     rcOpen: false,
                                                                     rcSearch: '',
-                                                                    rcCountries: [
-                                                                        { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                        { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                                                                        { name: 'UAE', code: 'AE', dial_code: '+971' },
-                                                                        { name: 'Oman', code: 'OM', dial_code: '+968' },
-                                                                        { name: 'Kuwait', code: 'KW', dial_code: '+965' },
-                                                                        { name: 'Bahrain', code: 'BH', dial_code: '+973' },
-                                                                        { name: 'Qatar', code: 'QA', dial_code: '+974' },
-                                                                        { name: 'Egypt', code: 'EG', dial_code: '+20' },
-                                                                        { name: 'Jordan', code: 'JO', dial_code: '+962' },
-                                                                        { name: 'Iraq', code: 'IQ', dial_code: '+964' },
-                                                                    ],
-                                                                    rcSelected: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                                    rcCountries: @js(array_values(config('countries'))),
+                                                                    rcSelected: null,
                                                                     rcLocal: '',
+                                                                    init() {
+                                                                        this.rcSelected = this.rcCountries.find(c => c.code === 'YE') || this.rcCountries[0];
+                                                                    },
                                                                     get rcFiltered() {
                                                                         if (this.rcSearch === '') return this.rcCountries;
                                                                         return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
@@ -388,9 +404,9 @@
                                         let existingPhone = item.receiver_phone || '';
                                         const dialCodes = rcCountries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
                                         for (const code of dialCodes) {
-                                            if (existingPhone.startsWith(code)) {
+                                            if (existingPhone.startsWith(code) || existingPhone.startsWith('+' + code)) {
                                                 rcSelected = rcCountries.find(c => c.dial_code === '+' + code);
-                                                existingPhone = existingPhone.substring(code.length);
+                                                existingPhone = existingPhone.replace(new RegExp('^(\\+)?' + code), '');
                                                 break;
                                             }
                                         }
@@ -408,13 +424,16 @@
                                         :value="item.receiver_phone">
 
                                     <div
-                                        class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-visible">
+                                        class="flex h-11 w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 overflow-hidden">
                                         <button type="button" @click="rcOpen = !rcOpen"
                                             class="flex items-center gap-1.5 px-2.5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-600 rounded-r-lg shrink-0">
-                                            <img :src="`https://flagcdn.com/w20/${rcSelected.code.toLowerCase()}.png`"
-                                                alt="Flag" class="w-5 h-auto">
-                                            <span class="text-xs font-bold text-gray-500"
-                                                x-text="rcSelected.dial_code"></span>
+                                            
+                                            <template x-if="rcSelected">
+                                                <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="rcSelected.svg"></svg>
+                                            </template>
+
+                                            <span class="text-xs font-bold text-gray-500 dir-ltr"
+                                                x-text="rcSelected?.dial_code"></span>
                                             <svg class="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 24 24"
                                                 stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -428,19 +447,21 @@
                                     </div>
 
                                     <div x-show="rcOpen" @click.outside="rcOpen = false" x-transition
-                                        class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60">
+                                        class="absolute z-40 w-full mt-1 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 max-h-60" 
+                                        style="display: none;">
                                         <input type="text" x-model="rcSearch" placeholder="ابحث عن الدولة..."
                                             class="w-full px-4 py-2 border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
-                                        <div class="overflow-y-auto max-h-48">
+                                        <div class="overflow-y-auto max-h-48 custom-scrollbar">
                                             <template x-for="country in rcFiltered" :key="country.code">
                                                 <div @click="rcSelected = country; rcOpen = false; rcSearch = ''"
                                                     class="flex items-center gap-3 p-2 px-4 cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700 transition-colors">
-                                                    <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
-                                                        alt="" class="w-5">
+                                                    
+                                                    <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                                    
                                                     <span
                                                         class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                                         x-text="country.name"></span>
-                                                    <span class="text-xs text-gray-500 dark:text-gray-400"
+                                                    <span class="text-xs text-gray-500 dark:text-gray-400 font-mono dir-ltr"
                                                         x-text="country.dial_code"></span>
                                                 </div>
                                             </template>

@@ -3,32 +3,32 @@
 @section('Breadcrumb', 'إدارة السائقين')
 @section('addButton')
     <button @click="$dispatch('open-create-modal')"
-            class="bg-brand-500 hover:bg-brand-600 text-white text-sm py-2 px-4 rounded-lg transition-all hover:shadow-md active:scale-95">
-            + إضافة سائق جديد
+        class="bg-brand-500 hover:bg-brand-600 text-white text-sm py-2 px-4 rounded-lg transition-all hover:shadow-md active:scale-95">
+        + إضافة سائق جديد
     </button>
     <x-modals.success-modal />
     <x-modals.error-modal />
 @endsection
 @section('content')
     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6" x-data="{
-                showCreateModal: false,
-                showEditModal: false,
-                editDriver: { id: null, name: '', phone: '', url: '' },
-                openEditModal(id, name, phone) {
-                    this.editDriver = {
-                        id: id,
-                        name: name,
-                        phone: phone || '',
-                        url: '{{ url('drivers') }}/' + id
-                    };
-                    this.showEditModal = true;
-                }
-            }" @open-create-modal.window="showCreateModal = true">
+                                showCreateModal: false,
+                                showEditModal: false,
+                                editDriver: { id: null, name: '', phone: '', url: '' },
+                                openEditModal(id, name, phone) {
+                                    this.editDriver = {
+                                        id: id,
+                                        name: name,
+                                        phone: phone || '',
+                                        url: '{{ url('drivers') }}/' + id
+                                    };
+                                    this.showEditModal = true;
+                                }
+                            }" @open-create-modal.window="showCreateModal = true">
 
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">قائمة السائقين</h3>
 
-            
+
         </div>
 
         <div class="overflow-x-auto">
@@ -64,7 +64,9 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                                {{ $driver->phone }}
+                                <div class="flex items-center gap-2 justify-end" dir="ltr">
+                                    <x-phone-number :value="$driver->phone" />
+                                </div>
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">

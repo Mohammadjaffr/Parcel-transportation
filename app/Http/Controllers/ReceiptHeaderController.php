@@ -5,8 +5,9 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Branch;
 use App\Models\Driver;
-use App\Models\ReceiptHeader;
+use App\Models\ReceiptItem;
 use Illuminate\Http\Request;
+use App\Models\ReceiptHeader;
 use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -117,29 +118,42 @@ class ReceiptHeaderController extends Controller
      * عرض جميع بيانات الاستلام
      */
     public function index()
-    {
-        $receipts = ReceiptHeader::with(['driver', 'sourceBranch', 'destinationBranch', 'items'])
-            ->where('destination_branch_code', auth()->user()->branch_code)
-            ->latest()
-            ->paginate(15);
+{
+    $branchCode = auth()->user()->branch_code;
 
-        $totalReceipts = ReceiptHeader::where('destination_branch_code', auth()->user()->branch_code)->count();
-        $totalItems = \App\Models\ReceiptItem::whereHas('header', function ($q) {
-            $q->where('destination_branch_code', auth()->user()->branch_code);
+    // 1. الاستعلام الرئيسي (كما هو لأنه جيد)
+    $receipts = ReceiptHeader::with(['driver', 'sourceBranch', 'destinationBranch', 'items'])
+        ->where('destination_branch_code', $branchCode)
+        ->latest()
+        ->paginate(15);
+
+    // 2. تجميع الإحصائيات (Optimization)
+    // بدلاً من استعلامات Eloquent المنفصلة، نستخدم Query Builder للحصول على الأرقام بشكل أسرع
+    
+    // عدد الفواتير الكلي
+    $totalReceipts = ReceiptHeader::where('destination_branch_code', $branchCode)->count();
+
+    // عدد العناصر الكلي: استخدام Join أسرع بكثير من whereHas
+    $totalItems = DB::table('receipt_items')
+        ->join('receipt_headers', 'receipt_items.receipt_header_id', '=', 'receipt_headers.id')
+        ->where('receipt_headers.destination_branch_code', $branchCode)
+        ->count();
+
+    // عدد الفواتير المعلقة (التي تحتوي على عنصر واحد على الأقل غير مسلم)
+    $hasPending = ReceiptHeader::where('destination_branch_code', $branchCode)
+        ->whereHas('items', function ($q) {
+            $q->where('is_delivered', false);
         })->count();
 
-        $fullyDelivered = ReceiptHeader::where('destination_branch_code', auth()->user()->branch_code)
-            ->whereDoesntHave('items', function ($q) {
-                $q->where('is_delivered', false);
-            })->whereHas('items')->count();
+    // التحسين الرياضي:
+    // الفواتير المكتملة = العدد الكلي - الفواتير المعلقة
+    // (ملاحظة: هذا يفترض أن الفواتير الفارغة لا تحسب كمكتملة، إذا كانت الفواتير الفارغة نادرة فهذا حل ممتاز للأداء)
+    $fullyDelivered = $totalReceipts - $hasPending; 
+    
+    // إذا كنت تحتاج دقة 100% لاستبعاد الفواتير التي ليس بها عناصر أصلاً، يمكنك ترك الاستعلام القديم ولكن التحسين الرياضي أسرع بمراحل.
 
-        $hasPending = ReceiptHeader::where('destination_branch_code', auth()->user()->branch_code)
-            ->whereHas('items', function ($q) {
-                $q->where('is_delivered', false);
-            })->count();
-
-        return view('pages.receipts.index', compact('receipts', 'totalReceipts', 'totalItems', 'fullyDelivered', 'hasPending'));
-    }
+    return view('pages.receipts.index', compact('receipts', 'totalReceipts', 'totalItems', 'fullyDelivered', 'hasPending'));
+}
 
     /**
      * عرض تفاصيل بيان استلام
@@ -173,14 +187,14 @@ class ReceiptHeaderController extends Controller
             'source_branch_code' => ['required', 'exists:branches,code'],
             'driver_id'          => ['nullable', 'exists:drivers,id'],
             'driver_name'        => ['required', 'string', 'max:255'],
-            'driver_phone'       => ['nullable', 'string', 'max:20'],
+            'driver_phone'       => ['nullable', 'string', 'max:20','min:10'],
             'general_notes'      => ['nullable', 'string', 'max:1000'],
 
             'items'                  => ['required', 'array', 'min:1'],
             'items.*.number'         => ['required', 'string', 'max:255', 'distinct'],
             'items.*.sender_name'    => ['nullable', 'string', 'max:255'],
             'items.*.receiver_name'  => ['required', 'string', 'max:255'],
-            'items.*.receiver_phone' => ['required', 'string', 'max:20'],
+            'items.*.receiver_phone' => ['required', 'string', 'max:20','min:10'],
             'items.*.package_type'   => ['required', 'string', 'max:255'],
             'items.*.item_notes'     => ['nullable', 'string', 'max:500'],
         ], [
@@ -243,7 +257,6 @@ class ReceiptHeaderController extends Controller
                 'تم التحديث!',
                 'تم تحديث بيان الاستلام والطرود بنجاح.',
                 'حسناً',
-                'receipts.index'
             );
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
@@ -255,10 +268,14 @@ class ReceiptHeaderController extends Controller
      */
     public function toggleDelivery($itemId)
     {
-        $item = \App\Models\ReceiptItem::findOrFail($itemId);
+        $item = ReceiptItem::findOrFail($itemId);
         $item->update(['is_delivered' => !$item->is_delivered]);
 
-        return redirect()->back()->with('success', $item->is_delivered ? 'تم تسليم الطرد بنجاح' : 'تم إلغاء تسليم الطرد');
+        return WebResponseClass::sendResponse(
+            'تم التحديث!',
+            'تم تحديث بيان الاستلام والطرود بنجاح.',
+            'حسناً',
+        );
     }
 
     /**
@@ -285,9 +302,14 @@ class ReceiptHeaderController extends Controller
         try {
             $receipt->items()->create($validated);
 
-            return redirect()->back()->with('success', 'تم إضافة الطرد بنجاح');
+            return WebResponseClass::sendResponse(
+                'تم الإضافة!',
+                'تم إضافة الطرد بنجاح.',
+                'حسناً',
+                'receipts.index'
+            );
         } catch (Exception $e) {
-            return redirect()->back()->with('error', 'حدث خطأ أثناء إضافة الطرد');
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 }

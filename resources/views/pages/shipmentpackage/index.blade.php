@@ -60,15 +60,15 @@
 @section('content')
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                        search: '',
-                        openModal: false,
-                        selectedCount: 0,
-                        selectedBranch: '',
-                        showRow(tracking, driver) {
-                            return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
-                                driver.toLowerCase().includes(this.search.toLowerCase());
-                        }
-                    }" @open-new-trip.window="openModal = true">
+                                search: '',
+                                openModal: false,
+                                selectedCount: 0,
+                                selectedBranch: '',
+                                showRow(tracking, driver) {
+                                    return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
+                                        driver.toLowerCase().includes(this.search.toLowerCase());
+                                }
+                            }" @open-new-trip.window="openModal = true">
 
         <div class="flex gap-6 mb-6">
 
@@ -92,7 +92,7 @@
 
             {{-- بطاقة: عدد جميع الشحنات --}}
             <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                                'border-gray-100'"
+                                        'border-gray-100'"
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -169,8 +169,8 @@
                                     <div class="flex flex-col">
                                         <span
                                             class="text-sm font-black text-gray-900 dark:text-white">{{ $pkg->driver_name }}</span>
-                                        <span
-                                            class="text-[10px] font-bold text-gray-400 font-mono">{{ $pkg->driver_phone }}</span>
+                                        <x-phone-number :value="$pkg->driver_phone"
+                                            class="font-bold text-[10px] text-gray-400" />
                                     </div>
                                 </td>
 

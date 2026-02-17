@@ -4,9 +4,9 @@
 @section('style')
     <style>
         /* ============================================================
-       Branch Cards – Minimalist Card Design
-       Uses CSS variables from tailadmin/build/style.css
-       ============================================================ */
+           Branch Cards – Minimalist Card Design
+           Uses CSS variables from tailadmin/build/style.css
+           ============================================================ */
 
         /* ---------- Grid Layout ---------- */
         .branch-grid {
@@ -234,16 +234,16 @@
     <x-modals.error-modal />
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                        unlinkModalOpen: false,
-                        selectedShipmentId: null,
-                        selectedBondNumber: '',
-                        unlinkLoading: false,
-                        openUnlinkModal(id, bondNumber) {
-                            this.selectedShipmentId = id;
-                            this.selectedBondNumber = bondNumber;
-                            this.unlinkModalOpen = true;
-                        }
-                    }">
+                            unlinkModalOpen: false,
+                            selectedShipmentId: null,
+                            selectedBondNumber: '',
+                            unlinkLoading: false,
+                            openUnlinkModal(id, bondNumber) {
+                                this.selectedShipmentId = id;
+                                this.selectedBondNumber = bondNumber;
+                                this.unlinkModalOpen = true;
+                            }
+                        }">
 
         <div
             class="bg-white dark:bg-white/[0.03] p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-theme-sm">
@@ -343,8 +343,8 @@
                     </div>
                     <div>
                         <p class="text-[10px] font-black text-success-500 uppercase">رقم التواصل</p>
-                        <p class="font-mono text-base font-black text-gray-900 dark:text-white">{{ $package->driver_phone }}
-                        </p>
+                        <x-phone-number :value="$package->driver_phone"
+                            class="font-mono text-base font-black text-gray-900 dark:text-white" />
                     </div>
                 </div>
             </div>
