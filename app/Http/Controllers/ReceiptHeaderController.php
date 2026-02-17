@@ -345,4 +345,23 @@ class ReceiptHeaderController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
+
+    /**
+     * حذف طرد معين
+     */
+    public function destroyItem($itemId)
+    {
+        try {
+             $item = ReceiptItem::findOrFail($itemId);
+             $item->delete();
+ 
+             return WebResponseClass::sendResponse(
+                 'تم الحذف!',
+                 'تم حذف الطرد بنجاح.',
+                 'حسناً',
+             );
+        } catch (Exception $e) {
+             return WebResponseClass::sendExceptionError($e);
+        }
+    }
 }
