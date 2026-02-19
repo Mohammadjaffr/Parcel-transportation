@@ -17,7 +17,8 @@
         <template x-if="editingItem">
             <form method="POST"
                 :action="'{{ route('receipt-items.update', ['item' => 'ITEM_ID']) }}'.replace('ITEM_ID', editingItem.id)"
-                x-data="{ isLoading: false }" @submit="isLoading = true">
+                x-data="{ isLoading: false, payment_status: editingItem.payment_status || 'unpaid', amount: editingItem.amount, prevAmount: editingItem.amount || 0 }"
+                @submit="isLoading = true">
                 @csrf
                 @method('PUT')
 
@@ -84,6 +85,54 @@
                         <input type="text" name="item_notes" :value="editingItem.item_notes"
                             placeholder="ملاحظات (اختياري)"
                             class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
+                    </div>
+
+                    {{-- Payment Status --}}
+                    <div class="col-span-1">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            حالة الدفع <span class="text-error-500">*</span>
+                        </label>
+                        <div class="flex gap-2">
+                            {{-- Unpaid Option --}}
+                            <div class="relative w-full">
+                                <label class="cursor-pointer w-full group">
+                                    <input type="radio" name="payment_status" value="unpaid" x-model="payment_status"
+                                        @change="amount = prevAmount" class="peer sr-only">
+                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                        :class="payment_status === 'unpaid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                        <span class="flex items-center gap-2">
+                                            عند الاستلام
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+                            {{-- Paid Option --}}
+                            <div class="relative w-full">
+                                <label class="cursor-pointer w-full group">
+                                    <input type="radio" name="payment_status" value="paid" x-model="payment_status"
+                                        @change="prevAmount = (amount > 0 ? amount : prevAmount); amount = 0"
+                                        class="peer sr-only">
+                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                        :class="payment_status === 'paid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                        <span class="flex items-center gap-2">
+                                            مدفوع
+                                        </span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Amount --}}
+                    <div class="col-span-1">
+                        <label class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                            المبلغ <span class="text-error-500">*</span>
+                        </label>
+                        <input type="number" name="amount" x-model="amount" :readonly="payment_status === 'paid'"
+                            @input="if(payment_status === 'unpaid') prevAmount = amount"
+                            :class="payment_status === 'paid' ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-70 text-gray-500' : 'bg-transparent dark:text-white'"
+                            placeholder="0"
+                            class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 outline-none transition-all">
                     </div>
 
                 </div>

@@ -6,11 +6,14 @@ use Exception;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\ReceiptItem;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\ReceiptHeader;
 use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Models\TransactionCategory;
 
 class ReceiptHeaderController extends Controller
 {
@@ -32,7 +35,9 @@ class ReceiptHeaderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             // Header
-            'number'             => ['required', 'string', 'max:255', 'unique:receipt_headers,number'],
+            'number'             => ['required', 'string', 'max:255', Rule::unique('receipt_headers')->where(function ($query) use ($request) {
+                return $query->where('source_branch_code', $request->source_branch_code);
+            })],
             'source_branch_code' => ['required', 'exists:branches,code'],
             'driver_id'          => ['nullable', 'exists:drivers,id'],
             'driver_name'        => ['required', 'string', 'max:255'],
@@ -47,6 +52,8 @@ class ReceiptHeaderController extends Controller
             'items.*.receiver_phone' => ['required', 'string', 'max:20'],
             'items.*.package_type'   => ['required', 'string', 'max:255'],
             'items.*.item_notes'     => ['nullable', 'string', 'max:500'],
+            'items.*.payment_status' => ['required', 'in:paid,unpaid'],
+            'items.*.amount'         => ['nullable', 'numeric', 'min:0'],
         ], [
             'items.required'              => 'يجب إضافة طرد واحد على الأقل.',
             'items.min'                   => 'يجب إضافة طرد واحد على الأقل.',
@@ -56,6 +63,10 @@ class ReceiptHeaderController extends Controller
             'items.*.receiver_phone.required' => 'رقم هاتف المستلم مطلوب.',
             'items.*.package_type.required'   => 'نوع الطرد مطلوب.',
             'items.*.package_type.in'         => 'نوع الطرد غير صالح.',
+            'items.*.payment_status.required' => 'حالة الدفع مطلوبة لكل طرد.',
+            'items.*.payment_status.in'       => 'حالة الدفع المحددة غير صالحة.',
+            'items.*.amount.numeric'          => 'يجب أن يكون المبلغ رقماً صحيحاً.',
+            'items.*.amount.min'              => 'لا يمكن أن يكون المبلغ بالسالب.',
             'source_branch_code.required'     => 'الفرع المرسل مطلوب.',
             'driver_name.required'            => 'اسم السائق مطلوب.',
             'number.required'                 => 'رقم السند مطلوب.',
@@ -92,6 +103,8 @@ class ReceiptHeaderController extends Controller
 
                 // Create items
                 foreach ($request->items as $item) {
+                    $paymentStatus = $item['payment_status'] ?? 'unpaid';
+                    $amount = ($paymentStatus === 'paid') ? 0 : ($item['amount'] ?? 0);
                     $header->items()->create([
                         'number'         => $item['number'],
                         'sender_name'    => $item['sender_name'] ?? null,
@@ -99,6 +112,8 @@ class ReceiptHeaderController extends Controller
                         'receiver_phone' => $item['receiver_phone'],
                         'package_type'   => $item['package_type'],
                         'item_notes'     => $item['item_notes'] ?? null,
+                        'payment_status' => $paymentStatus,
+                        'amount'         => $amount,
                     ]);
                 }
             });
@@ -152,7 +167,10 @@ class ReceiptHeaderController extends Controller
     
     // إذا كنت تحتاج دقة 100% لاستبعاد الفواتير التي ليس بها عناصر أصلاً، يمكنك ترك الاستعلام القديم ولكن التحسين الرياضي أسرع بمراحل.
 
-    return view('pages.receipts.index', compact('receipts', 'totalReceipts', 'totalItems', 'fullyDelivered', 'hasPending'));
+    // 3. جلب قائمة الفروع للفلترة
+    $branches = Branch::all();
+
+    return view('pages.receipts.index', compact('receipts', 'totalReceipts', 'totalItems', 'fullyDelivered', 'hasPending', 'branches'));
 }
 
     /**
@@ -183,7 +201,9 @@ class ReceiptHeaderController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'number'             => ['required', 'string', 'max:255', 'unique:receipt_headers,number,' . $id],
+            'number'             => ['required', 'string', 'max:255', Rule::unique('receipt_headers')->ignore($id)->where(function ($query) use ($request) {
+                return $query->where('source_branch_code', $request->source_branch_code);
+            })],
             'source_branch_code' => ['required', 'exists:branches,code'],
             'driver_id'          => ['nullable', 'exists:drivers,id'],
             'driver_name'        => ['required', 'string', 'max:255'],
@@ -197,6 +217,8 @@ class ReceiptHeaderController extends Controller
             'items.*.receiver_phone' => ['required', 'string', 'max:20','min:10'],
             'items.*.package_type'   => ['required', 'string', 'max:255'],
             'items.*.item_notes'     => ['nullable', 'string', 'max:500'],
+            'items.*.payment_status' => ['required', 'in:paid,unpaid'],
+            'items.*.amount'         => ['nullable', 'numeric', 'min:0'],
         ], [
             'items.required'              => 'يجب إضافة طرد واحد على الأقل.',
             'items.min'                   => 'يجب إضافة طرد واحد على الأقل.',
@@ -205,6 +227,8 @@ class ReceiptHeaderController extends Controller
             'items.*.receiver_name.required'  => 'اسم المستلم مطلوب.',
             'items.*.receiver_phone.required' => 'رقم هاتف المستلم مطلوب.',
             'items.*.package_type.required'   => 'نوع الطرد مطلوب.',
+            'items.*.payment_status.required' => 'حالة الدفع مطلوبة لكل طرد.',
+            'items.*.amount.numeric'          => 'يجب أن يكون المبلغ رقماً صحيحاً.',
             'source_branch_code.required'     => 'الفرع المرسل مطلوب.',
             'driver_name.required'            => 'اسم السائق مطلوب.',
             'number.required'                 => 'رقم السند مطلوب.',
@@ -242,6 +266,8 @@ class ReceiptHeaderController extends Controller
                 $header->items()->forceDelete();
 
                 foreach ($request->items as $item) {
+                    $paymentStatus = $item['payment_status'] ?? 'unpaid';
+                    $amount = ($paymentStatus === 'paid') ? 0 : ($item['amount'] ?? 0);
                     $header->items()->create([
                         'number'         => $item['number'],
                         'sender_name'    => $item['sender_name'] ?? null,
@@ -249,6 +275,8 @@ class ReceiptHeaderController extends Controller
                         'receiver_phone' => $item['receiver_phone'],
                         'package_type'   => $item['package_type'],
                         'item_notes'     => $item['item_notes'] ?? null,
+                        'payment_status' => $paymentStatus,
+                        'amount'         => $amount,
                     ]);
                 }
             });
@@ -266,14 +294,81 @@ class ReceiptHeaderController extends Controller
     /**
      * تبديل حالة التسليم لطرد معين
      */
-    public function toggleDelivery($itemId)
+    public function toggleDelivery(Request $request, $itemId)
     {
         $item = ReceiptItem::findOrFail($itemId);
+
+        // If amount is provided, mark as paid and delivered
+        if ($request->has('received_amount')) {
+            $request->validate([
+                'received_amount' => 'required|numeric|min:0',
+            ]);
+
+            $amount = $request->received_amount;
+            
+            // 1. Update Receipt Item
+            $item->update([
+                'is_delivered' => true,
+                'payment_status' => 'paid',
+                'amount' => 0, // Clear the debt/due amount
+            ]);
+
+            // 2. Create Transaction (Income) for the current branch
+            // Assuming the current user belongs to a branch or we use destination branch
+            // Here we use the header's destination branch or fallback to user's branch
+            $branchCode = $item->header->destination_branch_code ?? auth()->user()->branch_code;
+            
+            Transaction::create([
+                'receipt_number' => Transaction::generateReceiptNumber('in'),
+                'branch_code' => $branchCode,
+                'transaction_category_id' => TransactionCategory::where('code', 'SHIPMENT_PAYMENT')->value('id'),
+                'amount' => $amount,
+                'description' => "تحصيل مبلغ طرد رقم {$item->number} - {$item->sender_name}",
+                'created_by' => auth()->id(),
+                'reference_number' => $item->number, // Link to item number
+            ]);
+
+            // 3. Update Branch Ledger (Debt between branches)
+            // Destination Branch (Collector) owes Source Branch (Sender)
+            $sourceBranch = $item->header->source_branch_code;
+            
+            if ($sourceBranch && $sourceBranch !== $branchCode) {
+                 // A. Debit Destination (Liability/Payable)
+                 \App\Models\BranchLedger::create([
+                    'branch_code' => $branchCode,
+                    'related_branch_code' => $sourceBranch,
+                    'type' => 'delivery_collection',
+                    'debit' => $amount,
+                    'credit' => 0,
+                    'description' => "تحصيل طرد رقم {$item->number} لصالح فرع {$sourceBranch}",
+                ]);
+
+                // B. Credit Source (Asset/Receivable)
+                \App\Models\BranchLedger::create([
+                    'branch_code' => $sourceBranch,
+                    'related_branch_code' => $branchCode, // Owed by this branch
+                    'type' => 'delivery_collection',
+                    'debit' => 0,
+                    'credit' => $amount,
+                    'description' => "مستحقات تحصيل طرد رقم {$item->number} من فرع {$branchCode}",
+                ]);
+            }
+
+            return WebResponseClass::sendResponse(
+                'تم التسليم والدفع!',
+                'تم إضافة المبلغ للصندوق وتحديث حالة الطرد.',
+                'حسناً',
+            );
+        }
+
+        // Standard toggle behavior
         $item->update(['is_delivered' => !$item->is_delivered]);
+
+        $message = $item->is_delivered ? 'تم وضع علامة "تم التسليم"' : 'تم وضع علامة "لم يسلم"';
 
         return WebResponseClass::sendResponse(
             'تم التحديث!',
-            'تم تحديث بيان الاستلام والطرود بنجاح.',
+            $message,
             'حسناً',
         );
     }
@@ -292,12 +387,20 @@ class ReceiptHeaderController extends Controller
             'receiver_phone' => ['required', 'string', 'max:20'],
             'package_type'   => ['required', 'string', 'max:255'],
             'item_notes'     => ['nullable', 'string', 'max:500'],
+            'payment_status' => ['required', 'in:paid,unpaid'],
+            'amount'         => ['nullable', 'numeric', 'min:0'],
         ], [
             'number.required'         => 'رقم السند مطلوب.',
             'receiver_name.required'  => 'اسم المستلم مطلوب.',
             'receiver_phone.required' => 'رقم هاتف المستلم مطلوب.',
             'package_type.required'   => 'نوع الطرد مطلوب.',
+            'payment_status.required' => 'حالة الدفع مطلوبة.',
+            'amount.numeric'          => 'يجب أن يكون المبلغ رقماً.',
         ]);
+
+        if ($validated['payment_status'] === 'paid') {
+            $validated['amount'] = 0;
+        }
 
         try {
             $receipt->items()->create($validated);
@@ -326,12 +429,20 @@ class ReceiptHeaderController extends Controller
             'receiver_phone' => ['required', 'string', 'max:20'],
             'package_type'   => ['required', 'string', 'max:255'],
             'item_notes'     => ['nullable', 'string', 'max:500'],
+            'payment_status' => ['required', 'in:paid,unpaid'],
+            'amount'         => ['nullable', 'numeric', 'min:0'],
         ], [
             'number.required'         => 'رقم السند مطلوب.',
             'receiver_name.required'  => 'اسم المستلم مطلوب.',
             'receiver_phone.required' => 'رقم هاتف المستلم مطلوب.',
             'package_type.required'   => 'نوع الطرد مطلوب.',
+            'payment_status.required' => 'حالة الدفع مطلوبة.',
+            'amount.numeric'          => 'يجب أن يكون المبلغ رقماً.',
         ]);
+
+        if ($validated['payment_status'] === 'paid') {
+            $validated['amount'] = 0;
+        }
 
         try {
             $item->update($validated);

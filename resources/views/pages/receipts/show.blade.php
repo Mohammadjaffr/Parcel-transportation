@@ -16,9 +16,9 @@
 @endsection
 
 @section('content')
-    <div class="space-y-6 font-outfit" dir="rtl"
-        x-data="{ filter: 'all', showAddItemModal: false, showEditItemModal: false, editingItem: null, showDeleteModal: false, deleteUrl: '' }"
+    <div class="space-y-6 font-outfit" dir="rtl" x-data="receiptShowData()"
         @open-add-item-modal.window="showAddItemModal = true">
+
         {{-- =================== Statistics Cards =================== --}}
         <div class="flex gap-6">
             {{-- بيانات الشحنة --}}
@@ -131,8 +131,9 @@
                             <th class="px-6 py-4 text-right">رقم السند</th>
                             <th class="px-6 py-4 text-right">المرسل</th>
                             <th class="px-6 py-4 text-right">المستلم</th>
-                            <th class="px-6 py-4 text-right">رقم الهاتف</th>
                             <th class="px-6 py-4 text-center">نوع الطرد</th>
+                            <th class="px-6 py-4 text-center">حالة الدفع</th>
+                            <th class="px-6 py-4 text-center">المبلغ</th>
                             <th class="px-6 py-4 text-right">ملاحظات</th>
                             <th class="px-6 py-4 text-center">حالة التسليم</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
@@ -160,14 +161,12 @@
 
                                 {{-- المستلم --}}
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm font-bold text-gray-900 dark:text-white">{{ $item->receiver_name }}</span>
-                                </td>
-
-                                {{-- رقم الهاتف --}}
-                                <td class="px-6 py-4">
-                                    <x-phone-number :value="$item->receiver_phone ?? '—'"
-                                        class="text-sm text-gray-500 dark:text-gray-400" />
+                                    <div class="flex flex-col">
+                                        <span
+                                            class="text-sm font-bold text-gray-900 dark:text-white">{{ $item->receiver_name }}</span>
+                                        <x-phone-number :value="$item->receiver_phone ?? '—'"
+                                            class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 dir-ltr text-right" />
+                                    </div>
                                 </td>
 
                                 {{-- نوع الطرد --}}
@@ -175,6 +174,34 @@
                                     <span
                                         class="inline-flex px-3 py-1 text-xs font-bold rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
                                         {{ $item->package_type }}
+                                    </span>
+                                </td>
+
+                                {{-- حالة الدفع --}}
+                                <td class="px-6 py-4 text-center">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-full {{ $item->payment_status === 'paid' ? 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400' : 'bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400' }}">
+                                        @if ($item->payment_status === 'paid')
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            مدفوع
+                                        @else
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            عند الاستلام
+                                        @endif
+                                    </span>
+                                </td>
+
+                                {{-- المبلغ --}}
+                                <td class="px-6 py-4 text-center">
+                                    <span
+                                        class="text-sm font-bold {{ $item->amount > 0 ? 'text-gray-900 dark:text-white' : 'text-gray-400' }}">
+                                        {{ $item->amount > 0 ? number_format($item->amount) : '—' }}
                                     </span>
                                 </td>
 
@@ -186,27 +213,36 @@
                                 {{-- حالة التسليم --}}
                                 <td class="px-6 py-4 text-center">
                                     <form method="POST" action="{{ route('receipt-items.toggle-delivery', $item->id) }}"
-                                        class="inline-block" x-data="{ loading: false }" @submit="loading = true">
+                                        class="inline-block" @if ($item->payment_status === 'unpaid' && !$item->is_delivered)
+                                        @submit.prevent="openDeliveryModal({{ $item }}, $el)" @else @submit="loading = true"
+                                        x-data="{ loading: false }" @endif>
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit" :disabled="loading"
-                                            class="inline-flex gap-2 items-center px-4 py-2 text-xs font-bold rounded-full border-2 transition-all duration-200"
-                                            :class="loading ? 'opacity-70 cursor-not-allowed bg-gray-100 text-gray-400' : '{{ $item->is_delivered ? 'bg-success-50 text-success-600 border-success-200 hover:bg-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/30 dark:hover:bg-success-500/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700' }}'">
+                                        <button type="submit" @if (!($item->payment_status === 'unpaid' && !$item->is_delivered))
+                                        :disabled="loading" @endif
+                                            class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold rounded-full border-2 transition-all duration-200 min-w-[110px]"
+                                            :class="
+                                                        @if (!($item->payment_status === 'unpaid' && !$item->is_delivered)) loading ? 'opacity-70 cursor-not-allowed bg-gray-100 text-gray-400' : @endif
+                                                        '{{ $item->is_delivered ? 'bg-success-50 text-success-600 border-success-200 hover:bg-success-100 dark:bg-success-500/10 dark:text-success-400 dark:border-success-500/30 dark:hover:bg-success-500/20' : 'bg-gray-100 text-gray-500 border-gray-200 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:bg-gray-700' }}'
+                                                    ">
 
-                                            <svg x-show="loading" class="w-3 h-3 animate-spin"
-                                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                    stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                </path>
-                                            </svg>
+                                            @if (!($item->payment_status === 'unpaid' && !$item->is_delivered))
+                                                <svg x-show="loading" class="w-3 h-3 animate-spin"
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                                        stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor"
+                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                    </path>
+                                                </svg>
+                                            @endif
 
-                                            <span x-show="!loading"
+                                            <span @if (!($item->payment_status === 'unpaid' && !$item->is_delivered))
+                                            x-show="!loading" @endif
                                                 class="w-2 h-2 rounded-full {{ $item->is_delivered ? 'bg-success-500' : 'bg-gray-400' }}"></span>
 
                                             <span
-                                                x-text="loading ? 'جاري التحويل...' : '{{ $item->is_delivered ? 'تم التسليم' : 'لم يسلم' }}'"></span>
+                                                x-text="@if (!($item->payment_status === 'unpaid' && !$item->is_delivered)) loading ? 'جاري التحويل...' : @endif '{{ $item->is_delivered ? 'تم التسليم' : 'لم يسلم' }}'"></span>
                                         </button>
                                     </form>
                                 </td>
@@ -235,7 +271,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-16 text-center">
+                                <td colspan="9" class="py-16 text-center">
                                     <div class="flex flex-col items-center gap-2 text-gray-400">
                                         <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -259,6 +295,9 @@
 
         {{-- Modal: تأكيد الحذف --}}
         @include('components.modals.confirm-delete')
+
+        {{-- Modal: تأكيد الاستلام والدفع --}}
+        @include('pages.receipts.modals.delivery-confirmation')
     </div>
 
     @if (session('success'))
@@ -277,4 +316,36 @@
             });
         </script>
     @endif
+
+    <script>
+        function receiptShowData() {
+            return {
+                filter: 'all',
+                editingItem: null,
+                showEditItemModal: false,
+                deleteUrl: '',
+                showDeleteModal: false,
+                showAddItemModal: false,
+
+                // Delivery Modal State
+                deliveryModal: {
+                    open: false,
+                    itemId: null,
+                    amount: 0
+                },
+
+                openDeliveryModal(item, formElement) {
+                    this.deliveryModal.itemId = item.id;
+                    this.deliveryModal.amount = item.amount || 0; // Default to item amount
+                    this.deliveryModal.open = true;
+                },
+
+                closeDeliveryModal() {
+                    this.deliveryModal.open = false;
+                    this.deliveryModal.itemId = null;
+                    this.deliveryModal.amount = 0;
+                }
+            }
+        }
+    </script>
 @endsection

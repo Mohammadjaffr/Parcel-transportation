@@ -82,9 +82,12 @@
                                                 'receiver_phone' => $item->receiver_phone,
                                                 'package_type' => $item->package_type,
                                                 'item_notes' => $item->item_notes ?? '',
+                                                'payment_status' => $item->payment_status ?? 'unpaid',
+                                                'amount' => $item->amount ?? 0,
+                                                'prevAmount' => $item->amount ?? 0,
                                             ])),
                                             addItem() {
-                                                this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: '', item_notes: '' });
+                                                this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: '', item_notes: '', payment_status: 'unpaid', amount: '', prevAmount: 0 });
                                             },
                                             removeItem(index) {
                                                 if (this.items.length > 1) this.items.splice(index, 1);
@@ -397,7 +400,7 @@
                                 </div>
 
                                 {{-- نوع الطرد + ملاحظات --}}
-                                <div style="display: flex; gap: 12px;">
+                                <div style="display: flex; gap: 12px; margin-bottom: 12px;">
                                     <div style="flex: 1;">
                                         <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
                                             نوع الطرد <span class="text-error-500">*</span>
@@ -413,6 +416,56 @@
                                         <input type="text" :name="`items[${index}][item_notes]`" x-model="item.item_notes"
                                             placeholder="ملاحظات إضافية"
                                             class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
+                                    </div>
+                                </div>
+
+                                {{-- Payment Status + Amount --}}
+                                <div style="display: flex; gap: 12px; margin-top: 12px; align-items: flex-start;">
+                                    {{-- Payment Status --}}
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            حالة الدفع <span class="text-error-500">*</span>
+                                        </label>
+                                        <div class="flex gap-2">
+                                            {{-- Unpaid Option --}}
+                                            <div class="relative w-full">
+                                                <label class="cursor-pointer w-full group">
+                                                    <input type="radio" :name="`items[${index}][payment_status]`" value="unpaid" x-model="item.payment_status" @change="item.amount = item.prevAmount || 0" class="peer sr-only">
+                                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                                        :class="item.payment_status === 'unpaid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                                        <span class="flex items-center gap-2">
+                                                            عند الاستلام
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            {{-- Paid Option --}}
+                                            <div class="relative w-full">
+                                                <label class="cursor-pointer w-full group">
+                                                    <input type="radio" :name="`items[${index}][payment_status]`" value="paid" x-model="item.payment_status" 
+                                                        @change="item.prevAmount = (item.amount > 0 ? item.amount : (item.prevAmount || 0)); item.amount = 0" 
+                                                        class="peer sr-only">
+                                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                                        :class="item.payment_status === 'paid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                                        <span class="flex items-center gap-2">
+                                                            مدفوع
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Amount --}}
+                                    <div style="flex: 1;">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            المبلغ <span class="text-error-500">*</span>
+                                        </label>
+                                        <input type="number" :name="`items[${index}][amount]`" x-model="item.amount" :readonly="item.payment_status === 'paid'"
+                                            @input="if(item.payment_status === 'unpaid') item.prevAmount = item.amount"
+                                            :class="item.payment_status === 'paid' ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-70 text-gray-500' : 'bg-transparent dark:text-white'"
+                                            placeholder="0"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                     </div>
                                 </div>
                             </div>

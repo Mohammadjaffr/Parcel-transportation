@@ -19,6 +19,8 @@ class ReceiptItem extends Model
         'package_type',
         'item_notes',
         'is_delivered',
+        'payment_status',
+        'amount',
     ];
 
     protected $casts = [

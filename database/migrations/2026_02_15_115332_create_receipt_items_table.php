@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('receiver_name');
             $table->string('receiver_phone');
             $table->string('package_type')->default('carton')->comment('نوع الطرد: كرتون، كيس، ظرف');
+            $table->decimal('amount', 10, 2)->default(0);
+            $table->enum('payment_status', ['unpaid', 'paid'])->default('unpaid');
             $table->text('item_notes')->nullable()->comment('ملاحظات خاصة بالطرد');
             $table->boolean('is_delivered')->default(false)->comment('هل تم تسليم الطرد؟');
             $table->timestamps();

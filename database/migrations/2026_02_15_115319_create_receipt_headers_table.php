@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('receipt_headers', function (Blueprint $table) {
             $table->id();
-            $table->string('number')->unique()->comment('رقم بيان الاستلام');
+            $table->string('number')->comment('رقم بيان الاستلام');
             $table->string('source_branch_code', 10)->comment('الفرع المرسل');
             $table->foreignId('driver_id')->constrained('drivers')->cascadeOnDelete()->onUpdate('cascade')->comment('السائق');
             $table->string('destination_branch_code', 10)->comment('الفرع المستلم');
@@ -24,6 +24,9 @@ return new class extends Migration
             // Foreign keys for branch codes (string type)
             $table->foreign('source_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
             $table->foreign('destination_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
+            
+            // Unique constraint: Receipt number must be unique per source branch
+            $table->unique(['number', 'source_branch_code']);
         });
     }
 

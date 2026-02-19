@@ -6,67 +6,67 @@
     <x-modals.error-modal />
 
     <form action="{{ route('receipts.store') }}" method="POST" x-data="{
-                                                                                        isSubmitting: false,
+                                                                                                            isSubmitting: false,
 
-                                                                                        {{-- ========== Driver Combobox (Select or Auto-Create) ========== --}}
-                                                                                        driver_id: '{{ old('driver_id', '') }}',
-                                                                                        driver_name: '{{ old('driver_name', '') }}',
-                                                                                        localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : '' }}',
-                                                                                        selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                                        countryOpen: false,
-                                                                                        countrySearch: '',
-                                                                                        countries: [
-                                                                                            { name: 'Yemen', code: 'YE', dial_code: '+967' },
-                                                                                            { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
-                                                                                        ],
-                                                                                        get filteredCountries() {
-                                                                                            if (this.countrySearch === '') return this.countries;
-                                                                                            return this.countries.filter(c => c.name.toLowerCase().includes(this.countrySearch.toLowerCase()) || c.dial_code.includes(this.countrySearch));
-                                                                                        },
-                                                                                        get fullPhone() {
-                                                                                            return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
-                                                                                        },
-                                                                                        driverOpen: false,
-                                                                                        drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
-                                                                                        get filteredDrivers() {
-                                                                                            if (this.localPhoneNumber.trim() === '') return this.drivers;
-                                                                                            const s = this.localPhoneNumber.trim();
-                                                                                            return this.drivers.filter(d => d.phone && d.phone.includes(s));
-                                                                                        },
-                                                                                        selectDriver(driver) {
-                                                                                            this.driver_id = driver.id;
-                                                                                            this.driver_name = driver.name;
-                                                                                            // Parse phone: strip known dial codes to fill localPhoneNumber
-                                                                                            let p = driver.phone || '';
-                                                                                            const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
-                                                                                            for (const code of codes) {
-                                                                                                if (p.startsWith(code)) {
-                                                                                                    this.selectedCountry = this.countries.find(c => c.dial_code === '+' + code);
-                                                                                                    p = p.substring(code.length);
-                                                                                                    break;
-                                                                                                }
-                                                                                            }
-                                                                                            this.localPhoneNumber = p;
-                                                                                            this.driverOpen = false;
-                                                                                        },
-                                                                                        onPhoneInput() {
-                                                                                            this.driver_id = null;
-                                                                                            this.driver_name = '';
-                                                                                            this.driverOpen = true;
-                                                                                        },
+                                                                                                            {{-- ========== Driver Combobox (Select or Auto-Create) ========== --}}
+                                                                                                            driver_id: '{{ old('driver_id', '') }}',
+                                                                                                            driver_name: '{{ old('driver_name', '') }}',
+                                                                                                            localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : '' }}',
+                                                                                                            selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                                                                            countryOpen: false,
+                                                                                                            countrySearch: '',
+                                                                                                            countries: [
+                                                                                                                { name: 'Yemen', code: 'YE', dial_code: '+967' },
+                                                                                                                { name: 'Saudi Arabia', code: 'SA', dial_code: '+966' },
+                                                                                                            ],
+                                                                                                            get filteredCountries() {
+                                                                                                                if (this.countrySearch === '') return this.countries;
+                                                                                                                return this.countries.filter(c => c.name.toLowerCase().includes(this.countrySearch.toLowerCase()) || c.dial_code.includes(this.countrySearch));
+                                                                                                            },
+                                                                                                            get fullPhone() {
+                                                                                                                return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
+                                                                                                            },
+                                                                                                            driverOpen: false,
+                                                                                                            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
+                                                                                                            get filteredDrivers() {
+                                                                                                                if (this.localPhoneNumber.trim() === '') return this.drivers;
+                                                                                                                const s = this.localPhoneNumber.trim();
+                                                                                                                return this.drivers.filter(d => d.phone && d.phone.includes(s));
+                                                                                                            },
+                                                                                                            selectDriver(driver) {
+                                                                                                                this.driver_id = driver.id;
+                                                                                                                this.driver_name = driver.name;
+                                                                                                                // Parse phone: strip known dial codes to fill localPhoneNumber
+                                                                                                                let p = driver.phone || '';
+                                                                                                                const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
+                                                                                                                for (const code of codes) {
+                                                                                                                    if (p.startsWith(code)) {
+                                                                                                                        this.selectedCountry = this.countries.find(c => c.dial_code === '+' + code);
+                                                                                                                        p = p.substring(code.length);
+                                                                                                                        break;
+                                                                                                                    }
+                                                                                                                }
+                                                                                                                this.localPhoneNumber = p;
+                                                                                                                this.driverOpen = false;
+                                                                                                            },
+                                                                                                            onPhoneInput() {
+                                                                                                                this.driver_id = null;
+                                                                                                                this.driver_name = '';
+                                                                                                                this.driverOpen = true;
+                                                                                                            },
 
-                                                                                        {{-- ========== Dynamic Items ========== --}}
-                                                                                        items: @js(old('items', [['number' => '', 'sender_name' => '', 'receiver_name' => '', 'receiver_phone' => '', 'package_type' => '', 'item_notes' => '']])),
-                                                                                errorIndices: @js(collect($errors->keys())->map(function ($key) {
-                                                                                    return preg_match('/^items\.(\d+)/', $key, $m) ? (int) $m[1] : null;
-                                                                                })->filter(fn($v) => !is_null($v))->unique()->values()),
-                                                                                        addItem() {
-                                                                                            this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: 'carton', item_notes: '' });
-                                                                                        },
-                                                                                        removeItem(index) {
-                                                                                            if (this.items.length > 1) this.items.splice(index, 1);
-                                                                                        }
-                                                                                    }" @submit="isSubmitting = true">
+                                                                                                            {{-- ========== Dynamic Items ========== --}}
+                                                                                                            items: @js(old('items', [['number' => '', 'sender_name' => '', 'receiver_name' => '', 'receiver_phone' => '', 'package_type' => '', 'item_notes' => '', 'payment_status' => 'unpaid', 'amount' => '']])),
+                                                                                                    errorIndices: @js(collect($errors->keys())->map(function ($key) {
+                                                                                                        return preg_match('/^items\.(\d+)/', $key, $m) ? (int) $m[1] : null;
+                                                                                                    })->filter(fn($v) => !is_null($v))->unique()->values()),
+                                                                                                            addItem() {
+                                                                                                                this.items.push({ number: '', sender_name: '', receiver_name: '', receiver_phone: '', package_type: 'carton', item_notes: '', payment_status: 'unpaid', amount: '' });
+                                                                                                            },
+                                                                                                            removeItem(index) {
+                                                                                                                if (this.items.length > 1) this.items.splice(index, 1);                                                                                      }
+                                                                                                        }"
+        @submit="isSubmitting = true">
         @csrf
 
         <div class="space-y-6">
@@ -367,36 +367,36 @@
                                             class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                     </div>
                                     <div style="flex: 1;" x-data="{
-                                                rcOpen: false,
-                                                rcSearch: '',
-                                                rcCountries: @js(array_values(config('countries'))),
-                                                rcSelected: null,
-                                                rcLocal: '',
-                                                get rcFiltered() {
-                                                    if (this.rcSearch === '') return this.rcCountries;
-                                                    return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
-                                                }
-                                            }" x-init="
-                                                // Initialize selected country (default Yemen)
-                                                rcSelected = rcCountries.find(c => c.code === 'YE') || rcCountries[0];
+                                                                    rcOpen: false,
+                                                                    rcSearch: '',
+                                                                    rcCountries: @js(array_values(config('countries'))),
+                                                                    rcSelected: null,
+                                                                    rcLocal: '',
+                                                                    get rcFiltered() {
+                                                                        if (this.rcSearch === '') return this.rcCountries;
+                                                                        return this.rcCountries.filter(c => c.name.toLowerCase().includes(this.rcSearch.toLowerCase()) || c.dial_code.includes(this.rcSearch));
+                                                                    }
+                                                                }" x-init="
+                                                                    // Initialize selected country (default Yemen)
+                                                                    rcSelected = rcCountries.find(c => c.code === 'YE') || rcCountries[0];
 
-                                                if (item.receiver_phone) {
-                                                    let p = item.receiver_phone;
-                                                    // Sort codes by length desc to match longest prefix first
-                                                    const codes = rcCountries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
-                                                    for (const code of codes) {
-                                                        // Check matches with or without + or 00
-                                                        let regex = new RegExp('^(\\+|00)?' + code);
-                                                        if (regex.test(p)) {
-                                                            rcSelected = rcCountries.find(c => c.dial_code.replace('+', '') === code);
-                                                            rcLocal = p.replace(regex, '');
-                                                            break;
-                                                        }
-                                                    }
-                                                    // If no match found, keep p as local and default country
-                                                    if (!rcLocal && p) rcLocal = p; 
-                                                }
-                                            "
+                                                                    if (item.receiver_phone) {
+                                                                        let p = item.receiver_phone;
+                                                                        // Sort codes by length desc to match longest prefix first
+                                                                        const codes = rcCountries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
+                                                                        for (const code of codes) {
+                                                                            // Check matches with or without + or 00
+                                                                            let regex = new RegExp('^(\\+|00)?' + code);
+                                                                            if (regex.test(p)) {
+                                                                                rcSelected = rcCountries.find(c => c.dial_code.replace('+', '') === code);
+                                                                                rcLocal = p.replace(regex, '');
+                                                                                break;
+                                                                            }
+                                                                        }
+                                                                        // If no match found, keep p as local and default country
+                                                                        if (!rcLocal && p) rcLocal = p; 
+                                                                    }
+                                                                "
                                         x-effect="item.receiver_phone = (rcSelected?.dial_code.replace('+', '') || '') + rcLocal"
                                         class="relative">
                                         <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
@@ -418,7 +418,7 @@
                                                         xmlns="http://www.w3.org/2000/svg" x-html="rcSelected.svg"></svg>
                                                 </template>
 
-                                                
+
                                             </button>
 
                                             {{-- Phone number input --}}
@@ -450,6 +450,54 @@
                                                 </template>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {{-- حالة الدفع + المبلغ --}}
+                                <div class="flex gap-3 mb-3">
+                                    <div class="flex-1">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            حالة الدفع <span class="text-error-500">*</span>
+                                        </label>
+                                        <div class="flex gap-2">
+                                            {{-- Unpaid Option --}}
+                                            <div class="relative w-full">
+                                                <label class="cursor-pointer w-full group">
+                                                    <input type="radio" :name="`items[${index}][payment_status]`"
+                                                        value="unpaid" x-model="item.payment_status" class="peer sr-only">
+                                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                                        :class="item.payment_status === 'unpaid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                                        <span class="flex items-center gap-2">
+                                                            عند الاستلام
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                            {{-- Paid Option --}}
+                                            <div class="relative w-full">
+                                                <label class="cursor-pointer w-full group">
+                                                    <input type="radio" :name="`items[${index}][payment_status]`"
+                                                        value="paid" x-model="item.payment_status" @change="item.amount = 0"
+                                                        class="peer sr-only">
+                                                    <div class="w-full h-11 flex items-center justify-center px-4 rounded-xl border transition-all duration-200 ease-in-out"
+                                                        :class="item.payment_status === 'paid' ? 'border-brand-500 bg-brand-50 text-brand-600 font-bold ring-1 ring-brand-500 shadow-sm dark:bg-brand-500/15 dark:text-brand-400 dark:border-brand-500 dark:ring-brand-500' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 group-hover:border-brand-300 group-hover:bg-brand-50/50 dark:group-hover:border-brand-500/30 dark:group-hover:bg-brand-500/10'">
+                                                        <span class="flex items-center gap-2">
+                                                            مدفوع
+                                                        </span>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                            المبلغ <span class="text-error-500">*</span>
+                                        </label>
+                                        <input type="number" :name="`items[${index}][amount]`" x-model="item.amount"
+                                            :readonly="item.payment_status === 'paid'"
+                                            :class="item.payment_status === 'paid' ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-70 text-gray-500' : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white'"
+                                            placeholder="0"
+                                            class="px-4 py-2.5 w-full h-11 text-sm rounded-lg border border-gray-200 dark:border-gray-600 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all">
                                     </div>
                                 </div>
 

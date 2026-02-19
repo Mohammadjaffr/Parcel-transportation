@@ -57,25 +57,27 @@
 @section('content')
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                                            search: '',
-                                            searchType: 'all',
-                                            filterStatus: 'all',
-                                            showRow(number, driver, branch, itemNumbers, deliveryStatus) {
-                                                if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
-                                                const s = this.search.toLowerCase();
-                                                if (!s) return true;
-                                                if (this.searchType === 'receipt') {
-                                                    return number.toLowerCase().includes(s);
-                                                } else if (this.searchType === 'item') {
-                                                    return itemNumbers.toLowerCase().includes(s);
-                                                } else {
-                                                    return number.toLowerCase().includes(s) ||
-                                                        driver.toLowerCase().includes(s) ||
-                                                        branch.toLowerCase().includes(s) ||
-                                                        itemNumbers.toLowerCase().includes(s);
-                                                }
-                                            }
-                                        }">
+                                                    search: '',
+                                                    searchType: 'all',
+                                                    filterStatus: 'all',
+                                                    filterBranch: 'all',
+                                                    showRow(number, driver, branch, itemNumbers, deliveryStatus, branchCode) {
+                                                        if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
+                                                        if (this.filterBranch !== 'all' && branchCode != this.filterBranch) return false;
+                                                        const s = this.search.toLowerCase();
+                                                        if (!s) return true;
+                                                        if (this.searchType === 'receipt') {
+                                                            return number.toLowerCase().includes(s);
+                                                        } else if (this.searchType === 'item') {
+                                                            return itemNumbers.toLowerCase().includes(s);
+                                                        } else {
+                                                            return number.toLowerCase().includes(s) ||
+                                                                driver.toLowerCase().includes(s) ||
+                                                                branch.toLowerCase().includes(s) ||
+                                                                itemNumbers.toLowerCase().includes(s);
+                                                        }
+                                                    }
+                                                }">
 
         {{-- بطاقات إحصائية --}}
         <div class="flex gap-6 mb-6">
@@ -156,6 +158,15 @@
             class="overflow-hidden bg-white rounded-2xl border border-gray-100 dark:bg-gray-800 dark:border-gray-800 shadow-theme-sm">
             <div class="w-full bg-white dark:bg-white/[0.03] p-6 rounded-2xl">
                 <div style="display: flex; gap: 10px;">
+                    <select x-model="filterBranch"
+                        class="h-12 px-4 text-sm font-bold text-gray-700 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                        style="flex: 0 0 auto; min-width: 160px;">
+                        <option value="all">كل المكاتب</option>
+                        @foreach($branches as $branch)
+                            <option value="{{ $branch->code }}">{{ $branch->name }}</option>
+                        @endforeach
+                    </select>
+
                     <select x-model="searchType"
                         class="h-12 px-4 text-sm font-bold text-gray-700 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                         style="flex: 0 0 auto; min-width: 160px;">
@@ -192,7 +203,7 @@
                     </thead>
                     <tbody class="divide-y-0">
                         @forelse($receipts as $receipt)
-                            <tr x-show="showRow('{{ $receipt->number }}', '{{ $receipt->driver->name ?? '' }}', '{{ $receipt->sourceBranch->name ?? '' }}', '{{ $receipt->items->pluck('number')->implode(',') }}', '{{ $receipt->items->count() > 0 && $receipt->items->every(fn($i) => $i->is_delivered) ? 'all_delivered' : 'has_pending' }}')"
+                            <tr x-show="showRow('{{ $receipt->number }}', '{{ $receipt->driver->name ?? '' }}', '{{ $receipt->sourceBranch->name ?? '' }}', '{{ $receipt->items->pluck('number')->implode(',') }}', '{{ $receipt->items->count() > 0 && $receipt->items->every(fn($i) => $i->is_delivered) ? 'all_delivered' : 'has_pending' }}', '{{ $receipt->source_branch_code }}')"
                                 x-transition
                                 class="bg-white rounded-2xl border border-transparent shadow-sm transition-all dark:bg-gray-900 hover:shadow-md hover:border-gray-100 dark:hover:border-gray-800">
 

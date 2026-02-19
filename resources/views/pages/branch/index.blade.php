@@ -156,8 +156,8 @@
                             <th class="px-6 py-4 text-green-600">له (دائن)</th>
                             <th class="px-6 py-4 text-red-500">عليه (مدين)</th>
                             {{-- <th class="px-6 py-4">الصافي</th> --}}
-
-                            <th class="px-6 py-4">رقم الهاتف</th>
+                            
+                            {{-- <th class="px-6 py-4">رقم الهاتف</th> --}}
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -188,7 +188,10 @@
                                 </td>
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
+                                        <x-phone-number :value="$branch->phone" class="mt-0.5 text-xs text-gray-500 font-medium" />
+                                    </div>
                                 </td>
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
@@ -217,9 +220,9 @@
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
+                                {{-- <td class="px-6 py-5 border-y dark:border-gray-800/50">
                                     <x-phone-number :value="$branch->phone" />
-                                </td>
+                                </td> --}}
 
                                 <td class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
