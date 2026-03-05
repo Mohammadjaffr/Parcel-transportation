@@ -1,10 +1,10 @@
 <div x-data="{ isSuccessModalOpen: @if(session('success')) true @else false @endif }">
-    <div x-show="isSuccessModalOpen" class="fixed inset-0 flex items-center justify-center p-5 z-99999">
+    <div x-show="isSuccessModalOpen" class="flex fixed inset-0 justify-center items-center p-5 z-99999">
         <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"></div>
 
-        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900 shadow-xl">
-            <div class="text-center py-4">
-                <div class="relative flex items-center justify-center z-1 mb-7">
+        <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl dark:bg-gray-900">
+            <div class="py-4 text-center">
+                <div class="flex relative justify-center items-center mb-7 z-1">
                     <svg style="color:#d1fae5" width="90" height="90" viewBox="0 0 90 90" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -12,7 +12,7 @@
                             fill="currentColor" />
                     </svg>
 
-                    <span class="absolute -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+                    <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                         <svg class="text-success-600" width="38" height="38" viewBox="0 0 38 38" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd"

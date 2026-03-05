@@ -150,7 +150,7 @@
                 :class="filterStatus === 'returned' ? 'border-gray-500 ring-2 ring-gray-500/20' : 'border-gray-100'"
                 class="flex-1 relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-500/10 text-gray-500">
+                    class="flex justify-center items-center w-10 h-10 text-gray-500 bg-gray-50 rounded-xl dark:bg-gray-500/10">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
@@ -169,7 +169,7 @@
             class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] py-4 px-6 rounded-2xl ">
 
-                <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                <div class="relative w-full rounded-2xl border ring-2 group border-brand-500 ring-brand-500/20">
                     <input type="text" x-model="search" placeholder="ابحث برقم السند، المرسل أو المستلم..."
                         class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                     <div
