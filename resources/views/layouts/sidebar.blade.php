@@ -253,13 +253,13 @@
                             </ul>
                         </div>
                     </li>
-                    @if (Auth::user()->type != 'user')
-                        <li>
-                            <a href="{{ route('transactions.index') }}"
+                    {{-- @if (Auth::user()->type != 'user') --}}
+                        {{-- <li> --}}
+                            {{-- <a href="{{ route('transactions.index') }}"
                                 class="menu-item group {{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
                                 {{-- أيقونة تدل على النقدية --}}
-                                <svg class="{{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                {{-- <svg class="{{ request()->routeIs('transactions.*') && !request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                                     width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 7.5a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" />
@@ -272,57 +272,57 @@
 
                                 <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                     الصندوق المالي
-                                </span>
-                            </a>
-                        </li>
-                    @endif
-                    @if (Auth::user()->type != 'user')
-                        <li>
-                            <a href="{{ route('transaction-categories.index') }}"
+                                </span> --}}
+                            {{-- </a>  --}}
+                        {{-- </li> --}}
+                    {{-- @endif --}}
+                    {{-- @if (Auth::user()->type != 'user') --}}
+                        {{-- <li> --}}
+                            {{-- <a href="{{ route('transaction-categories.index') }}"
                                 class="menu-item group {{ request()->routeIs('transaction-categories.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
                                 {{-- أيقونة الإعدادات --}}
-                                <svg class="{{ request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                {{-- <svg class="{{ request()->routeIs('transaction-categories.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                                     width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd"
                                         d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 00-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 00-2.282.819l-.922 1.597a1.875 1.875 0 00.432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 000 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 00-.432 2.385l.922 1.597a1.875 1.875 0 002.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 002.28-.819l.923-1.597a1.875 1.875 0 00-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 000-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 00-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 00-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 00-1.85-1.567h-1.843zM12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z"
                                         clip-rule="evenodd" />
-                                </svg>
+                                </svg> --}}
 
-                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
+                                {{-- <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                     إعدادات الفئات
                                 </span>
-                            </a>
-                        </li>
-                    @endif
+                            </a> --}} 
+                        {{-- </li> --}}
+                    {{-- @endif --}}
 
-                    @if (Auth::user()->type != 'user')
+                    {{-- @if (Auth::user()->type != 'user') --}}
                         {{-- رابط الإقفال اليومي --}}
-                        <li>
-                            <a href="{{ route('closings.index') }}"
+                        {{-- <li> --}}
+                            {{-- <a href="{{ route('closings.index') }}"
                                 class="menu-item group {{ request()->routeIs('closings.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
 
                                 {{-- Icon --}}
-                                <svg class="{{ request()->routeIs('closings.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
+                                {{-- <svg class="{{ request()->routeIs('closings.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                                     width="24" height="24" viewBox="0 0 24 24" fill="currentColor"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd"
                                         d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z"
-                                        clip-rule="evenodd" />
-                                    <path fill-rule="evenodd"
+                                        clip-rule="evenodd" /> --}}
+                                    {{-- <path fill-rule="evenodd"
                                         d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zM6 12a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V12zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 15a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V15zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 18a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V18zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75z"
                                         clip-rule="evenodd" />
-                                </svg>
+                                </svg> --}}
 
-                                <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
-                                    سجل الإقفال اليومي
-                                </span>
-                            </a>
-                        </li>
-                    @endif
+                                {{-- <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''"> --}}
+                                    {{-- سجل الإقفال اليومي
+                                </span> --}}
+                            {{-- </a>  --}}
+                        {{-- </li> --}}
+                    {{-- @endif --}}
 
-                    <li>
+                    {{-- <li>
                         <button @click="window.dispatchEvent(new CustomEvent('open-transaction-modal'))"
                             class="w-full text-right menu-item group menu-item-inactive">
                             <svg class="menu-item-icon-inactive group-hover:menu-item-icon-active" width="24"
@@ -333,10 +333,10 @@
                             </svg>
                             <span class="menu-item-text">إضافة سندات</span>
                         </button>
-                    </li>
-                    @if (Auth::user()->type != 'user')
-                        <li>
-                            <button @click="window.dispatchEvent(new CustomEvent('open-closing-modal'))"
+                    </li> --}}
+                    {{-- @if (Auth::user()->type != 'user') --}}
+                        {{-- <li> --}}
+                            {{-- <button @click="window.dispatchEvent(new CustomEvent('open-closing-modal'))"
                                 class="w-full text-right menu-item group menu-item-inactive">
                                 <svg class="menu-item-icon-inactive group-hover:menu-item-icon-active" width="24"
                                     height="24" viewBox="0 0 24 24" fill="currentColor">
@@ -345,9 +345,9 @@
                                         clip-rule="evenodd" />
                                 </svg>
                                 <span class="menu-item-text">إضافة إقفال</span>
-                            </button>
-                        </li>
-                    @endif
+                            </button> --}}
+                        {{-- </li> --}}
+                    {{-- @endif --}}
                     <!-- Menu Item Forms -->
 
 
