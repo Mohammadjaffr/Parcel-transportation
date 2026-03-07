@@ -60,17 +60,17 @@
 @section('content')
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                                search: '',
-                                openModal: false,
-                                selectedCount: 0,
-                                selectedBranch: '',
-                                showRow(tracking, driver) {
-                                    return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
-                                        driver.toLowerCase().includes(this.search.toLowerCase());
-                                }
-                            }" @open-new-trip.window="openModal = true">
+        search: '',
+        openModal: false,
+        selectedCount: 0,
+        selectedBranch: '',
+        showRow(tracking, driver) {
+            return tracking.toLowerCase().includes(this.search.toLowerCase()) ||
+                driver.toLowerCase().includes(this.search.toLowerCase());
+        }
+    }" @open-new-trip.window="openModal = true">
 
-        <div class="flex gap-6 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
 
             {{-- بطاقة: الطرود قيد الانتظار) --}}
             <div @click="filterStatus = 'all'"
@@ -91,8 +91,9 @@
             </div>
 
             {{-- بطاقة: عدد جميع الشحنات --}}
-            <div @click="filterStatus = 'in_transit'" :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
-                                        'border-gray-100'"
+            <div @click="filterStatus = 'in_transit'"
+                :class="filterStatus === 'in_transit' ? 'border-blue-light-500 ring-2 ring-blue-light-500/20' :
+                    'border-gray-100'"
                 class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
                     class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-light-50 dark:bg-blue-light-500/10 text-blue-light-500">
@@ -142,7 +143,63 @@
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto px-4 pb-4">
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-4 lg:hidden">
+                @forelse($packages as $pkg)
+                    <div x-show="showRow('{{ $pkg->tracking_number }}', '{{ $pkg->driver_name }}')" x-transition
+                        class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+
+                        {{-- Header --}}
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <span
+                                    class="px-3 py-1.5 text-xs font-black bg-gray-50 rounded-lg border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
+                                    #{{ $pkg->tracking_number }}
+                                </span>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-black text-gray-900 dark:text-white">{{ $pkg->driver_name }}</span>
+                                    <x-phone-number :value="$pkg->driver_phone" class="font-bold text-[10px] text-gray-400" />
+                                </div>
+                            </div>
+                            <a href="{{ route('shipmentpackage.show', $pkg->id) }}"
+                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
+                                title="عرض تفاصيل الشحنه">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </a>
+                        </div>
+
+                        {{-- Info Row --}}
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
+                            <span
+                                class="px-2.5 py-1 rounded-full text-[10px] font-black bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                                {{ $pkg->shipments_count }} طرود مشحونه
+                            </span>
+                            <span
+                                class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{{ $pkg->created_at->format('Y-m-d') }}</span>
+                        </div>
+                    </div>
+                @empty
+                    <div
+                        class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                        <div class="flex flex-col gap-2 items-center italic text-gray-400">
+                            <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            <span>لا توجد رحلات مسجلة حالياً..</span>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- ===== Desktop View (Table) ===== --}}
+            <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
@@ -169,8 +226,7 @@
                                     <div class="flex flex-col">
                                         <span
                                             class="text-sm font-black text-gray-900 dark:text-white">{{ $pkg->driver_name }}</span>
-                                        <x-phone-number :value="$pkg->driver_phone"
-                                            class="font-bold text-[10px] text-gray-400" />
+                                        <x-phone-number :value="$pkg->driver_phone" class="font-bold text-[10px] text-gray-400" />
                                     </div>
                                 </td>
 
@@ -186,7 +242,8 @@
                                         class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">{{ $pkg->created_at->format('Y-m-d') }}</span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-l last:rounded-2xl border-y dark:border-gray-800/50">
+                                <td
+                                    class="px-6 py-5 text-center border-l last:rounded-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         <a href="{{ route('shipmentpackage.show', $pkg->id) }}"
                                             class="p-2 text-gray-400 rounded-xl transition-all hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10"
@@ -206,7 +263,8 @@
                             <tr>
                                 <td colspan="5" class="py-24 text-center">
                                     <div class="flex flex-col gap-2 items-center italic text-gray-400">
-                                        <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path
                                                 d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                         </svg>

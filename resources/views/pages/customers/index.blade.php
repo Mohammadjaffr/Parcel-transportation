@@ -11,7 +11,7 @@
 @section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="customerRegistry()">
         @include('pages.customers.edit-customer-modal')
-       
+
 
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             <div @click="filterStatus = 'all'"
@@ -70,24 +70,129 @@
             </div>
         </div>
 
-        
+
 
         <div
             class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div
-            class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-4">
-            <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
-                <input type="text" x-model="search" placeholder="ابحث باسم العميل أو رقم الهاتف..."
-                    class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none shadow-inner transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
-                <div
-                    class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-brand-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+            <div class="grid grid-cols-1 md:grid-cols-2 items-center bg-white dark:bg-white/[0.03] p-4">
+                <div class="relative w-full group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                    <input type="text" x-model="search" placeholder="ابحث باسم العميل أو رقم الهاتف..."
+                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none shadow-inner transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
+                    <div
+                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-brand-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
                 </div>
             </div>
-        </div>
-            <div class="overflow-x-auto px-4 pb-4">
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-4 lg:hidden">
+                @forelse($customers as $customer)
+                    @php
+                        $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
+                        $is_debtor = $balance > 0;
+                    @endphp
+                    <div class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800"
+                        x-show="showRow('{{ $customer->name }}', '{{ $customer->phone }}', {{ $is_debtor ? 'true' : 'false' }})"
+                        x-transition>
+
+                        {{-- Header: Customer + Actions --}}
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div
+                                    class="flex justify-center items-center w-10 h-10 text-sm font-black bg-gray-50 rounded-xl border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
+                                    {{ mb_substr($customer->name, 0, 1) }}
+                                </div>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-semibold text-gray-900 dark:text-white">{{ $customer->name }}</span>
+                                    <x-phone-number :value="$customer->phone" class="text-xs text-gray-500 dark:text-gray-400" />
+                                </div>
+                            </div>
+                            <div class="flex gap-1 items-center">
+                                <a href="{{ route('customers.show', $customer->id) }}"
+                                    class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
+                                    title="كشف الحساب">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </a>
+                                <button @click="openEditModal({{ $customer->id }})"
+                                    :disabled="isFetching == {{ $customer->id }}"
+                                    class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-warning-500 dark:bg-gray-900 dark:border-gray-800"
+                                    title="تعديل">
+                                    <template x-if="isFetching == {{ $customer->id }}">
+                                        <svg class="w-4 h-4 animate-spin text-warning-500" fill="none"
+                                            viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor"
+                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                            </path>
+                                        </svg>
+                                    </template>
+                                    <template x-if="isFetching != {{ $customer->id }}">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
+                                            viewBox="0 0 24 24">
+                                            <path
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </template>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Info Row --}}
+                        <div class="flex flex-wrap gap-2 items-center pt-3 border-t border-gray-100 dark:border-gray-800">
+                            <span
+                                class="px-2.5 py-1 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-500 text-[10px] font-black uppercase border border-gray-100 dark:border-gray-700">
+                                {{ $customer->branch->name ?? $customer->branch_code }}
+                            </span>
+                            <span
+                                class="px-2.5 py-1 rounded-full text-[10px] font-black bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                                {{ $customer->shipments_count ?? 0 }} شحنة
+                            </span>
+                        </div>
+
+                        {{-- Status + Balance --}}
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="px-3 py-1 rounded-lg text-[10px] font-black uppercase shadow-lg {{ $is_debtor ? 'bg-error-500 text-white shadow-error-500/20' : 'bg-success-500 text-white shadow-success-500/20' }}">
+                                {{ $is_debtor ? 'مديون' : 'مسدد' }}
+                            </span>
+                            @if ($is_debtor)
+                                <span
+                                    class="px-2 py-1 text-xs font-bold rounded-lg text-error-500 bg-error-50 dark:bg-error-500/10">
+                                    {{ number_format($balance, 0) }} ر.ي
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div
+                        class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                        <div class="flex flex-col justify-center items-center">
+                            <div class="p-3 mb-3 bg-white rounded-full shadow-sm dark:bg-gray-800">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z">
+                                    </path>
+                                </svg>
+                            </div>
+                            <h4 class="text-sm font-medium text-gray-900 dark:text-white">لا توجد بيانات</h4>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">لا توجد بيانات عملاء مطابقة للبحث..
+                            </p>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- ===== Desktop View (Table) ===== --}}
+            <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
@@ -117,13 +222,15 @@
                                             class="flex justify-center items-center w-10 h-10 text-sm font-black bg-gray-50 rounded-xl border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
                                             {{ mb_substr($customer->name, 0, 1) }}
                                         </div>
-                                        <span class="font-black text-gray-900 dark:text-white">{{ $customer->name }}</span>
+                                        <span
+                                            class="font-black text-gray-900 dark:text-white">{{ $customer->name }}</span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-5 border-y dark:border-gray-800/50">
                                     <div class="flex flex-col gap-1">
-                                            <x-phone-number :value="$customer->phone" class="text-sm font-bold text-gray-600 dark:text-gray-400" />
+                                        <x-phone-number :value="$customer->phone"
+                                            class="text-sm font-bold text-gray-600 dark:text-gray-400" />
                                     </div>
                                 </td>
 

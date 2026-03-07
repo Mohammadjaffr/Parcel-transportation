@@ -84,7 +84,76 @@
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto px-4 pb-4">
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-4 lg:hidden">
+                <template x-for="user in filteredUsers" :key="user.id">
+                    <div
+                        class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div class="flex justify-center items-center w-10 h-10 text-sm font-bold text-white rounded-full bg-brand-500 dark:text-brand-300"
+                                    x-text="user.name ? user.name.charAt(0) : '?'"></div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white"
+                                        x-text="user.name"></span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="user.phone"></span>
+                                </div>
+                            </div>
+                            <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
+                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 hover:border-brand-200 dark:bg-gray-900 dark:border-gray-800">
+                                <template x-if="isFetching == user.id">
+                                    <svg class="animate-spin h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                            stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                </template>
+                                <template x-if="isFetching != user.id">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </template>
+                            </button>
+                        </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
+                            <span
+                                :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' :
+                                    'bg-gray-50 text-gray-500 dark:bg-gray-700'"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-medium"
+                                x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
+                            <span
+                                :class="user.is_banned == 0 ? 'bg-success-100 text-success-700' : 'bg-error-100 text-error-700'"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium dark:bg-opacity-10">
+                                <span :class="user.is_banned == 0 ? 'bg-success-500' : 'bg-error-500'"
+                                    class="w-1.5 h-1.5 rounded-full"></span>
+                                <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
+                            </span>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="filteredUsers.length === 0"
+                    class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                    <div class="flex flex-col justify-center items-center">
+                        <div class="p-3 mb-3 bg-white rounded-full shadow-sm dark:bg-gray-800">
+                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h4 class="text-sm font-medium text-gray-900 dark:text-white">لا توجد نتائج</h4>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">لا توجد نتائج تطابق بحثك حالياً..</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ===== Desktop View (Table) ===== --}}
+            <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
                 <table class="w-full border-separate border-spacing-y-3 text-right">
                     <thead>
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
@@ -116,14 +185,16 @@
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
                                     <span
-                                        :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' : 'bg-gray-50 text-gray-500 dark:bg-gray-700'"
+                                        :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' :
+                                            'bg-gray-50 text-gray-500 dark:bg-gray-700'"
                                         class="px-3 py-1 rounded-lg text-[10px] font-black uppercase"
                                         x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
                                 </td>
 
                                 <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
                                     <span
-                                        :class="user.is_banned == 0 ? 'bg-success-50 text-success-500' : 'bg-error-50 text-error-500'"
+                                        :class="user.is_banned == 0 ? 'bg-success-50 text-success-500' :
+                                            'bg-error-50 text-error-500'"
                                         class="px-3 py-1 rounded-lg text-[10px] font-black uppercase">
                                         <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
                                     </span>
@@ -132,30 +203,22 @@
                                 <td
                                     class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        {{-- <a :href="'/users/' + user.id"
-                                            class="p-2 inline-flex text-gray-400 hover:text-brand-500 hover:bg-brand-50 rounded-xl transition-all">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                viewBox="0 0 24 24">
-                                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                <path
-                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                            </svg>
-                                        </a> --}}
                                         <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
                                             class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
                                             <template x-if="isFetching == user.id">
                                                 <svg class="animate-spin h-5 w-5 text-brand-500"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                        stroke-width="4"></circle>
+                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                        stroke="currentColor" stroke-width="4"></circle>
                                                     <path class="opacity-75" fill="currentColor"
                                                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                                     </path>
                                                 </svg>
                                             </template>
                                             <template x-if="isFetching != user.id">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                                    viewBox="0 0 24 24">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                    stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round"
                                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                 </svg>
@@ -195,9 +258,11 @@
                 editModalOpen: false,
                 isUpdating: false,
                 isFetching: null,
-                countries: [
-                    { name: 'Yemen', code: 'YE', dial_code: '967' }
-                ],
+                countries: [{
+                    name: 'Yemen',
+                    code: 'YE',
+                    dial_code: '967'
+                }],
                 editUser: {
                     id: null,
                     name: '',
@@ -218,7 +283,10 @@
                 },
 
                 parsePhoneNumber(fullNumber) {
-                    if (!fullNumber) return { country: this.countries[0], local: '' };
+                    if (!fullNumber) return {
+                        country: this.countries[0],
+                        local: ''
+                    };
 
                     // Try to match dial code
                     for (let country of this.countries) {
@@ -229,7 +297,10 @@
                             };
                         }
                     }
-                    return { country: this.countries[0], local: fullNumber };
+                    return {
+                        country: this.countries[0],
+                        local: fullNumber
+                    };
                 },
 
                 async openEditModal(userId) {

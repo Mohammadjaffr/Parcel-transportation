@@ -57,30 +57,30 @@
 @section('content')
 
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-                                                    search: '',
-                                                    searchType: 'all',
-                                                    filterStatus: 'all',
-                                                    filterBranch: 'all',
-                                                    showRow(number, driver, branch, itemNumbers, deliveryStatus, branchCode) {
-                                                        if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
-                                                        if (this.filterBranch !== 'all' && branchCode != this.filterBranch) return false;
-                                                        const s = this.search.toLowerCase();
-                                                        if (!s) return true;
-                                                        if (this.searchType === 'receipt') {
-                                                            return number.toLowerCase().includes(s);
-                                                        } else if (this.searchType === 'item') {
-                                                            return itemNumbers.toLowerCase().includes(s);
-                                                        } else {
-                                                            return number.toLowerCase().includes(s) ||
-                                                                driver.toLowerCase().includes(s) ||
-                                                                branch.toLowerCase().includes(s) ||
-                                                                itemNumbers.toLowerCase().includes(s);
-                                                        }
-                                                    }
-                                                }">
+        search: '',
+        searchType: 'all',
+        filterStatus: 'all',
+        filterBranch: 'all',
+        showRow(number, driver, branch, itemNumbers, deliveryStatus, branchCode) {
+            if (this.filterStatus !== 'all' && deliveryStatus !== this.filterStatus) return false;
+            if (this.filterBranch !== 'all' && branchCode != this.filterBranch) return false;
+            const s = this.search.toLowerCase();
+            if (!s) return true;
+            if (this.searchType === 'receipt') {
+                return number.toLowerCase().includes(s);
+            } else if (this.searchType === 'item') {
+                return itemNumbers.toLowerCase().includes(s);
+            } else {
+                return number.toLowerCase().includes(s) ||
+                    driver.toLowerCase().includes(s) ||
+                    branch.toLowerCase().includes(s) ||
+                    itemNumbers.toLowerCase().includes(s);
+            }
+        }
+    }">
 
         {{-- بطاقات إحصائية --}}
-        <div class="flex gap-6 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {{-- إجمالي البيانات --}}
             <div @click="filterStatus = 'all'"
                 :class="filterStatus === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
@@ -162,7 +162,7 @@
                         class="h-12 px-4 text-sm font-bold text-gray-700 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                         style="flex: 0 0 auto; min-width: 160px;">
                         <option value="all">كل المكاتب</option>
-                        @foreach($branches as $branch)
+                        @foreach ($branches as $branch)
                             <option value="{{ $branch->code }}">{{ $branch->name }}</option>
                         @endforeach
                     </select>
@@ -177,7 +177,8 @@
                     <div class="relative group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl"
                         style="flex: 1;">
                         <input type="text" x-model="search"
-                            :placeholder="searchType === 'receipt' ? 'ابحث برقم سند الشحنة...' : (searchType === 'item' ? 'ابحث برقم سند الطرد...' : 'ابحث برقم السند، اسم السائق، المكتب المرسل...')"
+                            :placeholder="searchType === 'receipt' ? 'ابحث برقم سند الشحنة...' : (searchType === 'item' ?
+                                'ابحث برقم سند الطرد...' : 'ابحث برقم السند، اسم السائق، المكتب المرسل...')"
                             class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                         <div
                             class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
@@ -189,7 +190,78 @@
                     </div>
                 </div>
             </div>
-            <div class="overflow-x-auto px-4 pb-4">
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-4 lg:hidden">
+                @forelse($receipts as $receipt)
+                    <div x-show="showRow('{{ $receipt->number }}', '{{ $receipt->driver->name ?? '' }}', '{{ $receipt->sourceBranch->name ?? '' }}', '{{ $receipt->items->pluck('number')->implode(',') }}', '{{ $receipt->items->count() > 0 && $receipt->items->every(fn($i) => $i->is_delivered) ? 'all_delivered' : 'has_pending' }}', '{{ $receipt->source_branch_code }}')"
+                        x-transition
+                        class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+
+                        {{-- Header --}}
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <span
+                                    class="px-3 py-1.5 text-xs font-black bg-gray-50 rounded-lg border border-gray-100 shadow-inner dark:bg-gray-800 text-brand-500 dark:border-gray-700">
+                                    #{{ $receipt->number }}
+                                </span>
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-sm font-black text-gray-900 dark:text-white">{{ $receipt->sourceBranch->name ?? '—' }}</span>
+                                    <span
+                                        class="text-[10px] font-bold text-gray-400">{{ $receipt->driver->name ?? '—' }}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-1 items-center">
+                                <a href="{{ route('receipts.show', $receipt->id) }}"
+                                    class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-success-500 dark:bg-gray-900 dark:border-gray-800"
+                                    title="عرض التفاصيل">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                                <a href="{{ route('receipts.edit', $receipt->id) }}"
+                                    class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
+                                    title="تعديل">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+
+                        {{-- Info Row --}}
+                        <div class="flex flex-wrap gap-2 items-center pt-3 border-t border-gray-100 dark:border-gray-800">
+                            <span
+                                class="px-2.5 py-1 rounded-full text-[10px] font-black bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-400">
+                                {{ $receipt->items->count() }} طرود
+                            </span>
+                            @if ($receipt->notes)
+                                <span class="px-2.5 py-1 text-[10px] font-bold text-gray-400 truncate max-w-[150px]">
+                                    {{ $receipt->notes }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div
+                        class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                        <div class="flex flex-col gap-2 items-center italic text-gray-400">
+                            <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                            </svg>
+                            <span>لا توجد بيانات استلام مسجلة حالياً..</span>
+                        </div>
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- ===== Desktop View (Table) ===== --}}
+            <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
@@ -226,8 +298,7 @@
                                     <div class="flex flex-col">
                                         <span
                                             class="text-sm font-black text-gray-900 dark:text-white">{{ $receipt->driver->name ?? '—' }}</span>
-                                        <x-phone-number :value="$receipt->driver->phone ?? ''"
-                                            class="text-[10px] font-bold text-gray-400" />
+                                        <x-phone-number :value="$receipt->driver->phone ?? ''" class="text-[10px] font-bold text-gray-400" />
                                     </div>
                                 </td>
 
@@ -246,12 +317,14 @@
                                 </td>
 
                                 {{-- الإجراءات --}}
-                                <td class="px-6 py-5 text-center border-l last:rounded-2xl border-y dark:border-gray-800/50">
+                                <td
+                                    class="px-6 py-5 text-center border-l last:rounded-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         <a href="{{ route('receipts.show', $receipt->id) }}"
                                             class="p-2 text-gray-400 rounded-xl transition-all hover:text-success-500 hover:bg-success-50 dark:hover:bg-success-500/10"
                                             title="عرض التفاصيل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -261,7 +334,8 @@
                                         <a href="{{ route('receipts.edit', $receipt->id) }}"
                                             class="p-2 text-gray-400 rounded-xl transition-all hover:text-brand-500 hover:bg-brand-50 dark:hover:bg-brand-500/10"
                                             title="تعديل">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                             </svg>
@@ -273,7 +347,8 @@
                             <tr>
                                 <td colspan="6" class="py-24 text-center">
                                     <div class="flex flex-col gap-2 items-center italic text-gray-400">
-                                        <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-12 h-12 opacity-20" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path
                                                 d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                         </svg>
