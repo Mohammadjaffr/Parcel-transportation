@@ -23,8 +23,8 @@
                 </svg>
 
                 <!-- cross icon -->
-                <svg :class="sidebarToggle ? 'block lg:hidden' : 'hidden'" class="fill-current" width="24" height="24"
-                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg :class="sidebarToggle ? 'block lg:hidden' : 'hidden'" class="fill-current" width="24"
+                    height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd" clip-rule="evenodd"
                         d="M6.21967 7.28131C5.92678 6.98841 5.92678 6.51354 6.21967 6.22065C6.51256 5.92775 6.98744 5.92775 7.28033 6.22065L11.999 10.9393L16.7176 6.22078C17.0105 5.92789 17.4854 5.92788 17.7782 6.22078C18.0711 6.51367 18.0711 6.98855 17.7782 7.28144L13.0597 12L17.7782 16.7186C18.0711 17.0115 18.0711 17.4863 17.7782 17.7792C17.4854 18.0721 17.0105 18.0721 16.7176 17.7792L11.999 13.0607L7.28033 17.7794C6.98744 18.0722 6.51256 18.0722 6.21967 17.7794C5.92678 17.4865 5.92678 17.0116 6.21967 16.7187L10.9384 12L6.21967 7.28131Z"
                         fill="" />
@@ -33,7 +33,8 @@
             <!-- Hamburger Toggle BTN -->
 
             <a href="index.html" class="lg:hidden w-12 h-12">
-                <img class="dark:hidden " src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo" />
+                <img class="dark:hidden " src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
+                    alt="Logo" />
                 <img class="hidden dark:block w-12 h-12" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
                     alt="Logo" />
             </a>
@@ -288,9 +289,10 @@
                         x-transition:leave-start="opacity-100 translate-y-0"
                         x-transition:leave-end="opacity-0 translate-y-[-1rem]"
                         class="fixed top-5 right-5 z-[9999] flex items-center gap-3 rounded-xl px-5 py-3 shadow-lg border backdrop-blur-md"
-                        :class="toastType === 'success' 
-         ? 'bg-orange-50/90 border-[#f79009]/30 text-[#f79009] dark:bg-gray-900/90 dark:border-[#f79009]/20' 
-         : 'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-900/80 dark:border-red-700'"
+                        :class="toastType === 'success'
+                            ?
+                            'bg-orange-50/90 border-[#f79009]/30 text-[#f79009] dark:bg-gray-900/90 dark:border-[#f79009]/20' :
+                            'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-900/80 dark:border-red-700'"
                         :style="toastType === 'success' ? 'color: #f79009' : ''" style="display: none;">
 
                         <svg x-show="toastType === 'success'" class="h-5 w-5 shrink-0" fill="none" stroke="#f79009"
@@ -317,29 +319,29 @@
                     </div>
 
                     <!-- Backup Button -->
-                    <button @click="performBackup()" :disabled="isBackingUp"
+                    {{-- <button @click="performBackup()" :disabled="isBackingUp"
                         class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         title="نسخ احتياطي">
                         <!-- Cloud Upload Icon (default state) -->
-                        <svg x-show="!isBackingUp" class="fill-current" width="20" height="20" viewBox="0 0 24 24"
-                            fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <svg x-show="!isBackingUp" class="fill-current" width="20" height="20"
+                            viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 16V8m0 0l-3 3m3-3l3 3" stroke="#f79009" stroke-width="1.5"
                                 stroke-linecap="round" stroke-linejoin="round" fill="none" />
                             <path d="M6.5 19A5.5 5.5 0 014 9.34 7.5 7.5 0 0118.33 10 4.5 4.5 0 0118 19H6.5z"
                                 stroke="#f79009" stroke-width="1.5" stroke-linejoin="round" fill="none" />
                         </svg>
-                        <svg x-show="isBackingUp" class="h-5 w-5 animate-spin"
-     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-    
-    <circle class="opacity-20" cx="12" cy="12" r="10" 
-            stroke="none" stroke-width="3">
-    </circle>
-    
-    <path class="opacity-100" fill="#f79009"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-    </path>
-</svg>
-                    </button>
+                        <svg x-show="isBackingUp" class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+
+                            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="none"
+                                stroke-width="3">
+                            </circle>
+
+                            <path class="opacity-100" fill="#f79009"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
+                        </svg>
+                    </button> --}}
                 </div>
                 <!-- Database Backup Button -->
 
@@ -363,8 +365,9 @@
 
                     <span class="text-theme-sm mr-1 block font-medium">{{ Auth::user()->name }}</span>
 
-                    <svg :class="dropdownOpen && 'rotate-180'" class="stroke-gray-500 dark:stroke-gray-400" width="18"
-                        height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg :class="dropdownOpen && 'rotate-180'" class="stroke-gray-500 dark:stroke-gray-400"
+                        width="18" height="20" viewBox="0 0 18 20" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
                         <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="" stroke-width="1.5"
                             stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
