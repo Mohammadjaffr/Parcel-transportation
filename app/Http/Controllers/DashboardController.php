@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Shipment;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         // إحصائيات أعلى الصفحة
         $todayShipments = Shipment::whereDate('created_at', today())->count();
@@ -35,7 +36,9 @@ class DashboardController extends Controller
             ->latest()
             ->take(10)
             ->get();
-
+        if ($request->isMobile) {
+            return view('mobile.pages.dashboard.index');
+        }
         return view('pages.dashboard.index', compact(
             'todayShipments',
             'inTransit',
