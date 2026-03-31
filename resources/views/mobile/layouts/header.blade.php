@@ -4,22 +4,28 @@
             <img alt="محمد السعدي" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkwZIq82EuZQzF_YUiLAdjNE4SpUl2HXkg6yFUwxAOHukJ6iY2h4Rsb6khB0QvxsS3mkgPpKZHyiUT-nYbCKeSWSHhNDVugtBY6jJk0Dkh5ny0Hc5fk6eCZk2dJ9Z8xpBYJkCcaPzSKh5zXd2GeV9ZQuuHSLsVRuHhTtfEj_LwMzDxA6JtACCV0qZYq9cWjKbEOHZSHWZTmOXhdqjSoJaUXsyXklN9d1FwsPGToUjVKEC01BEZ4j-rrVQcS1BNkJeiNP7JuTbHkNo"/>
         </div>
         <div class="flex flex-col">
-            <span class="font-headline font-bold text-lg text-slate-900 tracking-tight leading-tight">محمد السعدي</span>
+            <span class="font-headline font-bold text-lg text-slate-900 tracking-tight leading-tight">{{ Auth::user()->name }}</span>
             <div class="flex items-center gap-1 text-on-surface-variant">
-                <span class="material-symbols-outlined text-[16px] text-indigo-700" data-icon="location_on">location_on</span>
+                <span class="material-symbols-outlined text-[16px] text-primary" data-icon="location_on">location_on</span>
                 <span class="text-xs font-medium">عدن، اليمن</span>
             </div>
         </div>
     </div>
     <div class="flex items-center gap-2">
+    
+
+    <div class="relative">
         <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors active:scale-90 duration-200 text-slate-500">
-            <span class="material-symbols-outlined" data-icon="search">search</span>
+            <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
         </button>
-        <div class="relative">
-            <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors active:scale-90 duration-200 text-slate-500">
-                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-            </button>
-            <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-white"></span>
-        </div>
+        <span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full border-2 border-white"></span>
     </div>
+
+    <form method="POST" action="{{ route('logout') }}" id="logout-form">
+        @csrf
+        <button type="submit" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-red-50 text-slate-500 hover:text-red-600 transition-colors active:scale-90 duration-200" title="تسجيل الخروج">
+            <span class="material-symbols-outlined" data-icon="logout">logout</span>
+        </button>
+    </form>
+</div>
 </header>

@@ -12,9 +12,12 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $users = User::where('type', '!=', 'super_admin')->paginate(10);
+        if ($request->isMobile) {
+            return view('mobile.pages.people.users.index');
+        }
         return view('pages.users.index', compact('users'));
     }
 

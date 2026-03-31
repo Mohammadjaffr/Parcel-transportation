@@ -1,22 +1,54 @@
-<nav class="fixed bottom-0 left-0 w-full glass-nav shadow-[0_-8px_24px_rgba(36,56,156,0.06)] flex flex-row justify-around items-center px-4 pb-8 pt-4 z-50 rounded-t-3xl bg-white">
-    <a href="#" class="flex flex-col items-center justify-center bg-indigo-50 text-indigo-700 rounded-2xl px-4 py-2 transition-transform active:scale-90">
-        <span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
-        <span class="font-headline text-[10px] font-bold mt-1">الرئيسية</span>
+<nav
+    class="fixed bottom-0 left-0 w-full glass-nav shadow-[0_-8px_24px_rgba(36,56,156,0.06)] flex flex-row justify-around items-center px-4 pb-8 pt-4 z-50 rounded-t-3xl bg-white">
+
+    <a href="{{ route('dashboard.index') }}"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('dashboard.index') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is('dashboard.index') ? 1 : 0 }};">
+            home
+        </span>
+
+        <span class="font-headline text-[10px] {{ Route::is('dashboard.index') ? 'font-bold' : 'font-medium' }} mt-1">
+            الرئيسية
+        </span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 px-4 py-2 transition-all active:scale-90">
-        <span class="material-symbols-outlined" data-icon="group">group</span>
-        <span class="font-headline text-[10px] font-medium mt-1">الأفراد</span>
+
+    <a href="{{ route('people.index') }}"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['people.*', 'drivers.*','users.*','customers.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is(['people.*', 'drivers.*','users.*','customers.*']) ? 1 : 0 }};">
+            group
+        </span>
+
+        <span
+            class="font-headline text-[10px] {{ Route::is(['people.*', 'drivers.*','users.*','customers.*']) ? 'font-bold' : 'font-medium' }} mt-1">
+            الأفراد
+        </span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 px-4 py-2 transition-all active:scale-90">
-        <span class="material-symbols-outlined" data-icon="apartment">apartment</span>
-        <span class="font-headline text-[10px] font-medium mt-1">المكاتب</span>
+
+    <a href="#"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('offices.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is('offices.*') ? 1 : 0 }};">apartment</span>
+        <span
+            class="font-headline text-[10px] {{ Route::is('offices.*') ? 'font-bold' : 'font-medium' }} mt-1">المكاتب</span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 px-4 py-2 transition-all active:scale-90">
-        <span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
-        <span class="font-headline text-[10px] font-medium mt-1">الطرود</span>
+
+    <a href="#"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('parcels.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is('parcels.*') ? 1 : 0 }};">inventory_2</span>
+        <span
+            class="font-headline text-[10px] {{ Route::is('parcels.*') ? 'font-bold' : 'font-medium' }} mt-1">الطرود</span>
     </a>
-    <a href="#" class="flex flex-col items-center justify-center text-slate-400 hover:text-indigo-600 px-4 py-2 transition-all active:scale-90">
-        <span class="material-symbols-outlined" data-icon="local_shipping">local_shipping</span>
-        <span class="font-headline text-[10px] font-medium mt-1">الشحنات</span>
+
+    <a href="#"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('shipping.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is('shipping.*') ? 1 : 0 }};">local_shipping</span>
+        <span
+            class="font-headline text-[10px] {{ Route::is('shipping.*') ? 'font-bold' : 'font-medium' }} mt-1">الشحنات</span>
     </a>
 </nav>

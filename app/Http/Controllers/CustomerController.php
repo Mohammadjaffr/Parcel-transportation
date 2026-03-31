@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Validator;
 class CustomerController extends Controller
 {
     /** عرض عملاء الفرع */
-    public function index()
+    public function index(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
@@ -44,7 +44,9 @@ class CustomerController extends Controller
                 [$branchCode, $branchCode, $branchCode, $branchCode])
             ->latest()
             ->paginate(10);
-
+        if ($request->isMobile) {
+            return view('mobile.pages.people.customers.index');
+        }
         return view('pages.customers.index', compact('customers'));
     }
 

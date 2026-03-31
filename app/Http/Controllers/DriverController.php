@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Validator;
 class DriverController extends Controller
 {
     /* ========== 1- عرض جميع السائقين ========== */
-    public function index()
+    public function index(Request $request)
     {
         $drivers = Driver::latest()->paginate(10);
+        if ($request->isMobile) {
+            return view('mobile.pages.people.drivers.index');
+        }
 
         return view('pages.drivers.index', compact('drivers'));
     }
