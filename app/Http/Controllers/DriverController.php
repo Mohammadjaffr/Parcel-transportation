@@ -11,12 +11,23 @@ use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
 {
-    /* ========== 1- عرض جميع السائقين ========== */
+    /* ========== 1- عرض جميع السائقين مع البحث والفلترة ========== */
     public function index(Request $request)
     {
-        $drivers = Driver::latest()->paginate(10);
+        $query = Driver::latest();
+
+        // تفعيل ميزة البحث بالاسم أو رقم الهاتف
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+        }
+
+        // استخدام withQueryString للحفاظ على كلمة البحث عند التنقل عبر الـ Pagination
+        $drivers = $query->paginate(10)->withQueryString();
+
         if ($request->isMobile) {
-            return view('mobile.pages.people.drivers.index',compact('drivers'));
+            return view('mobile.pages.people.drivers.index', compact('drivers'));
         }
 
         return view('pages.drivers.index', compact('drivers'));
@@ -25,7 +36,6 @@ class DriverController extends Controller
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
     {
-
         return view('pages.drivers.create');
     }
 
@@ -127,6 +137,8 @@ class DriverController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
+
+    /* ========== 8- شحنات السائق ========== */
     public function shipments($id)
     {
         $driver = Driver::findOrFail($id);
@@ -134,6 +146,8 @@ class DriverController extends Controller
 
         return view('pages.drivers.shipments', compact('driver', 'shipments'));
     }
+
+    /* ========== 9- طباعة شحنات السائق ========== */
     public function printShipments($id)
     {
         $driver = Driver::findOrFail($id);
@@ -155,8 +169,4 @@ class DriverController extends Controller
 
         return $pdf->Output('Driver-Shipments-' . $driver->name . '.pdf', 'I');
     }
-
-    /* ========== دوال مساعدة  ========== */
-
-
 }

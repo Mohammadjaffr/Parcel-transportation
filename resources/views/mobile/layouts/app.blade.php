@@ -12,6 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -36,6 +37,7 @@
                         "tertiary": "#004e11",
                         "surface-container-highest": "#e1e3e4",
                         "secondary-fixed": "#ffdcbe",
+                        "surface": "#f8fafc",
                     },
                     fontFamily: {
                         "headline": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
@@ -46,6 +48,7 @@
         }
     </script>
     <style>
+        [x-cloak] { display: none !important; }
         body {
             font-family: 'IBM Plex Sans Arabic', sans-serif;
             min-height: max(884px, 100dvh);
