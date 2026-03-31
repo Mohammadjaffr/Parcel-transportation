@@ -16,7 +16,7 @@ class DriverController extends Controller
     {
         $drivers = Driver::latest()->paginate(10);
         if ($request->isMobile) {
-            return view('mobile.pages.people.drivers.index');
+            return view('mobile.pages.people.drivers.index',compact('drivers'));
         }
 
         return view('pages.drivers.index', compact('drivers'));

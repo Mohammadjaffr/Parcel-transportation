@@ -62,6 +62,14 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
@@ -81,6 +89,33 @@
         إضافة طرد جديد
     </span>
 </a>
+
+<script>
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notif-dropdown');
+            const btn = document.getElementById('notif-btn');
+
+            // تبديل الكلاسات المسؤولة عن الظهور والأنيميشن
+            dropdown.classList.toggle('opacity-0');
+            dropdown.classList.toggle('invisible');
+            dropdown.classList.toggle('scale-95');
+            dropdown.classList.toggle('translate-y-2');
+
+            // تلوين الزر نفسه ليدل على أنه نشط
+            btn.classList.toggle('bg-primary/10');
+            btn.classList.toggle('text-primary');
+        }
+
+        // إغلاق القائمة عند الضغط في أي مكان خارجها (UX Best Practice)
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('notif-dropdown');
+            const wrapper = document.getElementById('header-actions');
+
+            if (!wrapper.contains(event.target) && !dropdown.classList.contains('invisible')) {
+                toggleNotifications();
+            }
+        });
+    </script>
 </body>
 
 </html>

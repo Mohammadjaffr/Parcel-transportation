@@ -224,6 +224,7 @@ Route::middleware('auth')->group(function () {
     // mobile routes
 
     Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
+    Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
 });
 
 

@@ -16,7 +16,7 @@ class UserController extends Controller
     {
         $users = User::where('type', '!=', 'super_admin')->paginate(10);
         if ($request->isMobile) {
-            return view('mobile.pages.people.users.index');
+            return view('mobile.pages.people.users.index',compact('users'));
         }
         return view('pages.users.index', compact('users'));
     }

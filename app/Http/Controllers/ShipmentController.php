@@ -42,7 +42,9 @@ class ShipmentController extends Controller
         }
 
         $requests = $query->latest()->paginate(10)->withQueryString();
-
+        if ($request->isMobile) {
+            return view('mobile.pages.shipment.index');
+        }
         return view('pages.shipment.index', compact('requests', 'type'));
     }
 

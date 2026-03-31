@@ -14,7 +14,7 @@ use App\Classes\WebResponseClass;
 class BranchController extends Controller
 {
     /* ========== 1- عرض جميع الفروع ========== */
-    public function index()
+    public function index(Request $request)
     {
         $allBranches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
         $totalBranches = $allBranches->count();
@@ -25,7 +25,9 @@ class BranchController extends Controller
             ->withSum('ledgers as total_credit', 'credit')
             ->latest()
             ->paginate(10);
-
+        if ($request->isMobile) {
+            return view('mobile.pages.branch.index');
+        }
         return view('pages.branch.index', compact('branches', 'totalBranches', 'totalCities'));
     }
 
