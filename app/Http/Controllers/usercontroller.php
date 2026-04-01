@@ -9,7 +9,7 @@ use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
-class UserController extends Controller
+class usercontroller extends Controller
 {
     /**
      * عرض قائمة المستخدمين مع البحث
