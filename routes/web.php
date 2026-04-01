@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
 use App\Http\Controllers\CashClosingController;
@@ -8,8 +9,11 @@ use App\Http\Controllers\CustomerFinanceController;
 use App\Http\Controllers\CustomerPaymentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\FinanceSettlementController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReceiptHeaderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
@@ -17,16 +21,11 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
-use App\Http\Controllers\BackupController;
-use App\Http\Controllers\FinanceSettlementController;
-use App\Http\Controllers\ReceiptHeaderController;
 use Illuminate\Support\Facades\Route;
 
 
-// الصفحة الرئيسية تحول للدخول
-Route::get('/', function () {
-    return redirect()->route('login');
-});
+
+Route::get('/', [LandingPageController::class,'index'])->name('welcome');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

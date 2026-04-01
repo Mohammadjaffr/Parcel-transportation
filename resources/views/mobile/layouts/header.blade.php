@@ -4,7 +4,7 @@
         <div
             class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/10 active:scale-95 transition-transform duration-200">
             <img alt="محمد السعدي" class="w-full h-full object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkwZIq82EuZQzF_YUiLAdjNE4SpUl2HXkg6yFUwxAOHukJ6iY2h4Rsb6khB0QvxsS3mkgPpKZHyiUT-nYbCKeSWSHhNDVugtBY6jJk0Dkh5ny0Hc5fk6eCZk2dJ9Z8xpBYJkCcaPzSKh5zXd2GeV9ZQuuHSLsVRuHhTtfEj_LwMzDxA6JtACCV0qZYq9cWjKbEOHZSHWZTmOXhdqjSoJaUXsyXklN9d1FwsPGToUjVKEC01BEZ4j-rrVQcS1BNkJeiNP7JuTbHkNo" />
+                src="{{ asset('assets/image/icon_4K.png') }}"/>
         </div>
         <div class="flex flex-col">
             <span
