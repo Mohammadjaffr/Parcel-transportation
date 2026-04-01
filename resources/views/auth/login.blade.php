@@ -128,7 +128,7 @@
             <div class="relative z-20 mt-auto">
                 <div class="flex gap-2 items-center text-sm font-medium text-on-primary-container/80 mb-4">
                     <span class="w-8 h-[2px] bg-secondary-container"></span>
-                    <span>موثوق به من قبل أكثر من 500 شركة عالمية</span>
+                     <span>موثوق به من قبل أكثر من 20 مكتب في اليمن</span>
                 </div>
             </div>
 

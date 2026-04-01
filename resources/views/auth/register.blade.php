@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
+
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>إنشاء حساب - مرسل</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Manrope:wght@200;400;600;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Manrope:wght@200;400;600;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    
+
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -70,7 +73,7 @@
                         "body": ["Almarai", "Manrope"],
                         "label": ["Almarai", "Manrope"]
                     },
-                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
                 },
             },
         }
@@ -80,29 +83,36 @@
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
         }
+
         body {
             font-family: 'Almarai', sans-serif;
             background-color: #f7f9ff;
         }
+
         .kinetic-gradient {
             background: linear-gradient(135deg, #041627 0%, #1a2b3c 100%);
         }
     </style>
 </head>
+
 <body class="min-h-screen flex flex-col items-center justify-center overflow-x-hidden">
 
     <div class="fixed inset-0 z-0 opacity-10 pointer-events-none overflow-hidden">
-        <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary-container blur-[120px]"></div>
+        <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary-container blur-[120px]">
+        </div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary blur-[120px]"></div>
     </div>
 
-    <main class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row-reverse items-stretch min-h-[750px] m-4 md:m-8 overflow-hidden rounded-xl shadow-[0_20px_60px_rgba(11,29,45,0.08)] bg-surface-container-lowest">
-        
-        <section class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
+    <main
+        class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row-reverse items-stretch min-h-[750px] m-4 md:m-8 overflow-hidden rounded-xl shadow-[0_20px_60px_rgba(11,29,45,0.08)] bg-surface-container-lowest">
+
+        <section
+            class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
             <div class="relative z-20 space-y-6">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg">
-                        <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">package_2</span>
+                        <span class="material-symbols-outlined text-primary text-3xl"
+                            style="font-variation-settings: 'FILL' 1;">package_2</span>
                     </div>
                     <span class="text-2xl font-black tracking-tighter uppercase font-headline">Mursal</span>
                 </div>
@@ -113,28 +123,30 @@
                     انضم إلى شبكة مرسل العالمية وأدر شحناتك بدقة معمارية وتقنية متطورة.
                 </p>
             </div>
-            
+
             <div class="relative z-20 mt-auto">
                 <div class="flex gap-2 items-center text-sm font-medium text-on-primary-container/80 mb-4">
                     <span class="w-8 h-[2px] bg-secondary-container"></span>
-                    <span>موثوق به من قبل أكثر من 500 شركة عالمية</span>
+                    <span>موثوق به من قبل أكثر من 20 مكتب في اليمن</span>
                 </div>
             </div>
 
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-10">
-                <img class="w-full h-full object-cover mix-blend-overlay" src="{{ asset('assets/image/abstract-bg.png') }}" alt="Background Pattern"/>
+                <img class="w-full h-full object-cover mix-blend-overlay"
+                    src="{{ asset('assets/image/abstract-bg.png') }}" alt="Background Pattern" />
             </div>
         </section>
 
         <section class="flex-1 p-8 md:p-16 flex flex-col justify-center bg-white">
             <div class="max-w-md mx-auto w-full">
-                
+
                 <div class="md:hidden flex justify-center mb-10">
                     <div class="flex items-center gap-2">
-                        <div class="w-10 h-10 bg-primary flex items-center justify-center rounded">
-                            <span class="material-symbols-outlined text-secondary-container text-2xl">package_2</span>
+                        <div class="w-10 h-10 bg-primary flex items-center justify-center rounded overflow-hidden">
+                            <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Mursal Logo"
+                                class="w-8 h-8 object-contain">
                         </div>
-                        <span class="text-2xl font-black text-primary uppercase font-headline">Mursal</span>
+                        <span class="text-2xl font-black text-primary uppercase font-headline">مُرسَل</span>
                     </div>
                 </div>
 
@@ -147,67 +159,101 @@
                     @csrf
 
                     <div class="space-y-1.5">
-                        <label for="name" class="block text-sm font-bold text-on-background/80 pr-1">الاسم الكامل</label>
+                        <label for="name" class="block text-sm font-bold text-on-background/80 pr-1">الاسم
+                            الكامل</label>
                         <div class="relative group">
-                            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" 
-                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all" 
-                                placeholder="أدخل اسمك بالكامل"/>
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
+                            <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                                autocomplete="name"
+                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all"
+                                placeholder="أدخل اسمك بالكامل" />
+                            <div
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
                                 <span class="material-symbols-outlined">person</span>
                             </div>
                         </div>
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
 
-                    <div class="space-y-1.5">
-                        <label for="email" class="block text-sm font-bold text-on-background/80 pr-1">البريد الإلكتروني</label>
-                        <div class="relative group">
-                            <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username" 
-                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all font-headline" 
-                                placeholder="example@mursal.com"/>
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
-                                <span class="material-symbols-outlined">mail</span>
+                    <div class="space-y-1.5" x-data="{
+    selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
+    localPhoneNumber: '{{ old('phone') }}'.startsWith('967') ? '{{ old('phone') }}'.substring(3) : '{{ old('phone') }}'
+}">
+                        <label for="phone_display" class="block text-sm font-bold text-on-background/80 pr-1">رقم
+                            الجوال</label>
+
+                        <input type="hidden" name="phone"
+                            :value="selectedCountry.dial_code.replace('+', '') + localPhoneNumber">
+
+                        <div
+                            class="relative group flex items-center bg-surface-container-low rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-secondary-container transition-all">
+
+                            <input id="phone_display" type="tel" x-model="localPhoneNumber" required inputmode="numeric"
+                                class="flex-1 bg-transparent border-0 px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-0 font-headline dir-ltr text-left"
+                                placeholder="7XXXXXXXX" />
+
+                            <div
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
+                                <span class="material-symbols-outlined">call</span>
+                            </div>
+
+                            <div class="flex items-center gap-2 px-3 h-[52px] bg-slate-100 border-r border-slate-200">
+                                <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
+                                    alt="Flag" class="w-5 h-auto rounded-sm shadow-sm">
+                                <span class="text-sm font-bold text-on-surface font-headline dir-ltr"
+                                    x-text="selectedCountry.dial_code"></span>
                             </div>
                         </div>
-                        <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                        <x-input-error :messages="$errors->get('phone')" class="mt-1" />
                     </div>
 
                     <div class="space-y-1.5" x-data="{ showPassword: false }">
-                        <label for="password" class="block text-sm font-bold text-on-background/80 pr-1">كلمة المرور</label>
+                        <label for="password" class="block text-sm font-bold text-on-background/80 pr-1">كلمة
+                            المرور</label>
                         <div class="relative group">
-                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="new-password" 
-                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all font-headline" 
-                                placeholder="••••••••"/>
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
+                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required
+                                autocomplete="new-password"
+                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all font-headline"
+                                placeholder="••••••••" />
+                            <div
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
                                 <span class="material-symbols-outlined">lock</span>
                             </div>
-                            <button type="button" @click="showPassword = !showPassword" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined" x-text="showPassword ? 'visibility_off' : 'visibility'">visibility</span>
+                            <button type="button" @click="showPassword = !showPassword"
+                                class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined"
+                                    x-text="showPassword ? 'visibility_off' : 'visibility'">visibility</span>
                             </button>
                         </div>
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
                     </div>
 
                     <div class="space-y-1.5" x-data="{ showConfirmPassword: false }">
-                        <label for="password_confirmation" class="block text-sm font-bold text-on-background/80 pr-1">تأكيد كلمة المرور</label>
+                        <label for="password_confirmation"
+                            class="block text-sm font-bold text-on-background/80 pr-1">تأكيد كلمة المرور</label>
                         <div class="relative group">
-                            <input id="password_confirmation" :type="showConfirmPassword ? 'text' : 'password'" name="password_confirmation" required autocomplete="new-password" 
-                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all font-headline" 
-                                placeholder="••••••••"/>
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
+                            <input id="password_confirmation" :type="showConfirmPassword ? 'text' : 'password'"
+                                name="password_confirmation" required autocomplete="new-password"
+                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container transition-all font-headline"
+                                placeholder="••••••••" />
+                            <div
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
                                 <span class="material-symbols-outlined">lock_clock</span>
                             </div>
-                            <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined" x-text="showConfirmPassword ? 'visibility_off' : 'visibility'">visibility</span>
+                            <button type="button" @click="showConfirmPassword = !showConfirmPassword"
+                                class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined"
+                                    x-text="showConfirmPassword ? 'visibility_off' : 'visibility'">visibility</span>
                             </button>
                         </div>
                         <x-input-error :messages="$errors->get('password_confirmation')" class="mt-1" />
                     </div>
 
                     <div class="pt-4">
-                        <button type="submit" class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
+                        <button type="submit"
+                            class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
                             <span class="text-lg">إنشاء حساب</span>
-                            <span class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                            <span
+                                class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
                         </button>
                     </div>
                 </form>
@@ -215,14 +261,16 @@
                 <div class="mt-10 text-center border-t border-slate-100 pt-6">
                     <p class="text-slate-600 font-body">
                         لديك حساب بالفعل؟
-                        <a class="text-secondary font-bold hover:underline underline-offset-4 mr-1" href="{{ route('login') }}">تسجيل الدخول</a>
+                        <a class="text-secondary font-bold hover:underline underline-offset-4 mr-1"
+                            href="{{ route('login') }}">تسجيل الدخول</a>
                     </p>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="mt-4 mb-8 text-slate-400 text-xs font-medium space-x-reverse space-x-6 flex items-center justify-center">
+    <footer
+        class="mt-4 mb-8 text-slate-400 text-xs font-medium space-x-reverse space-x-6 flex items-center justify-center">
         <span class="font-headline tracking-widest">MURSAL LOGISTICS</span>
         <span>© 2026 جميع الحقوق محفوظة</span>
         <div class="flex gap-4">
@@ -231,4 +279,5 @@
         </div>
     </footer>
 </body>
+
 </html>
