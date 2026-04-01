@@ -15,7 +15,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\usercontroller;
 use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\FinanceSettlementController;
@@ -34,7 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    Route::resource('users', UserController::class)->middleware('admin');
+    Route::resource('users', usercontroller::class)->middleware('admin');
 
     // Branch routes with super admin middleware for create and store
     Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
@@ -56,7 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::put('shipment/updatePaymentMethod/{id}', [ShipmentController::class, 'updatePaymentMethod'])->name('shipment.updatePaymentMethod');
     Route::get('/shipments/{id}/thermal', [InvoiceController::class, 'printThermal'])
         ->name('shipment.printThermal');
-    Route::post('/users/toggle-status/{id}', [UserController::class, 'toggleStatus']);
+    Route::post('/users/toggle-status/{id}', [usercontroller::class, 'toggleStatus']);
 
     Route::get('/whatsapp/sender/{id}', [WhatsAppController::class, 'openForSender'])
         ->name('whatsapp.sender');
@@ -225,7 +225,7 @@ Route::middleware('auth')->group(function () {
 
     Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
     Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
-    Route::post('/users/{id}/toggle-status', [userController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/users/{id}/toggle-status', [usercontroller::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 
