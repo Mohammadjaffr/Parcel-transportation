@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
 
             $table->string('branch_code', 10);
-            $table->foreign('branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            // $table->foreign('branch_code')->references('code')->on('branches')->cascadeOnDelete();
 
             $table->decimal('amount', 10, 2);
             $table->date('payment_date');

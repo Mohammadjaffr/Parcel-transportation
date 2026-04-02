@@ -16,17 +16,17 @@ return new class extends Migration
             
             // Branch this entry belongs to (owner of this ledger line)
             $table->string('branch_code');
-            $table->foreign('branch_code')
-                  ->references('code')
-                  ->on('branches')
-                  ->onDelete('cascade');
+            // $table->foreign('branch_code')
+            //       ->references('code')
+            //       ->on('branches')
+            //       ->onDelete('cascade');
             
             // The counterparty branch
             $table->string('related_branch_code');
-            $table->foreign('related_branch_code')
-                  ->references('code')
-                  ->on('branches')
-                  ->onDelete('cascade');
+            // $table->foreign('related_branch_code')
+            //       ->references('code')
+            //       ->on('branches')
+            //       ->onDelete('cascade');
             
             // Reference to the shipment
             $table->foreignId('shipment_id')->nullable()

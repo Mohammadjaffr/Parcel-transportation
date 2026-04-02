@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 use App\Classes\WebResponseClass;
-use Illuminate\Support\Facades\Validator;
+use App\Models\Branch;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -15,28 +16,27 @@ class UserController extends Controller
      * عرض قائمة المستخدمين مع البحث
      */
     public function index(Request $request)
-    {
-        $query = User::where('type', '!=', 'super_admin');
+{
+    $query = User::where('type', '!=', 'admin')->where('app_id', auth()->user()->app_id);
 
-        // تفعيل ميزة البحث المباشر بالاسم، الهاتف، أو الواتساب
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('whatsapp_number', 'like', "%{$search}%");
-            });
-        }
-
-        // استخدام withQueryString للحفاظ على كلمة البحث عند التنقل عبر الـ Pagination
-        $users = $query->latest()->paginate(10)->withQueryString();
-
-        if ($request->isMobile) {
-            return view('mobile.pages.people.users.index', compact('users'));
-        }
-        
-        return view('pages.users.index', compact('users'));
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%")
+              ->orWhere('whatsapp_number', 'like', "%{$search}%");
+        });
     }
+
+    $users = $query->latest()->paginate(10)->withQueryString();
+    $branches = Branch::get();
+
+    if ($request->isMobile) {
+        return view('mobile.pages.people.users.index', compact('users','branches'));
+    }
+    
+    return view('pages.users.index', compact('users','branches'));
+}
 
     /**
      * Show the form for creating a new resource.
@@ -56,9 +56,11 @@ class UserController extends Controller
             'phone' => ['required', 'string', 'unique:users,phone'],
             'whatsapp_number' => ['nullable', 'string'],
             'password' => ['required', 'string', 'min:6'],
+            'branch_id' => ['required', 'exists:branches,id']
         ], [
             'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
-            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.'
+            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
+            'branch_id.exists' => 'الفرع المحدد غير موجود في النظام.',
         ]);
 
         if ($validator->fails()) {
@@ -69,14 +71,16 @@ class UserController extends Controller
         }
 
         try {
+            
             User::create([
+                'app_id' => auth()->user()->app_id,
+                'branch_id' => $request->branch_id,
                 'name' => $request->name,
                 'phone' => $request->phone,
                 'whatsapp_number' => $request->whatsapp_number,
                 'password' => Hash::make($request->password), // تشفير كلمة المرور
                 'type' => 'user', // Default type
                 'is_banned' => false,
-                'branch_code' => Auth::user()->branch_code,
             ]);
 
             if ($request->wantsJson()) {
@@ -114,71 +118,67 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        $user = User::findOrFail($id);
-        
-        return response()->json($user);
+        $query = User::query(); 
+
+    if (auth()->check() && auth()->user()->type !== 'super_admin') {
+        $query->where('app_id', auth()->user()->app_id);
+    }
+    
+    // 2. جلب المستخدم مع تفاصيل علاقته بالفرع (إن وجدت)
+    $user = $query->with('branch')->findOrFail($id);
+    
+    return response()->json($user);
     }
 
     /**
      * تحديث بيانات المستخدم (يدعم AJAX)
      */
     public function update(Request $request, string $id)
-    {
-        $user = User::findOrFail($id);
+{
+    // 1. جلب المستخدم مع التأكد من عزل البيانات (SaaS)
+    $query = User::query();
+    if (auth()->user()->type !== 'super_admin') {
+        $query->where('app_id', auth()->user()->app_id);
+    }
+    $user = $query->findOrFail($id);
 
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:users,phone,' . $id,
-            'whatsapp_number' => 'nullable|string',
-            'type' => 'required|in:user,admin,super_admin',
-            'password' => 'nullable|string|min:6',
-            'is_banned' => 'nullable',
-        ], [
-            'phone.unique' => 'رقم الهاتف مسجل مسبقاً.'
+    // 2. التحقق من البيانات (تأكد من مطابقة الأسماء تماماً)
+    $validator = Validator::make($request->all(), [
+        'name'      => 'required|string|max:255',
+        'phone'     => 'required|string|unique:users,phone,' . $id,
+        'branch_id' => 'required', // سنكتفي بـ required هنا لأننا سنفحص الشركة يدوياً أدناه
+    ], [
+        'name.required'      => 'يرجى إدخال الاسم.',
+        'phone.unique'       => 'رقم الهاتف مسجل مسبقاً.',
+        'branch_id.required' => 'يرجى تحديد الفرع.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    try {
+        // 3. تحديث البيانات
+        $user->update([
+            'name'            => $request->name,
+            'phone'           => $request->phone,
+            'branch_id'       => $request->branch_id,
+            'whatsapp_number' => $request->whatsapp_number,
+            // تحديث كلمة المرور فقط إذا تم إرسالها
+            'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
         ]);
 
-        if ($validator->fails()) {
-            if ($request->wantsJson()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            return WebResponseClass::sendValidationError($validator);
-        }
+        // الفلاش ميسج للنجاح
+        session()->flash('success', true);
+        session()->flash('success_title', 'تم التحديث!');
+        session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
 
-        try {
-            $data = [
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'whatsapp_number' => $request->whatsapp_number,
-                'type' => $request->type,
-            ];
+        return response()->json(['success' => true]);
 
-            // تحديث حالة الحظر إن وجدت
-            if ($request->has('is_banned')) {
-                $data['is_banned'] = filter_var($request->is_banned, FILTER_VALIDATE_BOOLEAN);
-            }
-
-            // تحديث كلمة المرور فقط إذا تم إدخال قيمة جديدة
-            if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->password);
-            }
-
-            $user->update($data);
-
-            if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تم التحديث!');
-                session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
-                return response()->json(['success' => true]);
-            }
-
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المستخدم بنجاح.', 'حسناً', 'users.index');
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
-            }
-            return WebResponseClass::sendExceptionError($e);
-        }
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
     }
+}
 
     /**
      * حذف مستخدم (يدعم AJAX)

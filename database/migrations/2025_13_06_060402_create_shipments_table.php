@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             // $table->foreignId('driver_id')->nullable()->constrained('drivers');
             $table->string('sender_branch_code', 10);
-            $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            // $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->string('receiver_branch_code', 10);
-            $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            // $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->foreignId('sender_customer_id')->nullable()->constrained('customers')->nullOnDelete();
             $table->foreignId('shipment_package_id')->nullable()->constrained('shipment_packages')->nullOnDelete();
             $table->foreignId('receiver_customer_id')->nullable()->constrained('customers')->nullOnDelete();

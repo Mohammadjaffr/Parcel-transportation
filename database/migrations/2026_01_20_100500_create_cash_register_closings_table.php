@@ -24,10 +24,10 @@ return new class extends Migration
             $table->timestamps();
 
             // Foreign keys
-            $table->foreign('branch_code')
-                ->references('code')
-                ->on('branches')
-                ->onDelete('cascade');
+            // $table->foreign('branch_code')
+            //     ->references('code')
+            //     ->on('branches')
+            //     ->onDelete('cascade');
 
             $table->foreign('closed_by')
                 ->references('id')

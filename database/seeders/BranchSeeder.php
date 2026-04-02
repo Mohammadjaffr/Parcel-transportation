@@ -12,28 +12,50 @@ class BranchSeeder extends Seeder
      */
     public function run(): void
     {
-        Branch::create([
-            'name' => 'القطن',
-            'address' => 'القطن',
-            'phone' => '966500000001',
-            'code' => 'QTN',
-            'city' => 'حضرموت',
-        ]);
         
         Branch::create([
-            'name' => 'عدن',
-            'address' => 'المعلا',
-            'phone' => '966500000001',
-            'code' => 'ADN',
-            'city' => 'عدن',
-        ]);
-        
-        Branch::create([
-            'name' => 'المكلا',
-            'address' => 'اربعين شقة',
-            'phone' => '967774996316',
+            'app_id' => 1,
             'code' => 'MKL',
-            'city' => 'حضرموت',
+            'name' => 'فرع المكلا',
+            'city'    => 'المكلا',
+            'address' => 'الشارع العام، بجوار البنك الأهلي',
+            'phone' => '967711111111',
+        ]);
+
+        Branch::create([
+            'app_id' => 1,
+            'code' => 'ADN',
+            'name' => 'فرع عدن',
+            'city'    => 'المكلا',
+            'address' => 'الشارع العام، بجوار البنك الأهلي',
+            'phone' => '967722222222',
+        ]);
+
+        Branch::create([
+            'app_id' => 2,
+            'code' => 'MKL',
+            'name' => 'فرع المكلا',
+            'city'    => 'المكلا',
+            'address' => 'الشارع العام، بجوار البنك الأهلي',
+            'phone' => '967711111111',
+        ]);
+
+        Branch::create([
+            'app_id' => 2,
+            'code' => 'ADN',
+            'name' => 'فرع عدن',
+            'city'    => 'المكلا',
+            'address' => 'الشارع العام، بجوار البنك الأهلي',
+            'phone' => '967722222222',
+        ]);
+
+        Branch::create([
+            'app_id' => 3,
+            'code' => 'MKL',
+            'name' => 'فرع المكلا',
+            'city'    => 'المكلا',
+            'address' => 'الشارع العام، بجوار البنك الأهلي',
+            'phone' => '967711111111',
         ]);
     }
 }

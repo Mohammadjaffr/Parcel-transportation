@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shipment_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('sender_branch_code', 10);
-            $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            // $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->string('receiver_branch_code', 10);
-            $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            // $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->enum('type', ['cod', 'settlement','partial_payment']); // شحنة آجل / تسوية
             $table->string('description')->nullable();

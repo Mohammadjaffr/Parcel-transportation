@@ -48,15 +48,13 @@ class LoginRequest extends FormRequest
                 'phone' => 'البيانات المدخلة غير صحيحة',
             ]);
         }
-        // if(Auth::user()->type == 'user'){
-        //     Auth::logout();
-        //     RateLimiter::hit($this->throttleKey());
-
-        //     throw ValidationException::withMessages([ 
-        //         'phone' => 'ليس لديك صلاحية الدخول من خلال هذا الحساب',
-        //     ]);
-        // }
-
+        $user = Auth::user();
+        if ($user->app_id && !$user->app->is_active) {
+            Auth::logout();
+            throw ValidationException::withMessages([
+                'phone' => 'عذراً، اشتراك الشركة غير فعال أو منتهي. يرجى التواصل مع الإدارة.',
+            ]);
+        }
         RateLimiter::clear($this->throttleKey());
     }
 

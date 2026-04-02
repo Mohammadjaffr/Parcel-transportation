@@ -2,29 +2,30 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToApp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
 {
-    use HasFactory;
-
+    use HasFactory,BelongsToApp;
     protected $table = 'branches';
-    protected $primaryKey = 'code';
-    protected $keyType = 'string';
-    public $incrementing = false;
-
     protected $fillable = [
         'name',
         'address',
         'city',
         'phone',
         'code',
+        'app_id'
     ];
 
     public function sentShipments()
     {
         return $this->hasMany(Shipment::class, 'sender_branch_code', 'code');
+    }
+    public function app()
+    {
+        return $this->belongsTo(App::class);
     }
 
     public function receivedShipments()

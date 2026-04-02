@@ -12,11 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('branches', function (Blueprint $table) {
-            $table->string('code', 10)->primary();
+            $table->id();
+            $table->string('code', 10);
             $table->string('name');
+            $table->foreignId('app_id')->constrained('apps')->cascadeOnDelete();
             $table->string('address');
             $table->string('city');
             $table->string('phone');
+            $table->string('map_link')->nullable();
+            $table->unique(['app_id', 'code']);
             $table->timestamps();
         });
     }

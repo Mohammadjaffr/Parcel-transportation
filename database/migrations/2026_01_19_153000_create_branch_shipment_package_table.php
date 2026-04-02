@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shipment_package_id')->constrained('shipment_packages')->onDelete('cascade');
             $table->string('branch_code');
-            $table->foreign('branch_code')->references('code')->on('branches')->onDelete('cascade');
+            // $table->foreign('branch_code')->references('code')->on('branches')->onDelete('cascade');
             $table->enum('status', ['pending', 'arrived', 'delivered'])->default('pending');
             $table->dateTime('arrival_date')->nullable();
             $table->text('notes')->nullable();

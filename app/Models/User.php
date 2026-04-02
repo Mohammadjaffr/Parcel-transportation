@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -26,11 +27,10 @@ class User extends Authenticatable
         'type',
         'is_banned',
         'branch_code',
+        'app_id',
+        'branch_id'
     ];
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class, 'branch_code', 'code');
-    }
+    
 
 
     /**
@@ -55,6 +55,21 @@ class User extends Authenticatable
             'password' => 'hashed',
             'is_banned' => 'boolean',
         ];
+    }
+
+
+    public function isAdmin()
+    {
+        return $this->type === 'admin';
+    }
+    public function app()
+{
+    return $this->belongsTo(App::class, 'app_id');
+}
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_code', 'code');
     }
 
     public function devices()

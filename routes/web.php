@@ -12,6 +12,7 @@ use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FinanceSettlementController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptHeaderController;
 use App\Http\Controllers\ReportController;
@@ -217,14 +218,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/receipts/{receipt}/add-item', [ReceiptHeaderController::class, 'addItem'])->name('receipts.add-item');
     Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
     Route::delete('/receipt-items/{item}', [ReceiptHeaderController::class, 'destroyItem'])->name('receipt-items.destroy');
-
+    Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
 
 
     // mobile routes
 
     Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
+    
     Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
 });
 
 

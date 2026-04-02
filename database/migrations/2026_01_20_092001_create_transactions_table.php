@@ -27,10 +27,10 @@ return new class extends Migration
 
             // Foreign key constraints
             // CRITICAL: branch_code references branches.code (string primary key)
-            $table->foreign('branch_code')
-                ->references('code')
-                ->on('branches')
-                ->onDelete('cascade');
+            // $table->foreign('branch_code')
+            //     ->references('code')
+            //     ->on('branches')
+            //     ->onDelete('cascade');
 
             $table->foreign('transaction_category_id')
                 ->references('id')

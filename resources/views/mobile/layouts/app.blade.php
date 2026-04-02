@@ -98,18 +98,15 @@
             const dropdown = document.getElementById('notif-dropdown');
             const btn = document.getElementById('notif-btn');
 
-            // تبديل الكلاسات المسؤولة عن الظهور والأنيميشن
             dropdown.classList.toggle('opacity-0');
             dropdown.classList.toggle('invisible');
             dropdown.classList.toggle('scale-95');
             dropdown.classList.toggle('translate-y-2');
 
-            // تلوين الزر نفسه ليدل على أنه نشط
             btn.classList.toggle('bg-primary/10');
             btn.classList.toggle('text-primary');
         }
 
-        // إغلاق القائمة عند الضغط في أي مكان خارجها (UX Best Practice)
         document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('notif-dropdown');
             const wrapper = document.getElementById('header-actions');

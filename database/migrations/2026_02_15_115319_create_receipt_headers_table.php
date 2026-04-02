@@ -22,8 +22,8 @@ return new class extends Migration
             $table->softDeletes();
 
             // Foreign keys for branch codes (string type)
-            $table->foreign('source_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
-            $table->foreign('destination_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
+            // $table->foreign('source_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
+            // $table->foreign('destination_branch_code')->references('code')->on('branches')->cascadeOnDelete()->onUpdate('cascade');
             
             // Unique constraint: Receipt number must be unique per source branch
             $table->unique(['number', 'source_branch_code']);

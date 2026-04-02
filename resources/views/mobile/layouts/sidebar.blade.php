@@ -28,15 +28,15 @@
         </span>
     </a>
 
-    <a href="{{ route('branch.index') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('branch.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+    <a href="{{ route('mobile.office') }}"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('mobile.office') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
 
         <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is('branch.*') ? 1 : 0 }};">
+            style="font-variation-settings: 'FILL' {{ Route::is('mobile.office') ? 1 : 0 }};">
             apartment
         </span>
 
-        <span class="font-headline text-[10px] {{ Route::is('branch.*') ? 'font-bold' : 'font-medium' }} mt-1">
+        <span class="font-headline text-[10px] {{ Route::is('mobile.office') ? 'font-bold' : 'font-medium' }} mt-1">
             المكاتب
         </span>
     </a>

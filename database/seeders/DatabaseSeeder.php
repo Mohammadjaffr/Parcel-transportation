@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             // VehicleSeeder::class,
+            AppSeeder::class,
+            OfficeSeeder::class,
             BranchSeeder::class,
             UserSeeder::class,
             AppSettingsSeeder::class,
