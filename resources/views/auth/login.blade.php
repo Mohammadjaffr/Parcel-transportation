@@ -47,13 +47,13 @@
                         "surface-variant": "#d2e4fb",
                         "error-container": "#ffdad6",
                         "on-secondary-container": "#673b00",
-                        "secondary-container": "#fe9d20", // اللون البرتقالي الأساسي
+                        "secondary-container": "#fe9d20", 
                         "on-tertiary-fixed": "#281802",
                         "on-primary": "#ffffff",
                         "on-surface": "#0b1d2d",
                         "on-tertiary": "#ffffff",
                         "tertiary-fixed": "#feddb5",
-                        "primary": "#041627", // اللون الكحلي الغامق
+                        "primary": "#041627", 
                         "surface-dim": "#cadcf2",
                         "on-error-container": "#93000a",
                         "surface-container-lowest": "#ffffff",
@@ -187,8 +187,6 @@
                             </div>
 
                             <div class="flex items-center gap-2 px-4 h-[52px] bg-slate-100 border-r border-slate-200">
-                                <img :src="`https://flagcdn.com/w20/${selectedCountry.code.toLowerCase()}.png`"
-                                    alt="Flag" class="w-5 h-auto rounded-sm shadow-sm">
                                 <span class="text-sm font-bold text-on-surface font-headline dir-ltr"
                                     x-text="selectedCountry.dial_code"></span>
                             </div>
