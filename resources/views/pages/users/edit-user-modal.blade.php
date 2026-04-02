@@ -73,8 +73,8 @@
                                     :key="country.code">
                                     <div @click="editUser.phone_country = country; open = false"
                                         class="flex items-center gap-3 p-2 px-4 transition-colors duration-150 cursor-pointer hover:bg-sky-50 dark:hover:bg-gray-700">
-                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`" alt=""
-                                            class="w-5">
+                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
+                                            alt="" class="w-5">
                                         <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                             x-text="country.name"></span>
                                         <span class="text-xs tracking-wider text-gray-500 dark:text-gray-400"
@@ -125,8 +125,8 @@
                                     :key="country.code">
                                     <div @click="editUser.whatsapp_country = country; open = false"
                                         class="flex items-center gap-3 p-2 px-4 transition-colors duration-150 cursor-pointer hover:bg-sky-50 dark:hover:bg-gray-700">
-                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`" alt=""
-                                            class="w-5">
+                                        <img :src="`https://flagcdn.com/w20/${country.code.toLowerCase()}.png`"
+                                            alt="" class="w-5">
                                         <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                             x-text="country.name"></span>
                                         <span class="text-xs tracking-wider text-gray-500 dark:text-gray-400"
@@ -143,8 +143,8 @@
                         class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                         كلمة السر الجديدة <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
                     </label>
-                    <input type="password" id="edit_password" name="password" placeholder="اتركها فارغة لعدم التغيير"
-                        x-model="editUser.password"
+                    <input type="password" id="edit_password" name="password"
+                        placeholder="اتركها فارغة لعدم التغيير" x-model="editUser.password"
                         class="hover:border-brand-500 dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white">
                 </div>
 
@@ -175,9 +175,10 @@
                 </button>
                 <button type="submit" :disabled="isUpdating"
                     class="flex items-center justify-center gap-2 hover:bg-brand-600 w-full px-4 py-3 text-sm font-medium text-white rounded-lg bg-brand-500 disabled:opacity-75 disabled:cursor-not-allowed transition-all">
-                    <svg x-show="isUpdating" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                    <svg x-show="isUpdating" class="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                            stroke-width="4">
                         </circle>
                         <path class="opacity-75" fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">

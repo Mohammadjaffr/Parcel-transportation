@@ -361,7 +361,7 @@
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
                             </div>
-                                <div class="md:col-span-2">
+                            <div class="md:col-span-2">
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">رمز
                                     الطرد</label>
                                 <input type="text" name="code" value="{{ old('code') }}"
@@ -371,7 +371,7 @@
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div >
+                            <div>
                                 <label class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-400">إجمالي
                                     المبلغ</label>
                                 <input type="number" name="total_amount" value="{{ old('total_amount') }}"
@@ -382,7 +382,7 @@
                                     <div class="mt-1 text-sm text-error-500">{{ $message }}</div>
                                 @enderror
                             </div>
-                        
+
                         </div>
                     </div>
 
@@ -437,8 +437,8 @@
 
                                 <label
                                     class="flex relative gap-3 items-center text-sm font-medium cursor-pointer select-none">
-                                    <input class="sr-only" type="radio" name="payment_method"
-                                        value="customer_credit" @change="payment_method='customer_cerrorit'"
+                                    <input class="sr-only" type="radio" name="payment_method" value="customer_credit"
+                                        @change="payment_method='customer_cerrorit'"
                                         {{ old('payment_method') == 'customer_cerrorit' ? 'checked' : '' }}>
                                     <span
                                         :class="payment_method === 'customer_cerrorit' ? 'border-brand-500 bg-brand-500' :

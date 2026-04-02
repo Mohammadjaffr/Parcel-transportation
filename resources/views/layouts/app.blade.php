@@ -53,6 +53,8 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
                 <!-- ===== Breadcrumb End -->
                 @yield('content')
                 <x-modals.warning-modal />
+                <x-modals.error-modal-desktop />
+                <x-modals.success-modal-desktop />
             </main>
 
             <!-- ===== Main Content End ===== -->
@@ -65,13 +67,13 @@ $watch('darkMode', value => localStorage.setItem('darkMode', JSON.stringify(valu
     @php
         $systemBalance = $systemBalance ?? 0;
     @endphp
- <div style="position: absolute; width: 0; height: 0; overflow: hidden;">
-                 @include('closings.create-closing-modal')
+    <div style="position: absolute; width: 0; height: 0; overflow: hidden;">
+        @include('closings.create-closing-modal')
 
         @php $categories = $categories ?? collect(); @endphp
         @include('transactions.create-transaction-modal')
-   </div>
-       
+    </div>
+
 
     @yield('script')
     <script defer src="{{ asset('tailadmin/build/bundle.js') }}"></script>

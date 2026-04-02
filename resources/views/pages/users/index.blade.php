@@ -3,8 +3,7 @@
 @section('Breadcrumb', 'إدارة المستخدمين')
 @section('addButton')
     @include('pages.users.create-user-modal')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
+
 @endsection
 
 @section('content')
@@ -13,19 +12,19 @@
         @include('pages.users.edit-user-modal')
 
 
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             <div @click="statusFilter = 'all'; filterNow()"
                 :class="statusFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-50 dark:bg-gray-800 text-brand-500">
+                    class="flex justify-center items-center w-10 h-10 bg-gray-50 rounded-xl dark:bg-gray-800 text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">إجمالي
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
                         المستخدمين</span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.length"></h4>
                 </div>
@@ -35,14 +34,14 @@
                 :class="statusFilter === 'active' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04M12 21.48V22" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">نشط
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">نشط
                         حالياً</span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
                 </div>
@@ -52,14 +51,14 @@
                 :class="statusFilter === 'inactive' ? 'border-error-500 ring-2 ring-error-500/20' : 'border-gray-100'"
                 class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
                 <div
-                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                     </svg>
                 </div>
                 <div class="mt-3">
-                    <span class="text-theme-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest">حسابات
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">حسابات
                         محظورة</span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 1).length"></h4>
                 </div>
@@ -71,12 +70,12 @@
         <div
             class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
             <div class="w-full bg-white dark:bg-white/[0.03] p-4 rounded-2xl">
-                <div class="relative group border border-brand-500 ring-2 ring-brand-500/20 rounded-2xl">
+                <div class="relative rounded-2xl border ring-2 group border-brand-500 ring-brand-500/20">
                     <input type="text" x-model="search" @input.debounce.300ms="filterNow"
                         placeholder="ابحث بالاسم أو رقم الهاتف..."
-                        class="w-full h-12 pr-11 pl-4 rounded-xl border-none bg-gray-50 dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 transition-all text-sm font-medium dark:text-white placeholder-gray-400">
+                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
                     <div
-                        class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 group-focus-within:text-brand-500">
+                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -102,7 +101,7 @@
                             <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
                                 class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 hover:border-brand-200 dark:bg-gray-900 dark:border-gray-800">
                                 <template x-if="isFetching == user.id">
-                                    <svg class="animate-spin h-5 w-5 text-brand-500" fill="none" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10"
                                             stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
@@ -154,22 +153,22 @@
 
             {{-- ===== Desktop View (Table) ===== --}}
             <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
-                <table class="w-full border-separate border-spacing-y-3 text-right">
+                <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
                         <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
-                            <th class="py-4 px-6">المستخدم</th>
-                            <th class="py-4 px-6">الهاتف</th>
-                            <th class="py-4 px-6 text-center">نوع الحساب</th>
-                            <th class="py-4 px-6 text-center">الحالة</th>
-                            <th class="py-4 px-6 text-center">الإجراءات</th>
+                            <th class="px-6 py-4">المستخدم</th>
+                            <th class="px-6 py-4">الهاتف</th>
+                            <th class="px-6 py-4 text-center">نوع الحساب</th>
+                            <th class="px-6 py-4 text-center">الحالة</th>
+                            <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y-0">
                         <template x-for="user in filteredUsers" :key="user.id">
                             <tr
-                                class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-md transition-all border border-transparent hover:border-gray-100 dark:hover:border-gray-800">
+                                class="bg-white rounded-2xl border border-transparent shadow-sm transition-all dark:bg-gray-900 hover:shadow-md hover:border-gray-100 dark:hover:border-gray-800">
 
-                                <td class="py-5 px-6 first:rounded-r-2xl border-y border-r dark:border-gray-800/50">
+                                <td class="px-6 py-5 border-r first:rounded-r-2xl border-y dark:border-gray-800/50">
                                     <div class="flex flex-col">
                                         <span class="text-sm font-black text-gray-900 dark:text-white"
                                             x-text="user.name"></span>
@@ -178,12 +177,12 @@
                                     </div>
                                 </td>
 
-                                <td class="py-5 px-6 border-y dark:border-gray-800/50">
+                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
                                     <span class="text-sm font-bold text-gray-500 dark:text-gray-400"
                                         x-text="user.phone"></span>
                                 </td>
 
-                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
                                     <span
                                         :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' :
                                             'bg-gray-50 text-gray-500 dark:bg-gray-700'"
@@ -191,7 +190,7 @@
                                         x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
                                 </td>
 
-                                <td class="py-5 px-6 border-y dark:border-gray-800/50 text-center">
+                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
                                     <span
                                         :class="user.is_banned == 0 ? 'bg-success-50 text-success-500' :
                                             'bg-error-50 text-error-500'"
@@ -201,12 +200,12 @@
                                 </td>
 
                                 <td
-                                    class="py-5 px-6 last:rounded-l-2xl border-y border-l dark:border-gray-800/50 text-center">
-                                    <div class="flex items-center justify-center gap-2">
+                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                    <div class="flex gap-2 justify-center items-center">
                                         <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
-                                            class="inline-flex p-2 text-gray-400 transition-all rounded-lg hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
+                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
                                             <template x-if="isFetching == user.id">
-                                                <svg class="animate-spin h-5 w-5 text-brand-500"
+                                                <svg class="w-5 h-5 animate-spin text-brand-500"
                                                     xmlns="http://www.w3.org/2000/svg" fill="none"
                                                     viewBox="0 0 24 24">
                                                     <circle class="opacity-25" cx="12" cy="12" r="10"
@@ -231,7 +230,7 @@
 
                         <tr x-show="filteredUsers.length === 0">
                             <td colspan="5" class="py-20 text-center">
-                                <div class="text-gray-400 italic">لا توجد نتائج تطابق بحثك حالياً..</div>
+                                <div class="italic text-gray-400">لا توجد نتائج تطابق بحثك حالياً..</div>
                             </td>
                         </tr>
                     </tbody>

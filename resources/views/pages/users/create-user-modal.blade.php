@@ -1,4 +1,4 @@
-<div x-data="{isModalOpen: @if(session('isModalOpen')) true @else false @endif, isLoading: false }">
+<div x-data="{ isModalOpen: @if (session('isModalOpen')) true @else false @endif, isLoading: false }">
 
     <button @click="isModalOpen = true"
         class="flex justify-center hover:bg-brand-600 px-4 py-3 text-sm font-medium text-white rounded-lg bg-brand-500">
@@ -45,7 +45,7 @@
                             countries: @js(array_values(config('countries'))),
                             selectedCountry: { name: 'Yemen', code: 'YE', dial_code: '+967' },
                             localPhoneNumber: '',
-
+                        
                             get filteredCountries() {
                                 if (this.search === '') return this.countries;
                                 return this.countries.filter(country => {
@@ -125,11 +125,11 @@
                             countries: @js(array_values(config('countries'))),
                             selectedCountry: null,
                             localPhoneNumber: '', // <-- 1. المتغير الجديد لتخزين رقم الجوال المحلي
-
+                        
                             init() {
                                 this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
                             },
-
+                        
                             get filteredCountries() {
                                 if (this.search === '') return this.countries;
                                 return this.countries.filter(country => {
@@ -180,7 +180,8 @@
                                             <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
 
-                                            <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
+                                            <span
+                                                class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
                                                 x-text="country.name"></span>
                                             <span
                                                 class="text-xs tracking-wider text-gray-500 dark:text-gray-400 font-mono dir-ltr"
@@ -195,7 +196,8 @@
                     </div>
 
                     <div>
-                        <label for="password" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                        <label for="password"
+                            class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
                             كلمة السر <span class="mt-1 text-xs text-warning-500 dark:text-warning/90">*</span>
                         </label>
                         <input type="text" id="password" name="password"
@@ -219,7 +221,8 @@
                         <!-- Loading Spinner -->
                         <svg x-show="isLoading" class="animate-spin h-5 w-5 text-white"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">

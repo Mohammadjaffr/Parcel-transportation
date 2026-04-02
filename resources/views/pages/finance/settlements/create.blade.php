@@ -11,7 +11,7 @@
                 <span class="p-2 bg-brand-50 dark:bg-brand-500/10 rounded-xl text-brand-500">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </span>
                 تسوية مالية جديدة
@@ -39,13 +39,14 @@
                     class="w-10 h-10 rounded-full bg-white dark:bg-gray-800 flex items-center justify-center shadow-sm text-gray-400">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                            d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
                 </div>
             </div>
 
             <div class="p-8">
-                <form action="{{ route('finance.settlements.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                <form action="{{ route('finance.settlements.store') }}" method="POST" class="space-y-6"
+                    x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
                     @csrf
 
                     {{-- الفرع المرسل (الكود) --}}
@@ -58,15 +59,14 @@
                         </label>
                         <div class="relative">
                             <select name="receiver_branch_code" required
-                                    class="w-full h-14 pr-4 pl-10 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-gray-800 dark:text-white font-medium appearance-none transition-all cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
+                                class="w-full h-14 pr-4 pl-10 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-gray-800 dark:text-white font-medium appearance-none transition-all cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
                                 <option disabled value="">
                                     اختر الفرع المستحق للدفع...
                                 </option>
                                 @foreach ($branchesOwed as $otherBranchId => $row)
                                     @php $net = abs($row['net']); @endphp
-                                    <option value="{{ $otherBranchId }}"
-                                            data-amount="{{ $net }}"
-                                            {{ old('receiver_branch_code') == $otherBranchId ? 'selected' : '' }}>
+                                    <option value="{{ $otherBranchId }}" data-amount="{{ $net }}"
+                                        {{ old('receiver_branch_code') == $otherBranchId ? 'selected' : '' }}>
                                         {{ $row['branch']->name ?? $otherBranchId }} — مستحق له:
                                         {{ number_format($net, 2) }} ر.ي
                                     </option>
@@ -75,7 +75,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                          d="M19 9l-7 7-7-7" />
+                                        d="M19 9l-7 7-7-7" />
                                 </svg>
                             </div>
                         </div>
@@ -91,17 +91,12 @@
                             <span id="max-amount-label" class="text-xs text-brand-500 hidden"></span>
                         </label>
                         <div class="relative group">
-                            <div
-                                class="absolute inset-y-0 left-0 pr-4 flex.items-center pointer-events-none text-gray-400">
+                            <div class="absolute inset-y-0 left-0 pr-4 flex.items-center pointer-events-none text-gray-400">
                                 <span class="text-sm font-bold">ر.ي</span>
                             </div>
-                            <input type="number"
-                                   step="0.01"
-                                   min="0.01"
-                                   name="amount"
-                                   value="{{ old('amount') }}"
-                                   class="w-full h-14 pr-4 pl-4 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-xl font-bold text-gray-800 dark:text-white placeholder-gray-300 transition-all font-mono"
-                                   placeholder="0.00">
+                            <input type="number" step="0.01" min="0.01" name="amount" value="{{ old('amount') }}"
+                                class="w-full h-14 pr-4 pl-4 rounded-xl bg-gray-50 dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-xl font-bold text-gray-800 dark:text-white placeholder-gray-300 transition-all font-mono"
+                                placeholder="0.00">
                         </div>
                         @error('amount')
                             <p class="text-xs text-error-500 font-bold mt-1">{{ $message }}</p>
@@ -114,17 +109,16 @@
                             ملاحظات (اختياري)
                         </label>
                         <textarea name="description" rows="3"
-                                  class="w-full p-4 rounded-xl bg-gray-50.dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-gray-800.dark:text-white placeholder-gray-400 transition-all resize-none"
-                                  placeholder="مثال: تسليم نقد يد بيد...">{{ old('description') }}</textarea>
+                            class="w-full p-4 rounded-xl bg-gray-50.dark:bg-gray-900 border-none focus:ring-2 focus:ring-brand-500/20 text-gray-800.dark:text-white placeholder-gray-400 transition-all resize-none"
+                            placeholder="مثال: تسليم نقد يد بيد...">{{ old('description') }}</textarea>
                     </div>
 
                     <!-- Submit Button -->
                     <button type="submit" :disabled="isSubmitting"
-                            class="w-full h-14 bg-brand-500 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-brand-500/40 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
+                        class="w-full h-14 bg-brand-500 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg shadow-brand-500/30 hover:shadow-brand-500/40 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed">
                         <span x-show="!isSubmitting" class="flex items-center gap-2">
-                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M5 13l4 4L19 7" />
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
                             تأكيد وإرسال التسوية
                         </span>
@@ -151,7 +145,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const selectBranch = document.querySelector("select[name='receiver_branch_code']");
             const amountInput = document.querySelector("input[name='amount']");
             const maxLabel = document.getElementById('max-amount-label');

@@ -1,17 +1,18 @@
 @extends('layouts.app')
 @section('title', 'إدارة العملاء')
 @section('Breadcrumb', 'إدارة العملاء')
-@section('addButton')
-    @include('pages.customers.create-customer-modal')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
-@endsection
+
+
+
 
 
 @section('content')
+    <x-modals.success-modal />
+    <x-modals.error-modal />
     <div class="space-y-6 font-outfit" dir="rtl" x-data="customerRegistry()">
         @include('pages.customers.edit-customer-modal')
 
+        @include('pages.customers.create-customer-modal')
 
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
             <div @click="filterStatus = 'all'"

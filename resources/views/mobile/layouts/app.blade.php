@@ -13,7 +13,7 @@
         rel="stylesheet" />
 
     <script src="{{ asset('assets/js/cdn.min.js') }}"></script>
-    <script src="{{asset('assets/js/cdn.tailwindcss.js')}}"></script>
+    <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -48,7 +48,10 @@
         }
     </script>
     <style>
-        [x-cloak] { display: none !important; }
+        [x-cloak] {
+            display: none !important;
+        }
+
         body {
             font-family: 'IBM Plex Sans Arabic', sans-serif;
             min-height: max(884px, 100dvh);
@@ -65,6 +68,7 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
@@ -76,24 +80,27 @@
     </style>
 </head>
 
-<body class="bg-surface text-on-surface min-h-screen bg-gray-50">
+<body class="min-h-screen bg-gray-50 bg-surface text-on-surface">
 
     @include('mobile.layouts.header')
 
-    <main class="pt-24 pb-32 px-6">
+    <main class="px-6 pt-24 pb-32">
         @yield('content')
     </main>
 
     @include('mobile.layouts.sidebar')
-    <a href="#" class="fixed bottom-28 left-6 z-50 flex items-center justify-center w-14 h-14 bg-primary/80 backdrop-blur-md text-white rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all duration-200 group border border-white/20">
-    <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1, 'wght' 500;">add_box</span>
+    <a href="#"
+        class="flex fixed left-6 bottom-28 z-50 justify-center items-center w-14 h-14 text-white rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-200 bg-primary/80 shadow-primary/20 hover:scale-105 active:scale-95 group border-white/20">
+        <span class="text-3xl material-symbols-outlined"
+            style="font-variation-settings: 'FILL' 1, 'wght' 500;">add_box</span>
 
-    <span class="absolute right-16 bg-slate-800/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg">
-        إضافة طرد جديد
-    </span>
-</a>
+        <span
+            class="absolute right-16 px-3 py-1.5 text-xs text-white whitespace-nowrap rounded-xl shadow-lg opacity-0 backdrop-blur-sm transition-opacity pointer-events-none bg-slate-800/90 group-hover:opacity-100">
+            إضافة طرد جديد
+        </span>
+    </a>
 
-<script>
+    <script>
         function toggleNotifications() {
             const dropdown = document.getElementById('notif-dropdown');
             const btn = document.getElementById('notif-btn');
@@ -107,7 +114,7 @@
             btn.classList.toggle('text-primary');
         }
 
-        document.addEventListener('click', function (event) {
+        document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('notif-dropdown');
             const wrapper = document.getElementById('header-actions');
 

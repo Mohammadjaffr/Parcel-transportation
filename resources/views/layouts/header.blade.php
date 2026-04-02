@@ -1,12 +1,12 @@
 <header x-data="{ menuToggle: false }"
-    class="sticky top-0 z-40 flex w-full border-gray-200 bg-white lg:border-b dark:border-gray-800 dark:bg-gray-900">
-    <div class="flex grow flex-col items-center justify-between lg:flex-row lg:px-6">
+    class="flex sticky top-0 z-40 w-full bg-white border-gray-200 lg:border-b dark:border-gray-800 dark:bg-gray-900">
+    <div class="flex flex-col justify-between items-center grow lg:flex-row lg:px-6">
         <div
-            class="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
+            class="flex gap-2 justify-between items-center px-3 py-3 w-full border-b border-gray-200 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
             <!-- Hamburger Toggle BTN -->
             <button
                 :class="sidebarToggle ? 'lg:bg-transparent dark:lg:bg-transparent bg-gray-100 dark:bg-gray-800' : ''"
-                class="z-99999 flex h-10 w-10 items-center justify-center rounded-lg border-gray-200 text-gray-500 lg:h-11 lg:w-11 lg:border dark:border-gray-800 dark:text-gray-400"
+                class="flex justify-center items-center w-10 h-10 text-gray-500 rounded-lg border-gray-200 z-99999 lg:h-11 lg:w-11 lg:border dark:border-gray-800 dark:text-gray-400"
                 @click.stop="sidebarToggle = !sidebarToggle">
                 <svg class="hidden fill-current lg:block" width="16" height="12" viewBox="0 0 16 12" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
@@ -32,16 +32,16 @@
             </button>
             <!-- Hamburger Toggle BTN -->
 
-            <a href="index.html" class="lg:hidden w-12 h-12">
-                <img class="dark:hidden " src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
+            <a href="index.html" class="w-12 h-12 lg:hidden">
+                <img class="dark:hidden" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
                     alt="Logo" />
-                <img class="hidden dark:block w-12 h-12" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
+                <img class="hidden w-12 h-12 dark:block" src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}"
                     alt="Logo" />
             </a>
 
             <!-- Application nav menu button -->
             <button
-                class="z-40 flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
+                class="flex z-40 justify-center items-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
                 :class="menuToggle ? 'bg-gray-100 dark:bg-gray-800' : ''" @click.stop="menuToggle = !menuToggle">
                 <svg class="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     xmlns="http://www.w3.org/2000/svg">
@@ -54,20 +54,20 @@
         </div>
 
         <div :class="menuToggle ? 'flex' : 'hidden'"
-            class="shadow-theme-md w-full items-center justify-between gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0 lg:shadow-none">
-            <div class="2xsm:gap-3 flex items-center gap-2">
+            class="gap-4 justify-between items-center px-5 py-4 w-full shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none">
+            <div class="flex gap-2 items-center 2xsm:gap-3">
                 <!-- Notification Menu Area -->
                 {{-- <div class="relative" x-data="{ dropdownOpen: false, notifying: true }"
                     @click.outside="dropdownOpen = false">
                     <button
-                        class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200  text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-900 dark:border-gray-800  dark:hover:bg-gray-800 dark:hover:text-white"
+                        class="flex relative justify-center items-center w-11 h-11 text-gray-500 rounded-full border border-gray-200 transition-colors hover:text-dark-900 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-900 dark:border-gray-800 dark:hover:bg-gray-800 dark:hover:text-white"
                         @click.prevent="dropdownOpen = ! dropdownOpen; notifying = false" :class="notifying ?
                                 'text-orange-500 border-orange-300 dark:text-orange-500 dark:border-orange-300' : ''">
 
                         <span :class="!notifying ? 'hidden' : 'flex'"
-                            class="absolute top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-orange-400 dark:bg-orange-500">
+                            class="absolute right-0 top-0.5 w-2 h-2 bg-orange-400 rounded-full z-1 dark:bg-orange-500">
                             <span
-                                class="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-orange-400 dark:bg-orange-500 opacity-75"></span>
+                                class="inline-flex absolute w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping -z-1 dark:bg-orange-500"></span>
                         </span>
 
                         <svg class="fill-current" width="20" height="20" viewBox="0 0 20 20" fill="none"
@@ -82,7 +82,7 @@
                     <div x-show="dropdownOpen" style="width: 300px"
                         class="shadow-theme-lg dark:bg-gray-dark absolute top-full mt-2 flex h-[200px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 sm:w-[400px] lg:start-1/2 lg:end-1/2 lg:-translate-x-1/2">
                         <div
-                            class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
+                            class="flex justify-between items-center pb-3 mb-3 border-b border-gray-100 dark:border-gray-800">
                             <h5 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                                 الإشعارات
                             </h5>
@@ -97,21 +97,21 @@
                             </button>
                         </div>
 
-                        <ul class="custom-scrollbar flex h-auto flex-col overflow-y-auto">
+                        <ul class="flex overflow-y-auto flex-col h-auto custom-scrollbar">
                             <li>
-                                <a class="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+                                <a class="flex gap-3 p-3 py-3 rounded-lg border-b border-gray-100 px-4.5 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
                                     href="#">
                                     <span class="block">
-                                        <span class="text-theme-sm mb-1.5 block text-gray-500 dark:text-gray-400">
+                                        <span class="block mb-1.5 text-gray-500 text-theme-sm dark:text-gray-400">
                                             <span class="font-medium text-gray-800 dark:text-white/90">
                                                 طلب توصيل الى الكيكه باي مبلغ كان كل يوم خميس اساعه 10 مساء
                                             </span>
                                         </span>
 
                                         <span
-                                            class="text-theme-xs flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                                            class="flex gap-2 items-center text-gray-500 text-theme-xs dark:text-gray-400">
                                             <span>توصيل</span>
-                                            <span class="h-1 w-1 rounded-full bg-gray-400"></span>
+                                            <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
                                             <span>منذ 5 دقائق</span>
                                         </span>
                                     </span>
@@ -131,7 +131,7 @@
                 {{-- <div x-data="autoAssignSystem()">
                     <div class="relative" x-data="{ dropdownOpen: false }" x-init="init()">
                         <button
-                            class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                            class="flex relative justify-center items-center w-11 h-11 text-gray-500 bg-white rounded-full border border-gray-200 transition-colors hover:text-dark-900 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                             @click.prevent="dropdownOpen = !dropdownOpen" :class="autoAssignEnabled ?
                 'text-orange-500 border-orange-300 dark:text-orange-400 dark:border-orange-500' : ''">
 
@@ -143,9 +143,9 @@
                             </svg>
 
                             <span x-show="autoAssignEnabled"
-                                class="absolute top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-orange-400">
+                                class="absolute right-0 top-0.5 w-2 h-2 bg-orange-400 rounded-full z-1">
                                 <span
-                                    class="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75"></span>
+                                    class="inline-flex absolute w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping -z-1"></span>
                             </span>
                         </button>
 
@@ -155,7 +155,7 @@
                             @click.outside="dropdownOpen = false">
 
                             <div
-                                class="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
+                                class="flex justify-between items-center pb-3 mb-3 border-b border-gray-100 dark:border-gray-800">
                                 <h5 class="text-lg font-semibold text-gray-800 dark:text-white/90">
                                     إعدادات نظام الطلبات
                                 </h5>
@@ -165,13 +165,13 @@
                             </div>
 
                             <!-- Toggle Switch -->
-                            <div class="flex items-center justify-between py-2">
-                                <label class="relative inline-flex items-center cursor-pointer gap-3">
+                            <div class="flex justify-between items-center py-2">
+                                <label class="inline-flex relative gap-3 items-center cursor-pointer">
                                     <input type="checkbox" x-model="autoAssignEnabled"
                                         @change="updateAutoAssignSetting($event.target.checked)" class="sr-only peer" />
 
                                     <!-- Circular Button with Animation -->
-                                    <div class="relative flex items-center justify-center w-11 h-11 rounded-full border-2 transition-all duration-500 ease-in-out transform hover:scale-110 group"
+                                    <div class="flex relative justify-center items-center w-11 h-11 rounded-full border-2 transition-all duration-500 ease-in-out transform hover:scale-110 group"
                                         :class="autoAssignEnabled
                             ?
                             'border-orange-300 bg-orange-50 text-orange-500 shadow-lg shadow-orange-200 dark:shadow-orange-900/30' :
@@ -192,20 +192,20 @@
 
                                         <!-- Pulse Animation when Active -->
                                         <span
-                                            class="absolute inset-0 rounded-full bg-orange-500 opacity-0 transition-all duration-1000 group-hover:animate-ping"
+                                            class="absolute inset-0 bg-orange-500 rounded-full opacity-0 transition-all duration-1000 group-hover:animate-ping"
                                             :class="autoAssignEnabled ? 'opacity-20' : ''"></span>
                                     </div>
 
                                     <!-- Status Text -->
                                     <div class="transition-all duration-300"
                                         :class="autoAssignEnabled ? 'text-orange-600' : 'text-gray-600'">
-                                        <span class="text-sm font-semibold block">
+                                        <span class="block text-sm font-semibold">
                                             <span x-show="!autoAssignEnabled" class="dark:text-orange-warning">النظام
                                                 اليدوي</span>
                                             <span x-show="autoAssignEnabled" class="dark:text-orange-warning">النظام
                                                 التلقائي</span>
                                         </span>
-                                        <span class="text-xs text-gray- dark:text-white/90 block mt-1">
+                                        <span class="block mt-1 text-xs text-gray- dark:text-white/90">
                                             <span x-show="!autoAssignEnabled">إرسال الطلبات في الداشبورد</span>
                                             <span x-show="autoAssignEnabled">إرسال الطلبات تلقائي للسائقين</span>
                                         </span>
@@ -214,7 +214,7 @@
                             </div>
 
                             <!-- Status Message -->
-                            <div x-show="message" class="mt-2 p-2 rounded text-sm" :class="messageType === 'success' ? 
+                            <div x-show="message" class="p-2 mt-2 text-sm rounded" :class="messageType === 'success' ? 
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 
                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
                                 <span x-text="message"></span>
@@ -227,7 +227,7 @@
                 <!-- Auto Assign Toggle -->
                 <!-- Dark Mode Toggler -->
                 {{-- <button
-                    class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+                    class="flex relative justify-center items-center w-11 h-11 text-gray-500 bg-white rounded-full border border-gray-200 transition-colors hover:text-dark-900 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
                     @click.prevent="darkMode = !darkMode">
                     <svg class="hidden dark:block" width="20" height="20" viewBox="0 0 20 20" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -295,13 +295,13 @@
                             'bg-red-50/90 border-red-200 text-red-800 dark:bg-red-900/80 dark:border-red-700'"
                         :style="toastType === 'success' ? 'color: #f79009' : ''" style="display: none;">
 
-                        <svg x-show="toastType === 'success'" class="h-5 w-5 shrink-0" fill="none" stroke="#f79009"
+                        <svg x-show="toastType === 'success'" class="w-5 h-5 shrink-0" fill="none" stroke="#f79009"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
 
-                        <svg x-show="toastType === 'error'" class="h-5 w-5 shrink-0 text-red-500" fill="none"
+                        <svg x-show="toastType === 'error'" class="w-5 h-5 text-red-500 shrink-0" fill="none"
                             stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -310,8 +310,8 @@
                         <span class="text-sm font-bold tracking-wide" x-text="toastMessage"></span>
 
                         <button @click="toastVisible = false"
-                            class="mr-2 opacity-50 hover:opacity-100 transition-opacity">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="mr-2 opacity-50 transition-opacity hover:opacity-100">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -320,7 +320,7 @@
 
                     <!-- Backup Button -->
                     {{-- <button @click="performBackup()" :disabled="isBackingUp"
-                        class="hover:text-dark-900 relative flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex relative justify-center items-center w-11 h-11 text-gray-500 rounded-full border border-gray-200 transition-colors hover:text-dark-900 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         title="نسخ احتياطي">
                         <!-- Cloud Upload Icon (default state) -->
                         <svg x-show="!isBackingUp" class="fill-current" width="20" height="20"
@@ -330,7 +330,7 @@
                             <path d="M6.5 19A5.5 5.5 0 014 9.34 7.5 7.5 0 0118.33 10 4.5 4.5 0 0118 19H6.5z"
                                 stroke="#f79009" stroke-width="1.5" stroke-linejoin="round" fill="none" />
                         </svg>
-                        <svg x-show="isBackingUp" class="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
+                        <svg x-show="isBackingUp" class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg"
                             fill="none" viewBox="0 0 24 24">
 
                             <circle class="opacity-20" cx="12" cy="12" r="10" stroke="none"
@@ -345,8 +345,7 @@
                 </div>
                 <!-- Database Backup Button -->
 
-                {{ Auth::user()->branch->name }}
-
+{{ Auth::user()->branch?->name }}
 
             </div>
 
@@ -355,15 +354,15 @@
                 <a class="flex items-center text-gray-700 dark:text-gray-400" href="#"
                     @click.prevent="dropdownOpen = ! dropdownOpen">
                     <span
-                        class="mr-3 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900">
-                        <svg class="h-6 w-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor"
+                        class="flex justify-center items-center mr-3 w-11 h-11 bg-gray-50 rounded-full border border-gray-200 dark:border-gray-800 dark:bg-gray-900">
+                        <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
                     </span>
 
-                    <span class="text-theme-sm mr-1 block font-medium">{{ Auth::user()->name }}</span>
+                    <span class="block mr-1 font-medium text-theme-sm">{{ Auth::user()->name }}</span>
 
                     <svg :class="dropdownOpen && 'rotate-180'" class="stroke-gray-500 dark:stroke-gray-400"
                         width="18" height="20" viewBox="0 0 18 20" fill="none"
@@ -377,18 +376,18 @@
                 <div x-show="dropdownOpen"
                     class="shadow-theme-lg dark:bg-gray-dark absolute {{ app()->getLocale() == 'ar' ? 'left-0' : 'right-0' }} mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-800">
                     <div>
-                        <span class="text-theme-sm block font-medium text-gray-700 dark:text-gray-400">
+                        <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
                             {{ Auth::user()->name }}
                         </span>
-                        <span class="text-theme-xs mt-0.5 block text-gray-500 dark:text-gray-400">
+                        <span class="block mt-0.5 text-gray-500 text-theme-xs dark:text-gray-400">
                             {{ Auth::user()->phone }}
                         </span>
                     </div>
 
-                    <ul class="flex flex-col gap-1 border-b border-gray-200 pt-4 pb-3 dark:border-gray-800">
+                    <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
                         {{-- <li>
                             <a href="profile.html"
-                                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                                class="flex gap-3 items-center px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                                 <svg class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                                     width="24" height="24" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -401,7 +400,7 @@
                         </li> --}}
                         {{-- <li>
                             <a href="messages.html"
-                                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                                class="flex gap-3 items-center px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                                 <svg class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                                     width="24" height="24" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -414,7 +413,7 @@
                         </li> --}}
                         {{-- <li>
                             <a href="settings.html"
-                                class="group text-theme-sm flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                                class="flex gap-3 items-center px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                                 <svg class="fill-gray-500 group-hover:fill-gray-700 dark:fill-gray-400 dark:group-hover:fill-gray-300"
                                     width="24" height="24" viewBox="0 0 24 24" fill="none"
                                     xmlns="http://www.w3.org/2000/svg">
@@ -429,7 +428,7 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button
-                            class="group text-theme-sm mt-3 flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
+                            class="flex gap-3 items-center px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
                             <svg class="fill-gray-500 group-hover:fill-gray-700 dark:group-hover:fill-gray-300"
                                 width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
