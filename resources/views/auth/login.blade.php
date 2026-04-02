@@ -10,9 +10,8 @@
         href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Manrope:wght@200;400;600;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="{{ asset('assets/js/cdn.min.js') }}"></script>
+    <script src="{{asset('assets/js/cdn.tailwindcss.js')}}"></script>
 
     <script id="tailwind-config">
         tailwind.config = {
