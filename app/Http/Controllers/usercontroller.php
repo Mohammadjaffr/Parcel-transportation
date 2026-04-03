@@ -16,27 +16,27 @@ class UserController extends Controller
      * عرض قائمة المستخدمين مع البحث
      */
     public function index(Request $request)
-{
-    $query = User::where('type', '!=', 'admin')->where('app_id', auth()->user()->app_id);
+    {
+        $query = User::where('type', '!=', 'admin')->where('app_id', auth()->user()->app_id);
 
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('phone', 'like', "%{$search}%")
-              ->orWhere('whatsapp_number', 'like', "%{$search}%");
-        });
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->latest()->paginate(10)->withQueryString();
+        $branches = Branch::where('app_id', auth()->user()->app_id)->get();
+
+        if ($request->isMobile) {
+            return view('mobile.pages.people.users.index', compact('users', 'branches'));
+        }
+
+        return view('pages.users.index', compact('users', 'branches'));
     }
-
-    $users = $query->latest()->paginate(10)->withQueryString();
-    $branches = Branch::get();
-
-    if ($request->isMobile) {
-        return view('mobile.pages.people.users.index', compact('users','branches'));
-    }
-    
-    return view('pages.users.index', compact('users','branches'));
-}
 
     /**
      * Show the form for creating a new resource.
@@ -71,7 +71,7 @@ class UserController extends Controller
         }
 
         try {
-            
+
             User::create([
                 'app_id' => auth()->user()->app_id,
                 'branch_id' => $request->branch_id,
@@ -118,67 +118,66 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        $query = User::query(); 
+        $query = User::query();
 
-    if (auth()->check() && auth()->user()->type !== 'super_admin') {
-        $query->where('app_id', auth()->user()->app_id);
-    }
-    
-    // 2. جلب المستخدم مع تفاصيل علاقته بالفرع (إن وجدت)
-    $user = $query->with('branch')->findOrFail($id);
-    
-    return response()->json($user);
+        if (auth()->check() && auth()->user()->type !== 'super_admin') {
+            $query->where('app_id', auth()->user()->app_id);
+        }
+
+        // 2. جلب المستخدم مع تفاصيل علاقته بالفرع (إن وجدت)
+        $user = $query->with('branch')->findOrFail($id);
+
+        return response()->json($user);
     }
 
     /**
      * تحديث بيانات المستخدم (يدعم AJAX)
      */
     public function update(Request $request, string $id)
-{
-    // 1. جلب المستخدم مع التأكد من عزل البيانات (SaaS)
-    $query = User::query();
-    if (auth()->user()->type !== 'super_admin') {
-        $query->where('app_id', auth()->user()->app_id);
-    }
-    $user = $query->findOrFail($id);
+    {
+        // 1. جلب المستخدم مع التأكد من عزل البيانات (SaaS)
+        $query = User::query();
+        if (auth()->user()->type !== 'super_admin') {
+            $query->where('app_id', auth()->user()->app_id);
+        }
+        $user = $query->findOrFail($id);
 
-    // 2. التحقق من البيانات (تأكد من مطابقة الأسماء تماماً)
-    $validator = Validator::make($request->all(), [
-        'name'      => 'required|string|max:255',
-        'phone'     => 'required|string|unique:users,phone,' . $id,
-        'branch_id' => 'required', // سنكتفي بـ required هنا لأننا سنفحص الشركة يدوياً أدناه
-    ], [
-        'name.required'      => 'يرجى إدخال الاسم.',
-        'phone.unique'       => 'رقم الهاتف مسجل مسبقاً.',
-        'branch_id.required' => 'يرجى تحديد الفرع.',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
-
-    try {
-        // 3. تحديث البيانات
-        $user->update([
-            'name'            => $request->name,
-            'phone'           => $request->phone,
-            'branch_id'       => $request->branch_id,
-            'whatsapp_number' => $request->whatsapp_number,
-            // تحديث كلمة المرور فقط إذا تم إرسالها
-            'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
+        // 2. التحقق من البيانات (تأكد من مطابقة الأسماء تماماً)
+        $validator = Validator::make($request->all(), [
+            'name'      => 'required|string|max:255',
+            'phone'     => 'required|string|unique:users,phone,' . $id,
+            'branch_id' => 'required', // سنكتفي بـ required هنا لأننا سنفحص الشركة يدوياً أدناه
+        ], [
+            'name.required'      => 'يرجى إدخال الاسم.',
+            'phone.unique'       => 'رقم الهاتف مسجل مسبقاً.',
+            'branch_id.required' => 'يرجى تحديد الفرع.',
         ]);
 
-        // الفلاش ميسج للنجاح
-        session()->flash('success', true);
-        session()->flash('success_title', 'تم التحديث!');
-        session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-        return response()->json(['success' => true]);
+        try {
+            // 3. تحديث البيانات
+            $user->update([
+                'name'            => $request->name,
+                'phone'           => $request->phone,
+                'branch_id'       => $request->branch_id,
+                'whatsapp_number' => $request->whatsapp_number,
+                // تحديث كلمة المرور فقط إذا تم إرسالها
+                'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
+            ]);
 
-    } catch (\Exception $e) {
-        return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
+            // الفلاش ميسج للنجاح
+            session()->flash('success', true);
+            session()->flash('success_title', 'تم التحديث!');
+            session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
+        }
     }
-}
 
     /**
      * حذف مستخدم (يدعم AJAX)

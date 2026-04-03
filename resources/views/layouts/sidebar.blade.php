@@ -153,13 +153,12 @@
 
                     <!-- Menu Item branch -->
 
-                    <li>
-                        <a href="{{ route('branch.index') }}"
-                            @click="selected = (selected === 'Profile' ? '':'Profile')" class="menu-item group"
-                            :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-active' :
-                                'menu-item-inactive'">
-                            <svg :class="window.location.href.includes('{{ route('branch.index') }}') ? 'menu-item-icon-active' :
-                                'menu-item-icon-inactive'"
+                    <li x-init="@if (request()->routeIs('branch.*') || request()->routeIs('offices.unverified.*')) selected = 'Offices' @endif">
+                        <a href="#" @click.prevent="selected = (selected === 'Offices' ? '' : 'Offices')"
+                            class="menu-item group {{ request()->routeIs('branch.*') || request()->routeIs('offices.unverified.*') ? 'menu-item-active' : 'menu-item-inactive' }}">
+
+                            {{-- أيقونة المكاتب --}}
+                            <svg class="{{ request()->routeIs('branch.*') || request()->routeIs('offices.unverified.*') ? 'menu-item-icon-active' : 'menu-item-icon-inactive' }}"
                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                 width="24" height="24">
                                 <path
@@ -168,12 +167,47 @@
                                     d="M3.019 11.115L18 5.667V9.09l4.006 1.456a.75.75 0 11-.512 1.41l-.494-.18v8.475h.75a.75.75 0 010 1.5H2.25a.75.75 0 010-1.5H3v-9.129l.019-.007zM18 20.25v-9.565l1.5.545v9.02H18zm-9-6a.75.75 0 00-.75.75v4.5c0 .414.336.75.75.75h3a.75.75 0 00.75-.75V15a.75.75 0 00-.75-.75H9z"
                                     clip-rule="evenodd" />
                             </svg>
+
                             <span class="menu-item-text" :class="sidebarToggle ? 'lg:hidden' : ''">
                                 إدارة المكاتب
                             </span>
-                        </a>
-                    </li>
 
+                            {{-- سهم القائمة الفرعية --}}
+                            <svg style="left: 10px; right: auto;"
+                                class="absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current menu-item-arrow"
+                                :class="[(selected === 'Offices') ? 'menu-item-arrow-active' : 'menu-item-arrow-inactive',
+                                    sidebarToggle ? 'lg:hidden' : ''
+                                ]"
+                                width="20" height="20" viewBox="0 0 20 20" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585" stroke=""
+                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </a>
+
+                        {{-- القائمة الفرعية --}}
+                        <div class="overflow-hidden transform translate"
+                            :class="(selected === 'Offices') ? 'block' : 'hidden'">
+                            <ul :class="sidebarToggle ? 'lg:hidden' : 'flex'"
+                                class="flex flex-col gap-1 pr-9 mt-2 menu-dropdown">
+                                {{-- مكاتب موثوقه --}}
+                                <li>
+                                    <a href="{{ route('offices.index') }}"
+                                        class="menu-dropdown-item group {{ request()->routeIs('offices.*') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                        المكاتب الموثوقة
+                                    </a>
+                                </li>
+                                {{-- مكاتب غير موثوقه --}}
+                                <li>
+                                    <a href="{{ route('offices.unverified.index') }}"
+                                        class="menu-dropdown-item group {{ request()->routeIs('offices.unverified.index') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive' }}">
+                                        المكاتب غير الموثوقة
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                   
 
                     <!-- Menu Item Forms -->
                     <li>

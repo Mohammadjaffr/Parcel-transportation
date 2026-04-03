@@ -219,6 +219,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
     Route::delete('/receipt-items/{item}', [ReceiptHeaderController::class, 'destroyItem'])->name('receipt-items.destroy');
     Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
+    Route::resource('offices', OfficeController::class)->only(['store', 'update', 'destroy']);
 
 
     // mobile routes
