@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Branch;
+use App\Models\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,20 +34,48 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'phone' => ['required', 'string', 'max:20', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
+            'office_name' => ['required', 'string', 'max:255'],
+
+            'branch_name' => ['required', 'string', 'max:255'],
+            'branch_address' => ['required', 'string', 'max:255'],
+            'branch_phone' => ['required', 'string', 'max:20'],
+            'branch_city' => ['required', 'string', 'max:255'],
         ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = DB::transaction(function () use ($request) {
+            
+            $app = App::create([
+                'name' =>  $request->office_name, 
+                'is_active' => true,
+            ]);
+
+            $branch = Branch::create([
+                'app_id' => $app->id,
+                'name' => $request->branch_name,
+                'address' => $request->branch_address,
+                'phone' => $request->branch_phone,
+                'is_main' => true, 
+                'city' => $request->branch_city, 
+            ]);
+
+            $user = User::create([
+                'name' => $request->name,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'app_id' => $app->id,
+                'branch_id' => $branch->id,
+                'type' => 'admin',
+            ]);
+            return $user;
+        });
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('dashboard.index', absolute: false));
     }
 }

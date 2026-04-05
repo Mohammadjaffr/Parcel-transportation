@@ -1,5 +1,6 @@
 <?php
 
+// معتمد
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,9 +12,8 @@ return new class extends Migration
         Schema::create('offices', function (Blueprint $table) {
             $table->id();
             $table->foreignId('app_id')->constrained('apps')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name'); 
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
             $table->timestamps();
         });
     }

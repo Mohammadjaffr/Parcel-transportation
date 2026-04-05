@@ -28,18 +28,18 @@
         </span>
     </a>
 
-    <a href="{{ route('mobile.office') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('mobile.office') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+   <a href="{{ route('mobile.office') }}"
+    class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
 
-        <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is('mobile.office') ? 1 : 0 }};">
-            apartment
-        </span>
+    <span class="material-symbols-outlined"
+        style="font-variation-settings: 'FILL' {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 1 : 0 }};">
+        apartment
+    </span>
 
-        <span class="font-headline text-[10px] {{ Route::is('mobile.office') ? 'font-bold' : 'font-medium' }} mt-1">
-            المكاتب
-        </span>
-    </a>
+    <span class="font-headline text-[10px] {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 'font-bold' : 'font-medium' }} mt-1">
+        المكاتب
+    </span>
+</a>
 
     <a href="{{ route('shipment.index') }}"
         class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('shipment.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">

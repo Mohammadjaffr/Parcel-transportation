@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('app_id')->constrained('apps')->cascadeOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->string('name');
             $table->string('phone');
-            $table->string('whatsapp_number')->nullable();
             $table->timestamps();
-        
         });
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+
+// معتمد
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,13 +15,14 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-            $table->string('code', 10);
+            $table->string('code', 10)->nullable();
             $table->string('name');
             $table->foreignId('app_id')->constrained('apps')->cascadeOnDelete();
             $table->string('address');
             $table->string('city');
             $table->string('phone');
             $table->string('map_link')->nullable();
+            $table->boolean('is_main')->default(false);
             $table->unique(['app_id', 'code']);
             $table->timestamps();
         });

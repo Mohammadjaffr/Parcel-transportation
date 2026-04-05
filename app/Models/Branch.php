@@ -1,5 +1,6 @@
 <?php
 
+// معتمد
 namespace App\Models;
 
 use App\Traits\BelongsToApp;

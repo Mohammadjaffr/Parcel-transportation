@@ -14,156 +14,44 @@ use Illuminate\Support\Facades\Validator;
 
 class CustomerController extends Controller
 {
-    /** عرض عملاء الفرع */
-    // public function index(Request $request)
-    // {
-    //     /** @var \App\Models\User $user */
-    //     $user = auth()->user();
-    //     $branchCode = $user->branch_code;
-    //     $customers = Customer::where('branch_code', $branchCode)
-    //         ->selectRaw('customers.*, 
-    //             (SELECT COUNT(*) FROM shipments 
-    //              WHERE sender_customer_id = customers.id 
-    //              AND sender_branch_code = ?) + 
-    //             (SELECT COUNT(*) FROM shipments 
-    //              WHERE receiver_customer_id = customers.id 
-    //              AND receiver_branch_code = ?) as shipments_count,
-                
-    //             (SELECT COALESCE(SUM(s.total_amount), 0) 
-    //              FROM shipments s
-    //              WHERE s.sender_customer_id = customers.id 
-    //              AND s.sender_branch_code = ?
-    //              AND s.payment_method = "customer_credit") as debit_sum,
-                
-    //             (SELECT COALESCE(SUM(cp.amount), 0)
-    //              FROM shipments s2
-    //              INNER JOIN customer_payments cp ON cp.shipment_id = s2.id
-    //              WHERE s2.sender_customer_id = customers.id 
-    //              AND s2.sender_branch_code = ?
-    //              AND s2.payment_method = "customer_credit") as credit_sum',
-    //             [$branchCode, $branchCode, $branchCode, $branchCode])
-    //         ->latest()
-    //         ->paginate(10);
-    //     if ($request->isMobile) {
-    //         return view('mobile.pages.people.customers.index');
-    //     }
-    //     return view('pages.customers.index', compact('customers'));
-    // }
-    /** عرض عملاء الفرع */
+
+    // معتمد
     public function index(Request $request)
     {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $branchCode = $user->branch_code;
-
-        // تجهيز الاستعلام الأساسي
-        $query = Customer::where('branch_code', $branchCode)
-            ->selectRaw(
-                'customers.*, 
-                (SELECT COUNT(*) FROM shipments 
-                 WHERE sender_customer_id = customers.id 
-                 AND sender_branch_code = ?) + 
-                (SELECT COUNT(*) FROM shipments 
-                 WHERE receiver_customer_id = customers.id 
-                 AND receiver_branch_code = ?) as shipments_count,
-                
-                (SELECT COALESCE(SUM(s.total_amount), 0) 
-                 FROM shipments s
-                 WHERE s.sender_customer_id = customers.id 
-                 AND s.sender_branch_code = ?
-                 AND s.payment_method = "customer_credit") as debit_sum,
-                
-                (SELECT COALESCE(SUM(cp.amount), 0)
-                 FROM shipments s2
-                 INNER JOIN customer_payments cp ON cp.shipment_id = s2.id
-                 WHERE s2.sender_customer_id = customers.id 
-                 AND s2.sender_branch_code = ?
-                 AND s2.payment_method = "customer_credit") as credit_sum',
-                [$branchCode, $branchCode, $branchCode, $branchCode]
-            );
-
-        // تفعيل ميزة البحث بالاسم أو رقم الهاتف
+        $query = Customer::with(['branch', 'creator']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
+                ->orWhere('phone', 'like', "%{$search}%")
+                ->orWhere('whatsapp_number', 'like', "%{$search}%"); 
             });
         }
 
-        // جلب البيانات مع الحفاظ على رابط البحث في الترقيم
         $customers = $query->latest()->paginate(10)->withQueryString();
 
         if ($request->isMobile) {
-            // التعديل هنا: أضفنا compact('customers')
             return view('mobile.pages.people.customers.index', compact('customers'));
         }
 
         return view('pages.customers.index', compact('customers'));
     }
-    /** صفحة إضافة عميل */
     public function create()
     {
         return view('pages.customers.create');
     }
-
-    /** تخزين عميل */
-    // public function store(Request $request)
-    // {
-    //     /** @var \App\Models\User $user */
-    //     $user = auth()->user();
-    //     $branchCode = $user->branch_code;
-
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255',
-    //         'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,branch_code,'.$branchCode,
-    //         'whatsapp_number' => 'nullable|string|max:20',
-
-    //     ], [
-    //         'name.required' => 'اسم العميل مطلوب',
-    //         'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-    //         'phone.required' => 'رقم الهاتف مطلوب',
-    //         'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return WebResponseClass::sendValidationError($validator)->with('isModalOpen', true);
-    //     }
-
-    //     try {
-    //         $data = $validator->validated();
-    //         $data['branch_code'] = $branchCode;
-
-    //         $customer = Customer::create($data);
-
-    //         // AdminLoggerService::log(
-    //         //     'إنشاء عميل',
-    //         //     'Customer',
-    //         //     $customer->id,
-    //         //     "إنشاء عميل جديد: {$customer->name} - الفرع: {$customer->branch_code}"
-    //         // );
-
-    //         return WebResponseClass::sendResponse(
-    //             'تمت الإضافة!',
-    //             'تم إنشاء العميل بنجاح.',
-    //             'حسناً',
-    //             'customers.index'
-    //         );
-    //     } catch (\Exception $e) {
-    //         return WebResponseClass::sendExceptionError($e);
-    //     }
-    // }
+    // معتمد
     public function store(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $branchCode = $user->branch_code;
+        $appId = $user->app_id;
+        $branchId = $user->branch_id; 
+        $userId = $user->id;
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,branch_code,' . $branchCode,
-            'whatsapp_number' => 'nullable|string|max:20',
+            'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,branch_id,' . $branchId,
         ], [
             'name.required' => 'اسم العميل مطلوب',
             'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
@@ -180,7 +68,9 @@ class CustomerController extends Controller
 
         try {
             $data = $validator->validated();
-            $data['branch_code'] = $branchCode;
+            $data['app_id']     = $appId;
+            $data['branch_id']  = $branchId;
+            $data['created_by'] = $userId;
 
             $customer = Customer::create($data);
 
@@ -307,195 +197,92 @@ class CustomerController extends Controller
         return view('pages.customers.edit', compact('customer'));
     }
 
-    /** تحديث */
-    // public function update(Request $request, $id)
-    // {
-    //     /** @var \App\Models\User $user */
-    //     $user = auth()->user();
-    //     $branchCode = $user->branch_code;
+    // معتمد
+   public function update(Request $request, $id)
+{
+    $user = auth()->user();
+    $branchId = $user->branch_id;
 
-    //     $customer = Customer::where('branch_code', $branchCode)
-    //         ->findOrFail($id);
+    $customer = Customer::where('branch_id', $branchId)->findOrFail($id);
 
-    //     $validator = Validator::make($request->all(), [
-    //         'name' => 'required|string|max:255',
-    //         'phone' => 'required|string|max:20',
-    //         'whatsapp_number' => 'nullable|string|max:20',
-    //     ], [
-    //         'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-    //         'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-    //     ]);
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'phone' => 'required|string|max:20|unique:customers,phone,' . $customer->id . ',id,branch_id,' . $branchId,
+    ], [
+        'name.required' => 'اسم العميل مطلوب',
+        'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
+        'phone.required' => 'رقم الهاتف مطلوب',
+        'phone.unique' => 'رقم الهاتف مسجل بالفعل لعميل آخر في هذا الفرع',
+    ]);
 
-    //     if ($validator->fails()) {
-    //         return WebResponseClass::sendValidationError($validator);
-    //     }
-
-    //     try {
-    //         $old = $customer->toArray();
-    //         $validated = $validator->validated();
-
-    //         // نحمي branch_code من أي تعديل من الفورم (حتى لو أرسل قيمة)
-    //         unset($validated['branch_code']);
-
-    //         $customer->update($validated);
-
-    //         $changes = [];
-    //         foreach ($validated as $key => $value) {
-    //             $oldValue = $old[$key] ?? null;
-    //             if ($oldValue != $value) {
-    //                 $changes[] = "{$key}: ".($oldValue ?? 'فارغ').' → '.($value ?? 'فارغ');
-    //             }
-    //         }
-
-    //         // AdminLoggerService::log(
-    //         //     'تحديث عميل',
-    //         //     'Customer',
-    //         //     $customer->id,
-    //         //     "تحديث بيانات العميل: {$customer->name}" .
-    //         //         (count($changes) ? "\nالتغييرات: " . implode('، ', $changes) : '')
-    //         // );
-
-    //         return WebResponseClass::sendResponse(
-    //             'تم التحديث!',
-    //             'تم تحديث بيانات العميل بنجاح.',
-    //             'حسناً'
-    //         );
-    //     } catch (\Exception $e) {
-    //         return WebResponseClass::sendExceptionError($e);
-    //     }
-    // }
-    /** تحديث */
-    public function update(Request $request, $id)
-    {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $branchCode = $user->branch_code;
-
-        $customer = Customer::where('branch_code', $branchCode)->findOrFail($id);
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20',
-            'whatsapp_number' => 'nullable|string|max:20',
-        ], [
-            'phone.unique' => 'رقم الهاتف مسجل بالفعل في هذا الفرع',
-            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-        ]);
-
-        if ($validator->fails()) {
-            if ($request->wantsJson()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            return WebResponseClass::sendValidationError($validator);
+    if ($validator->fails()) {
+        if ($request->wantsJson()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
-
-        try {
-            $validated = $validator->validated();
-            unset($validated['branch_code']);
-            $customer->update($validated);
-
-            if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تم التحديث!');
-                session()->flash('success_message', 'تم تحديث بيانات العميل بنجاح.');
-                return response()->json(['success' => true]);
-            }
-
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                'تم تحديث بيانات العميل بنجاح.',
-                'حسناً'
-            );
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
-            }
-            return WebResponseClass::sendExceptionError($e);
-        }
+        return WebResponseClass::sendValidationError($validator);
     }
-    /** حذف */
-    // public function destroy($id)
-    // {
-    //     /** @var \App\Models\User $user */
-    //     $user = auth()->user();
-    //     $customer = Customer::where('branch_code', $user->branch_code)
-    //         ->findOrFail($id);
 
-    //     // if ($customer->()->exists()) {
-    //     //     return redirect()->back()
-    //     //         ->with('error', true)
-    //     //         ->with('error_title', 'لا يمكن الحذف!')
-    //     //         ->with('error_message', 'لا يمكن حذف عميل لديه شحنات مرتبطة.')
-    //     //         ->with('error_buttonText', 'حسناً');
-    //     // }
+    try {
+        $validated = $validator->validated();
+        $customer->update($validated);
 
-    //     if ($customer->transactions()->exists()) {
-    //         return WebResponseClass::sendError(
-    //             'لا يمكن حذف عميل لديه حركات مالية.',
-    //             'لا يمكن الحذف!'
-    //         );
-    //     }
+        if ($request->wantsJson()) {
+            session()->flash('success', true);
+            session()->flash('success_title', 'تم التحديث!');
+            session()->flash('success_message', 'تم تحديث بيانات العميل بنجاح.');
+            return response()->json(['success' => true]);
+        }
 
-    //     try {
-    //         $customerName = $customer->name;
-    //         $customerId = $customer->id;
-
-    //         $customer->delete();
-
-    //         // AdminLoggerService::log(
-    //         //     'حذف عميل',
-    //         //     'Customer',
-    //         //     $customerId,
-    //         //     "حذف العميل: {$customerName}"
-    //         // );
-
-    //         return WebResponseClass::sendResponse(
-    //             'تم الحذف!',
-    //             'تم حذف العميل بنجاح.',
-    //             'حسناً',
-    //             'customers.index'
-    //         );
-    //     } catch (\Exception $e) {
-    //         return WebResponseClass::sendExceptionError($e);
-    //     }
-    // }
-    /** حذف */
+        return WebResponseClass::sendResponse(
+            'تم التحديث!',
+            'تم تحديث بيانات العميل بنجاح.',
+            'حسناً'
+        );
+    } catch (\Exception $e) {
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
+        }
+        return WebResponseClass::sendExceptionError($e);
+    }
+}
+    // معتمد
     public function destroy(Request $request, $id)
-    {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $customer = Customer::where('branch_code', $user->branch_code)->findOrFail($id);
+{
 
-        if ($customer->transactions()->exists()) {
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'لا يمكن حذف عميل لديه حركات مالية.'], 400);
-            }
-            return WebResponseClass::sendError('لا يمكن حذف عميل لديه حركات مالية.', 'لا يمكن الحذف!');
+    $user = auth()->user();
+    
+    $customer = Customer::where('branch_id', $user->branch_id)->findOrFail($id);
+
+    if ($customer->transactions()->exists()) {
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'لا يمكن حذف عميل لديه حركات مالية.'], 400);
         }
-
-        try {
-            $customer->delete();
-
-            if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تم الحذف!');
-                session()->flash('success_message', 'تم حذف العميل بنجاح.');
-                return response()->json(['success' => true]);
-            }
-
-            return WebResponseClass::sendResponse(
-                'تم الحذف!',
-                'تم حذف العميل بنجاح.',
-                'حسناً',
-                'customers.index'
-            );
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
-            }
-            return WebResponseClass::sendExceptionError($e);
-        }
+        return WebResponseClass::sendError('لا يمكن حذف عميل لديه حركات مالية.', 'لا يمكن الحذف!');
     }
+
+    try {
+        $customer->delete();
+
+        if ($request->wantsJson()) {
+            session()->flash('success', true);
+            session()->flash('success_title', 'تم الحذف!');
+            session()->flash('success_message', 'تم حذف العميل بنجاح.');
+            return response()->json(['success' => true]);
+        }
+
+        return WebResponseClass::sendResponse(
+            'تم الحذف!',
+            'تم حذف العميل بنجاح.',
+            'حسناً',
+            'customers.index'
+        );
+    } catch (\Exception $e) {
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'حدث خطأ في السيرفر أثناء الحذف'], 500);
+        }
+        return WebResponseClass::sendExceptionError($e);
+    }
+}
     /** البحث */
     public function search(Request $request)
     {

@@ -1,5 +1,6 @@
 <?php
 
+// معتمد
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -69,7 +70,7 @@ class User extends Authenticatable
 
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_code', 'code');
+        return $this->belongsTo(Branch::class);
     }
 
     public function devices()

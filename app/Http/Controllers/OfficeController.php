@@ -6,6 +6,7 @@ use App\Models\Office;
 use Illuminate\Http\Request;
 use App\Classes\WebResponseClass;
 use App\Services\AdminLoggerService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -26,9 +27,7 @@ class OfficeController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%")
-                    ->orWhere('address', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%");
             });
         }
         $offices = $query->latest()->paginate(10)->withQueryString();
@@ -38,57 +37,90 @@ class OfficeController extends Controller
         return view('pages.office.unverified.index', compact('offices'));
     }
 
-    public function store(Request $request)
-    {
-  
-         $validator = Validator::make($request->all(), [
-              'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
-        ]);
- $data = $request->only('name', 'phone', 'address');
-        if (auth()->check() && auth()->user()->app_id) {
-            $data['app_id'] = auth()->user()->app_id;
+    public function create(Request $request)
+    {   if ($request->isMobile) {
+            return view('mobile.pages.office.unverified.create');
         }
-
-        if ($validator->fails()){
-            return WebResponseClass::sendValidationError($validator);
-        } 
-
-        try {
-            $office = Office::create($data);
-            return WebResponseClass::sendResponse(
-                'تمت الإضافة!',
-                'تم حفظ المكتب بنجاح.',
-                'حسناً'
-            );
-        } catch (\Exception $e) {
-            return WebResponseClass::sendExceptionError($e);
-        }
-        
+        return view('pages.office.unverified.create');
     }
 
-    public function update(Request $request, Office $office)
+    public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255', 
+        'phone' => 'nullable|string|max:20', 
+        'branches' => 'required|array|min:1',
+        'branches.*.name' => 'required|string|max:255',
+        'branches.*.city' => 'required|string|max:255',
+        'branches.*.phone' => 'nullable|string|max:20',
+        'branches.*.address' => 'nullable|string',
+    ]);
+
+    try {
+        DB::transaction(function () use ($request) {
+            $user = auth()->user();
+
+            $office = Office::create([
+                'app_id'     => $user->app_id,
+                'created_by' => $user->id,
+                'name'       => $request->name,
+                'phone'      => $request->phone,
+                'address'    => $request->address,
+            ]);
+
+            foreach ($request->branches as $branchData) {
+                $office->branches()->create([
+                    'name'    => $branchData['name'],
+                    'city'    => $branchData['city'],
+                    'phone'   => $branchData['phone'],
+                    'address' => $branchData['address'],
+                ]);
+            }
+        });
+
+        session()->flash('success_title', 'تم الحفظ!');
+        session()->flash('success_message', 'تم إضافة المكتب وفروعه بنجاح.');
+
+        return redirect()->route('offices.unverified.index');
+
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
+    }
+}
+
+    public function edit($id)
     {
-      $validator = Validator::make($request->all(), [
+        $office = Office::with('branches')->findOrFail($id);
+        return view('mobile.pages.office.unverified.edit', compact('office'));
+    }
+    public function update(Request $request, $id)
+    {
+        $office = Office::findOrFail($id);
+
+        $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
-            'address' => 'nullable|string|max:255',
+            'branches' => 'required|array|min:1',
+            'branches.*.name' => 'required|string|max:255',
+            'branches.*.city' => 'required|string|max:100',
         ]);
 
-        if ($validator->fails()){
-            return WebResponseClass::sendValidationError($validator);
-        } 
-
         try {
-            $office->update($validator->validated());
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                'تم تحديث المكتب بنجاح.',
-                'حسناً'
-            );
+            DB::transaction(function () use ($request, $office) {
+                $office->update(['name' => $request->name]);
+                $office->branches()->delete();
+                foreach ($request->branches as $branchData) {
+                    $office->branches()->create([
+                        'name'    => $branchData['name'],
+                        'city'    => $branchData['city'],
+                        'phone'   => $branchData['phone'],
+                        'address' => $branchData['address'],
+                    ]);
+                }
+            });
+
+            return redirect()->route('offices.unverified.index')->with('success', 'تم تحديث البيانات بنجاح');
         } catch (\Exception $e) {
-            return WebResponseClass::sendExceptionError($e);
+            return back()->withInput()->with('error', 'حدث خطأ أثناء التحديث');
         }
     }
 

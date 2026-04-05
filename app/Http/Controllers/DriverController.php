@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use App\Models\Driver;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Classes\WebResponseClass;
 use App\Services\AdminLoggerService;
 use Illuminate\Support\Facades\Validator;
@@ -52,7 +53,11 @@ class DriverController extends Controller
         } 
 
         try {
-            $driver = Driver::create($validator->validated());
+            $data = $validator->validated();
+            $data['app_id']     = Auth::user()->app_id;    
+            $data['branch_id']  = Auth::user()->branch_id; 
+            $data['created_by'] = Auth::id();              
+            $driver = Driver::create($data);
             return WebResponseClass::sendResponse(
                 'تمت الإضافة!',
                 'تم حفظ السائق بنجاح.',

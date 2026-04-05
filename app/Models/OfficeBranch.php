@@ -9,7 +9,13 @@ class OfficeBranch extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'office_id',
+        'name',
+        'phone',
+        'address',
+        'city'
+    ];
     public function office()
     {
         return $this->belongsTo(Office::class);

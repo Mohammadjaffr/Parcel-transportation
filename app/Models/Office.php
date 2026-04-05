@@ -10,7 +10,16 @@ class Office extends Model
 {
     use HasFactory,BelongsToApp;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'app_id',
+        'created_by',
+        'name',
+    ];
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     public function branches()
     {

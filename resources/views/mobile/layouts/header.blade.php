@@ -1,21 +1,37 @@
 <header
     class="fixed top-0 w-full z-50 glass-nav border-b border-slate-200/10 shadow-[0_8px_24px_rgba(36,56,156,0.06)] px-6 py-4 flex flex-row items-center justify-between">
-    <div class="flex items-center gap-4">
-        <div
-            class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/10 active:scale-95 transition-transform duration-200">
-            <img alt="محمد السعدي" class="w-full h-full object-cover"
-                src="{{ asset('assets/image/icon_4K.png') }}"/>
-        </div>
-        <div class="flex flex-col">
-            <span
-                class="font-headline font-bold text-lg text-slate-900 tracking-tight leading-tight">{{ Auth::user()->name }}</span>
-            <div class="flex items-center gap-1 text-on-surface-variant">
-                <span class="material-symbols-outlined text-[16px] text-primary"
-                    data-icon="location_on">location_on</span>
-                <span class="text-xs font-medium">عدن، اليمن</span>
-            </div>
-        </div>
+   <div class="flex items-center gap-4">
+    <div class="relative w-12 h-12 rounded-full overflow-hidden border-2 border-primary/10 active:scale-95 transition-transform duration-200">
+        <img alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
+            src="{{ asset('assets/image/icon_4K.png') }}"/>
     </div>
+    
+    <div class="flex flex-col min-w-0"> <div class="flex items-center gap-2">
+        
+        <span class="font-headline font-bold text-base md:text-lg text-slate-900 tracking-tight leading-tight truncate">
+            {{ Auth::user()->name }}
+        </span>
+        
+        @if(Auth::user()->type === 'admin')
+            <span class="shrink-0 bg-primary/10 text-primary border border-primary/20 text-[10px] px-1.5 py-0.5 rounded-md font-bold">
+                مدير
+            </span>
+        @else
+            <span class="shrink-0 bg-slate-100 text-slate-600 border border-slate-200 text-[10px] px-1.5 py-0.5 rounded-md font-bold">
+                موظف
+            </span>
+        @endif
+    </div>
+
+    <div class="flex items-center gap-1 text-on-surface-variant mt-0.5">
+    <span class="material-symbols-outlined text-[14px] text-primary"
+        data-icon="location_on">location_on</span>
+    <span class="text-xs font-medium truncate">
+        {{ Auth::user()->Branch?->name }}
+    </span>
+</div>
+</div>
+</div>
     <div class="flex items-center gap-2" id="header-actions">
 
         <div class="relative">

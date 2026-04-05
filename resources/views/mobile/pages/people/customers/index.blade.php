@@ -14,25 +14,25 @@
         isSubmitting: false,
         errors: {},
     
-        editCustomerData: { id: '', name: '', phone: '', whatsapp_number: '', url: '' },
-        createCustomerData: { name: '', phone: '', whatsapp_number: '' },
+        editCustomerData: { id: '', name: '', phone: '', url: '' },
+        createCustomerData: { name: '', phone: '' },
         deleteCustomerData: { id: '', name: '', url: '' },
     
-        openEditModal(id, name, phone, whatsapp) {
+        openEditModal(id, name, phone) {
             this.errors = {};
             this.editCustomerData = {
                 id: id,
                 name: name,
                 phone: phone,
-                whatsapp_number: whatsapp || '',
                 url: '{{ route('customers.index') }}/' + id
             };
+            this.$dispatch('set-edit-phone', { phone: phone });
             this.showEditModal = true;
         },
     
         openCreateModal() {
             this.errors = {};
-            this.createCustomerData = { name: '', phone: '', whatsapp_number: '' };
+            this.createCustomerData = { name: '', phone: '' };
             this.showCreateModal = true;
         },
     
@@ -55,6 +55,7 @@
         async submitForm(url, method, data) {
             this.isSubmitting = true;
             this.errors = {};
+            
             try {
                 const response = await fetch(url, {
                     method: method,
@@ -85,7 +86,6 @@
         }
     }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
-        <!-- Header Section -->
         <div class="flex justify-between items-center px-2">
             <div>
                 <h1 class="text-2xl font-black tracking-tight font-headline text-slate-800">العملاء</h1>
@@ -99,7 +99,6 @@
             </button>
         </div>
 
-        <!-- Search Bar Section -->
         <div class="px-2">
             <div class="relative group">
                 <span
@@ -114,7 +113,6 @@
             </div>
         </div>
 
-        <!-- Customer List Grid -->
         <div class="px-2 space-y-4">
             @forelse ($customers as $customer)
                 @php
@@ -123,7 +121,6 @@
                 <div x-show="searchQuery === '' || '{{ $customer->name }}'.includes(searchQuery) || '{{ $customer->phone }}'.includes(searchQuery)"
                     class="bg-white rounded-[1.75rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-50 relative overflow-hidden active:scale-[0.98] transition-all">
 
-                    <!-- Top Info -->
                     <div class="flex relative z-10 gap-4 items-center mb-4">
                         <div
                             class="flex justify-center items-center w-14 h-14 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
@@ -143,13 +140,12 @@
                             </div>
                         </div>
                         <button type="button"
-                            @click="openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }}, {{ json_encode($customer->whatsapp_number) }})"
+                            @click="openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }})"
                             class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
                             <span class="text-xl material-symbols-outlined">edit_square</span>
                         </button>
                     </div>
 
-                    <!-- Financial Stats Badge -->
                     <div class="flex gap-2 p-3 mb-4 rounded-2xl border bg-slate-50 border-slate-100/50">
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
@@ -170,10 +166,8 @@
                         </div>
                     </div>
 
-                    <!-- Divider -->
                     <div class="mb-4 h-px bg-gradient-to-r from-transparent to-transparent via-slate-100"></div>
 
-                    <!-- Actions -->
                     <div class="flex relative z-10 justify-between items-center">
                         <div class="flex gap-2.5">
                             <a href="{{ route('customers.show', $customer->id) }}"
@@ -182,7 +176,7 @@
                                     style="font-variation-settings: 'FILL' 1;">visibility</span>
                                 الملف
                             </a>
-                            <a href="https://wa.me/{{ $customer->whatsapp_number ?? $customer->phone }}"
+                            <a href="https://wa.me/{{ $customer->phone }}"
                                 class="flex gap-2 items-center px-4 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border transition-transform font-headline active:scale-95 border-emerald-100/50">
                                 <span class="text-sm material-symbols-outlined"
                                     style="font-variation-settings: 'FILL' 1;">chat</span>
@@ -198,7 +192,6 @@
                     </div>
                 </div>
             @empty
-                <!-- Empty State -->
                 <div
                     class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 mx-2 shadow-sm">
                     <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-200">
@@ -222,9 +215,6 @@
             {{ $customers->links('vendor.pagination.mobile') }}
         </div>
 
-        <!-- ======================== Bottom Sheet Modals ======================== -->
-
-        <!-- Create Customer Bottom Sheet -->
         <div x-show="showCreateModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
@@ -233,8 +223,7 @@
 
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()"></div>
 
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
+            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
                 <div @click="closeModals()"
                     class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
                 </div>
@@ -242,7 +231,7 @@
                 <div class="flex justify-between items-center px-2 mb-8">
                     <h3 class="text-xl font-black font-headline text-slate-800">إضافة عميل جديد</h3>
                     <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400">
+                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -255,61 +244,92 @@
                         <div class="relative">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
                                 :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
-                            <input type="text" x-model="createCustomerData.name" placeholder="مثلاً: محمد عبدالله"
+                            <input type="text" x-model="createCustomerData.name" placeholder="مثلاً: محمد عبدالله" required
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' : 'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
                         </div>
                         <template x-if="errors.name">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
                         </template>
                     </div>
 
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
-                                class="text-rose-500">*</span></label>
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        countries: @js(array_values(config('countries', []))),
+                        selectedCountry: null,
+                        localPhoneNumber: '',
+                        fullPhone: '',
+                        init() {
+                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                            this.$watch('selectedCountry', () => this.updateFullPhone());
+                        },
+                        updateFullPhone() {
+                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                            createCustomerData.phone = this.fullPhone;
+                        },
+                        get filteredCountries() {
+                            if (this.search === '') return this.countries;
+                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                        }
+                    }">
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span class="text-rose-500">*</span></label>
+                        
                         <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.phone ? 'text-red-400' : 'text-slate-400'">phone</span>
-                            <input type="tel" x-model="createCustomerData.phone" placeholder="+967 7xx xxx xxx"
-                                class="pr-12 pl-4 w-full h-14 text-sm text-left rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline dir-ltr"
-                                :class="errors.phone ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                            <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
+                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
+                                
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
+                                    class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
+                                
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+                                    <span class="material-symbols-outlined">call</span>
+                                </div>
+
+                                <button type="button" @click="open = !open"
+                                    class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+                                    <span class="text-sm font-bold text-slate-600 dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                                    <template x-if="selectedCountry?.svg">
+                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                    </template>
+                                </button>
+                            </div>
+
+                            <div x-show="open" @click.outside="open = false" x-transition x-cloak
+                                class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
+                                <div class="p-2 border-b border-slate-50">
+                                    <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
+                                        class="px-4 py-2 w-full text-sm outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 rounded-xl transition-colors font-headline">
+                                </div>
+                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                    <template x-for="country in filteredCountries" :key="country.code">
+                                        <div @click="selectedCountry = country; open = false; search = ''"
+                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
+                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                         <template x-if="errors.phone">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.phone[0]"></p>
                         </template>
                     </div>
 
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الواتساب <span
-                                class="text-xs font-normal text-slate-400">(اختياري)</span></label>
-                        <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.whatsapp_number ? 'text-red-400' : 'text-emerald-500/50'">chat</span>
-                            <input type="tel" x-model="createCustomerData.whatsapp_number"
-                                placeholder="نفس رقم الهاتف إذا ترك فارغاً"
-                                class="pr-12 pl-4 w-full h-14 text-sm text-left rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline dir-ltr"
-                                :class="errors.whatsapp_number ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-emerald-500/20'">
-                        </div>
-                        <template x-if="errors.whatsapp_number">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.whatsapp_number[0]"></p>
-                        </template>
-                    </div>
-
                     <button type="submit" :disabled="isSubmitting"
                         class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
                         <span x-show="!isSubmitting" class="material-symbols-outlined">save</span>
-                        <span x-show="isSubmitting"
-                            class="animate-spin material-symbols-outlined">progress_activity</span>
+                        <span x-show="isSubmitting" class="animate-spin material-symbols-outlined">progress_activity</span>
                         <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ بيانات العميل'"></span>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Edit Customer Bottom Sheet -->
         <div x-show="showEditModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
@@ -319,16 +339,13 @@
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
             </div>
 
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
-                <div @click="closeModals()"
-                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
-                </div>
+            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
+                <div @click="closeModals()" class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
 
                 <div class="flex justify-between items-center px-2 mb-8">
                     <h3 class="text-xl font-black font-headline text-slate-800">تعديل بيانات العميل</h3>
                     <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400">
+                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -341,60 +358,106 @@
                         <div class="relative">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
                                 :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
-                            <input type="text" x-model="editCustomerData.name"
+                            <input type="text" x-model="editCustomerData.name" required
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' : 'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
                         </div>
                         <template x-if="errors.name">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
                         </template>
                     </div>
 
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
-                                class="text-rose-500">*</span></label>
+                    <div x-data="{
+                        open: false,
+                        search: '',
+                        countries: @js(array_values(config('countries', []))),
+                        selectedCountry: null,
+                        localPhoneNumber: '',
+                        fullPhone: '',
+                        init() {
+                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                            this.$watch('selectedCountry', () => this.updateFullPhone());
+                        },
+                        updateFullPhone() {
+                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                            editCustomerData.phone = this.fullPhone;
+                        },
+                        handleSetPhone(phoneString) {
+                            if(!phoneString) {
+                                this.localPhoneNumber = '';
+                                return;
+                            }
+                            let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
+                            if(matched) {
+                                this.selectedCountry = matched;
+                                this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
+                            } else {
+                                this.localPhoneNumber = phoneString;
+                            }
+                            this.updateFullPhone();
+                        },
+                        get filteredCountries() {
+                            if (this.search === '') return this.countries;
+                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                        }
+                    }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span class="text-rose-500">*</span></label>
+                        
                         <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.phone ? 'text-red-400' : 'text-slate-400'">phone</span>
-                            <input type="tel" x-model="editCustomerData.phone"
-                                class="pr-12 pl-4 w-full h-14 text-sm text-left rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline dir-ltr"
-                                :class="errors.phone ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                            <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
+                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
+                                
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
+                                    class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
+                                
+                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+                                    <span class="material-symbols-outlined">call</span>
+                                </div>
+
+                                <button type="button" @click="open = !open"
+                                    class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+                                    <span class="text-sm font-bold text-slate-600 dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                                    <template x-if="selectedCountry?.svg">
+                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                    </template>
+                                </button>
+                            </div>
+
+                            <div x-show="open" @click.outside="open = false" x-transition x-cloak
+                                class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
+                                <div class="p-2 border-b border-slate-50">
+                                    <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
+                                        class="px-4 py-2 w-full text-sm outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 rounded-xl transition-colors font-headline">
+                                </div>
+                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                    <template x-for="country in filteredCountries" :key="country.code">
+                                        <div @click="selectedCountry = country; open = false; search = ''"
+                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
+                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                         <template x-if="errors.phone">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.phone[0]"></p>
                         </template>
                     </div>
 
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الواتساب <span
-                                class="text-xs font-normal text-slate-400">(اختياري)</span></label>
-                        <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.whatsapp_number ? 'text-red-400' : 'text-emerald-500/50'">chat</span>
-                            <input type="tel" x-model="editCustomerData.whatsapp_number"
-                                class="pr-12 pl-4 w-full h-14 text-sm text-left rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline dir-ltr"
-                                :class="errors.whatsapp_number ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-emerald-500/20'">
-                        </div>
-                        <template x-if="errors.whatsapp_number">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.whatsapp_number[0]"></p>
-                        </template>
-                    </div>
-
                     <button type="submit" :disabled="isSubmitting"
                         class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
                         <span x-show="!isSubmitting" class="material-symbols-outlined">update</span>
-                        <span x-show="isSubmitting"
-                            class="animate-spin material-symbols-outlined">progress_activity</span>
+                        <span x-show="isSubmitting" class="animate-spin material-symbols-outlined">progress_activity</span>
                         <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'"></span>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Delete Confirmation Bottom Sheet -->
         <div x-show="showDeleteModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
@@ -404,14 +467,10 @@
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
             </div>
 
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
-                <div @click="closeModals()"
-                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
-                </div>
+            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
+                <div @click="closeModals()" class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
 
-                <div
-                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-red-50 text-red-500 rounded-[1.5rem]">
+                <div class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-red-50 text-red-500 rounded-[1.5rem]">
                     <span class="text-4xl material-symbols-outlined">delete_forever</span>
                 </div>
 
@@ -419,12 +478,10 @@
 
                 <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
                     هل أنت متأكد من أنك تريد حذف العميل <br>
-                    <span class="text-base font-bold text-slate-800 font-headline"
-                        x-text="deleteCustomerData.name"></span>؟<br>
-                    <span class="text-red-500/80">لا يمكن حذف عميل لديه حركات مالية.</span>
+                    <span class="text-base font-bold text-slate-800 font-headline" x-text="deleteCustomerData.name"></span>؟<br>
+                    {{-- <span class="text-red-500/80">لا يمكن حذف عميل لديه حركات مالية.</span> --}}
                 </p>
 
-                <!-- الإرسال عبر AJAX للتحقق من خطأ "لا يمكن الحذف بسبب الحركات المالية" بدون Refresh -->
                 <form @submit.prevent="submitForm(deleteCustomerData.url, 'POST', { _method: 'DELETE' })"
                     class="flex gap-3 px-2">
                     <button type="button" @click="closeModals()"
@@ -435,8 +492,7 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex-1 py-4 text-sm font-bold text-white bg-red-500 rounded-2xl shadow-lg transition-all hover:bg-red-600 shadow-red-500/30 active:scale-95 font-headline">
                         <span x-show="!isSubmitting">نعم، احذف</span>
-                        <span x-show="isSubmitting"
-                            class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span x-show="isSubmitting" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
                     </button>
                 </form>
             </div>

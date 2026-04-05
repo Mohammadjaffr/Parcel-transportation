@@ -219,6 +219,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
     Route::delete('/receipt-items/{item}', [ReceiptHeaderController::class, 'destroyItem'])->name('receipt-items.destroy');
     Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
+    Route::get('/offices/create', [OfficeController::class, 'create'])->name('offices.create');
+    Route::get('/offices/{office}', [OfficeController::class, 'show'])->name('offices.show');
+    Route::get('/offices/{office}', [OfficeController::class, 'edit'])->name('offices.edit');
+    Route::delete('/offices/{office}', [OfficeController::class, 'destroy'])->name('offices.destroy');
     Route::resource('offices', OfficeController::class)->only(['store', 'update', 'destroy']);
 
 
