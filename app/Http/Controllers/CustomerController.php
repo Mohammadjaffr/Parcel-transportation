@@ -45,7 +45,7 @@ class CustomerController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $appId = $user->app_id;
+        $appId = $user->app_id; 
         $branchId = $user->branch_id; 
         $userId = $user->id;
 
@@ -194,7 +194,7 @@ class CustomerController extends Controller
             return response()->json($customer);
         }
 
-        return view('pages.customers.edit', compact('customer'));
+        return view('pages.customers.edit-customer-modal', compact('customer'));
     }
 
     // معتمد

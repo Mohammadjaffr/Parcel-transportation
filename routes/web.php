@@ -223,7 +223,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/offices/{office}', [OfficeController::class, 'show'])->name('offices.show');
     Route::get('/offices/{office}', [OfficeController::class, 'edit'])->name('offices.edit');
     Route::delete('/offices/{office}', [OfficeController::class, 'destroy'])->name('offices.destroy');
-    Route::resource('offices', OfficeController::class)->only(['store', 'update', 'destroy']);
+    Route::resource('offices', OfficeController::class);
 
 
     // mobile routes

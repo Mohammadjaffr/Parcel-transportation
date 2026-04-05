@@ -65,7 +65,7 @@ class UserController extends Controller
 
         if ($validator->fails()) {
             if ($request->wantsJson()) {
-                return response()->json(['errors' => $validator->errors()], 422);
+                return WebResponseClass::sendValidationError($validator);
             }
             return WebResponseClass::sendValidationError($validator);
         }
@@ -87,13 +87,13 @@ class UserController extends Controller
                 session()->flash('success', true);
                 session()->flash('success_title', 'تمت الإضافة!');
                 session()->flash('success_message', 'تم إضافة المستخدم بنجاح.');
-                return response()->json(['success' => true]);
+                return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
             }
 
             return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
+                return WebResponseClass::sendExceptionError($e);
             }
             return WebResponseClass::sendExceptionError($e);
         }
@@ -154,7 +154,7 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return WebResponseClass::sendValidationError($validator);
         }
 
         try {
@@ -173,9 +173,8 @@ class UserController extends Controller
             session()->flash('success_title', 'تم التحديث!');
             session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
 
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'حدث خطأ أثناء التحديث'], 500);
+ return WebResponseClass::sendResponse('تم الإضافة!', 'تم تحديث بيانات المستخدم بنجاح', 'حسناً', 'users.index');        } catch (\Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -189,7 +188,7 @@ class UserController extends Controller
         // حماية: منع المستخدم من حذف نفسه
         if (auth()->id() == $user->id) {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'لا يمكنك حذف حسابك الشخصي.'], 400);
+                return WebResponseClass::sendError('لا يمكنك حذف حسابك الشخصي.', 'خطأ!');
             }
             return WebResponseClass::sendError('لا يمكنك حذف حسابك الشخصي.', 'خطأ!');
         }
@@ -201,13 +200,13 @@ class UserController extends Controller
                 session()->flash('success', true);
                 session()->flash('success_title', 'تم الحذف!');
                 session()->flash('success_message', 'تم حذف المستخدم بنجاح.');
-                return response()->json(['success' => true]);
+                return WebResponseClass::sendResponse('تم الحذف!', 'تم حذف المستخدم بنجاح.', 'حسناً', 'users.index');
             }
 
             return WebResponseClass::sendResponse('تم الحذف!', 'تم حذف المستخدم بنجاح.', 'حسناً', 'users.index');
         } catch (\Exception $e) {
             if ($request->wantsJson()) {
-                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
+                return WebResponseClass::sendExceptionError($e);
             }
             return WebResponseClass::sendExceptionError($e);
         }

@@ -103,6 +103,19 @@
                                     </template>
                                 </div>
                             </div>
+                            <div>
+                                <label for="branch_id"
+                                    class="block mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-400">
+                                    الفرع <span class="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري)</span>
+                                </label>
+                                <select name="branch_id" id="branch_id"
+                                    class="px-3 py-2 w-full text-sm text-gray-700 bg-white rounded-lg border border-gray-300 dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-1 focus:ring-brand-500">
+                                    <option value="">اختر الفرع</option>
+                                    @foreach ($branches as $branch)
+                                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
 
                             <p class="mt-1 text-xs text-warning-500 dark:text-warning/90">
                                 و سيتم استخدام هذا الرقم لتسجيل الدخول والتواصل واتساب.
