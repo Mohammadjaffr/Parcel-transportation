@@ -7,6 +7,7 @@ use App\Models\Shipment;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Services\AdminLoggerService;
 use App\Classes\WebResponseClass;
 
@@ -38,41 +39,59 @@ class BranchController extends Controller
     }
 
     /* ========== 3- تخزين فرع جديد ========== */
-    public function store(Request $request)
-    {
+   public function store(Request $request)
+{
+    // 1. جلب المستخدم الحالي لمعرفة رقم شركته (app_id) أولاً
+    $user = auth()->user();
 
-        $validator = Validator::make($request->all(), [
-            'name'    => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:255'],
-            'city'    => ['required', 'string', 'max:255'],
-            'phone'   => ['required', 'string', 'max:50'],
-            'code'    => ['required', 'string', 'max:50', 'unique:branches,code'],
+    // 2. التحقق من المدخلات
+    $request->validate([
+        'name'     => 'required|string|max:255',
+        'code'     => ['required','string','max:50',
+            Rule::unique('branches', 'code')->where(function ($query) use ($user) {
+                return $query->where('app_id', $user->app_id);
+            })
+        ],
+        'city'     => 'required|string|max:100',
+        'phone'    => 'nullable|string|max:20',
+        'address'  => 'nullable|string|max:255',
+        'map_link' => 'nullable|url|max:500',
+        'is_main'  => 'nullable|boolean',
+    ], [
+        'code.unique' => 'كود الفرع هذا مستخدم مسبقاً في شركتك، يرجى اختيار كود آخر.',
+        'map_link.url' => 'صيغة رابط خريطة جوجل غير صحيحة.',
+    ]);
+
+    try {
+        $isMain = $request->boolean('is_main');
+
+        DB::transaction(function () use ($request, $user, $isMain) {
+            
+            if ($isMain) {
+                Branch::where('app_id', $user->app_id)->update(['is_main' => false]);
+            }
+
+            Branch::create([
+                'app_id'   => $user->app_id,
+                'name'     => $request->name,
+                'code'     => strtoupper($request->code),
+                'city'     => $request->city,
+                'phone'    => $request->phone,
+                'address'  => $request->address,
+                'map_link' => $request->map_link,
+                'is_main'  => $isMain,
+            ]);
+        });
+
+        return back()->with([
+            'success_title' => 'تم الإضافة!',
+            'success_message' => 'تم إضافة الفرع الجديد لشركتك بنجاح.'
         ]);
 
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
-        }
-
-        try {
-            $branch = Branch::create($validator->validated());
-            // AdminLoggerService::log(
-            //     'إنشاء فرع',
-            //     Branch::class,
-            //     $branch->id,
-            //     'تم إنشاء الفرع بنجاح'
-            // );
-
-
-            return WebResponseClass::sendResponse(
-                'تمت الإضافة!',
-                'تم إضافة الفرع بنجاح.',
-                'حسناً',
-                'branch.index'
-            );
-        } catch (\Exception $e) {
-            return WebResponseClass::sendExceptionError($e);
-        }
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', 'حدث خطأ أثناء حفظ الفرع: ' . $e->getMessage());
     }
+}
 
     /* ========== 4- عرض تفاصيل فرع واحد ========== */
     public function show(Request $request, $code)
@@ -217,35 +236,55 @@ class BranchController extends Controller
 
     /* ========== 6- تحديث الفرع ========== */
     public function update(Request $request, $id)
-    {
-        $branch = Branch::findOrFail($id);
+{
+    $branch = Branch::findOrFail($id);
+    $user = auth()->user();
 
-        $validator = Validator::make($request->all(), [
-            'name'    => ['required', 'string', 'max:255'],
-            'address' => ['required', 'string', 'max:255'],
-            'city'    => ['required', 'string', 'max:255'],
-            'phone'   => ['required', 'string', 'max:50'],
-            'code'    => ['required', 'string', 'max:50'],
+    // تأمين لمنع تعديل فروع لشركات أخرى
+    if ($branch->app_id !== $user->app_id) {
+        abort(403);
+    }
+
+    $request->validate([
+        'name'     => 'required|string|max:255',
+        'code'     => ['required', 'string', 'max:50',Rule::unique('branches', 'code')->where('app_id', $user->app_id)->ignore($branch->id)],
+        'city'     => 'required|string|max:100',
+        'phone'    => 'nullable|string|max:20',
+        'address'  => 'nullable|string|max:255',
+        'map_link' => 'nullable|url|max:500',
+        'is_main'  => 'nullable|boolean',
+    ], [
+        'code.unique' => 'كود الفرع هذا مستخدم مسبقاً في فرع آخر، يرجى اختيار كود مختلف.',
+    ]);
+
+    try {
+        $isMain = $request->boolean('is_main');
+
+        DB::transaction(function () use ($request, $branch, $isMain, $user) {
+            if ($isMain && !$branch->is_main) {
+                Branch::where('app_id', $user->app_id)->update(['is_main' => false]);
+            }
+
+            $branch->update([
+                'name'     => $request->name,
+                'code'     => strtoupper($request->code),
+                'city'     => $request->city,
+                'phone'    => $request->phone,
+                'address'  => $request->address,
+                'map_link' => $request->map_link,
+                'is_main'  => $isMain,
+            ]);
+        });
+
+        return back()->with([
+            'success_title' => 'تم التحديث!',
+            'success_message' => 'تم تحديث بيانات الفرع بنجاح.'
         ]);
 
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
-        }
-
-        try {
-            $branch->update($validator->validated());
-            // AdminLoggerService::log('تحديث فرع', 'Branch', $branch->code, "تم تحديث بيانات الفرع بنجاح");
-
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                'تم تحديث بيانات الفرع بنجاح.',
-                'حسناً',
-                'branch.index'
-            );
-        } catch (\Exception $e) {
-            return WebResponseClass::sendExceptionError($e);
-        }
+    } catch (\Exception $e) {
+        return back()->withInput()->with('error', 'حدث خطأ: ' . $e->getMessage());
     }
+}
 
     /* ========== 7- حذف الفرع ========== */
     public function destroy($id)

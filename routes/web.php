@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
@@ -223,6 +224,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/offices/{office}', [OfficeController::class, 'show'])->name('offices.show');
     Route::get('/offices/{office}', [OfficeController::class, 'edit'])->name('offices.edit');
     Route::delete('/offices/{office}', [OfficeController::class, 'destroy'])->name('offices.destroy');
+    Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
+    Route::get('/app', [AppController::class, 'index'])->name('app.index');
+    Route::PUT('/app/update', [AppController::class, 'update'])->name('app.update');
     Route::resource('offices', OfficeController::class);
 
 

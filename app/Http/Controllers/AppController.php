@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\App; 
+use Illuminate\Support\Facades\Storage;
+
+class AppController extends Controller
+{
+
+
+public function index(Request $request)
+{
+    $offices = App::with('branches')
+                ->latest()
+                ->paginate(15); 
+    if ($request->isMobile) {
+        return view('mobile.pages.office.verified.index', compact('offices'));
+    }
+    
+    // عدل الصفحه الخاصه بالديسكتوب يا السعدي 😉
+    // ملاحظة: حالياً يتم توجيه الديسكتوب لنفس واجهة الموبايل حتى تقوم بتصميمها
+    return view('mobile.pages.office.verified.index', compact('offices'));
+}
+    public function settings(Request $request)
+    {
+        $user = Auth::user();
+
+        $company = $user->App()
+            ->with('branches') // تأكد أن اسم العلاقة في موديل App هو branches (أو offices حسب تسميتك)
+            ->withCount(['branches', 'users']) 
+            ->first();
+        if ($request->isMobile){
+            return view('mobile.pages.company.settings', compact('company'));
+        }
+         // عدل الصفحه الخاصه ب الدسك توب  ي السعدي
+        return view('mobile.pages.company.settings', compact('company'));
+        
+    }
+
+    public function update(Request $request)
+{
+    $company = auth()->user()->App;
+    $request->validate([
+        'name'  => 'required|string|max:255',
+        'phone' => 'nullable|string|max:20',
+        'email' => 'nullable|email|max:255',
+        'logo'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
+    ]);
+
+    try {
+        $dataToUpdate = [
+            'name'  => $request->name,
+            'phone' => $request->phone,
+            'email' => $request->email,
+        ];
+        if ($request->hasFile('logo')) {
+            if ($company->logo && Storage::disk('public')->exists($company->logo)) {
+                Storage::disk('public')->delete($company->logo);
+            }
+            $path = $request->file('logo')->store('app/logos', 'public');
+            $dataToUpdate['logo'] = $path;
+        }
+        $company->update($dataToUpdate);
+
+        return back()->with([
+            'success_title' => 'تم التحديث!',
+            'success_message' => 'تم تحديث بيانات الشركة بنجاح.'
+        ]);
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
+    }
+}
+}

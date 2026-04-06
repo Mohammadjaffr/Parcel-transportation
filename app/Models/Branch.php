@@ -17,7 +17,9 @@ class Branch extends Model
         'city',
         'phone',
         'code',
-        'app_id'
+        'app_id',
+        'map_link',
+        'is_main'
     ];
 
     public function sentShipments()
