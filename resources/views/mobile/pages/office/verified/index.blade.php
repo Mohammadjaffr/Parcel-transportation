@@ -14,7 +14,7 @@
                 <p class="text-xs font-semibold text-slate-400">إجمالي المكاتب الموثوقة: <span
                         class="font-bold text-primary">{{ $offices->total() }}</span></p>
             </div>
-            </div>
+        </div>
 
         <div class="px-2">
             <div class="relative group">
@@ -27,53 +27,78 @@
 
         <div class="px-2 space-y-4">
             @forelse($offices as $office)
-                <div x-data="{ expanded: false }"
-                    x-show="searchQuery === '' || '{{ $office->name }}'.includes(searchQuery) || '{{ $office->address }}'.includes(searchQuery) || '{{ $office->phone }}'.includes(searchQuery)"
+                <div x-data="{ expanded: false, isSending: false }"
                     class="bg-white rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden transition-all duration-300 relative">
 
-                    <div @click="expanded = !expanded" class="p-5 relative cursor-pointer active:bg-slate-50 transition-colors">
+                    <div class="p-5 relative">
                         <div class="flex gap-4 items-center mt-2">
-                            
-                            @if($office->logo)
-                                <div class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border shadow-inner border-slate-100 bg-white">
-                                    <img src="{{ asset('storage/' . $office->logo) }}" alt="شعار {{ $office->name }}" class="w-full h-full object-cover">
-                                </div>
-                            @else
-                                <div class="flex justify-center items-center w-14 h-14 text-primary bg-primary/10 rounded-2xl border shadow-inner border-primary/20 shrink-0">
-                                    <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified</span>
-                                </div>
-                            @endif
 
-                            <div class="flex-1 min-w-0">
+                            <div @click="expanded = !expanded" class="cursor-pointer">
+                                @if($office->logo)
+                                    <div
+                                        class="relative w-14 h-14 rounded-2xl overflow-hidden shrink-0 border shadow-inner border-slate-100 bg-white">
+                                        <img src="{{ asset('storage/' . $office->logo) }}" alt="شعار {{ $office->name }}"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                @else
+                                    <div
+                                        class="flex justify-center items-center w-14 h-14 text-primary bg-primary/10 rounded-2xl border shadow-inner border-primary/20 shrink-0">
+                                        <span class="text-2xl material-symbols-outlined"
+                                            style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div @click="expanded = !expanded" class="flex-1 min-w-0 cursor-pointer">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <h3 class="text-base font-bold truncate text-slate-800 font-headline">{{ $office->name }}</h3>
-                                    <span
-                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary transition-transform"
-                                        :class="expanded ? 'scale-110' : ''">
-                                        {{ $office->branches->count() }} فرع
-                                    </span>
+                                    <h3 class="text-base font-bold truncate text-slate-800 font-headline">{{ $office->name }}
+                                    </h3>
                                 </div>
-
-                                <p class="flex gap-1 items-center mt-1 text-xs text-slate-500">
-                                    <span class="material-symbols-outlined text-[14px] text-slate-400">location_on</span>
-                                    <span class="truncate">{{ $office->address ?: 'لم يتم تحديد العنوان' }}</span>
+                                <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">store</span>
+                                    {{ $office->branches->count() }} فرع متاح
                                 </p>
                             </div>
 
-                            <div class="text-slate-300 transition-transform duration-300"
-                                :class="expanded ? 'rotate-180 text-primary' : ''">
-                                <span class="material-symbols-outlined">expand_more</span>
+                            <div class="shrink-0">
+                                @if($office->connection_status == 'none')
+                                    <form action="{{ route('offices.connect', $office->id) }}" method="POST"
+                                        @submit="isSending = true">
+                                        @csrf
+                                        <button type="submit" :disabled="isSending"
+                                            class="flex items-center gap-1.5 px-4 h-10 rounded-xl bg-primary text-white text-xs font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50">
+                                            <span x-show="!isSending"
+                                                class="material-symbols-outlined text-[18px]">person_add</span>
+                                            <span x-show="isSending"
+                                                class="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+                                            <span x-text="isSending ? 'جاري..' : 'ربط'"></span>
+                                        </button>
+                                    </form>
+
+                                @elseif($office->connection_status == 'pending')
+                                    <div
+                                        class="flex items-center gap-1.5 px-3 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 text-[11px] font-bold">
+                                        <span class="material-symbols-outlined text-[18px] animate-pulse">hourglass_empty</span>
+                                        قيد الانتظار
+                                    </div>
+
+                                @elseif($office->connection_status == 'accepted')
+                                    <div
+                                        class="flex items-center gap-1.5 px-3 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 text-[11px] font-bold">
+                                        <span class="material-symbols-outlined text-[18px]"
+                                            style="font-variation-settings: 'FILL' 1;">verified</span>
+                                        متصل
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
 
                     <div x-show="expanded" x-collapse x-cloak
-                        class="bg-slate-50/50 border-t border-slate-50 px-5 pb-5 pt-2 space-y-3">
-
-                        <div
-                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        class="bg-slate-50/50 border-t border-slate-50 px-5 pb-5 pt-3 space-y-3">
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                             <span class="w-1 h-1 rounded-full bg-primary"></span>
-                            قائمة الفروع المتاحة
+                            الفروع المتاحة للمكتب
                         </div>
 
                         @forelse($office->branches as $branch)
@@ -81,32 +106,33 @@
                                 class="flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center">
-                                        <span class="text-sm material-symbols-outlined">location_city</span>
+                                        <span class="text-sm material-symbols-outlined">location_on</span>
                                     </div>
                                     <div>
                                         <div class="text-xs font-bold text-slate-700 font-headline">{{ $branch->name }}</div>
                                         <div class="text-[10px] text-slate-400">{{ $branch->city }}</div>
                                     </div>
                                 </div>
-                                <a href="tel:{{ $branch->phone }}"
-                                    class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center active:scale-90 transition-transform">
-                                    <span class="text-sm material-symbols-outlined">call</span>
-                                </a>
+
+                                @if($office->connection_status == 'accepted')
+                                    <a href="tel:{{ $branch->phone }}"
+                                        class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center active:scale-90 transition-transform">
+                                        <span class="text-sm material-symbols-outlined">call</span>
+                                    </a>
+                                @else
+                                    <span class="material-symbols-outlined text-slate-200 text-sm">lock</span>
+                                @endif
                             </div>
                         @empty
-                            <div class="text-center py-4 text-xs text-slate-400 font-medium italic">
-                                لا توجد فروع مسجلة لهذا المكتب
-                            </div>
+                            <p class="text-center text-[10px] text-slate-400 italic py-2">لا توجد فروع مسجلة</p>
                         @endforelse
                     </div>
                 </div>
             @empty
                 <div
-                    class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 shadow-sm mx-2">
-                    <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-primary/5 text-primary">
-                        <span class="text-6xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">verified</span>
-                    </div>
-                    <p class="text-lg font-bold font-headline text-slate-400">لا توجد مكاتب موثوقة حالياً</p>
+                    class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100">
+                    <span class="text-6xl material-symbols-outlined text-slate-200 mb-4">verified</span>
+                    <p class="text-lg font-bold text-slate-400">لا توجد مكاتب موثوقة حالياً</p>
                 </div>
             @endforelse
         </div>

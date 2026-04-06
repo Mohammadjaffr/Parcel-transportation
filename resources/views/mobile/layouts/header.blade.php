@@ -52,27 +52,22 @@
 
                 <div class="flex items-center gap-2 bg-white/60 p-2 rounded-xl border border-white">
                     @if(Auth::user()->type === 'admin')
-                        <span
-                            class="bg-primary text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-sm shadow-primary/20">مدير
-                            النظام</span>
+                        <span class="bg-primary text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-sm shadow-primary/20">مدير النظام</span>
                     @else
-                        <span
-                            class="bg-slate-700 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-sm shadow-slate-700/20">موظف</span>
+                        <span class="bg-slate-700 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-sm shadow-slate-700/20">موظف</span>
                     @endif
                     <span class="text-xs font-bold text-slate-600 truncate">{{ Auth::user()->Branch?->name }}</span>
                 </div>
             </div>
 
             <div class="p-2 flex flex-col gap-1">
-                <a href="#"
-                    class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-colors font-headline font-bold text-sm active:scale-95">
+                <a href="#" class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-colors font-headline font-bold text-sm active:scale-95">
                     <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">person</span>
                     حسابي الشخصي
                 </a>
 
                 @if(Auth::user()->type === 'admin')
-                    <a href="{{ route('app.settings') }}"
-                        class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-colors font-headline font-bold text-sm active:scale-95">
+                    <a href="{{ route('app.settings') }}" class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-colors font-headline font-bold text-sm active:scale-95">
                         <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">settings</span>
                         إعدادات الشركة
                     </a>
@@ -82,10 +77,8 @@
 
                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                     @csrf
-                    <button type="submit"
-                        class="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors font-headline font-bold text-sm active:scale-95">
-                        <span
-                            class="material-symbols-outlined text-[20px] bg-red-50 text-red-500 p-1.5 rounded-lg">logout</span>
+                    <button type="submit" class="w-full flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors font-headline font-bold text-sm active:scale-95">
+                        <span class="material-symbols-outlined text-[20px] bg-red-50 text-red-500 p-1.5 rounded-lg">logout</span>
                         تسجيل الخروج
                     </button>
                 </form>
@@ -94,14 +87,15 @@
     </div>
 
     <div class="flex items-center gap-1 sm:gap-2">
-
         <div class="relative">
             <button @click="notifOpen = !notifOpen; profileOpen = false"
                 class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-slate-50 transition-colors active:scale-90 duration-200 text-slate-500 hover:text-primary relative z-10">
                 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+                
+                @if(auth()->user()->unreadNotifications->count() > 0)
+                    <span class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse z-10 pointer-events-none"></span>
+                @endif
             </button>
-            <span
-                class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse z-10 pointer-events-none"></span>
 
             <div x-show="notifOpen" @click.outside="notifOpen = false"
                 x-transition:enter="transition ease-out duration-300"
@@ -114,54 +108,84 @@
 
                 <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100/50 bg-slate-50/30">
                     <div class="flex items-center gap-2">
-                        <h3 class="font-headline font-bold text-lg text-on-surface">الإشعارات</h3>
-                        <span class="bg-rose-50 text-rose-500 text-[10px] font-bold px-2 py-0.5 rounded-full">2
-                            جديد</span>
+                        <h3 class="font-headline font-bold text-lg text-slate-800">الإشعارات</h3>
+                        @if(auth()->user()->unreadNotifications->count() > 0)
+                            <span class="bg-rose-50 text-rose-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {{ auth()->user()->unreadNotifications->count() }} جديد
+                            </span>
+                        @endif
                     </div>
-                    <button class="text-xs text-primary font-bold hover:opacity-80 transition-opacity">تحديد
-                        كمقروء</button>
+                    <form action="" method="GET">
+                        <button type="submit" class="text-xs text-primary font-bold hover:opacity-80 transition-opacity">تحديد كمقروء</button>
+                    </form>
                 </div>
 
                 <div class="max-h-[340px] overflow-y-auto overscroll-contain flex flex-col scrollbar-hide">
-                    <a href="#"
-                        class="flex items-start gap-4 p-4 bg-primary/[0.03] hover:bg-primary/[0.06] transition-colors border-b border-slate-50 relative group">
-                        <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
-                        <div
-                            class="w-11 h-11 shrink-0 bg-white text-primary rounded-2xl flex items-center justify-center shadow-sm border border-primary/10 group-hover:scale-105 transition-transform">
-                            <span class="material-symbols-outlined text-[22px]"
-                                style="font-variation-settings: 'FILL' 1;">inventory_2</span>
-                        </div>
-                        <div class="flex flex-col gap-1 w-full">
-                            <div class="flex justify-between items-start w-full">
-                                <p class="text-sm font-headline font-bold text-slate-800">طرد جديد قيد الانتظار</p>
-                                <span class="text-[10px] text-primary font-bold whitespace-nowrap mt-0.5">الآن</span>
-                            </div>
-                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">تمت إضافة طرد جديد برقم
-                                #TRK-8493 بواسطة العميل أحمد، يرجى تعيين سائق.</p>
-                        </div>
-                    </a>
+                    @forelse(auth()->user()->notifications->take(15) as $notification)
+                        @php 
+                            $type = $notification->data['type'] ?? ''; 
+                            $isUnread = $notification->unread();
+                        @endphp
 
-                    <a href="#"
-                        class="flex items-start gap-4 p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 group">
-                        <div
-                            class="w-11 h-11 shrink-0 bg-slate-100 text-slate-500 rounded-2xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                            <span class="material-symbols-outlined text-[22px]">local_shipping</span>
-                        </div>
-                        <div class="flex flex-col gap-1 w-full">
-                            <div class="flex justify-between items-start w-full">
-                                <p class="text-sm font-headline font-bold text-slate-700">تم توصيل الشحنة بنجاح</p>
-                                <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">منذ
-                                    ساعتين</span>
+                        <div class="flex flex-col border-b border-slate-50 relative group {{ $isUnread ? 'bg-primary/[0.02]' : 'hover:bg-slate-50' }} transition-colors">
+                            
+                            @if($isUnread)
+                                <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
+                            @endif
+
+                            <div class="flex items-start gap-4 p-4">
+                                <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
+                                    @if($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
+                                    @elseif($type == 'new_shipment') bg-emerald-50 text-emerald-500 border-emerald-100
+                                    @else bg-slate-100 text-slate-500 border-slate-200 @endif">
+                                    
+                                    <span class="material-symbols-outlined text-[22px]">
+                                        @if($type == 'connection_request') person_add
+                                        @elseif($type == 'new_shipment') inventory_2
+                                        @else notifications @endif
+                                    </span>
+                                </div>
+
+                                <div class="flex flex-col gap-1 w-full text-right">
+                                    <div class="flex justify-between items-start w-full gap-2">
+                                        <p class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
+                                            @if($type == 'connection_request') طلب ربط جديد
+                                            @elseif($type == 'new_shipment') شحنة جديدة
+                                            @else إشعار @endif
+                                        </p>
+                                        <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 leading-relaxed">
+                                        {{ $notification->data['message'] }}
+                                    </p>
+
+                                    @if($type == 'connection_request' && $isUnread)
+                                        <div class="flex gap-2 mt-3">
+                                            <form action="{{ route('connections.accept', $notification->data['connection_id'] ?? 0) }}" method="POST" class="flex-1">
+                                                @csrf
+                                                <button class="w-full py-2 bg-primary text-white text-[10px] font-bold rounded-xl active:scale-95 transition-all shadow-sm shadow-primary/20">قبول</button>
+                                            </form>
+                                            <form action="{{ route('connections.reject', $notification->data['connection_id'] ?? 0) }}" method="POST" class="flex-1">
+                                                @csrf
+                                                <button class="w-full py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl active:scale-95 transition-all">رفض</button>
+                                            </form>
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
-                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">تم تسليم الشحنة للعميل في
-                                الرياض وتم تحديث الحالة في النظام.</p>
                         </div>
-                    </a>
+                    @empty
+                        <div class="py-12 flex flex-col items-center justify-center text-slate-400">
+                            <span class="material-symbols-outlined text-5xl mb-2 opacity-20">notifications_off</span>
+                            <p class="text-xs font-bold">لا توجد إشعارات حالياً</p>
+                        </div>
+                    @endforelse
                 </div>
 
                 <div class="p-3 bg-white/80 border-t border-slate-100/50">
-                    <a href="#"
-                        class="flex items-center justify-center w-full py-3 bg-slate-50 hover:bg-slate-100 text-primary text-sm font-headline font-bold rounded-xl transition-all active:scale-95">
+                    <a href="#" class="flex items-center justify-center w-full py-3 bg-slate-50 hover:bg-slate-100 text-primary text-sm font-headline font-bold rounded-xl transition-all active:scale-95">
                         عرض كل الإشعارات
                     </a>
                 </div>

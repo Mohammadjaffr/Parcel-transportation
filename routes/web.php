@@ -5,6 +5,7 @@ use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
 use App\Http\Controllers\CashClosingController;
+use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerFinanceController;
 use App\Http\Controllers\CustomerPaymentController;
@@ -227,6 +228,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
     Route::get('/app', [AppController::class, 'index'])->name('app.index');
     Route::PUT('/app/update', [AppController::class, 'update'])->name('app.update');
+    Route::post('/connect/send/{receiverAppId}', [ConnectionController::class, 'sendRequest'])->name('offices.connect');
+    Route::post('/connect/accept/{id}', [ConnectionController::class, 'accept'])->name('connections.accept');
+    Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
     Route::resource('offices', OfficeController::class);
 
 

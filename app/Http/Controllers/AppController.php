@@ -2,26 +2,38 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\App; 
+use App\Models\OfficeConnection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\App; 
 use Illuminate\Support\Facades\Storage;
 
 class AppController extends Controller
 {
     public function index(Request $request)
-    {
-        $offices = App::with(['branches' => function ($query) {
-                    $query->withoutGlobalScope('app_id');
-                }])->latest()->paginate(15); 
+{
+    $myAppId = auth()->user()->app_id;
+    $offices = App::with(['branches' => function ($query) {
+            $query->withoutGlobalScope('app_id');
+        }])
+        ->where('id', '!=', $myAppId)
+        ->latest()
+        ->paginate(15);
+    $offices->getCollection()->transform(function ($office) use ($myAppId) {
+        $connection = OfficeConnection::where(function($q) use ($myAppId, $office) {
+            $q->where('sender_app_id', $myAppId)->where('receiver_app_id', $office->id);
+        })->orWhere(function($q) use ($myAppId, $office) {
+            $q->where('sender_app_id', $office->id)->where('receiver_app_id', $myAppId);
+        })->first();
 
-        if ($request->isMobile) {
-            return view('mobile.pages.office.verified.index', compact('offices'));
-        }
-    
-        // عدل الصفحه الخاصه بالديسكتوب يا السعدي 😉
+        $office->connection_status = $connection ? $connection->status : 'none';
+        return $office;
+    });
+    if ($request->isMobile){
         return view('mobile.pages.office.verified.index', compact('offices'));
     }
+    return view('mobile.pages.office.verified.index', compact('offices'));
+}
     public function settings(Request $request)
     {
         $user = Auth::user();
