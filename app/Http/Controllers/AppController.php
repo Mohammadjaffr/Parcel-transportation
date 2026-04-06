@@ -9,21 +9,19 @@ use Illuminate\Support\Facades\Storage;
 
 class AppController extends Controller
 {
+    public function index(Request $request)
+    {
+        $offices = App::with(['branches' => function ($query) {
+                    $query->withoutGlobalScope('app_id');
+                }])->latest()->paginate(15); 
 
-
-public function index(Request $request)
-{
-    $offices = App::with('branches')
-                ->latest()
-                ->paginate(15); 
-    if ($request->isMobile) {
+        if ($request->isMobile) {
+            return view('mobile.pages.office.verified.index', compact('offices'));
+        }
+    
+        // عدل الصفحه الخاصه بالديسكتوب يا السعدي 😉
         return view('mobile.pages.office.verified.index', compact('offices'));
     }
-    
-    // عدل الصفحه الخاصه بالديسكتوب يا السعدي 😉
-    // ملاحظة: حالياً يتم توجيه الديسكتوب لنفس واجهة الموبايل حتى تقوم بتصميمها
-    return view('mobile.pages.office.verified.index', compact('offices'));
-}
     public function settings(Request $request)
     {
         $user = Auth::user();

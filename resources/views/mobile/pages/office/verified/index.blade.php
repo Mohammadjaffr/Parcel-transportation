@@ -98,14 +98,6 @@
                                 لا توجد فروع مسجلة لهذا المكتب
                             </div>
                         @endforelse
-
-                        <div class="mt-4 pt-2 border-t border-slate-100">
-                            <a href="#"
-                                class="w-full flex justify-center items-center gap-2 h-12 text-sm font-bold rounded-xl bg-primary/5 text-primary active:scale-95 transition-all">
-                                <span class="text-lg material-symbols-outlined">visibility</span>
-                                عرض تفاصيل المكتب
-                            </a>
-                        </div>
                     </div>
                 </div>
             @empty
