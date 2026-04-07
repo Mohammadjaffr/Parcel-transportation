@@ -11,15 +11,15 @@ class ConnectionRequestNotification extends Notification
 {
     use Queueable;
     protected $senderApp;
-    protected $connection;
+    protected $officeConnection;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($senderApp,$connection)
+    public function __construct($senderApp,$officeConnection)
     {
         $this->senderApp = $senderApp;
-        $this->connection = $connection;
+        $this->officeConnection = $officeConnection;
     }
 
     /**
@@ -52,7 +52,7 @@ class ConnectionRequestNotification extends Notification
     {
         return [
             'sender_id' => $this->senderApp->id,
-            'connection_id'   => $this->connection->id,
+            'connection_id'   => $this->officeConnection->id,
             'sender_name' => $this->senderApp->name,
             'message' => 'يرغب مكتب ' . $this->senderApp->name . ' في الربط مع مكتبك.',
             'action_url' => route('app.index') ,
