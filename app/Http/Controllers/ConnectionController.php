@@ -71,6 +71,14 @@ class ConnectionController extends Controller
 
         $connection->update(['status' => 'accepted']);
 
+        // --- التعديل الجديد: إرسال إشعار القبول للمرسل ---
+        $senderAdmin = User::where('app_id', $connection->sender_app_id)->where('type', 'admin')->first();
+        if ($senderAdmin) {
+            // نمرر بيانات المكتب الحالي (الموافق) ليظهر اسمه في الإشعار
+            $senderAdmin->notify(new \App\Notifications\ConnectionAcceptedNotification(Auth::user()->App));
+        }
+        // ------------------------------------------------
+
         return back()->with('success', 'تم قبول طلب الربط بنجاح.');
     }
 
@@ -82,6 +90,13 @@ class ConnectionController extends Controller
         $connection = OfficeConnection::findOrFail($id);
         
         if ($connection->receiver_app_id !== Auth::user()->app_id) { abort(403); }
+
+        // --- التعديل الجديد: إرسال إشعار الرفض للمرسل قبل حذف السجل ---
+        $senderAdmin = User::where('app_id', $connection->sender_app_id)->where('type', 'admin')->first();
+        if ($senderAdmin) {
+            $senderAdmin->notify(new \App\Notifications\ConnectionRejectedNotification(Auth::user()->App));
+        }
+        // -----------------------------------------------------------
 
         // الحذف هو السر هنا، السجل يختفي والزر يرجع "ربط" عند المرسل
         $connection->delete();
