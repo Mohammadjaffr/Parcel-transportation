@@ -13,27 +13,38 @@ return new class extends Migration
     {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('driver_id')->nullable()->constrained('drivers');
-            $table->string('sender_branch_code', 10);
-            // $table->foreign('sender_branch_code')->references('code')->on('branches')->cascadeOnDelete();
-            $table->string('receiver_branch_code', 10);
-            // $table->foreign('receiver_branch_code')->references('code')->on('branches')->cascadeOnDelete();
+            
+            // 1. فروع الإرسال والاستقبال (باستخدام ID الفرع)
+            $table->foreignId('sender_branch_id')->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('receiver_branch_id')->constrained('branches')->cascadeOnDelete();
+
+            // 2. العملاء (مرسل ومستقبل)
             $table->foreignId('sender_customer_id')->nullable()->constrained('customers')->nullOnDelete();
-            $table->foreignId('shipment_package_id')->nullable()->constrained('shipment_packages')->nullOnDelete();
             $table->foreignId('receiver_customer_id')->nullable()->constrained('customers')->nullOnDelete();
-            $table->string('bond_number')->unique();
+            
+            // 3. معلومات الطرد
+            $table->foreignId('shipment_package_id')->nullable()->constrained('shipment_packages')->nullOnDelete();
+            $table->string('code')->nullable(); // كود تتبع الشحنة
+            $table->string('bond_number')->unique(); // رقم السند
+            $table->string('package_type')->nullable(); // نوع الطرد (كرتون، كيس، الخ)
+            $table->decimal('weight', 8, 2)->nullable();
+            
+            // 4. الحقول الخاصة بالعسل
             $table->string('no_gallons_honey')->nullable();
             $table->string('no_honey_jars')->nullable();
+            
+            // 5. حالات الشحنة والدفع
             $table->enum('status', ['pending', 'in_transit', 'delivered', 'cancelled', 'returned'])->default('pending');
             $table->enum('customer_debt_status', ['pending', 'partially_paid', 'fully_paid', 'overdue'])->nullable()->default('pending');
-            $table->decimal('weight', 8, 2)->nullable();
+            
+            // 6. المبالغ وطرق الدفع
             $table->enum('payment_method', ['prepaid', 'cod', 'customer_credit', 'partial_payment'])->default('prepaid');
             $table->decimal('partial_amount', 10, 2)->nullable()->default(0);
             $table->decimal('total_amount', 10, 2);
+            
+            // 7. ملاحظات
             $table->text('notes')->nullable();
-            $table->string('created_branch_code', 10);
-            $table->string('code')->nullable();
-            $table->string('package_type')->nullable();
+            
             $table->timestamps();
         });
     }

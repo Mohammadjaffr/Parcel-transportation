@@ -21,6 +21,16 @@ class Branch extends Model
         'map_link',
         'is_main'
     ];
+    // معتمد
+    public function outgoingShipments()
+    {
+        return $this->hasMany(Shipment::class, 'sender_branch_id');
+    }
+    // معتمد
+    public function incomingShipments()
+    {
+        return $this->hasMany(Shipment::class, 'receiver_branch_id');
+    }
 
     public function sentShipments()
     {

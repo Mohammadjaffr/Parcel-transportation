@@ -29,14 +29,14 @@
     </a>
 
    <a href="{{ route('mobile.office') }}"
-    class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+    class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
 
     <span class="material-symbols-outlined"
-        style="font-variation-settings: 'FILL' {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 1 : 0 }};">
+        style="font-variation-settings: 'FILL' {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 1 : 0 }};">
         apartment
     </span>
 
-    <span class="font-headline text-[10px] {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create']) ? 'font-bold' : 'font-medium' }} mt-1">
+    <span class="font-headline text-[10px] {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 'font-bold' : 'font-medium' }} mt-1">
         المكاتب
     </span>
 </a>

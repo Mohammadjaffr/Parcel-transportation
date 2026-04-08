@@ -10,9 +10,8 @@ class Shipment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sender_branch_code',
-        'created_branch_code',
-        'receiver_branch_code',
+        'sender_branch_id',    
+        'receiver_branch_id',  
         'sender_customer_id',
         'receiver_customer_id',
         'customer_debt_status',
@@ -42,15 +41,19 @@ class Shipment extends Model
         parent::boot();
 
         static::creating(function ($shipment) {
+            
+            // جلب الفرع المُرسل لاستخدام الكود الخاص به في رقم السند
+            $branch = Branch::find($shipment->sender_branch_id);
+            
+            // إذا كان للفرع كود نستخدمه، وإلا نستخدم الحرف B مع رقم الفرع كبديل
+            $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $shipment->sender_branch_id;
 
-            $branchCode = $shipment->created_branch_code
-                ?? $shipment->sender_branch_code
-                ?? $shipment->receiver_branch_code
-                ?? 'XXX';
+            // التعديل هنا: حرف y الصغير يعطي 26 بدلاً من 2026
+            // النتيجة ستكون مثلاً: 260408 (سنة 26، شهر 04، يوم 08)
+            $date = now()->format('ymd'); 
 
-            $date = now()->format('Ymd');
-
-            $lastShipment = Shipment::where('created_branch_code', $branchCode)
+            // البحث عن آخر شحنة لنفس الفرع في نفس اليوم باستخدام الـ ID
+            $lastShipment = Shipment::where('sender_branch_id', $shipment->sender_branch_id)
                 ->whereDate('created_at', today())
                 ->latest('id')
                 ->first();
@@ -59,7 +62,8 @@ class Shipment extends Model
                 ? str_pad((int) substr($lastShipment->bond_number, -3) + 1, 3, '0', STR_PAD_LEFT)
                 : '001';
 
-            $shipment->bond_number = "{$branchCode}-{$date}{$newSeq}";
+            // شكل السند سيكون مثلاً: SAN-260408001
+            $shipment->bond_number = "{$branchIdentifier}-{$date}{$newSeq}";
         });
     }
 
@@ -73,15 +77,17 @@ class Shipment extends Model
         return $this->belongsTo(User::class);
     }
 
+    // --- تعديل علاقات الفروع ---
     public function senderBranch()
     {
-        return $this->belongsTo(Branch::class, 'sender_branch_code', 'code');
+        return $this->belongsTo(Branch::class, 'sender_branch_id');
     }
 
     public function receiverBranch()
     {
-        return $this->belongsTo(Branch::class, 'receiver_branch_code', 'code');
+        return $this->belongsTo(Branch::class, 'receiver_branch_id');
     }
+    // ---------------------------
 
     public function senderCustomer()
     {
@@ -97,6 +103,7 @@ class Shipment extends Model
     {
         return $this->hasMany(CustomerPayment::class);
     }
+    
     public function customerPayments()
     {
         return $this->hasMany(CustomerPayment::class);
