@@ -241,6 +241,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
+    Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
 });
 
 

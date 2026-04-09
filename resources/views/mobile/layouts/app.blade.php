@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet" />
 
-    <script src="{{ asset('assets/js/cdn.min.js') }}"></script>
+    <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -114,15 +114,20 @@
             btn.classList.toggle('text-primary');
         }
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('notif-dropdown');
             const wrapper = document.getElementById('header-actions');
 
-            if (!wrapper.contains(event.target) && !dropdown.classList.contains('invisible')) {
-                toggleNotifications();
+            // الحل هنا: نتأكد أولاً أن العناصر موجودة في الصفحة قبل أن نطبق عليها أي دوال
+            if (wrapper && dropdown) {
+                if (!wrapper.contains(event.target) && !dropdown.classList.contains('invisible')) {
+                    toggleNotifications();
+                }
             }
         });
     </script>
+
+    @yield('script')
 </body>
 
 </html>

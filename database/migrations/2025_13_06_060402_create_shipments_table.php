@@ -16,7 +16,8 @@ return new class extends Migration
             
             // 1. فروع الإرسال والاستقبال (باستخدام ID الفرع)
             $table->foreignId('sender_branch_id')->constrained('branches')->cascadeOnDelete();
-            $table->foreignId('receiver_branch_id')->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('receiver_branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('receiver_office_branch_id')->nullable()->constrained('office_branches')->cascadeOnDelete();
 
             // 2. العملاء (مرسل ومستقبل)
             $table->foreignId('sender_customer_id')->nullable()->constrained('customers')->nullOnDelete();

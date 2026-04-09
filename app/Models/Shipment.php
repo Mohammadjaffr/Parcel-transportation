@@ -11,7 +11,8 @@ class Shipment extends Model
 
     protected $fillable = [
         'sender_branch_id',    
-        'receiver_branch_id',  
+        'receiver_branch_id',
+        'receiver_office_branch_id',  
         'sender_customer_id',
         'receiver_customer_id',
         'customer_debt_status',
@@ -86,6 +87,11 @@ class Shipment extends Model
     public function receiverBranch()
     {
         return $this->belongsTo(Branch::class, 'receiver_branch_id');
+    }
+
+    public function receiverOfficeBranch()
+    {
+        return $this->belongsTo(OfficeBranch::class, 'receiver_office_branch_id');
     }
     // ---------------------------
 

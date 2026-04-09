@@ -64,11 +64,11 @@
             </div>
 
             <div class="p-2 flex flex-col gap-1">
-                <a href="#"
+                {{-- <a href="#"
                     class="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 text-slate-600 hover:text-primary transition-colors font-headline font-bold text-sm active:scale-95">
                     <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">person</span>
                     حسابي الشخصي
-                </a>
+                </a> --}}
 
                 @if(Auth::user()->type === 'admin')
                     <a href="{{ route('app.settings') }}"
@@ -93,120 +93,124 @@
         </div>
     </div>
 
-    <div class="flex items-center gap-1 sm:gap-2">
-        <div class="relative">
-            <button @click="notifOpen = !notifOpen; profileOpen = false"
-                class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-slate-50 transition-colors active:scale-90 duration-200 text-slate-500 hover:text-primary relative z-10">
-                <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+   <div class="flex items-center gap-1 sm:gap-2">
+    <div class="relative">
+        <button @click="notifOpen = !notifOpen; profileOpen = false"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-transparent hover:bg-slate-50 transition-colors active:scale-90 duration-200 text-slate-500 hover:text-primary relative z-10">
+            <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 
-                @if(auth()->user()->unreadNotifications->count() > 0)
-                    <span
-                        class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse z-10 pointer-events-none"></span>
-                @endif
-            </button>
-
-            <div x-show="notifOpen" @click.outside="notifOpen = false"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 scale-95 translate-y-2" x-cloak
-                class="fixed top-[70px] inset-x-4 md:absolute md:top-full md:left-0 md:right-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-2xl border border-slate-100 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] z-[100] flex flex-col overflow-hidden">
-
-                <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100/50 bg-slate-50/30">
-                    <div class="flex items-center gap-2">
-                        <h3 class="font-headline font-bold text-lg text-slate-800">الإشعارات</h3>
-                        @if(auth()->user()->unreadNotifications->count() > 0)
-                            <span class="bg-rose-50 text-rose-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                {{ auth()->user()->unreadNotifications->count() }} جديد
-                            </span>
-                        @endif
-                    </div>
-                    <form action="" method="GET">
-                        <button type="submit"
-                            class="text-xs text-primary font-bold hover:opacity-80 transition-opacity">تحديد
-                            كمقروء</button>
-                    </form>
-                </div>
-
-                <div class="max-h-[340px] overflow-y-auto overscroll-contain flex flex-col scrollbar-hide">
-    @forelse(auth()->user()->notifications->take(15) as $notification)
-        @php 
-            $type = $notification->data['type'] ?? ''; 
-            $isUnread = $notification->unread();
-            
-            // تجهيز الرابط الخاص بالإشعار وإضافة notify_id إليه
-            $actionUrl = $notification->data['action_url'] ?? '#';
-            if($actionUrl !== '#') {
-                $actionUrl .= (parse_url($actionUrl, PHP_URL_QUERY) ? '&' : '?') . 'notify_id=' . $notification->id;
-            }
-        @endphp
-
-        <div class="flex flex-col border-b border-slate-50 relative group {{ $isUnread ? 'bg-primary/[0.02]' : 'hover:bg-slate-50' }} transition-colors">
-            
-            @if($isUnread)
-                <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
+            @if(auth()->user()->unreadNotifications->count() > 0)
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full border border-white animate-pulse z-10 pointer-events-none"></span>
             @endif
+        </button>
 
-            <div class="flex items-start gap-4 p-4">
-                <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
-                    @if($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
-                    @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
-                    @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
-                    @elseif($type == 'new_shipment') bg-emerald-50 text-emerald-500 border-emerald-100
-                    @else bg-slate-100 text-slate-500 border-slate-200 @endif">
-                    
-                    <span class="material-symbols-outlined text-[22px]">
-                        @if($type == 'connection_request') person_add
-                        @elseif($type == 'connection_accepted') handshake
-                        @elseif($type == 'connection_rejected') block
-                        @elseif($type == 'new_shipment') inventory_2
-                        @else notifications @endif
-                    </span>
+        <div x-show="notifOpen" @click.outside="notifOpen = false"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+            x-transition:leave-end="opacity-0 scale-95 translate-y-2" x-cloak
+            class="fixed top-[70px] inset-x-4 md:absolute md:top-full md:left-0 md:right-auto md:mt-3 md:w-80 bg-white/95 backdrop-blur-2xl border border-slate-100 rounded-[2rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] z-[100] flex flex-col overflow-hidden">
+
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100/50 bg-slate-50/30">
+                <div class="flex items-center gap-2">
+                    <h3 class="font-headline font-bold text-lg text-slate-800">الإشعارات</h3>
+                    @if(auth()->user()->unreadNotifications->count() > 0)
+                        <span class="bg-rose-50 text-rose-500 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            {{ auth()->user()->unreadNotifications->count() }} جديد
+                        </span>
+                    @endif
                 </div>
+                <form action="" method="GET">
+                    <button type="submit" class="text-xs text-primary font-bold hover:opacity-80 transition-opacity">تحديد كمقروء</button>
+                </form>
+            </div>
 
-                <div class="flex flex-col gap-1 w-full text-right relative">
-                    <a href="{{ $actionUrl }}" class="flex flex-col w-full">
-                        <div class="flex justify-between items-start w-full gap-2">
-                            <p class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
-                                @if($type == 'connection_request') طلب ربط جديد
-                                @elseif($type == 'connection_accepted') تم قبول طلبك 🎉
-                                @elseif($type == 'connection_rejected') تم رفض طلبك
-                                @elseif($type == 'new_shipment') شحنة جديدة
-                                @else إشعار @endif
-                            </p>
-                            <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">
-                                {{ $notification->created_at->diffForHumans() }}
-                            </span>
+            <div class="max-h-[340px] overflow-y-auto overscroll-contain flex flex-col scrollbar-hide">
+                @forelse(auth()->user()->notifications->take(15) as $notification)
+                    @php 
+                        $type = $notification->data['type'] ?? ''; 
+                        $isUnread = $notification->unread();
+                        
+                        $actionUrl = $notification->data['action_url'] ?? '#';
+                        if($actionUrl !== '#') {
+                            $actionUrl .= (parse_url($actionUrl, PHP_URL_QUERY) ? '&' : '?') . 'notify_id=' . $notification->id;
+                        }
+                    @endphp
+
+                    <div class="flex flex-col border-b border-slate-50 relative group {{ $isUnread ? 'bg-primary/[0.02]' : 'hover:bg-slate-50' }} transition-colors">
+                        
+                        @if($isUnread)
+                            <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
+                        @endif
+
+                        <div class="flex items-start gap-4 p-4">
+                            {{-- تحديد ألوان وخلفية الأيقونة حسب نوع الإشعار --}}
+                            <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
+                                @if($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
+                                @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
+                                @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
+                                @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
+                                @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100 {{-- لون خاص للآدمن --}}
+                                @else bg-slate-100 text-slate-500 border-slate-200 @endif">
+                                
+                                <span class="material-symbols-outlined text-[22px]">
+                                    @if($type == 'connection_request') person_add
+                                    @elseif($type == 'connection_accepted') handshake
+                                    @elseif($type == 'connection_rejected') block
+                                    @elseif($type == 'shipment_dispatched') local_shipping
+                                    @elseif($type == 'admin_new_shipment') add_box {{-- أيقونة تدل على الإنشاء للآدمن --}}
+                                    @else notifications @endif
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col gap-1 w-full text-right relative">
+                                <a href="{{ $actionUrl }}" class="flex flex-col w-full">
+                                    <div class="flex justify-between items-start w-full gap-2">
+                                        <p class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
+                                            @if($type == 'connection_request') طلب ربط جديد
+                                            @elseif($type == 'connection_accepted') تم قبول طلبك 🎉
+                                            @elseif($type == 'connection_rejected') تم رفض طلبك
+                                            @elseif($type == 'shipment_dispatched') طرد في الطريق
+                                            @elseif($type == 'admin_new_shipment') طرد جديد (الإدارة)
+                                            @else إشعار @endif
+                                        </p>
+                                        <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">
+                                            {{ $notification->created_at->diffForHumans() }}
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 leading-relaxed mt-1">
+                                        {{ $notification->data['message'] }}
+                                    </p>
+                                </a>
+
+                                {{-- أزرار القبول والرفض لطلبات الربط --}}
+                                @if($type == 'connection_request' && $isUnread)
+                                    <div class="flex gap-2 mt-3 z-10 relative">
+                                        <form action="{{ route('connections.accept', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
+                                            @csrf
+                                            <button class="w-full py-2 bg-primary text-white text-[10px] font-bold rounded-xl active:scale-95 transition-all shadow-sm shadow-primary/20">قبول</button>
+                                        </form>
+                                        
+                                        <form action="{{ route('connections.reject', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
+                                            @csrf
+                                            <button class="w-full py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl active:scale-95 transition-all">رفض</button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-500 leading-relaxed mt-1">
-                            {{ $notification->data['message'] }}
-                        </p>
-                    </a>
-
-                    @if($type == 'connection_request' && $isUnread)
-    <div class="flex gap-2 mt-3 z-10 relative">
-        <form action="{{ route('connections.accept', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
-            @csrf
-            <button class="w-full py-2 bg-primary text-white text-[10px] font-bold rounded-xl active:scale-95 transition-all shadow-sm shadow-primary/20">قبول</button>
-        </form>
-        
-        <form action="{{ route('connections.reject', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
-            @csrf
-            <button class="w-full py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl active:scale-95 transition-all">رفض</button>
-        </form>
-    </div>
-@endif
-                </div>
+                    </div>
+                @empty
+                    <div class="py-12 flex flex-col items-center justify-center text-slate-400">
+                        <span class="material-symbols-outlined text-5xl mb-2 opacity-20">notifications_off</span>
+                        <p class="text-xs font-bold">لا توجد إشعارات حالياً</p>
+                    </div>
+                @endforelse
             </div>
         </div>
-    @empty
-        <div class="py-12 flex flex-col items-center justify-center text-slate-400">
-            <span class="material-symbols-outlined text-5xl mb-2 opacity-20">notifications_off</span>
-            <p class="text-xs font-bold">لا توجد إشعارات حالياً</p>
-        </div>
-    @endforelse
+    </div>
 </div>
             </div>
         </div>

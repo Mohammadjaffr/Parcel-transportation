@@ -41,12 +41,12 @@
     </span>
 </a>
 
-    <a href="{{ route('shipment.index') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('shipment.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+    <a href="{{ route('mobile.shipment') }}"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.shipment','shipment.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
         <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is('shipment.*') ? 1 : 0 }};">inventory_2</span>
+            style="font-variation-settings: 'FILL' {{ Route::is(['mobile.shipment','shipment.*']) ? 1 : 0 }};">inventory_2</span>
         <span
-            class="font-headline text-[10px] {{ Route::is('shipment.*') ? 'font-bold' : 'font-medium' }} mt-1">الطرود</span>
+            class="font-headline text-[10px] {{ Route::is(['mobile.shipment','shipment.*']) ? 'font-bold' : 'font-medium' }} mt-1">الطرود</span>
     </a>
 
     <a href="{{ route('mobile.shipmentpackage.index') }}"

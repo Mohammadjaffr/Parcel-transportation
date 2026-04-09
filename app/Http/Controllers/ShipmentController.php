@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use App\Models\Branch;
-use App\Models\Customer;
-use App\Models\Shipment;
-use Illuminate\Http\Request;
-use App\Models\AdminActivity;
 use App\Classes\WebResponseClass;
-use Illuminate\Support\Facades\DB;
+use App\Models\AdminActivity;
+use App\Models\App;
+use App\Models\Branch;
 use App\Models\CashRegisterClosing;
+use App\Models\Customer;
+use App\Models\Office;
+use App\Models\Shipment;
+use App\Models\User;
+use App\Notifications\AdminShipmentCreated;
 use App\Services\AdminLoggerService;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ShipmentPaymentService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
 
 class ShipmentController extends Controller
@@ -26,200 +31,310 @@ class ShipmentController extends Controller
     }
 
     /* ========== 1- عرض جميع الطردات ========== */
+    // معتمد
     public function index(Request $request)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $branchCode = $user->branch_code;
+    
+        // استخدمنا branch_id بدلاً من branch_code كما اتفقنا في التعديلات السابقة
+        $branchId = $user->branch_id; 
+    
+        // نستقبل نوع العرض من الرابط، والافتراضي هو المرسلة (outgoing)
         $type = $request->query('type', 'outgoing');
 
-        $query = Shipment::query();
+        $query = Shipment::with(['receiverBranch', 'receiverCustomer', 'senderCustomer']);
 
         if ($type === 'incoming') {
-            $query->where('receiver_branch_code', $branchCode);
+            // جلب الطرود المستلمة (التي وجهتها هذا الفرع)
+           $query->where('receiver_branch_id', $user->branch_id);
         } else {
-            $query->where('sender_branch_code', $branchCode);
+            // جلب الطرود المرسلة (التي أرسلها هذا الفرع)
+            $query->where('sender_branch_id', $user->branch_id);
         }
 
-        $requests = $query->latest()->paginate(10)->withQueryString();
+        // استخدمنا اسم المتغير $shipments ليتوافق مع ملف الـ Blade الذي صممناه
+        $shipments = $query->latest()->paginate(10)->withQueryString();
+    
         if ($request->isMobile) {
-            return view('mobile.pages.shipment.index');
+            // تمرير المتغيرات للصفحة
+            return view('mobile.pages.shipment.outgoing.index', compact('shipments', 'type'));
         }
-        return view('pages.shipment.index', compact('requests', 'type'));
+    
+        return view('pages.shipment.index', compact('shipments', 'type'));
     }
 
     /* ========== 2- صفحة إنشاء طرد ========== */
-    public function create(Request $request)
-    {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $branches = Branch::where('code', '!=', $user->branch_code)->get();
-        $customers = Customer::where('branch_code', $user->branch_code)->get();
+   public function create(Request $request)
+{
+    /** @var \App\Models\User $user */
+    $user = auth()->user();
+    $currentApp = $user->app;
 
-        $customer = null;
-        $role = $request->query('role'); // sender | receiver
+    // --- 1. جلب المكاتب الموثوقة (Apps المتصلة) ---
+    $connectedAppIds = collect();
+    $sentAccepted = $currentApp->sentConnections()->where('status', 'accepted')->pluck('receiver_app_id');
+    $receivedAccepted = $currentApp->receivedConnections()->where('status', 'accepted')->pluck('sender_app_id');
+    $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
 
-        if ($request->filled('customer_id')) {
-            $customer = Customer::findOrFail($request->customer_id);
-        }
+    $trustedApps = App::whereIn('id', $connectedAppIds)->with('branches')->get();
 
-        return view('pages.shipment.create', compact(
-            'branches',
-            'customers',
-            'customer',
-            'role'
-        ));
+    // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
+    // هذه المكاتب تابعة لتطبيقك عبر BelongsToApp
+    $untrustedOffices = Office::where('app_id', $currentApp->id)->with('branches')->get();
+
+    // --- 3. تجهيز مصفوفة الوجهات الشاملة ---
+    $officesData = collect();
+
+    // أ- إضافة فروعنا الداخلية
+    $myBranches = Branch::where('app_id', $currentApp->id)
+                        ->where('id', '!=', $user->branch_id)
+                        ->get();
+    if ($myBranches->isNotEmpty()) {
+        $officesData->push([
+            'id' => 'internal_' . $currentApp->id,
+            'name' => '🏠 مكتبنا الحالي',
+            'branches' => $myBranches
+        ]);
     }
+    // ب- إضافة المكاتب الموثوقة (Apps)
+    foreach ($trustedApps as $tApp) {
+        if ($tApp->branches->isNotEmpty()) {
+            $officesData->push([
+                'id' => 'trusted_' . $tApp->id,
+                'name' => $tApp->name, // اسم نظيف
+                'branches' => $tApp->branches
+            ]);
+        }
+    }
+
+    // ج- إضافة المكاتب غير الموثوقة (External Offices)
+    foreach ($untrustedOffices as $uOffice) {
+        if ($uOffice->branches->isNotEmpty()) {
+            $officesData->push([
+                'id' => 'untrusted_' . $uOffice->id,
+                'name' => $uOffice->name, // اسم نظيف
+                'branches' => $uOffice->branches
+            ]);
+        }
+    }
+    
+    // --- 3. جلب العملاء كالمعتاد ---
+    $customers = Customer::where('branch_id', $user->branch_id)->get(['id', 'name', 'phone']);
+
+    $customer = null;
+    $role = $request->query('role');
+
+    if ($request->filled('customer_id')) {
+        $customer = Customer::findOrFail($request->customer_id);
+    }
+    
+
+    // التوجيه إلى الواجهة وتمرير المتغيرات
+    if ($request->isMobile) {
+        return view('mobile.pages.shipment.outgoing.create', [
+            'offices' => $officesData, // نمرر البيانات المهيأة
+            'customers' => $customers,
+            'customer' => $customer,
+            'role' => $role
+        ]);
+    }
+
+    return view('pages.shipment.create', compact('officesData', 'customers', 'customer', 'role'));
+}
 
     public function store(Request $request)
-    {
-        $entryType = $request->input('entry_type', 'sender'); // sender أو receiver
+{
+    
+    $rules = [
+        'office_id'            => 'required|string', // مثال: internal_1 أو untrusted_5
+        'receiver_branch_id'   => 'required|integer', // المعرف (ID) القادم من قائمة الفروع
 
-        $rules = [
-            'sender_customer_id' => 'nullable|exists:customers,id',
-            'receiver_customer_id' => 'nullable|exists:customers,id',
+        'sender_customer_id'   => 'nullable|exists:customers,id',
+        'sender_name'          => 'required_without:sender_customer_id|string|max:255',
+        'sender_phone'         => 'required_without:sender_customer_id|string|max:50',
 
-            'sender_name' => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone' => 'required_without:sender_customer_id|string|max:50',
+        'receiver_customer_id' => 'nullable|exists:customers,id',
+        'receiver_name'        => 'required_without:receiver_customer_id|string|max:255',
+        'receiver_phone'       => 'required_without:receiver_customer_id|string|max:50',
 
-            'receiver_name' => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone' => 'required_without:receiver_customer_id|string|max:50',
+        'package_type'         => 'required|string',
+        'weight'               => 'nullable|numeric|min:0',
+        'no_gallons_honey'     => 'nullable|numeric|min:0',
+        'no_honey_jars'        => 'nullable|numeric|min:0',
 
-            'package_type' => 'required|string|max:255',
-            'weight' => 'nullable|numeric|min:0',
-            'total_amount' => 'required|numeric|min:0',
+        'payment_method'       => 'required|in:prepaid,cod,partial_payment,customer_credit',
+        'total_amount'         => 'required|numeric|min:0',
+        'partial_amount'       => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+        'notes'                => 'nullable|string',
+    ];
 
-            'code' => 'nullable|string|max:255',
-            'no_honey_jars' => 'nullable|numeric|min:0',
-            'no_gallons_honey' => 'nullable|numeric|min:0',
+    $validator = Validator::make($request->all(), $rules);
 
-            'payment_method' => 'required|in:prepaid,cod,partial_payment,customer_credit',
+    // تحقق إضافي للدفع الجزئي
+    $validator->after(function ($validator) use ($request) {
+        if ($request->payment_method === 'partial_payment') {
+            $total = (float) $request->total_amount;
+            $partial = (float) $request->partial_amount;
+            if ($partial >= $total) {
+                $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
+            }
+        }
+    });
 
-            'prepaid_payment_method' => 'nullable|in:cash,bank_transfer',
-            'prepaid_reference' => 'required_if:prepaid_payment_method,bank_transfer|max:255',
+    if ($validator->fails()) {
+        return WebResponseClass::sendValidationError($validator);
+    }
 
-            'partial_amount' => 'required_if:payment_method,partial_payment|numeric|min:0.01',
+    try {
+        DB::beginTransaction();
 
-            'customer_debt_status' => 'nullable|in:pending,partially_paid,fully_paid,overdue',
-            'notes' => 'nullable|string',
-        ];
+        $data = $validator->validated();
+        $user = auth()->user();
+        
+        $senderBranchId = $user->branch_id;
 
-        if ($entryType === 'sender') {
-            $rules['receiver_branch_code'] = 'required|exists:branches,code';
+        // ========================================================
+        // اللوجيك الذكي: تحديد مسار الفرع الوجهة
+        // ========================================================
+        $officeIdParts = explode('_', $data['office_id']);
+        $officeType = $officeIdParts[0]; // (internal, trusted, untrusted)
+        
+        $finalReceiverBranchId = null;
+        $finalReceiverOfficeBranchId = null;
+
+        if ($officeType === 'untrusted') {
+            // المسار الثاني: فرع لمكتب خارجي يدوي
+            $finalReceiverOfficeBranchId = $data['receiver_branch_id'];
         } else {
-            $rules['sender_branch_code'] = 'required|exists:branches,code';
+            // المسار الأول: فرع داخلي أو موثوق مسجل بالنظام
+            $finalReceiverBranchId = $data['receiver_branch_id'];
         }
 
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
-        }
-
-        try {
-            $data = $validator->validated();
-
-            /** @var \App\Models\User $user */
-            $user = auth()->user();
-            $currentBranchCode = $user->branch_code;
-
-            if ($entryType === 'sender') {
-                $data['sender_branch_code'] = $currentBranchCode;
-            } else {
-                $data['receiver_branch_code'] = $currentBranchCode;
-            }
-
-            $data['created_branch_code'] = $currentBranchCode;
-
-            /* ================= إنشاء / ربط العملاء ================= */
-
-            // المرسل
-            if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::create([
-                    'phone' => $data['sender_phone'],
-                    'branch_code' => Auth::user()->branch_code,
+        // ========================================================
+        // معالجة العملاء الصامتة (إنشاء إذا لم يكن موجوداً)
+        // ========================================================
+        
+        // 1. المرسل
+        $senderCustomerId = $data['sender_customer_id'];
+        if (empty($senderCustomerId)) {
+            $senderCustomer = Customer::firstOrCreate(
+                ['phone' => $data['sender_phone']],
+                [
                     'name' => $data['sender_name'],
-                ]);
-
-                $data['sender_customer_id'] = $senderCustomer->id;
-            }
-
-            // المستلم
-            if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::create(
-                    [
-                        'phone' => $data['receiver_phone'],
-                        'branch_code' => Auth::user()->branch_code,
-                        'name' => $data['receiver_name'],
-                    ]
-                );
-
-                $data['receiver_customer_id'] = $receiverCustomer->id;
-            }
-
-            /* ================= حالات إضافية ================= */
-
-            // حالة مديونية العميل
-            if ($data['payment_method'] === 'customer_credit') {
-                $data['customer_debt_status'] = $data['customer_debt_status'] ?? 'pending';
-            } else {
-                $data['customer_debt_status'] = null;
-            }
-
-            // $data['status'] = 'pending';
-            if ($data['payment_method'] === 'prepaid') {
-                $data['status'] = 'pending';
-            } else {
-                $data['status'] = 'pending';
-            }
-
-            // حفظ مبلغ الدفع الجزئي مؤقتاً قبل الحذف
-            $partialAmount = $data['partial_amount'] ?? null;
-
-            // هذه القيم لا نريد تخزينها في جدول الشحنات
-            unset(
-                $data['sender_name'],
-                $data['sender_phone'],
-                $data['receiver_name'],
-                $data['receiver_phone']
+                    'app_id' => $user->app_id,
+                    'branch_id' => $senderBranchId, // يتبع لفرع الموظف الحالي
+                    'created_by'=> $user->id
+                ]
             );
+            $senderCustomerId = $senderCustomer->id;
+        }
 
-            /* ================= إنشاء الشحنة ================= */
-
-            $shipment = Shipment::create($data);
-
-            /* ================= معالجة الدفع ================= */
-
-            $paymentType = $request->prepaid_payment_method ?? 'cash';
-            $paidAmount = null;
-            // $attachment = $request->file('prepaid_attachment');
-
-            if ($shipment->payment_method === 'partial_payment') {
-                $paidAmount = $partialAmount ? (float) $partialAmount : null;
-            } elseif ($shipment->payment_method === 'prepaid') {
-                $paidAmount = (float) $shipment->total_amount;
-            } else {
-                // COD أو customer_credit → لا يوجد مبلغ مدفوع الآن
-                $paidAmount = null;
-            }
-
-            $this->shipmentPaymentService->handlePaymentForNewShipment(
-                $shipment,
-                $paymentType,
-                $paidAmount,
-                $request->prepaid_reference
+        // 2. المستلم
+        $receiverCustomerId = $data['receiver_customer_id'];
+        if (empty($receiverCustomerId)) {
+            $receiverCustomer = Customer::firstOrCreate(
+                ['phone' => $data['receiver_phone']],
+                [
+                    'name' => $data['receiver_name'],
+                    'app_id' => $user->app_id,
+                    'branch_id' =>$senderBranchId, 
+                    'created_by'=> $user->id
+                ]
             );
+            $receiverCustomerId = $receiverCustomer->id;
+        }
+        
+        // ========================================================
+        // إنشاء الشحنة (الطرد)
+        // ========================================================
+        $shipment = Shipment::create([
+            'sender_branch_id'          => $senderBranchId,
+            
+            // الحقول المفصولة للوجهة:
+            'receiver_branch_id'        => $finalReceiverBranchId,
+            'receiver_office_branch_id' => $finalReceiverOfficeBranchId,
+            
+            'sender_customer_id'        => $senderCustomerId,
+            'receiver_customer_id'      => $receiverCustomerId,
+            
+            'package_type'              => $data['package_type'],
+            'weight'                    => $data['weight'] ?? 0,
+            'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
+            'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
+            
+            'payment_method'            => $data['payment_method'],
+            'total_amount'              => $data['total_amount'],
+            'partial_amount'            => $data['payment_method'] === 'partial_payment' ? $data['partial_amount'] : 0,
+            'notes'                     => $data['notes'],
+            
+            'status'                    => 'pending',
+            'customer_debt_status'      => $data['payment_method'] === 'customer_credit' ? 'pending' : null,
+        ]);
 
+        // ========================================================
+        // إشعار الإدارة (Admins Notification)
+        // ========================================================
+        // نجلب مستخدمي النظام الذين يحملون دور "admin" في نفس التطبيق (App)
+        $admins = User::where('app_id', $user->app_id)
+                ->where('type', 'admin') 
+                ->get();
+        if ($admins->isNotEmpty()) {
+        Notification::send($admins, new AdminShipmentCreated(
+            $user->name,
+            $user->branch->name ?? 'غير محدد الفرع' ,
+            $shipment->bond_number, 
+            $shipment->id
+        )
+    );
+}
+        
+        // ========================================================
+        // معالجة المدفوعات (عبر Service)
+        // ========================================================
+        // $paidAmount = null;
+        // if ($shipment->payment_method === 'prepaid') {
+        //     $paidAmount = (float) $shipment->total_amount;
+        // } elseif ($shipment->payment_method === 'partial_payment') {
+        //     $paidAmount = (float) $shipment->partial_amount;
+        // }
+
+        // // نفترض أن الدفع النقدي هو الافتراضي للموبايل
+        // $paymentType = 'cash'; 
+        
+        // $this->shipmentPaymentService->handlePaymentForNewShipment(
+        //     $shipment,
+        //     $paymentType,
+        //     $paidAmount,
+        //     null
+        // );
+
+        DB::commit();
+
+        // التوجيه بعد النجاح
+        if ($request->isMobile) {
             return WebResponseClass::sendResponse(
-                'تمت الإضافة!',
-                'تم إنشاء الطرد بنجاح.',
-                'حسناً',
+                'تم اعتماد الطرد!',
+                'رقم السند: ' . $shipment->bond_number,
+                'عرض الطرود',
                 'shipment.index'
             );
-        } catch (\Exception $e) {
-            return WebResponseClass::sendExceptionError($e);
         }
+
+        return WebResponseClass::sendResponse(
+            'تم إضافة الطرد!',
+            'تم إنشاء بوليصة الشحن بنجاح.',
+            'حسناً',
+            'shipment.index'
+        );
+
+    } catch (\Exception $e) {
+       
+        DB::rollBack();
+        dd($e->getMessage());
+        return WebResponseClass::sendExceptionError($e);
     }
+}
 
     public function createCustomer()
     {
