@@ -1,9 +1,10 @@
 @extends('layouts.app')
 @section('title', 'إدارة المستخدمين')
 @section('Breadcrumb', 'إدارة المستخدمين')
+
 @section('addButton')
     @include('pages.users.create-user-modal')
-
+   
 @endsection
 
 @section('content')
@@ -11,151 +12,130 @@
     <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
         @include('pages.users.edit-user-modal')
 
-
+        {{-- الإحصائيات (بطاقات الفلترة التفاعلية) --}}
         <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
-            <div @click="statusFilter = 'all'; filterNow()"
-                :class="statusFilter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
-                <div
-                    class="flex justify-center items-center w-10 h-10 bg-gray-50 rounded-xl dark:bg-gray-800 text-brand-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+            
+            {{-- إجمالي المستخدمين --}}
+            <div @click="statusFilter = 'all'"
+                :class="statusFilter === 'all' ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-gray-800'"
+                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm dark:border-gray-800">
+                <div class="flex justify-center items-center w-10 h-10 rounded-xl shadow-inner bg-primary/10 dark:bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[22px]">group</span>
                 </div>
                 <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي
-                        المستخدمين</span>
-                    <h4 class="text-xl font-black dark:text-white" x-text="users.length"></h4>
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">
+                        إجمالي المستخدمين
+                    </span>
+                    <h4 class="text-xl font-black dark:text-white" 
+                        x-text="search === '' && statusFilter === 'all' ? '{{ $users->count() }} من {{ $users->total() ?? 0 }}' : filteredUsers.length"></h4>
                 </div>
             </div>
 
-            <div @click="statusFilter = 'active'; filterNow()"
-                :class="statusFilter === 'active' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
-                <div
-                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04M12 21.48V22" />
-                    </svg>
+            {{-- نشط حالياً --}}
+            <div @click="statusFilter = 'active'"
+                :class="statusFilter === 'active' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100 hover:border-success-300 dark:border-gray-800'"
+                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm dark:border-gray-800 border-r-4 border-r-success-500">
+                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
+                    <span class="material-symbols-outlined text-[22px]">verified_user</span>
                 </div>
                 <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">نشط
-                        حالياً</span>
+                    <span class="font-bold tracking-widest uppercase text-success-500 text-theme-xs">
+                        نشط حالياً
+                    </span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
                 </div>
             </div>
 
-            <div @click="statusFilter = 'inactive'; filterNow()"
-                :class="statusFilter === 'inactive' ? 'border-error-500 ring-2 ring-error-500/20' : 'border-gray-100'"
-                class="relative flex cursor-pointer flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border transition-all hover:shadow-md shadow-theme-sm">
-                <div
-                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-error-50 dark:bg-error-500/10 text-error-500">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
+            {{-- حسابات محظورة --}}
+            <div @click="statusFilter = 'inactive'"
+                :class="statusFilter === 'inactive' ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-100 hover:border-red-300 dark:border-gray-800'"
+                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm dark:border-gray-800 border-r-4 border-r-red-500">
+                <div class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl dark:bg-red-500/10">
+                    <span class="material-symbols-outlined text-[22px]">block</span>
                 </div>
                 <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">حسابات
-                        محظورة</span>
+                    <span class="font-bold tracking-widest text-red-500 uppercase text-theme-xs">
+                        حسابات محظورة
+                    </span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 1).length"></h4>
                 </div>
             </div>
         </div>
 
-
-
-        <div
-            class="bg-white dark:bg-gray-800 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden">
-            <div class="w-full bg-white dark:bg-white/[0.03] p-4 rounded-2xl">
-                <div class="relative rounded-2xl border ring-2 group border-brand-500 ring-brand-500/20">
-                    <input type="text" x-model="search" @input.debounce.300ms="filterNow"
-                        placeholder="ابحث بالاسم أو رقم الهاتف..."
-                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-gray-50 rounded-xl border-none transition-all dark:bg-gray-900 focus:ring-2 focus:ring-brand-500/20 dark:text-white">
-                    <div
-                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 group-focus-within:text-brand-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
+        <div class="bg-white dark:bg-boxdark rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden transition-colors">
+            
+            {{-- شريط البحث --}}
+            <div class="p-4 w-full bg-white rounded-2xl border-b border-gray-100 dark:bg-transparent dark:border-gray-800">
+                <div class="relative rounded-2xl border border-gray-200 transition-all group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:border-gray-700">
+                    <input type="text" x-model.debounce.300ms="search"
+                        placeholder="ابحث بالاسم أو رقم الهاتف (في هذه الصفحة)..."
+                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 rounded-2xl border-none transition-all outline-none bg-gray-50/50 dark:bg-gray-900 focus:ring-0 dark:text-white">
+                    <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                        <span class="material-symbols-outlined text-[22px]">search</span>
                     </div>
                 </div>
             </div>
+
             {{-- ===== Mobile View (Cards) ===== --}}
             <div class="flex flex-col gap-4 p-4 lg:hidden">
                 <template x-for="user in filteredUsers" :key="user.id">
-                    <div
-                        class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+                    <div class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 transition-all bg-gray-50/50 dark:bg-gray-800/50 dark:border-gray-700 hover:border-primary/30 hover:shadow-sm">
                         <div class="flex justify-between items-start">
                             <div class="flex gap-3 items-center">
-                                <div class="flex justify-center items-center w-10 h-10 text-sm font-bold text-white rounded-full bg-brand-500 dark:text-brand-300"
+                                <div class="flex justify-center items-center w-10 h-10 text-sm font-bold text-white rounded-full shadow-sm bg-primary"
                                     x-text="user.name ? user.name.charAt(0) : '?'"></div>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white"
-                                        x-text="user.name"></span>
-                                    <span class="text-xs text-gray-500 dark:text-gray-400" x-text="user.phone"></span>
+                                    <span class="text-sm font-semibold text-gray-900 dark:text-white" x-text="user.name"></span>
+                                    <div class="flex gap-1 items-center mt-0.5 text-xs text-gray-500 dark:text-gray-400" dir="ltr">
+                                        <span class="material-symbols-outlined text-[14px]">call</span>
+                                        <span x-text="user.phone || 'غير مدخل'"></span>
+                                    </div>
                                 </div>
                             </div>
                             <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
-                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 hover:border-brand-200 dark:bg-gray-900 dark:border-gray-800">
+                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-gray-900 dark:border-gray-800 disabled:opacity-50">
                                 <template x-if="isFetching == user.id">
-                                    <svg class="w-5 h-5 animate-spin text-brand-500" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
+                                    <svg class="w-5 h-5 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                 </template>
                                 <template x-if="isFetching != user.id">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </template>
                             </button>
                         </div>
                         <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
-                            <span
-                                :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' :
-                                    'bg-gray-50 text-gray-500 dark:bg-gray-700'"
-                                class="px-2.5 py-1 rounded-full text-[10px] font-medium"
+                            <span :class="user.type === 'admin' ? 'bg-primary/10 text-primary dark:bg-primary/10' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300'"
+                                class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase"
                                 x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
-                            <span
-                                :class="user.is_banned == 0 ? 'bg-success-100 text-success-700' : 'bg-error-100 text-error-700'"
-                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium dark:bg-opacity-10">
-                                <span :class="user.is_banned == 0 ? 'bg-success-500' : 'bg-error-500'"
-                                    class="w-1.5 h-1.5 rounded-full"></span>
+                            
+                            <span :class="user.is_banned == 0 ? 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'"
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold">
+                                <span :class="user.is_banned == 0 ? 'bg-success-500' : 'bg-red-500'" class="w-1.5 h-1.5 rounded-full"></span>
                                 <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
                             </span>
                         </div>
                     </div>
                 </template>
-                <div x-show="filteredUsers.length === 0"
-                    class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
+
+                <div x-show="filteredUsers.length === 0" x-cloak
+                    class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-700">
                     <div class="flex flex-col justify-center items-center">
-                        <div class="p-3 mb-3 bg-white rounded-full shadow-sm dark:bg-gray-800">
-                            <svg class="w-6 h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z">
-                                </path>
-                            </svg>
+                        <div class="p-3 mb-3 bg-white rounded-full shadow-sm dark:bg-gray-900">
+                            <span class="text-3xl text-gray-400 material-symbols-outlined">search_off</span>
                         </div>
                         <h4 class="text-sm font-medium text-gray-900 dark:text-white">لا توجد نتائج</h4>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">لا توجد نتائج تطابق بحثك حالياً..</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">لا توجد نتائج تطابق بحثك أو تصفيتك في هذه الصفحة.</p>
                     </div>
                 </div>
             </div>
 
             {{-- ===== Desktop View (Table) ===== --}}
-            <div class="hidden overflow-x-auto px-4 pb-4 lg:block">
+            <div class="hidden overflow-x-auto px-4 pb-4 mt-4 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
-                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em]">
+                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] dark:text-bodydark2">
                             <th class="px-6 py-4">المستخدم</th>
                             <th class="px-6 py-4">الهاتف</th>
                             <th class="px-6 py-4 text-center">نوع الحساب</th>
@@ -165,62 +145,54 @@
                     </thead>
                     <tbody class="divide-y-0">
                         <template x-for="user in filteredUsers" :key="user.id">
-                            <tr
-                                class="bg-white rounded-2xl border border-transparent shadow-sm transition-all dark:bg-gray-900 hover:shadow-md hover:border-gray-100 dark:hover:border-gray-800">
-
-                                <td class="px-6 py-5 border-r first:rounded-r-2xl border-y dark:border-gray-800/50">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-black text-gray-900 dark:text-white"
-                                            x-text="user.name"></span>
-                                        <span class="text-[10px] font-bold text-gray-400"
-                                            x-text="user.whatsapp_number ?? '-'"></span>
+                            <tr class="bg-white rounded-2xl border border-transparent shadow-sm transition-all dark:bg-gray-900/50 hover:shadow-md hover:border-primary/30 dark:hover:border-primary/30">
+                                
+                                <td class="px-6 py-5 border-r border-gray-100 border-y dark:border-gray-800 first:rounded-r-2xl">
+                                    <div class="flex gap-3 items-center">
+                                        <div class="flex justify-center items-center w-10 h-10 text-sm font-bold text-white rounded-full shadow-sm bg-primary" x-text="user.name ? user.name.charAt(0) : '?'"></div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-black text-gray-900 dark:text-white" x-text="user.name"></span>
+                                            <div class="flex items-center gap-1 mt-0.5 text-[10px] font-bold text-gray-400" dir="ltr">
+                                                <i class="fa-brands fa-whatsapp text-success-500"></i>
+                                                <span x-text="user.whatsapp_number ?? '-'"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-5 border-y dark:border-gray-800/50">
-                                    <span class="text-sm font-bold text-gray-500 dark:text-gray-400"
-                                        x-text="user.phone"></span>
+                                <td class="px-6 py-5 border-gray-100 border-y dark:border-gray-800">
+                                    <div class="flex gap-2 items-center text-gray-600 dark:text-gray-400" dir="ltr">
+                                        <span class="material-symbols-outlined text-[16px] text-gray-400">call</span>
+                                        <span class="text-sm font-bold" x-text="user.phone || '---'"></span>
+                                    </div>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
-                                    <span
-                                        :class="user.type === 'admin' ? 'bg-brand-50 text-brand-500 dark:bg-brand-500/10' :
-                                            'bg-gray-50 text-gray-500 dark:bg-gray-700'"
-                                        class="px-3 py-1 rounded-lg text-[10px] font-black uppercase"
+                                <td class="px-6 py-5 text-center border-gray-100 border-y dark:border-gray-800">
+                                    <span :class="user.type === 'admin' ? 'bg-primary/10 text-primary dark:bg-primary/10' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-300'"
+                                        class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase"
                                         x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-y dark:border-gray-800/50">
-                                    <span
-                                        :class="user.is_banned == 0 ? 'bg-success-50 text-success-500' :
-                                            'bg-error-50 text-error-500'"
-                                        class="px-3 py-1 rounded-lg text-[10px] font-black uppercase">
+                                <td class="px-6 py-5 text-center border-gray-100 border-y dark:border-gray-800">
+                                    <span :class="user.is_banned == 0 ? 'bg-success-50 text-success-600 dark:bg-success-500/10 dark:text-success-400' : 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400'"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase">
+                                        <span :class="user.is_banned == 0 ? 'bg-success-500' : 'bg-red-500'" class="w-1.5 h-1.5 rounded-full"></span>
                                         <span x-text="user.is_banned == 0 ? 'نشط' : 'محظور'"></span>
                                     </span>
                                 </td>
 
-                                <td
-                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                <td class="px-6 py-5 text-center border-l border-gray-100 border-y dark:border-gray-800 last:rounded-l-2xl">
                                     <div class="flex gap-2 justify-center items-center">
-                                        <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
-                                            class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-500 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400">
+                                        <button @click="openEditModal(user.id)" :disabled="isFetching == user.id" title="تعديل المستخدم"
+                                            class="inline-flex p-2 text-gray-400 bg-gray-50 rounded-lg transition-all dark:bg-gray-800 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 disabled:opacity-50">
                                             <template x-if="isFetching == user.id">
-                                                <svg class="w-5 h-5 animate-spin text-brand-500"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                        stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                    </path>
+                                                <svg class="w-5 h-5 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
                                             </template>
                                             <template x-if="isFetching != user.id">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    stroke-width="2" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
                                             </template>
                                         </button>
                                     </div>
@@ -228,9 +200,12 @@
                             </tr>
                         </template>
 
-                        <tr x-show="filteredUsers.length === 0">
+                        <tr x-show="filteredUsers.length === 0" x-cloak>
                             <td colspan="5" class="py-20 text-center">
-                                <div class="italic text-gray-400">لا توجد نتائج تطابق بحثك حالياً..</div>
+                                <div class="flex flex-col justify-center items-center">
+                                    <span class="mb-2 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
+                                    <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">لا توجد نتائج تطابق بحثك أو تصفيتك في هذه الصفحة.</div>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -239,7 +214,7 @@
 
             {{-- Pagination --}}
             @if ($users->hasPages())
-                <div class="px-6 pb-6">
+                <div class="px-6 pt-4 pb-6 mt-4 border-t border-gray-100 dark:border-gray-800">
                     {{ $users->links() }}
                 </div>
             @endif
@@ -251,17 +226,15 @@
             return {
                 search: "",
                 statusFilter: "all",
-                // جلب البيانات من Laravel وتحويلها لـ JSON
                 users: @json($users->items()),
-                filteredUsers: [],
                 editModalOpen: false,
-                isUpdating: false,
                 isFetching: null,
-                countries: [{
-                    name: 'Yemen',
-                    code: 'YE',
-                    dial_code: '967'
-                }],
+                countries: [
+                    { name: 'اليمن', code: 'YE', dial_code: '967' },
+                    { name: 'السعودية', code: 'SA', dial_code: '966' },
+                    { name: 'الإمارات', code: 'AE', dial_code: '971' },
+                    { name: 'مصر', code: 'EG', dial_code: '20' }
+                ],
                 editUser: {
                     id: null,
                     name: '',
@@ -276,9 +249,30 @@
                 },
 
                 init() {
-                    this.filteredUsers = this.users;
                     this.editUser.phone_country = this.countries[0];
                     this.editUser.whatsapp_country = this.countries[0];
+                },
+
+                get filteredUsers() {
+                    let result = this.users;
+
+                    // فلترة حسب الحالة
+                    if (this.statusFilter !== 'all') {
+                        const isBanned = this.statusFilter === 'inactive' ? 1 : 0;
+                        result = result.filter(u => u.is_banned == isBanned);
+                    }
+
+                    // فلترة حسب البحث
+                    if (this.search.trim() !== "") {
+                        const searchTerm = this.search.toLowerCase().trim();
+                        result = result.filter(user => {
+                            const nameMatches = (user.name || "").toLowerCase().includes(searchTerm);
+                            const phoneMatches = (user.phone || "").includes(searchTerm);
+                            return nameMatches || phoneMatches;
+                        });
+                    }
+
+                    return result;
                 },
 
                 parsePhoneNumber(fullNumber) {
@@ -286,13 +280,17 @@
                         country: this.countries[0],
                         local: ''
                     };
+                    
+                    let phone = fullNumber.replace('+', '');
+                    // Sort by longest dial code first to avoid partial matches
+                    const sortedCountries = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
 
-                    // Try to match dial code
-                    for (let country of this.countries) {
-                        if (fullNumber.startsWith(country.dial_code)) {
+                    for (let country of sortedCountries) {
+                        const regex = new RegExp(`^(00)?${country.dial_code}`);
+                        if (regex.test(phone)) {
                             return {
                                 country: country,
-                                local: fullNumber.substring(country.dial_code.length)
+                                local: phone.replace(regex, '')
                             };
                         }
                     }
@@ -313,7 +311,6 @@
                         });
                         const data = await response.json();
 
-                        // Parse numbers
                         const parsedPhone = this.parsePhoneNumber(data.phone);
                         const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
 
@@ -323,7 +320,7 @@
                             phone_country: parsedPhone.country,
                             whatsapp_local: parsedWhatsapp.local,
                             whatsapp_country: parsedWhatsapp.country,
-                            password: '' // Clear password field
+                            password: '' 
                         };
 
                         this.editModalOpen = true;
@@ -333,20 +330,6 @@
                     } finally {
                         this.isFetching = null;
                     }
-                },
-
-                filterNow() {
-                    this.filteredUsers = this.users.filter(user => {
-                        const matchesSearch = this.search === "" ||
-                            user.name.toLowerCase().includes(this.search.toLowerCase()) ||
-                            (user.phone && user.phone.includes(this.search));
-
-                        const matchesStatus = this.statusFilter === "all" ||
-                            (this.statusFilter === "active" && user.is_banned == 0) ||
-                            (this.statusFilter === "inactive" && user.is_banned == 1);
-
-                        return matchesSearch && matchesStatus;
-                    });
                 }
             }
         }
