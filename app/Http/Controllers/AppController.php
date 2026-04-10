@@ -32,7 +32,7 @@ class AppController extends Controller
     if ($request->isMobile){
         return view('mobile.pages.office.verified.index', compact('offices'));
     }
-    return view('mobile.pages.office.verified.index', compact('offices'));
+    return view('pages.office.verified.index', compact('offices'));
 }
     public function settings(Request $request)
     {
@@ -46,7 +46,7 @@ class AppController extends Controller
             return view('mobile.pages.company.settings', compact('company'));
         }
          // عدل الصفحه الخاصه ب الدسك توب  ي السعدي
-        return view('mobile.pages.company.settings', compact('company'));
+        return view('pages.company.settings', compact('company'));
         
     }
 

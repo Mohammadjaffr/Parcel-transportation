@@ -47,6 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
+    Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing');
+    Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming');
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
@@ -242,6 +244,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
     Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
+    
+    
 });
 
 
