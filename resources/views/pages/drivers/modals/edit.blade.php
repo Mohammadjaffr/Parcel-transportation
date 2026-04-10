@@ -1,190 +1,185 @@
 {{-- ======================== Edit Driver Modal ======================== --}}
-<div x-show="showEditModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
-    x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
-    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-    class="flex overflow-y-auto fixed inset-0 justify-center items-center p-5 modal z-99999" style="display: none;"
-    @keydown.escape.window="showEditModal = false">
+<template x-teleport="body">
+    <div x-cloak x-show="editModalOpen" 
+         class="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto sm:p-6 z-[2147483647]" 
+         @keydown.escape.window="editModalOpen = false">
 
-    {{-- Backdrop --}}
-    <div class="fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]" @click="showEditModal = false"></div>
+        {{-- Backdrop (الخلفية المعتمة) --}}
+        <div x-show="editModalOpen"
+             x-transition:enter="transition ease-out duration-300" 
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 w-full h-full backdrop-blur-sm bg-gray-900/20"
+             @click="editModalOpen = false">
+        </div>
 
-    {{-- Modal Panel --}}
-    <div x-show="showEditModal" x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-        x-transition:leave="transition ease-in duration-200"
-        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-        x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-        class="relative w-full max-w-[630px] rounded-3xl bg-white p-6 dark:bg-gray-900 lg:p-10">
+        {{-- Modal Panel (النافذة) --}}
+        <div x-show="editModalOpen" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+             x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+             class="relative w-full max-w-md p-6 bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark sm:p-8" dir="rtl">
 
-        <form :action="editDriver.url" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
-            @csrf
-            @method('PUT')
+            {{-- ربط الـ action بالرابط الذي جهزناه في الدالة editDriver.url --}}
+            <form :action="editDriver.url" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                @csrf
+                @method('PUT')
 
-            {{-- Modal Header --}}
-            <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 dark:border-gray-700">
-                <div class="flex gap-3 items-center">
-                    <div
-                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 dark:bg-warning-500/10 text-warning-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
+                {{-- Modal Header --}}
+                <div class="flex justify-between items-center pb-5 mb-6 border-b border-gray-100 dark:border-gray-800">
+                    <button type="button" @click="editModalOpen = false"
+                            class="flex justify-center items-center w-8 h-8 text-gray-400 bg-gray-50 rounded-full transition-colors hover:bg-gray-200 hover:text-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700">
+                        <span class="material-symbols-outlined text-[20px]">close</span>
+                    </button>
+                    
+                    <div class="flex gap-3 items-center">
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات السائق</h3>
+                        <div class="flex justify-center items-center w-10 h-10 rounded-xl shadow-inner bg-warning-50 text-warning-500">
+                            <span class="material-symbols-outlined text-[22px]">edit_square</span>
+                        </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات السائق</h3>
-                </div>
-                <button type="button" @click="showEditModal = false"
-                    class="p-2 text-gray-400 rounded-xl transition-all hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            {{-- Modal Body --}}
-            <div class="px-6 py-5 space-y-5">
-                {{-- اسم السائق --}}
-                <div>
-                    <label for="edit_driver_name"
-                        class="block mb-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        اسم السائق <span class="text-error-500">*</span>
-                    </label>
-                    <input type="text" id="edit_driver_name" name="name" x-model="editDriver.name" required
-                        autocomplete="off" placeholder="أدخل اسم السائق"
-                        class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border border-gray-300 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:border-2 focus:brand-500 dark:border-gray-600 dark:text-white">
                 </div>
 
-                {{-- رقم الهاتف --}}
-                <div>
-                    <label for="edit_driver_phone"
-                        class="block mb-1.5 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        رقم الهاتف
-                    </label>
+                {{-- Modal Body --}}
+                <div class="space-y-5 text-right">
+                    
+                    {{-- حقل اسم السائق --}}
+                    <div>
+                        <label for="edit_driver_name" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                            اسم السائق <span class="text-red-500">*</span>
+                        </label>
+                        {{-- نستخدم x-model لربطه باسم السائق --}}
+                        <input type="text" id="edit_driver_name" name="name" x-model="editDriver.name" required autocomplete="off" 
+                               class="px-4 w-full h-12 text-sm placeholder-gray-400 text-right bg-gray-50 rounded-xl border border-gray-200 transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
+                        @error('name')
+                            <p class="mt-1 text-xs font-medium text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
 
+                    {{-- حقل رقم الهاتف (مع ذكاء استخراج الدولة عند الفتح) --}}
                     <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries'))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                            // Watch for edits
-                            this.$watch('editDriver', (val) => {
-                                if (val && val.phone) this.parsePhone(val.phone);
-                            });
-                        },
-                        parsePhone(phone) {
-                            let p = phone || '';
-                            let found = null;
-                    
-                            // Sort countries by dial_code length desc to match longest prefix first
-                            const sorted = this.countries.slice().sort((a, b) => b.dial_code.length - a.dial_code.length);
-                    
-                            for (const c of sorted) {
-                                // Match: +966, 00966, 966
-                                const code = c.dial_code.replace('+', '');
-                                const regex = new RegExp(`^(\\+|00)?${code}`);
-                                if (regex.test(p)) {
-                                    found = c;
-                                    // Remove prefix
-                                    p = p.replace(regex, '');
-                                    break;
-                                }
+                            open: false,
+                            search: '',
+                            selectedDialCode: '967',
+                            selectedFlag: '🇾🇪',
+                            localPhoneNumber: '',
+                            countries: [
+                                { name: 'اليمن', code: 'YE', dial_code: '967', flag: '🇾🇪' },
+                                { name: 'السعودية', code: 'SA', dial_code: '966', flag: '🇸🇦' },
+                                { name: 'الإمارات', code: 'AE', dial_code: '971', flag: '🇦🇪' },
+                                { name: 'مصر', code: 'EG', dial_code: '20', flag: '🇪🇬' },
+                            ],
+                            init() {
+                                // بمجرد أن يفتح المودال، نقوم بتحليل رقم السائق لاختيار العلم الصحيح
+                                this.$watch('editModalOpen', (isOpen) => {
+                                    if(isOpen) {
+                                        let phone = editDriver.phone || '';
+                                        phone = phone.replace('+', '');
+                                        let sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                                        let found = sorted.find(c => phone.startsWith(c.dial_code));
+                                        
+                                        if(found) {
+                                            this.selectedDialCode = found.dial_code;
+                                            this.selectedFlag = found.flag;
+                                            this.localPhoneNumber = phone.substring(found.dial_code.length);
+                                        } else {
+                                            this.selectedDialCode = '967';
+                                            this.selectedFlag = '🇾🇪';
+                                            this.localPhoneNumber = phone;
+                                        }
+                                    }
+                                });
+                            },
+                            get filteredCountries() {
+                                if (this.search === '') return this.countries;
+                                return this.countries.filter(c => c.name.includes(this.search) || c.dial_code.includes(this.search));
                             }
-                    
-                            if (found) {
-                                this.selectedCountry = found;
-                                this.localPhoneNumber = p;
-                            } else {
-                                // Default to init country (YE) and keep full phone if no match
-                                this.localPhoneNumber = p;
-                            }
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }" x-init="if (typeof editDriver !== 'undefined' && editDriver.phone) parsePhone(editDriver.phone)" class="relative">
+                        }" class="relative text-right">
 
-                        {{-- Hidden input sent to server --}}
-                        <input type="hidden" name="phone"
-                            :value="(selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber">
+                        <label for="edit_driver_phone" class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                            رقم الهاتف <span class="text-red-500">*</span>
+                        </label>
 
-                        <div
-                            class="flex overflow-hidden w-full h-11 bg-gray-50 rounded-xl border border-gray-200 dark:border-gray-600 dark:bg-gray-900">
-                            {{-- Country code button --}}
+                        {{-- الحقل المخفي الذي يذهب للسيرفر --}}
+                        <input type="hidden" name="phone" :value="selectedDialCode + localPhoneNumber">
+
+                        <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
+                            
+                            {{-- زر اختيار الدولة --}}
                             <button type="button" @click="open = !open"
-                                class="flex gap-2 items-center px-3 bg-gray-100 rounded-r-xl border-l border-gray-200 dark:bg-gray-800 dark:border-gray-600 shrink-0">
-
-                                <template x-if="selectedCountry">
-                                    <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
-                                </template>
-
-                                <span class="text-xs font-bold text-gray-500 dir-ltr"
-                                    x-text="selectedCountry?.dial_code"></span>
-                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 9l-7 7-7-7" />
-                                </svg>
+                                    class="flex gap-2 items-center px-3 h-full bg-gray-100 border-l border-gray-200 transition-colors shrink-0 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + selectedDialCode"></span>
+                                <span class="text-lg leading-none" x-text="selectedFlag"></span>
                             </button>
 
-                            {{-- Phone number input --}}
-                            <input id="edit_driver_phone" type="tel" x-model="localPhoneNumber"
-                                placeholder="780236551" autocomplete="off"
-                                class="px-4 py-2.5 w-full h-11 text-sm text-gray-800 bg-transparent rounded-lg border-gray-300 dark:bg-dark-900 shadow-theme-xs focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-gray-600 dark:text-white"
-                                dir="ltr">
+                            {{-- حقل إدخال الرقم --}}
+                            <input id="edit_driver_phone" x-ref="driver_phone" type="tel" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
+                                   class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
                         </div>
 
-                        {{-- Dropdown panel --}}
-                        <div x-show="open" @click.outside="open = false" x-transition
-                            class="overflow-hidden absolute z-20 mt-1 w-full max-h-60 bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-gray-800 dark:border-gray-700"
-                            style="display: none;">
-                            <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
-                                class="px-4 py-2 w-full h-8 text-sm border-b dark:bg-gray-900 dark:border-gray-700 focus:outline-none focus:ring-1 focus:ring-brand-500">
-                            <div class="overflow-y-auto max-h-20 custom-scrollbar">
+                        {{-- قائمة الدول --}}
+                        <div x-cloak x-show="open" @click.outside="open = false" 
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 translate-y-1"
+                             x-transition:enter-end="opacity-100 translate-y-0"
+                             class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
+                            
+                            <div class="p-2 border-b border-gray-100 dark:border-gray-700">
+                                <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
+                                       class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-1 focus:ring-primary">
+                            </div>
+                            
+                            <div class="overflow-y-auto max-h-48 custom-scrollbar">
                                 <template x-for="country in filteredCountries" :key="country.code">
-                                    <div @click="selectedCountry = country; open = false; search = ''"
-                                        class="flex gap-3 items-center p-2 px-4 transition-colors cursor-pointer hover:bg-brand-50 dark:hover:bg-gray-700">
-
-                                        <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-
-                                        <span class="flex-grow text-sm font-medium text-gray-900 dark:text-gray-100"
-                                            x-text="country.name"></span>
-                                        <span class="font-mono text-xs text-gray-500 dark:text-gray-400 dir-ltr"
-                                            x-text="country.dial_code"></span>
-                                    </div>
+                                    <button type="button" @click="selectedDialCode = country.dial_code; selectedFlag = country.flag; open = false; $refs.driver_phone?.focus()"
+                                            class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
+                                        <div class="flex gap-3 items-center">
+                                            <span class="text-lg leading-none" x-text="country.flag"></span>
+                                            <span class="font-medium text-gray-700 dark:text-gray-300" x-text="country.name"></span>
+                                        </div>
+                                        <span class="font-mono text-gray-500 dark:text-gray-400" dir="ltr" x-text="'+' + country.dial_code"></span>
+                                    </button>
                                 </template>
                             </div>
                         </div>
+
+                        @error('phone')
+                            <p class="mt-1 text-xs font-medium text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
+
                 </div>
-            </div>
 
-            {{-- Modal Footer --}}
-              <div
-                class="flex gap-3 justify-between px-6 py-4 bg-gray-50 border-t border-gray-100 items-be dark:border-gray-700 dark:bg-gray-900/50">
-                <button type="button" @click="showEditModal = false"
-                    class="px-5 py-2.5 w-full text-sm font-semibold text-gray-700 bg-white rounded-xl border border-gray-200 transition-all dark:text-gray-300 dark:bg-gray-800 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
-                    إلغاء
-                </button>
-                <button type="submit" :disabled="isSubmitting"
-                    class="flex gap-2 justify-center items-center px-5 py-2.5 w-full text-sm font-bold text-center text-white rounded-xl shadow-sm transition-all bg-brand-500 hover:bg-brand-600 hover:shadow-md active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed">
-                    <svg x-show="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                            stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
-                        </path>
-                    </svg>
-                    <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ السائق'"></span>
-                </button>
-            </div>
+                {{-- Modal Footer --}}
+                <div class="flex flex-row-reverse gap-3 justify-start items-center pt-6 mt-8 border-t border-gray-100 dark:border-gray-800">
+                    
+                    <button type="submit" :disabled="isSubmitting"
+                            class="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-white transition-all rounded-xl bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[120px]">
+                        <template x-if="isSubmitting">
+                            <svg class="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </template>
+                        <template x-if="!isSubmitting">
+                            <span>تحديث</span>
+                        </template>
+                    </button>
 
-        </form>
+                    <button type="button" @click="editModalOpen = false"
+                            class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                        إلغاء
+                    </button>
+                </div>
+
+            </form>
+        </div>
     </div>
-</div>
+</template>

@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {{-- <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
@@ -47,8 +47,42 @@
                 },
             },
         }
+    </script> --}}
+    <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
+    <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f79009",
+                        "primary-hover": "#dc6803",
+                        "primary-container": "#fffaeb",
+                        "on-primary-container": "#b54708",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#191c1d",
+                        "on-surface-variant": "#454652",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f3f4f5",
+                        "secondary-container": "#ff9800",
+                        "on-secondary-fixed-variant": "#693c00",
+                        "secondary": "#8b5000",
+                        "tertiary-fixed": "#94f990",
+                        "on-tertiary-fixed-variant": "#005313",
+                        "tertiary": "#004e11",
+                        "surface-container-highest": "#e1e3e4",
+                        "secondary-fixed": "#ffdcbe",
+                        "surface": "#f8fafc",
+                    },
+                    fontFamily: {
+                        "headline": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
+                        "body": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
+                    },
+                },
+            },
+        }
     </script>
-
     <style type="text/tailwindcss">
         @layer base {
             [x-cloak] { display: none !important; }

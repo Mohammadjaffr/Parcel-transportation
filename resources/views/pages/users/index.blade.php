@@ -3,13 +3,18 @@
 @section('Breadcrumb', 'إدارة المستخدمين')
 
 @section('addButton')
-    @include('pages.users.create-user-modal')
-   
+    <button @click="$dispatch('open-create-modal')"
+        class="inline-flex gap-2 items-center px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95">
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        إضافة مستخدم جديد
+    </button>
 @endsection
 
 @section('content')
 
-    <div x-data="userFilter()" class="space-y-6 font-outfit" dir="rtl">
+    <div x-data="userFilter()" @open-create-modal.window="isModalOpen = true" class="space-y-6 font-outfit" dir="rtl">
+        {{-- Modals --}}
+        @include('pages.users.create-user-modal')
         @include('pages.users.edit-user-modal')
 
         {{-- الإحصائيات (بطاقات الفلترة التفاعلية) --}}
@@ -31,7 +36,7 @@
                 </div>
             </div>
 
-            {{-- نشط حالياً --}}
+            {{-- حسابات نشطة --}}
             <div @click="statusFilter = 'active'"
                 :class="statusFilter === 'active' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100 hover:border-success-300 dark:border-gray-800'"
                 class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm dark:border-gray-800 border-r-4 border-r-success-500">
@@ -40,15 +45,15 @@
                 </div>
                 <div class="mt-3">
                     <span class="font-bold tracking-widest uppercase text-success-500 text-theme-xs">
-                        نشط حالياً
+                        حسابات نشطة
                     </span>
                     <h4 class="text-xl font-black dark:text-white" x-text="users.filter(u => u.is_banned == 0).length"></h4>
                 </div>
             </div>
 
             {{-- حسابات محظورة --}}
-            <div @click="statusFilter = 'inactive'"
-                :class="statusFilter === 'inactive' ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-100 hover:border-red-300 dark:border-gray-800'"
+            <div @click="statusFilter = 'banned'"
+                :class="statusFilter === 'banned' ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-100 hover:border-red-300 dark:border-gray-800'"
                 class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm dark:border-gray-800 border-r-4 border-r-red-500">
                 <div class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl dark:bg-red-500/10">
                     <span class="material-symbols-outlined text-[22px]">block</span>
@@ -92,17 +97,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <button @click="openEditModal(user.id)" :disabled="isFetching == user.id"
-                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-gray-900 dark:border-gray-800 disabled:opacity-50">
-                                <template x-if="isFetching == user.id">
-                                    <svg class="w-5 h-5 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                </template>
-                                <template x-if="isFetching != user.id">
-                                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                                </template>
+                            <button @click="openEditModal(user)"
+                                class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-gray-900 dark:border-gray-800">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
                         </div>
                         <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -183,17 +180,9 @@
 
                                 <td class="px-6 py-5 text-center border-l border-gray-100 border-y dark:border-gray-800 last:rounded-l-2xl">
                                     <div class="flex gap-2 justify-center items-center">
-                                        <button @click="openEditModal(user.id)" :disabled="isFetching == user.id" title="تعديل المستخدم"
+                                        <button @click="openEditModal(user)" title="تعديل بيانات المستخدم"
                                             class="inline-flex p-2 text-gray-400 bg-gray-50 rounded-lg transition-all dark:bg-gray-800 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 disabled:opacity-50">
-                                            <template x-if="isFetching == user.id">
-                                                <svg class="w-5 h-5 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                            </template>
-                                            <template x-if="isFetching != user.id">
-                                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                                            </template>
+                                            <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
                                     </div>
                                 </td>
@@ -227,109 +216,52 @@
                 search: "",
                 statusFilter: "all",
                 users: @json($users->items()),
+                isModalOpen: false,
                 editModalOpen: false,
-                isFetching: null,
-                countries: [
-                    { name: 'اليمن', code: 'YE', dial_code: '967' },
-                    { name: 'السعودية', code: 'SA', dial_code: '966' },
-                    { name: 'الإمارات', code: 'AE', dial_code: '971' },
-                    { name: 'مصر', code: 'EG', dial_code: '20' }
-                ],
+                
                 editUser: {
                     id: null,
                     name: '',
                     phone: '',
                     whatsapp_number: '',
                     type: '',
-                    phone_local: '',
-                    phone_country: null,
-                    whatsapp_local: '',
-                    whatsapp_country: null,
-                    password: ''
-                },
-
-                init() {
-                    this.editUser.phone_country = this.countries[0];
-                    this.editUser.whatsapp_country = this.countries[0];
+                    branch_id: '',
+                    is_banned: 0,
+                    url: ''
                 },
 
                 get filteredUsers() {
                     let result = this.users;
 
-                    // فلترة حسب الحالة
                     if (this.statusFilter !== 'all') {
-                        const isBanned = this.statusFilter === 'inactive' ? 1 : 0;
-                        result = result.filter(u => u.is_banned == isBanned);
+                        const targetBanned = this.statusFilter === 'banned' ? 1 : 0;
+                        result = result.filter(u => u.is_banned == targetBanned);
                     }
 
-                    // فلترة حسب البحث
                     if (this.search.trim() !== "") {
                         const searchTerm = this.search.toLowerCase().trim();
-                        result = result.filter(user => {
-                            const nameMatches = (user.name || "").toLowerCase().includes(searchTerm);
-                            const phoneMatches = (user.phone || "").includes(searchTerm);
-                            return nameMatches || phoneMatches;
+                        result = result.filter(u => {
+                            const n = (u.name || "").toLowerCase().includes(searchTerm);
+                            const p = (u.phone || "").includes(searchTerm);
+                            return n || p;
                         });
                     }
 
                     return result;
                 },
 
-                parsePhoneNumber(fullNumber) {
-                    if (!fullNumber) return {
-                        country: this.countries[0],
-                        local: ''
+                openEditModal(user) {
+                    this.editUser = {
+                        id: user.id,
+                        name: user.name,
+                        phone: user.phone || '',
+                        whatsapp_number: user.whatsapp_number || '',
+                        type: user.type,
+                        branch_id: user.branch_id || '',
+                        is_banned: user.is_banned,
+                        url: '{{ url("users") }}/' + user.id
                     };
-                    
-                    let phone = fullNumber.replace('+', '');
-                    // Sort by longest dial code first to avoid partial matches
-                    const sortedCountries = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
-
-                    for (let country of sortedCountries) {
-                        const regex = new RegExp(`^(00)?${country.dial_code}`);
-                        if (regex.test(phone)) {
-                            return {
-                                country: country,
-                                local: phone.replace(regex, '')
-                            };
-                        }
-                    }
-                    return {
-                        country: this.countries[0],
-                        local: fullNumber
-                    };
-                },
-
-                async openEditModal(userId) {
-                    this.isFetching = userId;
-                    try {
-                        const response = await fetch(`/users/${userId}/edit`, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        const data = await response.json();
-
-                        const parsedPhone = this.parsePhoneNumber(data.phone);
-                        const parsedWhatsapp = this.parsePhoneNumber(data.whatsapp_number);
-
-                        this.editUser = {
-                            ...data,
-                            phone_local: parsedPhone.local,
-                            phone_country: parsedPhone.country,
-                            whatsapp_local: parsedWhatsapp.local,
-                            whatsapp_country: parsedWhatsapp.country,
-                            password: '' 
-                        };
-
-                        this.editModalOpen = true;
-                    } catch (error) {
-                        console.error("Error fetching user data:", error);
-                        alert("حدث خطأ أثناء جلب بيانات المستخدم");
-                    } finally {
-                        this.isFetching = null;
-                    }
+                    this.editModalOpen = true;
                 }
             }
         }

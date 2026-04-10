@@ -37,7 +37,7 @@ class DriverController extends Controller
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
     {
-        return view('pages.drivers.create');
+        return view('pages.drivers.modals.create');
     }
 
     /* ========== 3- حفظ سائق جديد ========== */

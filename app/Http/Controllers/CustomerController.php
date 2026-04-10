@@ -38,7 +38,7 @@ class CustomerController extends Controller
     }
     public function create()
     {
-        return view('pages.customers.create');
+        return view('pages.customers.create-customer-modal');
     }
     // معتمد
     public function store(Request $request)
@@ -99,7 +99,7 @@ class CustomerController extends Controller
     {
 
         $user = auth()->user();
-        $customer = Customer::where('branch_code', $user->branch_code)
+        $customer = Customer::where('branch_id', $user->branch_id)
             ->with(['transactions' => function ($query) {
                 $query->latest();
             }])->findOrFail($id);
@@ -183,11 +183,14 @@ class CustomerController extends Controller
     }
 
     /** صفحة تعديل */
-    public function edit($id)
-    {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $customer = Customer::where('branch_code', $user->branch_code)
+  public function edit($id)
+{
+    /** @var \App\Models\User $user */
+    $user = auth()->user();
+    
+    try {
+        // استخدم branch_id ليتوافق مع بقية الكود الخاص بك
+        $customer = Customer::where('branch_id', $user->branch_id)
             ->findOrFail($id);
 
         if (request()->ajax() || request()->wantsJson()) {
@@ -195,7 +198,13 @@ class CustomerController extends Controller
         }
 
         return view('pages.customers.edit-customer-modal', compact('customer'));
+    } catch (\Exception $e) {
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json(['message' => 'العميل غير موجود أو لا تملك صلاحية الوصول إليه'], 404);
+        }
+        abort(404);
     }
+}
 
     // معتمد
    public function update(Request $request, $id)
@@ -307,10 +316,11 @@ class CustomerController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+        $branchId = $user->branch_id;
         $branchCode = $user->branch_code;
 
         // جلب بيانات العميل والتأكد من أنه ينتمي للفرع
-        $customer = Customer::where('branch_code', $branchCode)
+        $customer = Customer::where('branch_id', $branchId)
             ->with(['branch'])
             ->findOrFail($id);
 
@@ -415,7 +425,7 @@ class CustomerController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $customers = Customer::where('branch_code', $user->branch_code)
+        $customers = Customer::where('branch_id', $user->branch_id)
             ->latest()
             ->get();
 
