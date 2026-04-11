@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
-    Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing');
+    Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing.index');
     Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming');
     Route::resource('shipment', ShipmentController::class);
     Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])

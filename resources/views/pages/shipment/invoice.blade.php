@@ -3,394 +3,263 @@
 
 <head>
     <meta charset="UTF-8">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سند استلام - {{ $shipment->bond_number }}</title>
+    
     <style>
+        /* === الإعدادات الأساسية === */
         body {
             font-family: 'aealarabiya', 'dejavusans', sans-serif;
             direction: rtl;
             text-align: right;
             font-size: 12px;
-            color: #000;
+            color: #111;
             margin: 0;
             padding: 15px;
+            line-height: 1.5;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { vertical-align: middle; }
+        
+        .text-orange { color: #fb6514; }
+        
+        /* === الترويسة === */
+        .header-title { font-size: 36px; font-weight: bold; color: #fb6514; margin: 0 0 5px 0; line-height: 1; }
+        .header-subtitle { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 5px; }
+        .header-info { font-size: 11px; color: #555; font-weight: bold; line-height: 1.6; }
+        .logo-img { width: 180px; height: auto; max-height: 90px; object-fit: contain; }
 
-        td {
-            vertical-align: top;
-        }
-
-        /* Header Styling */
-        .header-title {
-            font-size: 45px;
-            font-weight: bold;
-            color: #fb6514;
-            margin-bottom: 3px;
-        }
-
-        .header-subtitle {
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 3px;
-            color: #333;
-        }
-
-        .header-info {
-            font-size: 11px;
-            color: #555;
-            margin-top: 3px;
-            line-height: 1.4;
-            font-weight: bold;
-
-        }
-
-        .header-phones {
-            font-size: 11px;
-            margin-top: 6px;
-            font-weight: bold;
-            color: #000;
-        }
-
-        .header-separator {
-            border-bottom: 3px solid #fb6514;
-            margin: 15px 0;
-        }
-
-        /* Title Box */
-        .receipt-title-box {
+        /* === عنوان الفاتورة === */
+        .doc-title-container { text-align: center; margin: 20px 0; }
+        .doc-title {
             background-color: #fb6514;
             color: #fff;
-            padding: 10px 30px;
-            border-radius: 8px;
-            font-size: 22px;
+            padding: 8px 30px;
+            border-radius: 6px;
+            font-size: 20px;
             font-weight: bold;
             display: inline-block;
-            margin: 10px auto;
-            box-shadow: 0 2px 4px rgba(251, 101, 20, 0.3);
+            box-shadow: 0 3px 6px rgba(251, 101, 20, 0.3);
         }
 
-        .amount-date-section {
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .amount-label {
-            color: #fb6514;
-            font-weight: bold;
-        }
-
-        /* Branch Badge */
-        .branch-name-large {
-            font-size: 19px;
-            font-weight: bold;
-            text-align: center;
-            margin: 15px 0;
-            padding: 8px;
-            background: #fff8f4;
-            /* border: 2px solid #fb6514; */
+        /* === شريط الخلاصة (Summary Box) === */
+        .summary-table {
+            width: 100%;
+            background-color: #fff8f4;
+            border: 2px solid #fb6514;
             border-radius: 8px;
-            color: #fb6514;
+            margin-bottom: 20px;
         }
-
-        /* Main Content Box */
-        .main-box {
-            border: 2px solid #000;
-            border-radius: 12px;
-            padding: 20px;
-            margin: 15px 0;
-            background: #fffbf8;
-        }
-
-        .data-label {
-            font-weight: bold;
-            color: #fb6514;
-            font-size: 13px;
-        }
-
-        .dotted-line {
-            border-bottom: 1.5px dotted #aaa;
-            display: inline-block;
-            min-width: 150px;
+        .summary-table td {
+            padding: 12px 10px;
             text-align: center;
-            padding: 2px 8px;
-            margin: 0 5px;
+            border-left: 1px solid #fecba1; /* فاصل برتقالي فاتح */
         }
+        .summary-table td:last-child { border-left: none; }
+        .summary-label { font-size: 12px; font-weight: bold; color: #fb6514; display: block; margin-bottom: 5px; }
+        .summary-val { font-size: 18px; font-weight: bold; color: #000; }
+        .summary-sub { font-size: 11px; color: #555; font-weight: bold; display: block; margin-top: 2px; }
 
+        /* === الجداول المنظمة (Data Tables) === */
         .data-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
+            border: 1px solid #ddd;
+            margin-bottom: 20px;
         }
-
-        .data-table td {
-            padding: 5px 0;
-        }
-
-        .code-box {
-            background: #fef3c7;
-            padding: 4px 10px;
-            border-radius: 5px;
+        .data-table th {
+            background-color: #fff8f4;
+            color: #fb6514;
             font-weight: bold;
-            color: #92400e;
-            display: inline-block;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+        .data-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+            font-weight: bold;
+            color: #222;
+        }
+        .label-cell {
+            width: 15%;
+            color: #666 !important;
+            background-color: #fafafa;
+            font-weight: normal !important;
         }
 
-        /* Footer */
-        .disclaimer {
-            font-size: 10px;
-            line-height: 1.7;
-            margin-top: 15px;
-            padding: 12px;
-            background: #fff8f4;
-            border-right: 3px solid #fb6514;
-            border-radius: 5px;
+        /* === التواقيع والشروط === */
+        .signatures { margin-top: 25px; margin-bottom: 30px; text-align: center; font-weight: bold; color: #555; }
+        .sig-line { border-bottom: 1.5px dashed #fb6514; width: 60%; margin: 40px auto 0; }
+        
+        .terms-box {
+            font-size: 11px;
+            line-height: 1.8;
             color: #555;
+            background: #fff8f4;
+            padding: 12px 15px;
+            border-right: 4px solid #fb6514;
+            border-radius: 4px;
+            font-weight: bold;
         }
-
-        .footer-box {
+        .footer-strip {
             background-color: #fb6514;
             color: #fff;
-            padding: 10px;
             text-align: center;
-            font-weight: bold;
-            margin-top: 12px;
+            padding: 10px;
             font-size: 12px;
-            border-radius: 5px;
-        }
-
-        .footer-phones {
-            direction: ltr;
-            display: inline-block;
-            margin-top: 3px;
-        }
-
-        /* تنسيق مربع رقم السند */
-        .box {
-            border: 2px solid #fb6514;
-            /* حدود سوداء سميكة */
-            color: #000;
-            /* لون النص برتقالي */
-            padding: 2px 6px;
-            /* إضافة مسافة داخلية حتى لا يلتصق النص بالحدود */
             font-weight: bold;
-            /* خط عريض */
-            display: inline-block;
-            /* لضمان ظهور الحدود بشكل صحيح حول النص */
+            margin-top: 15px;
             border-radius: 4px;
-            /* (اختياري) زوايا دائرية خفيفة */
         }
     </style>
-
 </head>
 
 <body>
 
-    <!-- Header Section -->
-    <table style="width: 100%; margin-bottom: 5px;">
+    <table style="margin-bottom: 10px;">
         <tr>
-            <!-- Right: Company Info -->
-            <td style="width: 35%; text-align: right; padding-left: 10px;">
-                <div class="header-title">الزاجل</div>
+            <td style="width: 35%; text-align: right;">
+                <h1 class="header-title">الزاجل</h1>
                 <div class="header-subtitle">للنقل والشحن السريع</div>
-                <div class="header-info">الى جميع المحافظات ودول الخليج</div>
-                <div class="header-phones">
-                    للتواصل / 774996316 - 772038561<br>735637947
+                <div class="header-info">
+                    خدمة الشحن إلى جميع المحافظات ودول الخليج<br>
+                    <span style="color: #fb6514;">للتواصل:</span> 774996316 - 772038561 - 735637947
                 </div>
-                <div class="box">رقم السند: <span class="box">{{ $shipment->bond_number }}</span></div>
-
             </td>
 
-            <!-- Center: Logo -->
             <td style="width: 30%; text-align: center;">
-                <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
+                <img src="{{ public_path('storage/' . auth()->user()->app->logo) }}" class="logo-img" alt="Logo">
             </td>
 
-            <!-- Left: Branch Info -->
-            <td style="width: 35%; text-align: left; padding-right: 10px;">
-                <div style="font-weight: bold; font-size: 13px; color: #333; margin-bottom: 4px;">
-                    فرع / القطن -عمارة شظي - خلف بنك التظامن
+            <td style="width: 35%; text-align: left;">
+                <div class="header-info" style="text-align: right; display: inline-block;">
+                    <span style="color: #fb6514; font-size: 13px;">فرع القطن:</span><br>
+                    عمارة شظي - خلف بنك التضامن<br>
+                    <span dir="ltr">781216757 - 773136727 - 730831802</span><br><br>
+                    
+                    <span style="color: #fb6514; font-size: 13px;">فرع المكلا:</span><br>
+                    اربعين شقة - بجانب بنك أمجاد<br>
+                    <span dir="ltr">774996316 - 772038561</span>
                 </div>
-                <div style="font-weight: bold; font-size: 12px; color: #000;">
-                    781216757 - 773136727 - 730831802
-                </div>
-                <div class="header-info">فرع / المكلا - اربعين شقة - بجانب بنك ا مجاد</div>
-                <div class="header-phones">
-                    للتواصل / 774996316 - 772038561<br>735637947
-                </div>
-                <div style="margin-top: 5px; font-size: 12px; font-weight: bold;">خدمة الشحن إلى جميع المحافظات ودول
-                    الخليج</div>
             </td>
         </tr>
     </table>
 
-    <!-- Separator Line -->
-    <div class="header-separator"></div>
+    <div class="doc-title-container">
+        <div class="doc-title">سند إستلام بضاعة</div>
+    </div>
 
-    <!-- Amount and Date Row -->
-    <table style="width: 100%; margin-bottom: 5px;">
+    <table class="summary-table">
         <tr>
-            <!-- Amount -->
-            <td style="width: 32%; text-align: right; vertical-align: middle;">
-                <div class="amount-date-section">
-                    <span class="amount-label">المبلغ:</span>
-                    <span style="color: #000;">{{ number_format($shipment->total_amount, 2) }}</span>
-                    @if ($shipment->payment_method == 'prepaid')
-                        <span style="font-size: 11px;">(نقداً)</span>
-                    @elseif ($shipment->payment_method == 'cod')
-                        <span style="font-size: 11px;">(أجل على المستلم)</span>
-                    @elseif ($shipment->payment_method == 'customer_credit')
-                        <span style="font-size: 11px;">(أجل على العميل)</span>
+            <td style="width: 33%;">
+                <span class="summary-label">رقم السند</span>
+                <span class="summary-val text-orange" style="font-size: 22px;">#{{ $shipment->bond_number }}</span>
+            </td>
+            <td style="width: 34%;">
+                <span class="summary-label">المبلغ الإجمالي</span>
+                <span class="summary-val">{{ number_format($shipment->total_amount, 2) }} <span style="font-size: 14px;">ريال</span></span>
+                
+                <span class="summary-sub text-orange">
+                    @if ($shipment->payment_method == 'prepaid') (مدفوع نقداً)
+                    @elseif ($shipment->payment_method == 'cod') (آجل على المستلم - COD)
+                    @elseif ($shipment->payment_method == 'customer_credit') (آجل على العميل)
                     @elseif ($shipment->payment_method == 'partial_payment')
                         @php
                             $paid = $shipment->payments->sum('amount');
                             $remaining = $shipment->total_amount - $paid;
                         @endphp
-                        <span style="font-size: 10px;">
-                            (نقد:{{ number_format($paid) }}/أجل:{{ number_format($remaining) }})
-                        </span>
+                        (نقد: {{ number_format($paid) }} | متبقي: {{ number_format($remaining) }})
                     @endif
-                </div>
+                </span>
             </td>
-
-            <!-- Title -->
-            <td style="width: 36%; text-align: center; vertical-align: middle;">
-                <div class="receipt-title-box">سند إستلام</div>
-            </td>
-
-            <!-- Date -->
-            <td style="width: 32%; text-align: left; vertical-align: middle;">
-                <div class="amount-date-section">
-                    <span class="amount-label">التاريخ:</span>
-                    <span style="font-weight: normal;">{{ $shipment->created_at->format('Y-m-d') }}</span> م
-                </div>
+            <td style="width: 33%;">
+                <span class="summary-label">تاريخ الإصدار</span>
+                <span class="summary-val" style="font-size: 16px;">{{ $shipment->created_at->format('Y/m/d') }}</span>
+                <span class="summary-sub">{{ $shipment->created_at->format('h:i A') }}</span>
             </td>
         </tr>
     </table>
 
-    <!-- Branch Badge -->
-    <div class="branch-name-large">
-        فرع {{ $shipment->senderBranch->name ?? '........' }}
+    <table class="data-table">
+        <tr>
+            <th colspan="2" style="width: 50%; text-align: right;">بيانات المُرسل</th>
+            <th colspan="2" style="width: 50%; text-align: right; border-right: 2px solid #fb6514;">بيانات المُستلم</th>
+        </tr>
+        <tr>
+            <td class="label-cell">الاسم:</td>
+            <td>{{ $shipment->senderCustomer->name ?? ($shipment->sender_name ?? '---') }}</td>
+            
+            <td class="label-cell" style="border-right: 2px solid #fb6514;">الاسم:</td>
+            <td>{{ $shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '---') }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">رقم الجوال:</td>
+            <td dir="ltr" style="text-align: right;">{{ $shipment->senderCustomer->phone ?? ($shipment->sender_phone ?? '---') }}</td>
+            
+            <td class="label-cell" style="border-right: 2px solid #fb6514;">رقم الجوال:</td>
+            <td dir="ltr" style="text-align: right;">{{ $shipment->receiverCustomer->phone ?? ($shipment->receiver_phone ?? '---') }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">فرع الإرسال:</td>
+            <td>{{ $shipment->senderBranch->name ?? '---' }}</td>
+            
+            <td class="label-cell" style="border-right: 2px solid #fb6514;">الوجهة:</td>
+            <td>{{ $shipment->receiverBranch->name ?? '---' }}</td>
+        </tr>
+    </table>
+
+    <table class="data-table">
+        <tr>
+            <th colspan="4" style="text-align: right;">تفاصيل ومحتوى الطرد</th>
+        </tr>
+        <tr>
+            <td class="label-cell">نوع الرسالة:</td>
+            <td>{{ $shipment->package_type ?? 'غير محدد' }}</td>
+            <td class="label-cell">الرمز الخاص:</td>
+            <td style="color: #fb6514; font-family: monospace; font-size: 15px;">{{ $shipment->code ?? '---' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">عدد الجوالين:</td>
+            <td>{{ $shipment->no_gallons_honey ?: '0' }}</td>
+            <td class="label-cell">عدد القروف:</td>
+            <td>{{ $shipment->no_honey_jars ?: '0' }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">الملاحظات:</td>
+            <td colspan="3" style="color: #444;">{{ $shipment->notes ?? 'لا توجد ملاحظات مسجلة.' }}</td>
+        </tr>
+    </table>
+
+    <table class="signatures">
+        <tr>
+            <td style="width: 33%;">
+                توقيع المُرسل
+                <div class="sig-line"></div>
+            </td>
+            <td style="width: 34%;">
+                ختم الشركة
+                <div class="sig-line"></div>
+            </td>
+            <td style="width: 33%;">
+                توقيع وتختيم الموظف
+                <div class="sig-line"></div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="terms-box">
+        * نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.<br>
+        * نحن غير مسؤولين عن الأشياء الثمينة الممنوع إرسالها في الطرود.<br>
+        * نحن غير مسؤولين عن بقاء الطرود أكثر من شهر.<br>
+        * نحن غير مسؤولين عن الحريق وحوادث السير.<br>
+        * الرجاء التأكد من بيانات السند قبل المغادرة.
     </div>
 
-    <!-- Main Content Box -->
-    <div class="main-box">
-        <table class="data-table">
-            <!-- Sender & Receiver Names -->
-            <tr>
-                <td style="width: 48%; text-align: right;">
-                    <span class="data-label">اسم المرسل:</span>
-                    <span class="dotted-line" style="min-width: 160px;">
-                        {{ $shipment->senderCustomer->name ?? ($shipment->sender_name ?? '') }}
-                    </span>
-                </td>
-                <td style="width: 52%; text-align: right;">
-                    <span class="data-label">جوال:</span>
-                    <span class="dotted-line" style="min-width: 140px;">
-                        {{ $shipment->senderCustomer->phone ?? ($shipment->sender_phone ?? '') }}
-                    </span>
-                </td>
-            </tr>
-
-            <tr>
-                <td style="text-align: right;">
-                    <span class="data-label">اسم المستلم:</span>
-                    <span class="dotted-line" style="min-width: 160px;">
-                        {{ $shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? '') }}
-                    </span>
-                </td>
-                <td style="text-align: right;">
-                    <span class="data-label">جوال:</span>
-                    <span class="dotted-line" style="min-width: 140px;">
-                        {{ $shipment->receiverCustomer->phone ?? ($shipment->receiver_phone ?? '') }}
-                    </span>
-                </td>
-            </tr>
-
-            <!-- Separator -->
-            <tr>
-                <td colspan="2" style="height: 5px;"></td>
-            </tr>
-
-            <!-- Items & Route -->
-            <tr>
-                <td style="text-align: right;">
-                    <span class="data-label">عدد جوالين العسل:</span>
-                    <span class="dotted-line" style="min-width: 70px;">
-                        {{ $shipment->no_gallons_honey ?: '....' }}
-                    </span>
-                </td>
-                <td style="text-align: right;">
-                    <span class="data-label">الجهة:</span>
-                    <span class="dotted-line" style="min-width: 70px;">
-                        {{ $shipment->senderBranch->name ?? '' }}
-                    </span>
-                    <span class="data-label">إلى:</span>
-                    <span class="dotted-line" style="min-width: 70px;">
-                        {{ $shipment->receiverBranch->name ?? '' }}
-                    </span>
-                </td>
-            </tr>
-
-            <tr>
-                <td style="text-align: right;">
-                    <span class="data-label">عدد العلب قروف:</span>
-                    <span class="dotted-line" style="min-width: 70px;">
-                        {{ $shipment->no_honey_jars ?: '....' }}
-                    </span>
-                </td>
-                <td style="text-align: right;">
-                    <span class="data-label">الرمز:</span>
-                    <span class="code-box">{{ $shipment->code ?? '....' }}</span>
-                </td>
-            </tr>
-
-            <!-- Separator -->
-            <tr>
-                <td colspan="2" style="height: 5px;"></td>
-            </tr>
-
-            <!-- Package Type & Notes -->
-            <tr>
-                <td colspan="2" style="text-align: right;">
-                    <span class="data-label">نوع الرسالة:</span>
-                    <span class="dotted-line" style="min-width: 450px;">
-                        {{ $shipment->package_type ?? '....' }}
-                    </span>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" style="text-align: right;">
-                    <span class="data-label">ملاحظات:</span>
-                    <span class="dotted-line" style="min-width: 450px;">
-                        {{ $shipment->notes ?? '....' }}
-                    </span>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Disclaimer -->
-    <div class="disclaimer">
-        * نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا . * نحن غير مسؤولين عن الأشياء الثمينة الممنوع إرسالها
-        في الطرود .<br>
-        * نحن غير مسؤولين عن بقاء الطرود أكثر من شهر .<br>
-        * نحن غير مسؤولين عن الحريق وحوادث السير .<br>
-        * التأكد من بيانات السند قبل المغادرة .
-    </div>
-
-    <!-- Footer -->
-    <div class="footer-box">
-        أرقام الإدارة العامة لجميع الفروع
-        <br>
-        <span class="footer-phones">
-            781216757 - 773136727 - 774996316 - 773374176
-        </span>
+    <div class="footer-strip">
+        أرقام الإدارة العامة لجميع الفروع: <span dir="ltr" style="letter-spacing: 1px;">781216757 - 773136727 - 774996316 - 773374176</span>
     </div>
 
 </body>
-
 </html>

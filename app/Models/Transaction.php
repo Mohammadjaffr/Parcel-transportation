@@ -11,7 +11,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'receipt_number',
-        'branch_code',
+        'branch_id',
         'transaction_category_id',
         'amount',
         'description',
@@ -28,11 +28,11 @@ class Transaction extends Model
 
     /**
      * Get the branch this transaction belongs to
-     * CRITICAL: Uses custom foreign key 'branch_code' -> 'code'
+     * CRITICAL: Uses custom foreign key 'branch_id' -> 'code'
      */
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_code', 'code');
+        return $this->belongsTo(Branch::class, 'branch_id', 'code');
     }
 
     /**
@@ -72,7 +72,7 @@ class Transaction extends Model
      */
     public function scopeForBranch($query, $branchCode)
     {
-        return $query->where('branch_code', $branchCode);
+        return $query->where('branch_id', $branchCode);
     }
 
     /**

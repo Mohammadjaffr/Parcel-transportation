@@ -320,7 +320,7 @@ class ReceiptHeaderController extends Controller
             
             Transaction::create([
                 'receipt_number' => Transaction::generateReceiptNumber('in'),
-                'branch_code' => $branchCode,
+                'branch_id' => $branchCode,
                 'transaction_category_id' => TransactionCategory::where('code', 'SHIPMENT_PAYMENT')->value('id'),
                 'amount' => $amount,
                 'description' => "تحصيل مبلغ طرد رقم {$item->number} - {$item->sender_name}",

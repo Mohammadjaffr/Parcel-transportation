@@ -10,7 +10,7 @@ class CashRegisterClosing extends Model
     use HasFactory;
 
     protected $fillable = [
-        'branch_code',
+        'branch_id',
         'closed_by',
         'expected_balance',
         'actual_cash',
@@ -33,7 +33,7 @@ class CashRegisterClosing extends Model
      */
     public function branch()
     {
-        return $this->belongsTo(Branch::class, 'branch_code', 'code');
+        return $this->belongsTo(Branch::class, 'branch_id', 'code');
     }
 
     /**
