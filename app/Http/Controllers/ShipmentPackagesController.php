@@ -2,66 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use App\Models\Shipment;
-use Illuminate\Http\Request;
-use App\Models\ShipmentPackage;
 use App\Classes\WebResponseClass;
-use Illuminate\Support\Facades\DB;
+use App\Models\Branch;
+use App\Models\Driver;
+use App\Models\Shipment;
+use App\Models\ShipmentPackage;
 use App\Services\ShipmentPaymentService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ShipmentPackagesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function markAllDelivered($id)
+    //معتمد
+    public function sentIndex(Request $request)
     {
-        try {
-            DB::beginTransaction();
+    $user = auth()->user();
 
-            $package = ShipmentPackage::findOrFail($id);
-
-            // حساب عدد الطرود التي سيتم تحديثها
-            $countToUpdate = $package->shipments()->where('status', '!=', 'delivered')->count();
-
-            if ($countToUpdate === 0) {
-                DB::rollBack(); // لا داعي لالتزام العملية إذا لم يكن هناك تغيير
-                return back()->with('info', 'جميع الطرود في هذه الرحلة مستلمة بالفعل.');
-            }
-
-            // معالجة الطرود على دفعات لتجنب استهلاك الذاكرة
-            $package->shipments()
-                ->where('status', '!=', 'delivered')
-                ->chunkById(500, function ($shipments) {
-                    foreach ($shipments as $shipment) {
-                        $shipment->update([
-                            'status' => 'delivered',
-                            // 'delivered_at' => now(), 
-                        ]);
-                        if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
-                            $paymentService = app(ShipmentPaymentService::class);
-                            $paymentService->createCodBranchTransactionOnDelivery($shipment);
-                        }
-
-                        // هنا يمكنك إضافة منطق السندات المالية أو كشوفات الفروع إذا لزم الأمر
-                    }
-                });
-
-            DB::commit();
-
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                ' تم تحويل حالة ' . $countToUpdate . ' طرد إلى تم الاستلام بنجاح.',
-                'حسناً',
-                'shipmentpackage.show',
-                ['shipmentpackage' => $id]
-            );
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return WebResponseClass::sendExceptionError($e);
+    // جلب الشحنات مع كافة العلاقات (القديمة والجديدة)
+    $packages = ShipmentPackage::with([
+        'senderBranch',    // الفرع المرسل
+        'receiverBranch',  // الفرع المستلم
+        'parcels',         // الطرود بداخل الشحنة
+        'driver',          // السائق المسؤول (العلاقة الجديدة)
+        'creator'          // الموظف الذي أنشأ الشحنة (العلاقة الجديدة)
+    ])
+    ->where('app_id', $user->app_id) // تأمين البيانات على مستوى الشركة
+    ->where('sender_branch_id', $user->branch_id) // فلترة حسب فرع الموظف الحالي
+    ->latest()
+    ->paginate(15);
+        if ($request->isMobile){    
+            return view('mobile.pages.shipmentpackage.outgoing.index', compact('packages'));
         }
+        // السعدي حط المسار حق الدسك توب 
+        return view('mobile.pages.shipmentpackage.outgoing.index', compact('packages'));
+    }
+    public function sentCreate(Request $request){
+        $user = auth()->user();
+        $drivers = Driver::get();
+        $branches = Branch::where('id', '!=', $user->branch_id)->get();
+        $pendingParcels = Shipment::where('sender_branch_id', $user->branch_id)
+        ->where('status', 'pending')
+        ->whereNull('shipment_package_id')
+        ->latest()
+        ->get();
+        if ($request->isMobile){
+            return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'branches', 'pendingParcels'));
+        }
+        // السعدي حط المسار حق الدسك توب 
+        return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'branches', 'pendingParcels'));
     }
     public function index()
     {

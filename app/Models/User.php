@@ -92,9 +92,9 @@ public function getCachedAppNameAttribute()
         return $this->type === 'admin';
     }
     public function app()
-{
-    return $this->belongsTo(App::class, 'app_id');
-}
+    {
+        return $this->belongsTo(App::class, 'app_id');
+    }
 
     public function branch()
     {
@@ -107,13 +107,18 @@ public function getCachedAppNameAttribute()
     }
 
     public function shipments()
-{
-    return $this->hasMany(Shipment::class, 'sender_phone', 'phone');
-}
+    {
+        return $this->hasMany(Shipment::class, 'sender_phone', 'phone');
+    }
 
 
     public function ratings()
     {
         return $this->hasMany(Rating::class);
+    }
+
+    public function createdPackages()
+    {
+        return $this->hasMany(ShipmentPackage::class, 'created_by');
     }
 }

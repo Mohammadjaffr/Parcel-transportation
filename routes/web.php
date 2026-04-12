@@ -175,6 +175,9 @@ Route::middleware('auth')->group(function () {
         ->name('reports.revenue');
 
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
+    // معتمد
+    Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('outgoing.index');
+    Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('outgoing.create');
     Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 
     Route::get('/shipmentpackage/print-driver/{id}', [ShipmentPackagesController::class, 'printManifestD'])->name('shipmentpackage.printD');
