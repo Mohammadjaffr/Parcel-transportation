@@ -30,12 +30,11 @@ class NewShipmentNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database']; // نستخدم قاعدة البيانات كما في إشعاراتك السابقة
+        return ['database']; 
     }
 
     public function toArray(object $notifiable): array
     {
-        // تخصيص الرسالة بناءً على ما إذا كان الطرد داخلياً أم من شركة أخرى
         if ($this->isInternal) {
             $message = 'طرد داخلي جديد 📦: تم إرسال طرد من فرع [' . $this->senderName . '] برقم السند (' . $this->bondNumber . ').';
         } else {
@@ -45,7 +44,7 @@ class NewShipmentNotification extends Notification
         return [
             'type'       => 'new_shipment',
             'message'    => $message,
-            'action_url' => route('shipments.show', $this->shipmentId), // تأكد من اسم الراوت لديك
+            'action_url' => route('shipment.show', $this->shipmentId),
         ];
     }
 }

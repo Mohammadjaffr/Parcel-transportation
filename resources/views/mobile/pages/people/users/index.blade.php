@@ -375,17 +375,19 @@
                             this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
                             
                             this.$watch('localPhoneNumber', value => {
-                                createUserData.phone = (this.selectedCountry?.dial_code.replace('+', '') || '') + value;
-                            });
+    // أضفنا .this هنا
+    this.createUserData.phone = (this.selectedCountry?.dial_code.replace('+', '') || '') + value;
+});
                             this.$watch('selectedCountry', value => {
-                                createUserData.phone = (value?.dial_code.replace('+', '') || '') + this.localPhoneNumber;
-                            });
+    // أضفنا .this هنا
+    this.createUserData.phone = (value?.dial_code.replace('+', '') || '') + this.localPhoneNumber;
+});
 
                             this.$watch('createUserData.phone', value => {
-                                if (!value) {
-                                    this.localPhoneNumber = '';
-                                }
-                            });
+    if (!value) {
+        this.localPhoneNumber = '';
+    }
+});
                         },
                         get filteredCountries() {
                             if (this.search === '') return this.countries;

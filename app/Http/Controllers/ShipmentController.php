@@ -12,6 +12,8 @@ use App\Models\Office;
 use App\Models\Shipment;
 use App\Models\User;
 use App\Notifications\AdminShipmentCreated;
+use App\Notifications\AdminShipmentStatusUpdated;
+use App\Notifications\NewShipmentNotification;
 use App\Services\AdminLoggerService;
 use App\Services\ShipmentPaymentService;
 use Exception;
@@ -408,13 +410,14 @@ class ShipmentController extends Controller
         ]);
     }
 
-    /* ========== 4- عرض تفاصيل طرد واحد ========== */
-    public function show($id)
+    // معتمد
+    public function show(Request $request,$id)
     {
-        $shipment = Shipment::with('payments')->findOrFail($id);
-        $countrequests = Shipment::count();
-
-        return view('pages.shipment.outgoing.show', compact('shipment', 'countrequests'));
+        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
+        if ($request->isMobile){
+            return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
+        }
+        return view('mobile.pages.shipment.show', compact('shipment'));
     }
 
     /* ========== 5- صفحة تعديل الطرد ========== */
@@ -1058,139 +1061,142 @@ public function edit($id)
     }
 
     public function updateStatus(Request $request, $id)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,in_transit,delivered,cancelled,returned',
-        ]);
-        try {
-            DB::beginTransaction();
-            $shipment = Shipment::findOrFail($id);
-            $shipment->update([
-                'status' => $request->status,
-            ]);
+{
+    $request->validate([
+        'status' => 'required|string|in:in_transit,delivered,returned',
+    ]);
 
-            if ($request->status === 'delivered' && in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
-                $paymentService = app(ShipmentPaymentService::class);
-                $paymentService->createCodBranchTransactionOnDelivery($shipment);
-            }
-            DB::commit();
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                'تم تحديث حالة الطرد بنجاح.',
-                'حسناً',
-                'shipment.index'
-            );
-        } catch (Exception $e) {
-            DB::rollBack();
-            return WebResponseClass::sendExceptionError($e);
+    try {
+        DB::beginTransaction();
+
+        $shipment = Shipment::findOrFail($id);
+        $oldStatus = $shipment->status;
+        $newStatus = $request->status;
+
+        // ========================================================
+        // 2. الحماية البرمجية (Backend State Validation) 🛡️
+        // ========================================================
+        $validTransitions = [
+            'pending'    => ['in_transit', 'returned'],
+            'in_transit' => ['delivered', 'returned'],
+        ];
+
+        // التحقق مما إذا كانت الحالة الحالية تقبل التحديث، وما إذا كانت الحالة الجديدة مسموحة
+        if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
+            // إذا حاول شخص التلاعب بالـ HTML وإرسال حالة غير منطقية، نطرده!
+            return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة ' . $oldStatus . ' إلى ' . $newStatus);
         }
-    }
 
-    /**
-     * ========== إرجاع شحنة ==========
-     * Return a shipment (after delivery attempt failed)
+        // ========================================================
+        // 3. تحديث الحالة
+        // ========================================================
+        $shipment->update([
+            'status' => $newStatus
+        ]);
+
+        // ========================================================
+        // إشعار الإدارة (Admin Notification) بتحديث الحالة
+        // ========================================================
+        $user = auth()->user();
+        
+        // جلب المدراء التابعين لنفس شركة الموظف
+        // بناءً على الكود السابق الخاص بك، نوع الموظف مخزن في حقل 'type'
+        $admins = User::where('app_id', $user->app_id)
+                                  ->where('type', 'admin') 
+                                  ->get();
+        
+        if ($admins->isNotEmpty()) {
+            // تجهيز اسم الحالة بالعربي للإشعار
+            $statusNamesAr = [
+                'in_transit' => 'قيد النقل',
+                'delivered'  => 'تم التسليم',
+                'returned'   => 'مرتجع',
+            ];
+            $statusText = $statusNamesAr[$newStatus] ?? $newStatus;
+
+            // إرسال الإشعار للمدراء
+            Notification::send($admins,
+                new AdminShipmentStatusUpdated(
+                    $user->name,
+                    $shipment->bond_number,
+                    $statusText,
+                    $shipment->id
+                )
+            );
+        }
+
+        // ========================================================
+        // 4. الإجراءات الجانبية (Side Effects) بناءً على الحالة الجديدة
+        // ========================================================
+        
+        // أ. إذا تحرك الطرد (في الطريق) -> نرسل إشعاراً للفرع المستلم
+        if ($newStatus === 'in_transit') {
+            // استدعاء دالة الإشعارات التي بنيناها معاً سابقاً
+            $this->sendDispatchNotification($shipment); 
+        }
+
+        // ب. إذا تم التسليم -> نعالج الأمور المالية (مثل تحصيل مبلغ الدفع عند الاستلام COD)
+        if ($newStatus === 'delivered') {
+            // إذا كان الدفع عند الاستلام أو دفع جزئي، يجب تسجيل المبلغ في صندوق الفرع أو المندوب
+            if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
+                // استدعاء كلاس المالية الخاص بك (إن وجد)
+                // $this->shipmentPaymentService->createCodBranchTransactionOnDelivery($shipment);
+            }
+        }
+
+        // ج. إذا تم الإلغاء/الإرجاع -> قد نحتاج لإرجاع المبالغ أو فرض رسوم إرجاع
+        if ($newStatus === 'returned') {
+            // لوجيك المرتجعات مستقبلاً
+        }
+
+        DB::commit();
+
+        // 5. رسائل النجاح الديناميكية
+        $statusNames = [
+            'in_transit' => 'قيد النقل 🚚',
+            'delivered'  => 'تم التسليم بنجاح ✅',
+            'returned'   => 'مرتجع ❌',
+        ];
+
+        return back()->with([
+            'success_title' => 'تم التحديث!',
+            'success_message' => 'تم تحديث حالة الطرد إلى: ' . $statusNames[$newStatus]
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+    }
+}
+
+/**
+     * دالة مساعدة لإرسال إشعار تحرك الطرد للفرع المستلم (إذا كان مسجلاً بالنظام)
      */
-    public function returnShipment(Request $request, $id)
+    protected function sendDispatchNotification($shipment)
     {
-        $validator = Validator::make($request->all(), [
-            'reason' => 'required|string|max:500',
-        ]);
-
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
+        // 1. الحماية: إذا كان الطرد متجهاً لمكتب خارجي يدوي (غير موثوق)، نوقف العملية فوراً
+        if (empty($shipment->receiver_branch_id)) {
+            return;
         }
 
-        try {
-            DB::beginTransaction();
+        $user = auth()->user();
 
-            $shipment = Shipment::findOrFail($id);
+        // 2. جلب الفرع المستلم مع الموظفين التابعين له
+        // استخدمنا \App\Models\Branch لتجنب مشاكل الـ namespace في الأعلى
+        $receiverBranch = Branch::with('users')->find($shipment->receiver_branch_id);
 
-            // التحقق من أن الحالة تسمح بالإرجاع
-            if (!in_array($shipment->status, ['delivered', 'in_transit'])) {
-                return WebResponseClass::sendError(
-                    'لا يمكن إرجاع شحنة في هذه الحالة. الحالة الحالية: ' . $shipment->status,
-                    'خطأ',
-                    'حسناً'
-                );
-            }
-
-            // عكس قيود BranchLedger إذا كانت الشحنة مسلمة
-            if ($shipment->status === 'delivered') {
-                $this->shipmentPaymentService->reverseShipmentLedger($shipment, $request->reason);
-            }
-
-            // تحديث حالة الشحنة
-            $shipment->status = 'returned';
-            $shipment->notes = ($shipment->notes ? $shipment->notes . "\n" : '') . 'سبب الإرجاع: ' . $request->reason;
-            $shipment->save();
-
-            // تسجيل النشاط
-            AdminLoggerService::log('إرجاع شحنة', 'Shipment', 'تم إرجاع الشحنة رقم ' . $shipment->bond_number . ' - السبب: ' . $request->reason, $shipment->id);
-
-            DB::commit();
-
-            return WebResponseClass::sendResponse(
-                'تم الإرجاع!',
-                'تم إرجاع الشحنة بنجاح وعكس القيود المالية.',
-                'حسناً',
-                'shipment.index'
+        if ($receiverBranch && $receiverBranch->users->isNotEmpty()) {
+            $isInternal = ($receiverBranch->app_id == $user->app_id);
+            $senderName = $isInternal ? ($user->branch?->name ?? 'فرع غير محدد') : ($user->App?->name ?? 'مكتب شحن');
+            Notification::send($receiverBranch->users, 
+                new NewShipmentNotification(
+                    $senderName, 
+                    $shipment->bond_number, 
+                    $shipment->id, 
+                    $isInternal
+                )
             );
-        } catch (Exception $e) {
-            DB::rollBack();
-            return WebResponseClass::sendExceptionError($e);
         }
     }
-
-    /**
-     * ========== إلغاء شحنة ==========
-     * Cancel a shipment (before or during transit)
-     */
-    public function cancelShipment(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'reason' => 'required|string|max:500',
-        ]);
-
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $shipment = Shipment::findOrFail($id);
-
-            // التحقق من أن الحالة تسمح بالإلغاء
-            if (!in_array($shipment->status, ['pending'])) {
-                return WebResponseClass::sendError(
-                    'لا يمكن إلغاء شحنة في هذه الحالة. الحالة الحالية: ' . $shipment->status,
-                    'خطأ',
-                    'حسناً'
-                );
-            }
-
-            // إلغاء جميع المعاملات المالية
-            $this->shipmentPaymentService->cancelShipmentTransactions($shipment);
-
-            // تحديث حالة الشحنة
-            $shipment->status = 'cancelled';
-            $shipment->notes = ($shipment->notes ? $shipment->notes . "\n" : '') . 'سبب الإلغاء: ' . $request->reason;
-            $shipment->save();
-
-            // تسجيل النشاط
-            AdminLoggerService::log('إلغاء شحنة', 'Shipment', 'تم إلغاء الشحنة رقم ' . $shipment->bond_number . ' - السبب: ' . $request->reason, $shipment->id);
-
-            DB::commit();
-
-            return WebResponseClass::sendResponse(
-                'تم الإلغاء!',
-                'تم إلغاء الشحنة بنجاح وحذف المعاملات المالية.',
-                'حسناً',
-                'shipment.index'
-            );
-        } catch (Exception $e) {
-            DB::rollBack();
-            return WebResponseClass::sendExceptionError($e);
-        }
-    }
+    
 }

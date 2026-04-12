@@ -4,7 +4,7 @@
 
 @section('content')
     <div x-data="{ paymentMethod: 'prepaid' }"
-        class="flex flex-col gap-6 px-4 pb-28 relative min-h-screen bg-slate-50/50 pt-6">
+        class="flex flex-col gap-6 px-4 pb-19 relative min-h-screen bg-slate-50/50 pt-6">
 
         {{-- <div class="flex items-center gap-4 mb-2">
             <a href="{{ url()->previous() }}"
@@ -17,7 +17,9 @@
             </div>
         </div> --}}
 
-        <form action="{{ route('shipment.store') }}" method="POST" class="space-y-6">
+        <form action="{{ route('shipment.store') }}" method="POST" class="space-y-6"
+              x-data="{ isSubmitting: false }" 
+              @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
             @csrf
             {{-- بيانات الفروع --}}
             <div x-data='destinationLogic(@json($offices))'
@@ -95,9 +97,9 @@
 
                     {{-- ================= المرسل ================= --}}
                     <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative z-50">
+                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100  z-50">
                         <span
-                            class="absolute -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل</span>
+                            class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span class="text-red-500">*</span></span>
 
                         <div class="grid grid-cols-1 gap-3 mt-2 relative">
                             <input type="hidden" name="sender_customer_id" x-model="selectedCustomerId">
@@ -183,9 +185,9 @@
 
                     {{-- ================= المستلم ================= --}}
                     <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative z-40">
+                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100  z-40">
                         <span
-                            class="absolute -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
+                            class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
                             <span class="text-red-500">*</span></span>
 
                         <div class="grid grid-cols-1 gap-3 mt-2 relative">
@@ -359,11 +361,26 @@
                 </div>
             </div>
             {{-- زر الارسال --}}
-            <div class="pt-4 pb-8">
-                <button type="submit"
-                    class="flex items-center justify-center gap-2 w-full h-14 bg-primary text-white rounded-2xl font-bold text-sm shadow-[0_8px_20px_rgba(36,56,156,0.25)] hover:bg-primary/90 active:scale-95 transition-all duration-200">
-                    <span class="material-symbols-outlined text-[22px]">send</span>
-                    اعتماد وإصدار السند
+            <div class="pt-2 pb-4">
+                <button type="submit" 
+                    :disabled="isSubmitting"
+                    class="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-bold text-sm shadow-[0_8px_20px_rgba(36,56,156,0.25)] transition-all duration-200"
+                    :class="isSubmitting ? 'bg-slate-400 text-slate-100 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 active:scale-95'">
+                    
+                    {{-- الحالة العادية --}}
+                    <span x-show="!isSubmitting" class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[22px]">send</span>
+                        اعتماد وإصدار السند
+                    </span>
+
+                    {{-- حالة التحميل --}}
+                    <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        جاري الاعتماد...
+                    </span>
                 </button>
             </div>
         </form>

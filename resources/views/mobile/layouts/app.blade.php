@@ -89,15 +89,10 @@
     </main>
 
     @include('mobile.layouts.sidebar')
-    <a href="#"
+    <a href="{{ route('shipment.create') }}"
         class="flex fixed left-6 bottom-28 z-50 justify-center items-center w-14 h-14 text-white rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-200 bg-primary/80 shadow-primary/20 hover:scale-105 active:scale-95 group border-white/20">
         <span class="text-3xl material-symbols-outlined"
             style="font-variation-settings: 'FILL' 1, 'wght' 500;">add_box</span>
-
-        <span
-            class="absolute right-16 px-3 py-1.5 text-xs text-white whitespace-nowrap rounded-xl shadow-lg opacity-0 backdrop-blur-sm transition-opacity pointer-events-none bg-slate-800/90 group-hover:opacity-100">
-            إضافة طرد جديد
-        </span>
     </a>
 
     <script>

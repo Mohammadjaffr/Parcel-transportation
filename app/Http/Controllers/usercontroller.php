@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,54 +51,70 @@ class UserController extends Controller
      * إضافة مستخدم جديد (يدعم AJAX)
      */
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'unique:users,phone'],
-            'whatsapp_number' => ['nullable', 'string'],
-            'password' => ['required', 'string', 'min:6'],
-            'branch_id' => ['required', 'exists:branches,id']
-        ], [
-            'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
-            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
-            'branch_id.exists' => 'الفرع المحدد غير موجود في النظام.',
+{
+    // 1. التحقق من البيانات
+    $validator = Validator::make($request->all(), [
+        'name' => ['required', 'string', 'max:255'],
+        'phone' => ['required', 'string', 'unique:users,phone'],
+        'password' => ['required', 'string', 'min:6'],
+        'branch_id' => ['required', 'exists:branches,id']
+    ], [
+        'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
+        'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
+        'branch_id.exists' => 'الفرع المحدد غير موجود في النظام.',
+    ]);
+
+    if ($validator->fails()) {
+        // إذا كان الطلب AJAX/JSON نرسل الأخطاء بصيغة JSON مع كود 422
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        return WebResponseClass::sendValidationError($validator);
+    }
+
+    try {
+        DB::beginTransaction(); // أفضل ممارسة عند الإضافة
+
+        User::create([
+            'app_id'    => auth()->user()->app_id,
+            'branch_id' => $request->branch_id,
+            'name'      => $request->name,
+            'phone'     => $request->phone,
+            'whatsapp_number' => $request->whatsapp_number,
+            'password'  => Hash::make($request->password),
+            'type'      => 'user',
+            'is_banned' => false,
         ]);
 
-        if ($validator->fails()) {
-            if ($request->wantsJson()) {
-                return WebResponseClass::sendValidationError($validator);
-            }
-            return WebResponseClass::sendValidationError($validator);
+        DB::commit();
+
+        // 2. الرد في حالة النجاح
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status'  => 'success',
+                'title'   => 'تمت الإضافة!',
+                'message' => 'تم إضافة المستخدم بنجاح إلى النظام.',
+                'redirect' => route('users.index') // نرسل الرابط لتقوم الجافاسكريبت بالتحويل إذا أردت
+            ], 200);
         }
 
-        try {
+        return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
 
-            User::create([
-                'app_id' => auth()->user()->app_id,
-                'branch_id' => $request->branch_id,
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'whatsapp_number' => $request->whatsapp_number,
-                'password' => Hash::make($request->password), // تشفير كلمة المرور
-                'type' => 'user', // Default type
-                'is_banned' => false,
-            ]);
-
-            if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تمت الإضافة!');
-                session()->flash('success_message', 'تم إضافة المستخدم بنجاح.');
-                return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
-            }
-
-            return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
-        } catch (\Exception $e) {
-            if ($request->wantsJson()) {
-                return WebResponseClass::sendExceptionError($e);
-            }
-            return WebResponseClass::sendExceptionError($e);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'حدث خطأ غير متوقع: ' . $e->getMessage()
+            ], 500);
         }
+        return WebResponseClass::sendExceptionError($e);
     }
+}
 
     /**
      * Display the specified resource.

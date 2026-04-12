@@ -50,7 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing.index');
     Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming');
     Route::resource('shipment', ShipmentController::class);
-    Route::patch('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
+    Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
     Route::patch('/shipment/{id}/return', [ShipmentController::class, 'returnShipment'])
         ->name('shipment.return');
