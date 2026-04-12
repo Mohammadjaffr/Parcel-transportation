@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\HasApiTokens;
 
 
@@ -57,6 +58,33 @@ class User extends Authenticatable
             'is_banned' => 'boolean',
         ];
     }
+
+    public function getCachedAppLogoAttribute()
+{
+    
+    if (!$this->app_id) {
+        return asset('assets/image/icon_4K.png');
+    }
+
+    return Cache::remember('app_logo_' . $this->app_id, 86400, function () {
+        $app = $this->app;
+        return $app && $app->logo 
+            ? asset('storage/' . $app->logo) 
+            : asset('assets/image/icon_4K.png');
+    });
+}
+public function getCachedAppNameAttribute()
+{
+    
+    if (!$this->app_id) {
+        return 'اسم الشركة';
+    }
+
+    return \Illuminate\Support\Facades\Cache::remember('app_name_' . $this->app_id, 86400, function () {
+        $app = $this->app;
+        return $app && $app->name ? $app->name : 'اسم الشركة';
+    });
+}
 
 
     public function isAdmin()

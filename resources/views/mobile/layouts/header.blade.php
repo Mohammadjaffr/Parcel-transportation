@@ -8,8 +8,7 @@
 
             <div class="relative w-11 h-11 rounded-full overflow-hidden border-2 border-primary/20 shadow-sm shrink-0">
                 <img alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
-                    src="{{ Auth::user()->App?->logo ? asset('storage/' . Auth::user()->App->logo) : asset('assets/image/icon_4K.png') }}" />
-            </div>
+                    src="{{ Auth::user()->cached_app_logo }}" />
 
             <div class="flex flex-col min-w-0">
                 <span class="text-[10px] font-bold text-slate-400 mb-0.5">مرحباً بك 👋</span>
@@ -42,7 +41,7 @@
                     </div>
                     <div>
                         <h4 class="text-sm font-black font-headline text-slate-800">
-                            {{ Auth::user()->App?->name ?? 'اسم الشركة' }}
+                            {{ Auth::user()->cached_app_name }}
                         </h4>
                         <p class="text-[10px] font-bold text-slate-500 mt-0.5 flex items-center gap-1">
                             {{ Auth::user()->branch?->name }}

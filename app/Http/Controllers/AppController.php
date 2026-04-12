@@ -6,6 +6,7 @@ use App\Models\App;
 use App\Models\OfficeConnection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class AppController extends Controller
@@ -74,6 +75,8 @@ class AppController extends Controller
             $dataToUpdate['logo'] = $path;
         }
         $company->update($dataToUpdate);
+        Cache::forget('app_logo_' . auth()->user()->app_id);
+        Cache::forget('app_name_' . auth()->user()->app_id);
 
         return back()->with([
             'success_title' => 'تم التحديث!',
