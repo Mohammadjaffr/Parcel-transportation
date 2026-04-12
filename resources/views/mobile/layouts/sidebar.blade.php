@@ -1,5 +1,5 @@
 <nav
-    class="fixed bottom-0 left-0 w-full glass-nav shadow-[0_-8px_24px_rgba(36,56,156,0.06)] flex flex-row justify-around items-center px-4 pb-8 pt-4 z-50 rounded-t-3xl bg-white">
+    class="fixed bottom-0 left-0 w-full glass-nav shadow-[0_-8px_24px_rgba(36,56,156,0.06)] flex flex-row justify-around items-center px-4 pb-4 pt-4 z-50 rounded-t-3xl bg-white">
 
     <a href="{{ route('dashboard.index') }}"
         class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('dashboard.index') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">

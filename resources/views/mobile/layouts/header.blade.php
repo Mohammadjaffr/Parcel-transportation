@@ -4,24 +4,23 @@
 
     <div class="relative">
         <button @click="profileOpen = !profileOpen; notifOpen = false"
-            class="flex items-center gap-3 p-1 pr-2 rounded-full hover:bg-slate-50 transition-all active:scale-95 text-right border border-transparent hover:border-slate-100">
+    class="flex items-center gap-3 p-1 pr-2 rounded-full hover:bg-slate-50 transition-all active:scale-95 text-right border border-transparent hover:border-slate-100">
 
-            <div class="relative w-11 h-11 rounded-full overflow-hidden border-2 border-primary/20 shadow-sm shrink-0">
-                <img alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
-                    src="{{ Auth::user()->cached_app_logo }}" />
-
-            <div class="flex flex-col min-w-0">
-                <span class="text-[10px] font-bold text-slate-400 mb-0.5">مرحباً بك 👋</span>
-                <div class="flex items-center gap-1">
-                    <span
-                        class="font-headline font-bold text-sm text-slate-900 tracking-tight truncate max-w-[120px] xs:max-w-[150px]">
-                        {{ Auth::user()->name }}
-                    </span>
-                    <span class="material-symbols-outlined text-slate-400 text-[16px] transition-transform duration-300"
-                        :class="profileOpen ? 'rotate-180' : ''">expand_more</span>
-                </div>
-            </div>
-        </button>
+    <div class="relative w-11 h-11 rounded-full overflow-hidden border-2 border-primary/20 shadow-sm shrink-0">
+        <img alt="{{ Auth::user()->name }}" class="w-full h-full object-cover"
+            src="{{ Auth::user()->cached_app_logo }}" />
+    </div> <div class="flex flex-col min-w-0">
+        <span class="text-[10px] font-bold text-slate-400 mb-0.5">مرحباً بك 👋</span>
+        <div class="flex items-center gap-1">
+            <span
+                class="font-headline font-bold text-sm text-slate-900 tracking-tight truncate max-w-[120px] xs:max-w-[150px]">
+                {{ Auth::user()->name }}
+            </span>
+            <span class="material-symbols-outlined text-slate-400 text-[16px] transition-transform duration-300"
+                :class="profileOpen ? 'rotate-180' : ''">expand_more</span>
+        </div>
+    </div>
+</button>
 
         <div x-show="profileOpen" @click.outside="profileOpen = false"
             x-transition:enter="transition ease-out duration-200"
