@@ -11,8 +11,44 @@ class ShipmentPackage extends Model
     use HasFactory,BelongsToApp;
     protected $fillable = [
         'tracking_number', 'app_id', 'driver_id', 'created_by', 
-        'sender_branch_id', 'receiver_branch_id', 'status', 'notes', 'total_weight'
+        'sender_branch_id', 'status', 'notes'
     ];
+
+    // ==========================================
+    // التوليد التلقائي لرقم التتبع (Boot Method)
+    // ==========================================
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($package) {
+
+            // جلب الفرع المُرسل لاستخدام الكود الخاص به
+            $branch = Branch::find($package->sender_branch_id);
+            
+            // إذا كان للفرع كود نستخدمه، وإلا نستخدم الحرف B مع رقم الفرع
+            $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $package->sender_branch_id;
+
+            // التنسيق: سنة، شهر، يوم (مثال: 260413)
+            $date = now()->format('ymd'); 
+
+            // البحث عن آخر "إرسالية مجمعة" لنفس الفرع في نفس اليوم
+            // استخدمنا static بدلاً من اسم الموديل ليكون الكود مرناً
+            $lastPackage = static::where('sender_branch_id', $package->sender_branch_id)
+                ->whereDate('created_at', today())
+                ->latest('id')
+                ->first();
+
+            // توليد التسلسل الجديد (001, 002, 003...)
+            $newSeq = $lastPackage && $lastPackage->tracking_number
+                ? str_pad((int) substr($lastPackage->tracking_number, -3) + 1, 3, '0', STR_PAD_LEFT)
+                : '001';
+
+            // 💡 شكل رقم التتبع للإرسالية سيكون مثلاً: PKG-SAN-260413001
+            // أضفنا PKG لتمييز الإرسالية المجمعة عن الطرد الفردي
+            $package->tracking_number = "PKG-{$branchIdentifier}-{$date}{$newSeq}";
+        });
+    }
 
     // العلاقة مع الشركة/التطبيق
     public function app()
@@ -38,15 +74,9 @@ class ShipmentPackage extends Model
         return $this->belongsTo(Branch::class, 'sender_branch_id');
     }
 
-    // العلاقة مع فرع الاستلام
-    public function receiverBranch()
-    {
-        return $this->belongsTo(Branch::class, 'receiver_branch_id');
-    }
-
     // العلاقة مع الطرود الموجودة داخل هذه الشحنة (بفرض وجود جدول parcels)
-    public function parcels()
+    public function shipments()
     {
-        return $this->hasMany(Shipment::class, 'package_id'); 
+        return $this->hasMany(Shipment::class, 'shipment_package_id'); 
     }
 }

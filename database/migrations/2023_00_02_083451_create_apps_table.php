@@ -14,7 +14,8 @@ return new class extends Migration
             $table->string('name'); 
             $table->string('logo')->nullable();
             $table->string('phone')->nullable(); 
-            $table->string('email')->nullable(); 
+            $table->string('email')->nullable();
+            $table->json('terms_and_conditions')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

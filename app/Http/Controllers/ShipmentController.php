@@ -39,24 +39,38 @@ class ShipmentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // استخدمنا branch_id بدلاً من branch_id كما اتفقنا في التعديلات السابقة
+        // استخدام branch_id الخاص بالموظف
         $branchId = $user->branch_id;
 
         // نستقبل نوع العرض من الرابط، والافتراضي هو المرسلة (outgoing)
         $type = $request->query('type', 'outgoing');
 
-        $query = Shipment::with(['receiverBranch', 'receiverCustomer', 'senderCustomer']);
+        // 1. بناء الاستعلام الأساسي مع جلب كافة العلاقات المستخدمة في الواجهة
+        $query = Shipment::with([
+            'receiverBranch', 
+            'receiverCustomer', 
+            'senderCustomer',
+            'senderBranch',         // أضفناها لتجنب استعلامات إضافية في الواجهة
+            'receiverOfficeBranch', // أضفناها لتجنب استعلامات إضافية في الواجهة
+            'receiverBranch.app'    // أضفناها للوصول لاسم الشركة المستقبلة
+        ]);
 
+        // 2. فلترة حسب نوع الطرد (وارد أم صادر)
         if ($type === 'incoming') {
             // جلب الطرود المستلمة (التي وجهتها هذا الفرع)
-            $query->where('receiver_branch_id', $user->branch_id);
+            $query->where('receiver_branch_id', $branchId);
         } else {
             // جلب الطرود المرسلة (التي أرسلها هذا الفرع)
-            $query->where('sender_branch_id', $user->branch_id);
+            $query->where('sender_branch_id', $branchId);
         }
 
-        // استخدمنا اسم المتغير $shipments ليتوافق مع ملف الـ Blade الذي صممناه
-        $shipments = $query->latest()->paginate(10)->withQueryString();
+        // 3. 💡 تطبيق الفلترة الذكية حسب الحالة (إذا تم الضغط على أحد أزرار الفلتر)
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        // 4. جلب البيانات مع الترقيم والاحتفاظ بكافة المتغيرات في الرابط (type, status, page)
+        $shipments = $query->latest()->paginate(15)->withQueryString();
 
         if ($request->isMobile) {
             // تمرير المتغيرات للصفحة

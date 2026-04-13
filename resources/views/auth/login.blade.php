@@ -47,13 +47,13 @@
                         "surface-variant": "#d2e4fb",
                         "error-container": "#ffdad6",
                         "on-secondary-container": "#673b00",
-                        "secondary-container": "#fe9d20", 
+                        "secondary-container": "#fe9d20",
                         "on-tertiary-fixed": "#281802",
                         "on-primary": "#ffffff",
                         "on-surface": "#0b1d2d",
                         "on-tertiary": "#ffffff",
                         "tertiary-fixed": "#feddb5",
-                        "primary": "#041627", 
+                        "primary": "#041627",
                         "surface-dim": "#cadcf2",
                         "on-error-container": "#93000a",
                         "surface-container-lowest": "#ffffff",
@@ -78,8 +78,10 @@
         }
     </script>
     <style>
-        [x-cloak] { display: none !important; }
-        
+        [x-cloak] {
+            display: none !important;
+        }
+
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
@@ -97,9 +99,11 @@
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
+
         .custom-scrollbar::-webkit-scrollbar-track {
             background: transparent;
         }
+
         .custom-scrollbar::-webkit-scrollbar-thumb {
             background-color: #d2e4fb;
             border-radius: 10px;
@@ -115,12 +119,15 @@
         <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary blur-[120px]"></div>
     </div>
 
-    <main class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row-reverse items-stretch min-h-[750px] m-4 md:m-8 overflow-hidden rounded-xl shadow-[0_20px_60px_rgba(11,29,45,0.08)] bg-surface-container-lowest">
+    <main
+        class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row-reverse items-stretch min-h-[750px] m-4 md:m-8 overflow-hidden rounded-xl shadow-[0_20px_60px_rgba(11,29,45,0.08)] bg-surface-container-lowest">
 
-        <section class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
+        <section
+            class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
             <div class="relative z-20 space-y-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
+                    <div
+                        class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
                         <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Mursal Logo"
                             class="w-10 h-10 object-contain">
                     </div>
@@ -203,27 +210,35 @@
                             return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
                         }
                     }">
-                        <label for="phone_display" class="block text-sm font-bold text-on-background/80 pr-1">رقم الجوال</label>
-                        
+                        <label for="phone_display" class="block text-sm font-bold text-on-background/80 pr-1">رقم
+                            الجوال</label>
+
                         <input type="hidden" name="phone" :value="fullPhone">
 
                         <div class="relative">
-                            <div class="relative group flex items-center bg-surface-container-low rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-secondary-container transition-all">
+                            <div
+                                class="relative group flex items-center bg-surface-container-low rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-secondary-container transition-all">
 
-                                <input id="phone_display" type="tel" x-model="localPhoneNumber" required autofocus inputmode="numeric"
+                                <input id="phone_display" type="tel" x-model="localPhoneNumber" required autofocus
+                                    inputmode="numeric" {{-- 💡 التقييد الذكي: 9 أرقام لليمن، و 15 كحد أقصى للبقية --}}
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 bg-transparent border-0 px-4 py-3.5 pr-11 text-on-background placeholder:text-outline/60 focus:ring-0 font-headline dir-ltr text-left"
                                     placeholder="7XXXXXXXX" />
 
-                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary pointer-events-none">
+                                <div
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary pointer-events-none">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
-                                <button type="button" @click="open = !open" 
+                                <button type="button" @click="open = !open"
                                     class="flex items-center gap-2 px-3 h-[52px] bg-slate-100 border-r border-slate-200 hover:bg-slate-200 transition-colors">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                    <span class="text-sm font-bold text-on-surface font-headline dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                                    <span
+                                        class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+                                    <span class="text-sm font-bold text-on-surface font-headline dir-ltr"
+                                        x-text="selectedCountry?.dial_code"></span>
                                     <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
                                     </template>
                                 </button>
                             </div>
@@ -238,12 +253,18 @@
                                     <template x-for="country in filteredCountries" :key="country.code">
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
-                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg"
+                                                x-html="country.svg"></svg>
+                                            <span
+                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                x-text="country.name"></span>
+                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
+                                                x-text="country.dial_code"></span>
                                         </div>
                                     </template>
-                                    <div x-show="filteredCountries.length === 0" class="p-4 text-center text-sm font-medium text-slate-500">
+                                    <div x-show="filteredCountries.length === 0"
+                                        class="p-4 text-center text-sm font-medium text-slate-500">
                                         لا توجد نتائج مطابقة
                                     </div>
                                 </div>
@@ -253,17 +274,21 @@
                     </div>
 
                     <div class="space-y-1.5" x-data="{ showPassword: false }">
-                        <label for="password" class="block text-sm font-bold text-on-background/80 pr-1">كلمة المرور</label>
+                        <label for="password" class="block text-sm font-bold text-on-background/80 pr-1">كلمة
+                            المرور</label>
                         <div class="relative group">
-                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required autocomplete="current-password"
+                            <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required
+                                autocomplete="current-password"
                                 class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-outline/60 focus:ring-2 focus:ring-secondary-container transition-all font-headline"
                                 placeholder="••••••••" />
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary">
+                            <div
+                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary">
                                 <span class="material-symbols-outlined">lock</span>
                             </div>
                             <button type="button" @click="showPassword = !showPassword"
                                 class="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined" x-text="showPassword ? 'visibility_off' : 'visibility'">visibility</span>
+                                <span class="material-symbols-outlined"
+                                    x-text="showPassword ? 'visibility_off' : 'visibility'">visibility</span>
                             </button>
                         </div>
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
@@ -281,7 +306,8 @@
                         <button type="submit"
                             class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
                             <span class="text-lg">تسجيل الدخول</span>
-                            <span class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                            <span
+                                class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
                         </button>
                     </div>
                 </form>
@@ -297,7 +323,8 @@
         </section>
     </main>
 
-    <footer class="mt-4 mb-8 text-slate-400 text-xs font-medium space-x-reverse space-x-6 flex items-center justify-center">
+    <footer
+        class="mt-4 mb-8 text-slate-400 text-xs font-medium space-x-reverse space-x-6 flex items-center justify-center">
         <span class="font-headline tracking-widest">MURSAL LOGISTICS</span>
         <span>© 2026 جميع الحقوق محفوظة</span>
         <div class="flex gap-4">
@@ -306,4 +333,5 @@
         </div>
     </footer>
 </body>
+
 </html>

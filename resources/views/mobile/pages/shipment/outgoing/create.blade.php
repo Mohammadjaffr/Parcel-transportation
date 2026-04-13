@@ -17,9 +17,8 @@
             </div>
         </div> --}}
 
-        <form action="{{ route('shipment.store') }}" method="POST" class="space-y-6"
-              x-data="{ isSubmitting: false }" 
-              @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
+        <form action="{{ route('shipment.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }"
+            @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
             @csrf
             {{-- بيانات الفروع --}}
             <div x-data='destinationLogic(@json($offices))'
@@ -97,9 +96,9 @@
 
                     {{-- ================= المرسل ================= --}}
                     <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100  z-50">
-                        <span
-                            class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span class="text-red-500">*</span></span>
+                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100 z-50">
+                        <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span
+                                class="text-red-500">*</span></span>
 
                         <div class="grid grid-cols-1 gap-3 mt-2 relative">
                             <input type="hidden" name="sender_customer_id" x-model="selectedCustomerId">
@@ -142,10 +141,11 @@
                                     </div>
                                 </div>
 
-                                {{-- تم التحديث هنا: searchCustomer و showCustomerDropdown --}}
+                                {{-- 💡 تم إضافة :maxlength هنا للمرسل --}}
                                 <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                     @focus="showCustomerDropdown = true" @click.away="showCustomerDropdown = false"
                                     placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
                                     :class="selectedCustomerId ? 'font-bold text-primary' : ''">
 
@@ -155,7 +155,6 @@
                                 </button>
                             </div>
 
-                            {{-- تم التحديث هنا: showCustomerDropdown و filteredCustomers --}}
                             <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
                                 x-transition x-cloak
                                 class="absolute top-[3.25rem] right-0 w-full bg-white border border-slate-100 rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden max-h-48 overflow-y-auto z-50">
@@ -185,9 +184,8 @@
 
                     {{-- ================= المستلم ================= --}}
                     <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100  z-40">
-                        <span
-                            class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
+                        class="p-4 bg-slate-50 rounded-2xl border border-slate-100 z-40">
+                        <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
                             <span class="text-red-500">*</span></span>
 
                         <div class="grid grid-cols-1 gap-3 mt-2 relative">
@@ -232,10 +230,11 @@
                                     </div>
                                 </div>
 
-                                {{-- تم التحديث هنا --}}
+                                {{-- 💡 تم إضافة :maxlength هنا للمستلم أيضاً --}}
                                 <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                     @focus="showCustomerDropdown = true" @click.away="showCustomerDropdown = false"
                                     placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
                                     :class="selectedCustomerId ? 'font-bold text-emerald-700' : ''">
 
@@ -245,7 +244,6 @@
                                 </button>
                             </div>
 
-                            {{-- تم التحديث هنا --}}
                             <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
                                 x-transition x-cloak
                                 class="absolute top-[3.25rem] right-0 w-full bg-white border border-slate-100 rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden max-h-48 overflow-y-auto z-50">
@@ -362,11 +360,10 @@
             </div>
             {{-- زر الارسال --}}
             <div class="pt-2 pb-4">
-                <button type="submit" 
-                    :disabled="isSubmitting"
+                <button type="submit" :disabled="isSubmitting"
                     class="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-bold text-sm shadow-[0_8px_20px_rgba(36,56,156,0.25)] transition-all duration-200"
                     :class="isSubmitting ? 'bg-slate-400 text-slate-100 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 active:scale-95'">
-                    
+
                     {{-- الحالة العادية --}}
                     <span x-show="!isSubmitting" class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[22px]">send</span>
@@ -375,9 +372,13 @@
 
                     {{-- حالة التحميل --}}
                     <span x-show="isSubmitting" x-cloak class="flex items-center gap-2">
-                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         جاري الاعتماد...
                     </span>

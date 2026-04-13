@@ -28,32 +28,33 @@
         </span>
     </a>
 
-   <a href="{{ route('mobile.office') }}"
-    class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+    <a href="{{ route('mobile.office') }}"
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.office', 'offices.unverified.index', 'offices.create', 'app.index']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
 
-    <span class="material-symbols-outlined"
-        style="font-variation-settings: 'FILL' {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 1 : 0 }};">
-        apartment
-    </span>
+        <span class="material-symbols-outlined"
+            style="font-variation-settings: 'FILL' {{ Route::is(['mobile.office', 'offices.unverified.index', 'offices.create', 'app.index']) ? 1 : 0 }};">
+            apartment
+        </span>
 
-    <span class="font-headline text-[10px] {{ Route::is(['mobile.office', 'offices.unverified.index','offices.create','app.index']) ? 'font-bold' : 'font-medium' }} mt-1">
-        المكاتب
-    </span>
-</a>
+        <span
+            class="font-headline text-[10px] {{ Route::is(['mobile.office', 'offices.unverified.index', 'offices.create', 'app.index']) ? 'font-bold' : 'font-medium' }} mt-1">
+            المكاتب
+        </span>
+    </a>
 
     <a href="{{ route('mobile.shipment') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.shipment','shipment.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.shipment', 'shipment.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
         <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is(['mobile.shipment','shipment.*']) ? 1 : 0 }};">inventory_2</span>
+            style="font-variation-settings: 'FILL' {{ Route::is(['mobile.shipment', 'shipment.*']) ? 1 : 0 }};">inventory_2</span>
         <span
-            class="font-headline text-[10px] {{ Route::is(['mobile.shipment','shipment.*']) ? 'font-bold' : 'font-medium' }} mt-1">الطرود</span>
+            class="font-headline text-[10px] {{ Route::is(['mobile.shipment', 'shipment.*']) ? 'font-bold' : 'font-medium' }} mt-1">الطرود</span>
     </a>
 
     <a href="{{ route('mobile.shipmentpackage.index') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is('mobile.shipmentpackage.*') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['mobile.shipmentpackage.*', 'shipmentpackage.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
         <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is('mobile.shipmentpackage.*') ? 1 : 0 }};">local_shipping</span>
+            style="font-variation-settings: 'FILL' {{ Route::is(['mobile.shipmentpackage.*', 'shipmentpackage.*']) ? 1 : 0 }};">local_shipping</span>
         <span
-            class="font-headline text-[10px] {{ Route::is('mobile.shipmentpackage.*') ? 'font-bold' : 'font-medium' }} mt-1">الشحنات</span>
+            class="font-headline text-[10px] {{ Route::is(['mobile.shipmentpackage.*', 'shipmentpackage.*']) ? 'font-bold' : 'font-medium' }} mt-1">الشحنات</span>
     </a>
 </nav>

@@ -19,10 +19,44 @@
             </a>
         </div>
 
+        {{-- شريط البحث الحالي --}}
         <div class="relative">
             <input type="text" x-model="searchQuery" placeholder="ابحث برقم السند، أو هاتف العميل..."
                 class="w-full h-14 pr-4 pl-12 text-sm bg-white rounded-2xl border-none shadow-sm focus:ring-2 focus:ring-primary/20 outline-none text-slate-700 placeholder-slate-400">
             <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
+        </div>
+
+        {{-- 💡 الإضافة الجديدة: شريط الفلترة حسب الحالة (Status Filters) --}}
+        <div class="flex overflow-x-auto gap-2 mt-2 pb-2 custom-scrollbar snap-x snap-mandatory">
+            <a href="{{ request()->fullUrlWithQuery(['status' => null, 'page' => null]) }}"
+                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+                {{ !request('status') ? 'bg-slate-800 text-white border-slate-800 shadow-[0_4px_12px_rgba(30,41,59,0.2)]' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' }}">
+                الكل
+            </a>
+            
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'pending', 'page' => null]) }}"
+                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+                {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50' }}">
+                قيد الانتظار
+            </a>
+
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'in_transit', 'page' => null]) }}"
+                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+                {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50' }}">
+                في الطريق
+            </a>
+
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'delivered', 'page' => null]) }}"
+                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+                {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.2)]' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50' }}">
+                تم التسليم
+            </a>
+
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'returned', 'page' => null]) }}"
+                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+                {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-[0_4px_12px_rgba(244,63,94,0.2)]' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50' }}">
+                ملغي / مرتجع
+            </a>
         </div>
 
         <div class="space-y-5">

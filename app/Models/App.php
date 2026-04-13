@@ -12,6 +12,9 @@ class App extends Model
     use HasFactory;
 
     protected $guarded = [];
+    protected $casts = [
+        'terms_and_conditions' => 'array',
+    ];
 
     public function users()
     {

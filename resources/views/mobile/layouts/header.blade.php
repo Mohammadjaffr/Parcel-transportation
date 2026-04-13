@@ -145,6 +145,7 @@
                                     @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
                                     @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
                                     @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100
+                                    @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
                                     @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
                                     @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
                                     @else bg-slate-100 text-slate-500 border-slate-200 @endif">
@@ -155,6 +156,7 @@
                                         @elseif($type == 'connection_rejected') block
                                         @elseif($type == 'shipment_dispatched') local_shipping
                                         @elseif($type == 'admin_new_shipment') add_box
+                                        @elseif($type == 'admin_new_manifest') all_inbox
                                         @elseif($type == 'new_shipment') unarchive
                                         @elseif($type == 'admin_status_updated') {{ $notification->data['icon'] ?? 'update' }}
                                         @else notifications @endif
@@ -170,6 +172,7 @@
                                                 @elseif($type == 'connection_rejected') تم رفض طلبك
                                                 @elseif($type == 'shipment_dispatched') طرد في الطريق
                                                 @elseif($type == 'admin_new_shipment') طرد جديد (الإدارة)
+                                                @elseif($type == 'admin_new_manifest') إرسالية مجمعة (الإدارة)
                                                 @elseif($type == 'new_shipment') طرد وارد 📦
                                                 @elseif($type == 'admin_status_updated') تحديث حالة 🔄
                                                 @else إشعار @endif

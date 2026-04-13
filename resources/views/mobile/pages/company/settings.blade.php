@@ -7,26 +7,26 @@
     <x-modals.error-modal />
 
     <div x-data="{ 
-            showAddBranchModal: false, 
-            showEditCompanyModal: false,
-            showEditBranchModal: false,
-            editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
-            editBranchAction: '',
+                        showAddBranchModal: false, 
+                        showEditCompanyModal: false,
+                        showEditBranchModal: false,
+                        editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
+                        editBranchAction: '',
 
-            openEditBranchModal(branch) {
-                this.editBranchForm = {
-                    name: branch.name,
-                    code: branch.code,
-                    city: branch.city,
-                    address: branch.address || '',
-                    map_link: branch.map_link || '',
-                    is_main: branch.is_main == 1
-                };
-                this.editBranchAction = '/branch/' + branch.id;
-                this.showEditBranchModal = true;
-                this.$dispatch('load-edit-phone', { phone: branch.phone });
-            }
-        }" class="flex flex-col gap-6 pb-24 min-h-screen">
+                        openEditBranchModal(branch) {
+                            this.editBranchForm = {
+                                name: branch.name,
+                                code: branch.code,
+                                city: branch.city,
+                                address: branch.address || '',
+                                map_link: branch.map_link || '',
+                                is_main: branch.is_main == 1
+                            };
+                            this.editBranchAction = '/branch/' + branch.id;
+                            this.showEditBranchModal = true;
+                            this.$dispatch('load-edit-phone', { phone: branch.phone });
+                        }
+                    }" class="flex flex-col gap-6 pb-24 min-h-screen">
 
         {{-- <div class="flex items-center gap-4 px-4 pt-4">
             <button onclick="history.back()"
@@ -160,25 +160,87 @@
                 @endif
             </div>
         </div>
+        {{-- ================= بطاقة الشروط والأحكام (Company Terms & Conditions) ================= --}}
+        <div class="px-4 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black font-headline text-lg text-slate-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">gavel</span>
+                    الشروط والأحكام
+                </h3>
+                <button @click="showEditCompanyModal = true"
+                    class="flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-500 rounded-xl active:scale-90 transition-all hover:text-primary hover:bg-primary/10">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+            </div>
+
+            {{-- 💡 التنبيه الذكي للمستخدم --}}
+            <div class="bg-blue-50/70 border border-blue-100/80 rounded-xl p-3 flex gap-2.5 items-start shadow-sm">
+                <div class="bg-blue-100/50 text-blue-500 rounded-lg p-1 shrink-0">
+                    <span class="material-symbols-outlined text-[16px]">receipt_long</span>
+                </div>
+                <p class="text-[11px] font-bold text-blue-800 leading-relaxed pt-0.5">
+                    <span class="font-black text-blue-600">ملاحظة:</span> سيتم طباعة هذه الشروط والأحكام تلقائياً في أسفل
+                    جميع الفواتير المصدرة للعملاء.
+                </p>
+            </div>
+
+            @if(isset($company) && !empty($company->terms_and_conditions) && count(array_filter($company->terms_and_conditions)) > 0)
+                <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
+                    {{-- زخرفة خلفية توحي بالرسمية --}}
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-[3rem] -z-0"></div>
+                    <span
+                        class="material-symbols-outlined absolute top-4 right-4 text-[40px] text-primary/10 -z-0 -rotate-12">policy</span>
+
+                    <div class="relative z-10">
+                        <ul class="space-y-3">
+                            @foreach(array_filter($company->terms_and_conditions) as $index => $term)
+                                <li class="flex items-start gap-3 group">
+                                    <div
+                                        class="mt-0.5 w-5 h-5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors shrink-0">
+                                        {{ $index + 1 }}
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-600 leading-relaxed pt-0.5">
+                                        {{ $term }}
+                                    </p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @else
+                {{-- حالة عدم وجود شروط مسجلة --}}
+                <div
+                    class="py-10 flex flex-col items-center justify-center bg-white rounded-[1.5rem] border border-dashed border-slate-200">
+                    <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-3">
+                        <span class="material-symbols-outlined text-[24px]">description</span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-500">لم يتم إضافة شروط وأحكام للشركة</p>
+                    <button @click="showEditCompanyModal = true"
+                        class="mt-2 text-[11px] font-black text-primary hover:underline underline-offset-4">
+                        أضف شروطك الآن
+                    </button>
+                </div>
+            @endif
+        </div>
 
         <div x-data="{ 
-                isSubmitting: false,
-                allCountries: @js(array_values(config('countries', []))),
-                selectedCountry: null,
-                localPhone: '',
-                fullPhone: '',
-                openCountry: false,
-                search: '',
-                init() {
-                    this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
-                    this.$watch('localPhone', () => this.updatePhone());
-                    this.$watch('selectedCountry', () => this.updatePhone());
-                },
-                updatePhone() {
-                    let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                    this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                }
-             }" x-show="showAddBranchModal" x-cloak
+                            isSubmitting: false,
+                            allCountries: @js(array_values(config('countries', []))),
+                            selectedCountry: null,
+                            localPhone: '',
+                            fullPhone: '',
+                            openCountry: false,
+                            search: '',
+                            init() {
+                                this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+                                this.$watch('localPhone', () => this.updatePhone());
+                                this.$watch('selectedCountry', () => this.updatePhone());
+                            },
+                            updatePhone() {
+                                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+                            }
+                         }" x-show="showAddBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
@@ -326,7 +388,10 @@
             </div>
         </div>
 
-        <div x-data="{ isSubmittingCompany: false }" x-show="showEditCompanyModal" x-cloak
+        <div x-data="{ 
+                isSubmittingCompany: false, 
+                terms: {{ json_encode($company->terms_and_conditions ?? ['']) }} 
+            }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -391,6 +456,42 @@
                                 class="w-full h-12 px-4 text-sm text-left rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
                         </div>
                     </div>
+                    {{-- ================= الشروط والأحكام الديناميكية ================= --}}
+                    <div class="pt-2 border-t border-slate-100 mt-2">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block px-1 text-xs font-bold text-slate-600 font-headline">الشروط والأحكام
+                                للشركة</label>
+                            {{-- زر إضافة شرط جديد --}}
+                            <button type="button" @click="terms.push('')"
+                                class="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-lg text-[10px] font-bold hover:bg-primary/20 transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">add</span>
+                                إضافة شرط
+                            </button>
+                        </div>
+
+                        <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                            <template x-for="(term, index) in terms" :key="index">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 relative">
+                                        <input type="text" x-model="terms[index]" name="terms_and_conditions[]"
+                                            placeholder="اكتب الشرط هنا..."
+                                            class="w-full h-10 px-3 text-xs rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
+                                    </div>
+                                    {{-- زر الحذف --}}
+                                    <button type="button" @click="terms.splice(index, 1)"
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-100 transition-colors shrink-0">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            {{-- رسالة إذا كانت القائمة فارغة --}}
+                            <div x-show="terms.length === 0"
+                                class="text-center py-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                <p class="text-xs text-slate-400 font-bold">لا توجد شروط مسجلة.</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <button type="submit" :disabled="isSubmittingCompany"
@@ -406,38 +507,38 @@
         </div>
 
         <div x-data="{ 
-                isSubmittingEdit: false,
-                allCountries: @js(array_values(config('countries', []))),
-                selectedCountry: null,
-                localPhone: '',
-                fullPhone: '',
-                openCountry: false,
-                search: '',
-                init() {
-                    this.$watch('localPhone', () => this.updatePhone());
-                    this.$watch('selectedCountry', () => this.updatePhone());
-                },
-                updatePhone() {
-                    let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                    this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                }
-             }" @load-edit-phone.window="
-                let phone = $event.detail.phone || '';
-                if(!phone) {
-                    selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                    localPhone = '';
-                } else {
-                    let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
-                    if(matched) {
-                        selectedCountry = matched;
-                        localPhone = phone.substring(matched.dial_code.replace('+', '').length);
-                    } else {
-                        selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                        localPhone = phone;
-                    }
-                }
-                updatePhone();
-             " x-show="showEditBranchModal" x-cloak
+                            isSubmittingEdit: false,
+                            allCountries: @js(array_values(config('countries', []))),
+                            selectedCountry: null,
+                            localPhone: '',
+                            fullPhone: '',
+                            openCountry: false,
+                            search: '',
+                            init() {
+                                this.$watch('localPhone', () => this.updatePhone());
+                                this.$watch('selectedCountry', () => this.updatePhone());
+                            },
+                            updatePhone() {
+                                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+                            }
+                         }" @load-edit-phone.window="
+                            let phone = $event.detail.phone || '';
+                            if(!phone) {
+                                selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                localPhone = '';
+                            } else {
+                                let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
+                                if(matched) {
+                                    selectedCountry = matched;
+                                    localPhone = phone.substring(matched.dial_code.replace('+', '').length);
+                                } else {
+                                    selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                    localPhone = phone;
+                                }
+                            }
+                            updatePhone();
+                         " x-show="showEditBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms

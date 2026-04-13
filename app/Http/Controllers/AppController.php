@@ -52,39 +52,49 @@ class AppController extends Controller
     }
 
     public function update(Request $request)
-{
-    $company = auth()->user()->App;
-    $request->validate([
-        'name'  => 'required|string|max:255',
-        'phone' => 'nullable|string|max:20',
-        'email' => 'nullable|email|max:255',
-        'logo'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', 
-    ]);
-
-    try {
-        $dataToUpdate = [
-            'name'  => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-        ];
-        if ($request->hasFile('logo')) {
-            if ($company->logo && Storage::disk('public')->exists($company->logo)) {
-                Storage::disk('public')->delete($company->logo);
-            }
-            $path = $request->file('logo')->store('app/logos', 'public');
-            $dataToUpdate['logo'] = $path;
-        }
-        $company->update($dataToUpdate);
-        Cache::forget('app_logo_' . auth()->user()->app_id);
-        Cache::forget('app_name_' . auth()->user()->app_id);
-
-        return back()->with([
-            'success_title' => 'تم التحديث!',
-            'success_message' => 'تم تحديث بيانات الشركة بنجاح.'
+    {
+        $company = auth()->user()->App;
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'logo'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
+            'terms_and_conditions'   => 'nullable|array',
+            'terms_and_conditions.*' => 'nullable|string|max:500',
         ]);
 
-    } catch (\Exception $e) {
-        return back()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
+        try {
+            $dataToUpdate = [
+                'name'  => $request->name,
+                'phone' => $request->phone,
+                'email' => $request->email,
+            ];
+            if ($request->has('terms_and_conditions')) {
+                $cleanTerms = array_filter($request->terms_and_conditions, function($value) {
+                    return !is_null($value) && trim($value) !== '';
+                });
+                $dataToUpdate['terms_and_conditions'] = array_values($cleanTerms);
+            } else {
+                $dataToUpdate['terms_and_conditions'] = null;
+            }
+            if ($request->hasFile('logo')) {
+                if ($company->logo && Storage::disk('public')->exists($company->logo)) {
+                    Storage::disk('public')->delete($company->logo);
+                }
+                $path = $request->file('logo')->store('app/logos', 'public');
+                $dataToUpdate['logo'] = $path;
+            }
+            $company->update($dataToUpdate);
+            Cache::forget('app_logo_' . auth()->user()->app_id);
+            Cache::forget('app_name_' . auth()->user()->app_id);
+
+            return back()->with([
+                'success_title' => 'تم التحديث!',
+                'success_message' => 'تم تحديث بيانات الشركة بنجاح.'
+            ]);
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
+        }
     }
-}
 }
