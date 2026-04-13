@@ -32,10 +32,8 @@ class ShipmentController extends Controller
         $this->shipmentPaymentService = $shipmentPaymentService;
     }
 
-    /* ========== 1- عرض جميع الطردات ========== */
     // معتمد
-    public function index(Request $request)
-    {
+    public function index(Request $request){
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
@@ -80,9 +78,8 @@ class ShipmentController extends Controller
         return view('pages.shipment.index', compact('shipments', 'type'));
     }
 
-    /* ========== 2- صفحة إنشاء طرد ========== */
-    public function create(Request $request)
-    {
+     // معتمد
+    public function create(Request $request){
         /** @var \App\Models\User $user */
         $user = auth()->user();
         $currentApp = $user->app;
@@ -391,42 +388,8 @@ class ShipmentController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
-    public function createCustomer()
-    {
-        return view('pages.shipment.customer.create');
-    }
-
-    public function storeCustomer(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
-            'role' => ['required', 'in:sender,receiver'],
-        ]);
-
-        if ($validator->fails()) {
-            return WebResponseClass::sendValidationError($validator);
-        }
-
-        $data = $validator->validated();
-
-        $customer = Customer::create([
-            'name' => $data['name'],
-            'phone' => $data['phone'],
-            'branch_id' => auth()->user()->branch_id,
-            'type' => 'general', // مهم للمستقبل
-        ]);
-
-        return redirect()->route('shipment.create', [
-            'customer_id' => $customer->id,
-            'role' => $data['role'],
-        ]);
-    }
-
     // معتمد
-    public function show(Request $request,$id)
-    {
+    public function show(Request $request,$id){
         $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
         if ($request->isMobile){
             return view('mobile.pages.shipment.outgoing.show', compact('shipment'));

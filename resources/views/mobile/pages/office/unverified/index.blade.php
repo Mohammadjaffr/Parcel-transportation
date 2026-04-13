@@ -7,24 +7,24 @@
     <x-modals.error-modal />
 
     <div x-data="{
-                showDeleteModal: false,
-                searchQuery: '',
-                isSubmitting: false,
-                deleteOfficeData: { id: '', name: '', url: '' },
+                    showDeleteModal: false,
+                    searchQuery: '',
+                    isSubmitting: false,
+                    deleteOfficeData: { id: '', name: '', url: '' },
 
-                openDeleteModal(office) {
-                    this.deleteOfficeData = {
-                        id: office.id,
-                        name: office.name,
-                        url: '/offices/' + office.id
-                    };
-                    this.showDeleteModal = true;
-                },
+                    openDeleteModal(office) {
+                        this.deleteOfficeData = {
+                            id: office.id,
+                            name: office.name,
+                            url: '/offices/' + office.id
+                        };
+                        this.showDeleteModal = true;
+                    },
 
-                closeModals() {
-                    this.showDeleteModal = false;
-                }
-            }" class="flex flex-col gap-6 relative min-h-screen pb-24">
+                    closeModals() {
+                        this.showDeleteModal = false;
+                    }
+                }" class="flex flex-col gap-6 relative min-h-screen pb-24">
 
         <div class="flex justify-between items-center px-2">
             <div>
@@ -125,9 +125,9 @@
                                 <span class="text-xl material-symbols-outlined">edit_square</span>
                             </a>
 
-                            <a href=""
-                                class="flex-1 flex justify-center items-center gap-2 h-10 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-600 active:scale-95 transition-all">
-                                <span class="text-sm material-symbols-outlined text-primary">visibility</span>
+                            <a href="{{ route('offices.show', $office->id) }}"
+                                class="flex-1 flex justify-center items-center gap-2 h-10 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary active:scale-95 transition-all">
+                                <span class="text-sm material-symbols-outlined">visibility</span>
                                 تفاصيل المكتب
                             </a>
 

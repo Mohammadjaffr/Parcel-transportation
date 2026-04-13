@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Office;
-use Illuminate\Http\Request;
 use App\Classes\WebResponseClass;
+use App\Models\Office;
+use App\Models\Shipment;
 use App\Services\AdminLoggerService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -92,6 +93,24 @@ class OfficeController extends Controller
     {
         $office = Office::with('branches')->findOrFail($id);
         return view('mobile.pages.office.unverified.edit', compact('office'));
+    }
+
+    public function show(Request $request, $id)
+    {
+
+        $office = Office::with('branches')->findOrFail($id);
+        $branchIds = $office->branches->pluck('id');
+
+        $shipments = Shipment::with(['senderCustomer', 'receiverCustomer', 'receiverOfficeBranch'])
+            ->where('sender_branch_id', auth()->user()->branch_id)
+            ->whereIn('receiver_office_branch_id', $branchIds)
+            ->latest()
+            ->paginate(15);
+        if ($request->isMobile) {
+            return view('mobile.pages.office.unverified.show', compact('office', 'shipments'));
+        }
+        // ضبظ النسار ي السعدي 
+        return view('pages.offices.show', compact('office', 'shipments'));
     }
     public function update(Request $request, $id)
     {

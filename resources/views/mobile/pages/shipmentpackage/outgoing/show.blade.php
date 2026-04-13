@@ -148,7 +148,7 @@
             </a>
         </div>
 
-        {{-- ================= بطاقة المسار (من الفرع -> السائق) ================= --}}
+        {{-- ================= بطاقة المسار (من الفرع -> السائق -> الوجهات) ================= --}}
         <div
             class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
             <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
@@ -161,7 +161,7 @@
                         class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shadow-inner">
                         <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-sm font-headline">تفاصيل التكليف</h3>
+                    <h3 class="font-black text-slate-800 text-sm font-headline">تفاصيل التكليف وخط السير</h3>
                 </div>
                 <span class="px-3 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-bold border border-slate-100">
                     {{ $package->created_at->format('Y-m-d h:i A') }}
@@ -171,16 +171,29 @@
             @php
                 // رسالة واتساب للسائق
                 $driverMsg = "مرحباً كابتن *" . ($package->driver->name ?? 'السائق') . "*،\nتم تكليفك برحلة شحن جديدة رقم: *" . $package->tracking_number . "*\nعدد الطرود: *" . ($package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0)) . "* طرد.";
+
+                // 💡 اللوجيك: استخراج الوجهات (الفروع) بدون تكرار
+                $destinations = collect();
+                if ($package->shipments) {
+                    foreach ($package->shipments as $ship) {
+                        if ($ship->receiverOfficeBranch) {
+                            $destinations->push($ship->receiverOfficeBranch->office->name . ' - ' . $ship->receiverOfficeBranch->name);
+                        } elseif ($ship->receiverBranch) {
+                            $destinations->push($ship->receiverBranch->name);
+                        }
+                    }
+                }
+                $uniqueDestinations = $destinations->unique()->values();
             @endphp
 
             {{-- التايم لاين الحديث للإرسالية --}}
             <div class="relative pl-2 pr-6 space-y-8 z-10">
                 {{-- الخط المتصل المتدرج --}}
                 <div
-                    class="absolute right-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-primary/30 to-primary rounded-full">
+                    class="absolute right-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-primary/50 to-emerald-400 rounded-full">
                 </div>
 
-                {{-- نقطة الانطلاق (فرع التجميع) --}}
+                {{-- 1. نقطة الانطلاق (فرع التجميع) --}}
                 <div class="relative z-10">
                     <div
                         class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-white border-4 border-slate-300 rounded-full shadow-sm">
@@ -201,7 +214,7 @@
                     </div>
                 </div>
 
-                {{-- نقطة التكليف (السائق) --}}
+                {{-- 2. نقطة التكليف (السائق) --}}
                 <div class="relative z-10">
                     <div
                         class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-primary ring-4 ring-primary/20 rounded-full {{ $package->status == 'in_transit' ? 'animate-pulse' : '' }}">
@@ -238,6 +251,30 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- 3. الوجهات المقصودة (الفروع المستلمة) --}}
+                @if($uniqueDestinations->isNotEmpty())
+                    <div class="relative z-10">
+                        <div
+                            class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-emerald-500 ring-4 ring-emerald-500/20 rounded-full">
+                        </div>
+                        <div
+                            class="bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100 hover:bg-emerald-50 transition-colors">
+                            <span class="text-[10px] font-black text-emerald-600/70 mb-2 block">الوجهات المقصودة</span>
+
+                            <div class="flex flex-wrap gap-2 mt-1">
+                                @foreach($uniqueDestinations as $dest)
+                                    <span
+                                        class="px-2.5 py-1.5 bg-white border border-emerald-100 text-emerald-700 rounded-lg text-[10px] font-bold shadow-sm flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[14px]">location_on</span>
+                                        {{ $dest }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
             </div>
         </div>
 
