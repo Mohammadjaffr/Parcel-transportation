@@ -28,6 +28,7 @@ class Shipment extends Model
         'no_gallons_honey',
         'bond_number',
         'shipment_package_id',
+        'created_by',
     ];
 
     public function logs()
@@ -71,6 +72,10 @@ class Shipment extends Model
     public function package()
     {
         return $this->belongsTo(ShipmentPackage::class, 'shipment_package_id');
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function user()

@@ -45,6 +45,8 @@ return new class extends Migration
             
             // 7. ملاحظات
             $table->text('notes')->nullable();
+
+            $table->foreignId('created_by')->constrained('users');
             
             $table->timestamps();
         });

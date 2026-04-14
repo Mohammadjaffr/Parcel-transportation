@@ -319,6 +319,7 @@ class ShipmentController extends Controller
                 'total_amount'              => $data['total_amount'],
                 'partial_amount'            => $data['payment_method'] === 'partial_payment' ? $data['partial_amount'] : 0,
                 'notes'                     => $data['notes'],
+                'created_by'                => $user->id,
 
                 'status'                    => 'pending',
                 'customer_debt_status'      => $data['payment_method'] === 'customer_credit' ? 'pending' : null,

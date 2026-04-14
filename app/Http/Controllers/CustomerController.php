@@ -97,89 +97,93 @@ class CustomerController extends Controller
     /** عرض */
     public function show(Request $request, $id)
     {
-
         $user = auth()->user();
+        
+        // جلب العميل مع آخر عملياته
         $customer = Customer::where('branch_id', $user->branch_id)
             ->with(['transactions' => function ($query) {
                 $query->latest();
             }])->findOrFail($id);
-        // 1. جلب الشحنات مع الدفعات المرتبطة بها
-        $shipments = Shipment::with(['senderBranch', 'receiverBranch', 'payments']) // أضفنا payments هنا
-            ->where('sender_customer_id', $id) // الشخص هو المرسل
-            ->where('payment_method', 'customer_credit') // نوع الدفع جزئي
+
+        // ==========================================
+        // 1. المنطق المحاسبي (حساب ديون العميل)
+        // ==========================================
+        // 💡 قمنا بتغيير اسم المتغير هنا إلى $creditShipments لتجنب التعارض
+        $creditShipments = Shipment::with('payments') 
+            ->where('sender_customer_id', $id) 
+            ->where('payment_method', 'customer_credit') // الشحنات الآجلة فقط
             ->get();
 
-        // 2. تعريف متغيرات لحساب الإجماليات لكل الشحنات (الملخص العام)
-        $grandTotalCost = 0;      // إجمالي قيمة كل الشحنات
-        $grandTotalPaid = 0;      // إجمالي ما دفعه العميل حتى الآن (كم له)
-        $grandTotalRemaining = 0; // إجمالي المبلغ المتبقي عليه (كم عليه)
-        $unpaidShipmentsCount = 0; //  متغير جديد لعدد الشحنات غير المسددة
+        $grandTotalCost = 0;      
+        $grandTotalPaid = 0;      
+        $grandTotalRemaining = 0; 
+        $unpaidShipmentsCount = 0; 
 
-        // 3. عمل Loop لحساب المبالغ لكل شحنة على حدة
-        foreach ($shipments as $shipment) {
-            // ملاحظة: افترضت أن عمود سعر الشحنة اسمه 'total_cost' في جدول shipments
-            // يرجى تغيير 'total_cost' إلى اسم العمود الصحيح لديك (مثلاً: price, amount, grand_total)
+        foreach ($creditShipments as $shipment) {
             $shipmentCost = $shipment->total_amount ?? 0;
-
-            // حساب مجموع الدفعات لهذه الشحنة تحديداً
-            // نستخدم دالة sum الخاصة بالـ Collection لجمع عمود amount من جدول payments
             $paidAmount = $shipment->payments->sum('amount');
-
-            // حساب المتبقي (قيمة الشحنة - المدفوع)
             $remaining = $shipmentCost - $paidAmount;
 
-            // سنقوم بتخزين هذه القيم داخل كائن الشحنة نفسه لسهولة عرضها في ملف الـ Blade
-            $shipment->calculated_paid = $paidAmount;       // تم الدفع
-            $shipment->calculated_remaining = $remaining;   // المتبقي
-
-            // إضافة للأجماليات العامة
             $grandTotalCost += $shipmentCost;
             $grandTotalPaid += $paidAmount;
             $grandTotalRemaining += $remaining;
+            
             if ($remaining > 0) {
                 $unpaidShipmentsCount++;
             }
         }
 
-        // Store branch code in a variable for use in closures
-        $branchCode = auth()->user()->branch_code;
+        // ==========================================
+        // 2. سجل الشحنات (History) مع الفلترة
+        // ==========================================
+        $branchCode = $user->branch_id;
+        $direction = $request->query('direction', 'all'); // استقبال الفلتر من الرابط
 
         $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
             ->where(function ($query) use ($branchCode, $id) {
-
-                // الحالة الأولى: الفرع هو المرسل + العميل هو المرسل
+                // فرعنا هو المرسل والعميل هو المرسل
                 $query->where(function ($q) use ($branchCode, $id) {
-                    $q->where('sender_branch_code', $branchCode)
-                        ->where('sender_customer_id', $id);
+                    $q->where('sender_branch_id', $branchCode) // عدلها لـ branch_code إذا كانت هكذا بقاعدة بياناتك
+                      ->where('sender_customer_id', $id);
                 })
-
-                    // أو (OR)
-
-                    // الحالة الثانية: الفرع هو المستقبل + العميل هو المستقبل
-                    ->orWhere(function ($q) use ($branchCode, $id) {
-                        $q->where('receiver_branch_code', $branchCode)
-                            ->where('receiver_customer_id', $id);
-                    });
+                // أو فرعنا هو المستقبل والعميل هو المستقبل
+                ->orWhere(function ($q) use ($branchCode, $id) {
+                    $q->where('receiver_branch_id', $branchCode)
+                      ->where('receiver_customer_id', $id);
+                });
             });
-        if ($request->get('direction') == 'sent') {
-            // إذا اختار "صادرة": يجب أن يكون هو المرسل فقط
+
+        // تطبيق فلتر (صادرة / واردة)
+        if ($direction == 'sent') {
             $shipmentsQuery->where('sender_customer_id', $id);
-        } elseif ($request->get('direction') == 'received') {
-            // إذا اختار "واردة": يجب أن يكون هو المستلم فقط
+        } elseif ($direction == 'received') {
             $shipmentsQuery->where('receiver_customer_id', $id);
         } else {
-            // الافتراضي (الكل): نجلب الحالتين (مرسل أو مستلم)
             $shipmentsQuery->where(function ($q) use ($id) {
                 $q->where('sender_customer_id', $id)
-                    ->orWhere('receiver_customer_id', $id);
+                  ->orWhere('receiver_customer_id', $id);
             });
         }
+
+        // فلتر طريقة الدفع (إن وجد)
         if (request()->has('payment_method') && request('payment_method') != 'all') {
             $shipmentsQuery->where('payment_method', request('payment_method'));
         }
-        $shipments = $shipmentsQuery->latest()->paginate(10);
 
-        return view('pages.customers.show', compact('customer', 'shipments', 'grandTotalCost', 'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount'));
+        // 💡 استخدام withQueryString للحفاظ على الفلاتر عند الانتقال للصفحة التالية
+        $shipments = $shipmentsQuery->latest()->paginate(10)->withQueryString();
+
+        if ($request->isMobile) {
+            return view('mobile.pages.people.customers.show', compact(
+                'customer', 'shipments', 'grandTotalCost', 
+                'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount', 'direction'
+            ));
+        }
+
+        return view('pages.customers.show', compact(
+            'customer', 'shipments', 'grandTotalCost', 
+            'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount', 'direction'
+        ));
     }
 
     /** صفحة تعديل */

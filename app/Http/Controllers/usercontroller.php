@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Classes\WebResponseClass;
 use App\Models\Branch;
+use App\Models\Customer;
+use App\Models\Shipment;
+use App\Models\ShipmentPackage;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -119,15 +123,32 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    // معتمد
+    public function show(Request $request, $id)
     {
         $user = User::with('branch')->findOrFail($id);
+        $period = $request->query('period', 'all');
+        $dateFilter = function ($query) use ($period) {
+            if ($period === 'today') {
+                $query->whereDate('created_at', Carbon::today());
+            } elseif ($period === 'week') {
+                $query->where('created_at', '>=', Carbon::now()->startOfWeek());
+            } elseif ($period === 'month') {
+                $query->where('created_at', '>=', Carbon::now()->startOfMonth());
+            }
+            // إذا كان 'all' لن يتم إضافة أي شرط
+        };
 
-        $users = User::with('branch')
-            ->where('branch_code', $user->branch_code)
-            ->get();
+       $manifestsCount = ShipmentPackage::where('created_by', $user->id)->where($dateFilter)->count();
+        $shipmentsCount = Shipment::where('created_by', $user->id)->where($dateFilter)->count();
+        $customersCount = Customer::where('created_by', $user->id)->where($dateFilter)->count();
+        $recentManifests = ShipmentPackage::with('driver')->where('created_by', $user->id)->latest()->take(5)->get();
 
-        return view('pages.users.show', compact('user', 'users'));
+        if ($request->isMobile) {
+            return view('mobile.pages.people.users.show', compact('user', 'manifestsCount', 'shipmentsCount', 'customersCount', 'recentManifests', 'period'));
+        }
+        
+        return view('pages.users.show', compact('user', 'manifestsCount', 'shipmentsCount','customersCount', 'recentManifests', 'period'));
     }
 
     /**

@@ -7,84 +7,84 @@
     <x-modals.error-modal />
 
     <div x-data="{
-        showCreateModal: false,
-        showEditModal: false,
-        showDeleteModal: false,
-        searchQuery: '',
-        isSubmitting: false,
-        errors: {},
-    
-        editCustomerData: { id: '', name: '', phone: '', url: '' },
-        createCustomerData: { name: '', phone: '' },
-        deleteCustomerData: { id: '', name: '', url: '' },
-    
-        openEditModal(id, name, phone) {
-            this.errors = {};
-            this.editCustomerData = {
-                id: id,
-                name: name,
-                phone: phone,
-                url: '{{ route('customers.index') }}/' + id
-            };
-            this.$dispatch('set-edit-phone', { phone: phone });
-            this.showEditModal = true;
-        },
-    
-        openCreateModal() {
-            this.errors = {};
-            this.createCustomerData = { name: '', phone: '' };
-            this.showCreateModal = true;
-        },
-    
-        openDeleteModal(id, name) {
-            this.deleteCustomerData = {
-                id: id,
-                name: name,
-                url: '{{ route('customers.index') }}/' + id
-            };
-            this.showDeleteModal = true;
-        },
-    
-        closeModals() {
-            this.showCreateModal = false;
-            this.showEditModal = false;
-            this.showDeleteModal = false;
-            this.errors = {};
-        },
-    
-        async submitForm(url, method, data) {
-            this.isSubmitting = true;
-            this.errors = {};
-            
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (!response.ok) {
-                    if (response.status === 422) {
-                        this.errors = result.errors;
-                    } else {
-                        alert(result.message || 'حدث خطأ غير متوقع.');
+                showCreateModal: false,
+                showEditModal: false,
+                showDeleteModal: false,
+                searchQuery: '',
+                isSubmitting: false,
+                errors: {},
+
+                editCustomerData: { id: '', name: '', phone: '', url: '' },
+                createCustomerData: { name: '', phone: '' },
+                deleteCustomerData: { id: '', name: '', url: '' },
+
+                openEditModal(id, name, phone) {
+                    this.errors = {};
+                    this.editCustomerData = {
+                        id: id,
+                        name: name,
+                        phone: phone,
+                        url: '{{ route('customers.index') }}/' + id
+                    };
+                    this.$dispatch('set-edit-phone', { phone: phone });
+                    this.showEditModal = true;
+                },
+
+                openCreateModal() {
+                    this.errors = {};
+                    this.createCustomerData = { name: '', phone: '' };
+                    this.showCreateModal = true;
+                },
+
+                openDeleteModal(id, name) {
+                    this.deleteCustomerData = {
+                        id: id,
+                        name: name,
+                        url: '{{ route('customers.index') }}/' + id
+                    };
+                    this.showDeleteModal = true;
+                },
+
+                closeModals() {
+                    this.showCreateModal = false;
+                    this.showEditModal = false;
+                    this.showDeleteModal = false;
+                    this.errors = {};
+                },
+
+                async submitForm(url, method, data) {
+                    this.isSubmitting = true;
+                    this.errors = {};
+
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await response.json();
+                        if (!response.ok) {
+                            if (response.status === 422) {
+                                this.errors = result.errors;
+                            } else {
+                                alert(result.message || 'حدث خطأ غير متوقع.');
+                            }
+                        } else {
+                            this.closeModals();
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('حدث خطأ في الاتصال بالخادم.');
+                    } finally {
+                        this.isSubmitting = false;
                     }
-                } else {
-                    this.closeModals();
-                    window.location.reload();
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('حدث خطأ في الاتصال بالخادم.');
-            } finally {
-                this.isSubmitting = false;
-            }
-        }
-    }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
+            }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
         <div class="flex justify-between items-center px-2">
             <div>
@@ -95,7 +95,8 @@
             </div>
             <button type="button" @click="openCreateModal()"
                 class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-xl transition-all bg-primary shadow-primary/20 active:scale-95">
-                <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
+                <span class="text-2xl material-symbols-outlined"
+                    style="font-variation-settings: 'FILL' 1;">person_add</span>
             </button>
         </div>
 
@@ -118,12 +119,16 @@
                 @php
                     $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
                 @endphp
-                <div x-show="searchQuery === '' || '{{ $customer->name }}'.includes(searchQuery) || '{{ $customer->phone }}'.includes(searchQuery)"
-                    class="bg-white rounded-[1.75rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-50 relative overflow-hidden active:scale-[0.98] transition-all">
+                {{-- 💡 أضفنا x-data="openMenu: false" هنا، وحذفنا overflow-hidden --}}
+                <div x-data="{ openMenu: false }"
+                    x-show="searchQuery === '' || '{{ $customer->name }}'.includes(searchQuery) || '{{ $customer->phone }}'.includes(searchQuery)"
+                    class="bg-white rounded-[1.75rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-50 relative overflow-visible active:scale-[0.98] transition-all">
 
-                    <div class="flex relative z-10 gap-4 items-center mb-4">
+                    <div class="flex relative z-10 gap-3 items-start mb-5">
+
+                        {{-- الصورة الرمزية (Avatar) --}}
                         <div
-                            class="flex justify-center items-center w-14 h-14 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
+                            class="flex justify-center items-center w-12 h-12 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
                             @php
                                 $words = explode(' ', $customer->name);
                                 $first = mb_substr($words[0] ?? '', 0, 1, 'utf-8');
@@ -131,26 +136,74 @@
                                 echo $first . $second;
                             @endphp
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="mb-1.5 text-base font-bold leading-none truncate font-headline text-slate-800">
-                                {{ $customer->name }}</h3>
-                            <div class="flex gap-2 items-center text-slate-500">
-                                <span class="material-symbols-outlined text-[16px] text-primary/60">phone_iphone</span>
-                                <span class="font-mono text-xs font-bold tracking-wider">{{ $customer->phone }}</span>
+
+                        {{-- بيانات العميل --}}
+                        <div class="flex-1 min-w-0 pt-0.5">
+                            <h3 class="mb-1 text-sm font-black leading-none truncate font-headline text-slate-800">
+                                {{ $customer->name }}
+                            </h3>
+                            <div class="flex gap-1.5 items-center text-slate-500 mt-1.5">
+                                <span class="material-symbols-outlined text-[14px] text-primary/60">phone_iphone</span>
+                                <span class="font-mono text-[11px] font-bold tracking-wider">{{ $customer->phone }}</span>
                             </div>
                         </div>
-                        <button type="button"
-                            @click="openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }})"
-                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
-                            <span class="text-xl material-symbols-outlined">edit_square</span>
-                        </button>
+
+                        {{-- 💡 القائمة المنسدلة للإجراءات (Kebab Menu) --}}
+                        <div class="relative shrink-0 z-50">
+                            <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
+                                class="w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors focus:outline-none">
+                                <span class="material-symbols-outlined text-[22px]">more_vert</span>
+                            </button>
+
+                            <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
+                                class="absolute top-full left-0 mt-1 w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-[60] overflow-hidden py-1.5">
+
+                                {{-- ملف العميل (التفاصيل) --}}
+                                <a href="{{ route('customers.show', $customer->id) }}"
+                                    class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-primary/5 hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                    ملف العميل
+                                </a>
+
+                                {{-- مراسلة واتساب --}}
+                                <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
+                                    class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+
+                                    {{-- أيقونة واتساب الرسمية باللون الأخضر --}}
+                                    <svg class="w-[18px] h-[18px] fill-[#25D366]" viewBox="0 0 24 24"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                    </svg>
+
+                                    مراسلة (واتساب)
+                                </a>
+
+                                <div class="h-px bg-slate-100/80 my-1 mx-3"></div>
+
+                                {{-- تعديل البيانات --}}
+                                <button type="button"
+                                    @click="openMenu = false; openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }})"
+                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-600 transition-colors text-right">
+                                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                                    تعديل البيانات
+                                </button>
+
+                                {{-- حذف العميل --}}
+                                <button type="button"
+                                    @click="openMenu = false; openDeleteModal({{ $customer->id }}, {{ json_encode($customer->name) }})"
+                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors text-right">
+                                    <span class="material-symbols-outlined text-[18px]">delete_outline</span>
+                                    حذف العميل
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="flex gap-2 p-3 mb-4 rounded-2xl border bg-slate-50 border-slate-100/50">
+                    <div class="flex gap-2 p-3 rounded-2xl border bg-slate-50 border-slate-100/50">
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
-                            <span
-                                class="block text-sm font-black text-slate-700">{{ $customer->shipments_count ?? 0 }}</span>
+                            <span class="block text-sm font-black text-slate-700">{{ $customer->shipments_count ?? 0 }}</span>
                         </div>
                         <div class="w-px bg-slate-200/60"></div>
                         <div class="flex-1 text-center">
@@ -164,31 +217,6 @@
                             <span
                                 class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($balance, 0) }}</span>
                         </div>
-                    </div>
-
-                    <div class="mb-4 h-px bg-gradient-to-r from-transparent to-transparent via-slate-100"></div>
-
-                    <div class="flex relative z-10 justify-between items-center">
-                        <div class="flex gap-2.5">
-                            <a href="{{ route('customers.show', $customer->id) }}"
-                                class="flex gap-2 items-center px-4 py-2 text-xs font-bold text-white rounded-xl border shadow-md transition-transform bg-primary font-headline active:scale-95 shadow-primary/20">
-                                <span class="text-sm material-symbols-outlined"
-                                    style="font-variation-settings: 'FILL' 1;">visibility</span>
-                                الملف
-                            </a>
-                            <a href="https://wa.me/{{ $customer->phone }}"
-                                class="flex gap-2 items-center px-4 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border transition-transform font-headline active:scale-95 border-emerald-100/50">
-                                <span class="text-sm material-symbols-outlined"
-                                    style="font-variation-settings: 'FILL' 1;">chat</span>
-                                واتساب
-                            </a>
-                        </div>
-
-                        <button type="button"
-                            @click="openDeleteModal({{ $customer->id }}, {{ json_encode($customer->name) }})"
-                            class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl transition-all hover:bg-red-100 active:scale-90">
-                            <span class="text-xl material-symbols-outlined">delete_outline</span>
-                        </button>
                     </div>
                 </div>
             @empty
@@ -223,7 +251,8 @@
 
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()"></div>
 
-            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
                 <div @click="closeModals()"
                     class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
                 </div>
@@ -254,45 +283,50 @@
                     </div>
 
                     <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries', []))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        fullPhone: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                            this.$watch('selectedCountry', () => this.updateFullPhone());
-                        },
-                        updateFullPhone() {
-                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                            createCustomerData.phone = this.fullPhone;
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }">
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span class="text-rose-500">*</span></label>
-                        
+                                open: false,
+                                search: '',
+                                countries: @js(array_values(config('countries', []))),
+                                selectedCountry: null,
+                                localPhoneNumber: '',
+                                fullPhone: '',
+                                init() {
+                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                    this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                                    this.$watch('selectedCountry', () => this.updateFullPhone());
+                                },
+                                updateFullPhone() {
+                                    this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                                    createCustomerData.phone = this.fullPhone;
+                                },
+                                get filteredCountries() {
+                                    if (this.search === '') return this.countries;
+                                    return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                                }
+                            }">
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
+                                class="text-rose-500">*</span></label>
+
                         <div class="relative">
                             <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
-                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
-                                
-                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
+                                :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
+
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                                    inputmode="numeric"
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
-                                
-                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
                                 <button type="button" @click="open = !open"
                                     class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
                                     <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                    <span class="text-sm font-bold text-slate-600 dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                                    <span class="text-sm font-bold text-slate-600 dir-ltr"
+                                        x-text="selectedCountry?.dial_code"></span>
                                     <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
                                     </template>
                                 </button>
                             </div>
@@ -307,9 +341,13 @@
                                     <template x-for="country in filteredCountries" :key="country.code">
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
-                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                            <span
+                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                x-text="country.name"></span>
+                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
+                                                x-text="country.dial_code"></span>
                                         </div>
                                     </template>
                                 </div>
@@ -339,8 +377,11 @@
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
             </div>
 
-            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
-                <div @click="closeModals()" class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
+                <div @click="closeModals()"
+                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
+                </div>
 
                 <div class="flex justify-between items-center px-2 mb-8">
                     <h3 class="text-xl font-black font-headline text-slate-800">تعديل بيانات العميل</h3>
@@ -368,59 +409,64 @@
                     </div>
 
                     <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries', []))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        fullPhone: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                            this.$watch('selectedCountry', () => this.updateFullPhone());
-                        },
-                        updateFullPhone() {
-                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                            editCustomerData.phone = this.fullPhone;
-                        },
-                        handleSetPhone(phoneString) {
-                            if(!phoneString) {
-                                this.localPhoneNumber = '';
-                                return;
-                            }
-                            let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
-                            if(matched) {
-                                this.selectedCountry = matched;
-                                this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
-                            } else {
-                                this.localPhoneNumber = phoneString;
-                            }
-                            this.updateFullPhone();
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span class="text-rose-500">*</span></label>
-                        
+                                open: false,
+                                search: '',
+                                countries: @js(array_values(config('countries', []))),
+                                selectedCountry: null,
+                                localPhoneNumber: '',
+                                fullPhone: '',
+                                init() {
+                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                    this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                                    this.$watch('selectedCountry', () => this.updateFullPhone());
+                                },
+                                updateFullPhone() {
+                                    this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                                    editCustomerData.phone = this.fullPhone;
+                                },
+                                handleSetPhone(phoneString) {
+                                    if(!phoneString) {
+                                        this.localPhoneNumber = '';
+                                        return;
+                                    }
+                                    let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
+                                    if(matched) {
+                                        this.selectedCountry = matched;
+                                        this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
+                                    } else {
+                                        this.localPhoneNumber = phoneString;
+                                    }
+                                    this.updateFullPhone();
+                                },
+                                get filteredCountries() {
+                                    if (this.search === '') return this.countries;
+                                    return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                                }
+                            }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
+                                class="text-rose-500">*</span></label>
+
                         <div class="relative">
                             <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
-                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
-                                
-                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
+                                :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
+
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                                    inputmode="numeric"
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
-                                
-                                <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
                                 <button type="button" @click="open = !open"
                                     class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
                                     <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                    <span class="text-sm font-bold text-slate-600 dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                                    <span class="text-sm font-bold text-slate-600 dir-ltr"
+                                        x-text="selectedCountry?.dial_code"></span>
                                     <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
+                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
                                     </template>
                                 </button>
                             </div>
@@ -435,9 +481,13 @@
                                     <template x-for="country in filteredCountries" :key="country.code">
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
-                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
+                                                fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                            <span
+                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                x-text="country.name"></span>
+                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
+                                                x-text="country.dial_code"></span>
                                         </div>
                                     </template>
                                 </div>
@@ -467,10 +517,14 @@
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
             </div>
 
-            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
-                <div @click="closeModals()" class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
+                <div @click="closeModals()"
+                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
+                </div>
 
-                <div class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-red-50 text-red-500 rounded-[1.5rem]">
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-red-50 text-red-500 rounded-[1.5rem]">
                     <span class="text-4xl material-symbols-outlined">delete_forever</span>
                 </div>
 
@@ -478,7 +532,8 @@
 
                 <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
                     هل أنت متأكد من أنك تريد حذف العميل <br>
-                    <span class="text-base font-bold text-slate-800 font-headline" x-text="deleteCustomerData.name"></span>؟<br>
+                    <span class="text-base font-bold text-slate-800 font-headline"
+                        x-text="deleteCustomerData.name"></span>؟<br>
                     {{-- <span class="text-red-500/80">لا يمكن حذف عميل لديه حركات مالية.</span> --}}
                 </p>
 
@@ -492,7 +547,8 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex-1 py-4 text-sm font-bold text-white bg-red-500 rounded-2xl shadow-lg transition-all hover:bg-red-600 shadow-red-500/30 active:scale-95 font-headline">
                         <span x-show="!isSubmitting">نعم، احذف</span>
-                        <span x-show="isSubmitting" class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                        <span x-show="isSubmitting"
+                            class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
                     </button>
                 </form>
             </div>
