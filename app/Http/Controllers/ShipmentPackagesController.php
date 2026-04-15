@@ -289,7 +289,7 @@ class ShipmentPackagesController extends Controller
         return view('pages.shipmentpackage.incoming.create', compact('offices', 'drivers','customers'));
     }
     public function incomingStore(Request $request)
-{
+    {
     // 1. التحقق من صحة البيانات (Validation)
     $request->validate([
         'tracking_number' => 'required|string|unique:shipment_packages,tracking_number',
@@ -409,7 +409,10 @@ class ShipmentPackagesController extends Controller
         
         return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
     }
-}
+    }
+    public function incomingShow(Request $request,$id){
+
+    }
 
 
     public function index()
