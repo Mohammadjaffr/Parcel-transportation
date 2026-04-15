@@ -183,6 +183,10 @@ Route::middleware('auth')->group(function () {
     Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
     Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
     Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
+    Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
+    Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
+    Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
+    Route::get('shipmentpackage/incoming/show/{id}', [ShipmentPackagesController::class,'incomingShow'])->name('shipmentpackage.incoming.show');
     //======================================================================================
     Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 

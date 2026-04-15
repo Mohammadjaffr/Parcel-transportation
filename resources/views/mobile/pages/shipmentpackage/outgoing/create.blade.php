@@ -4,25 +4,25 @@
 
 @section('content')
     <div class="flex flex-col gap-6 px-4 pb-32 pt-4" x-data="{ 
-                            selectedParcels: [], 
-                            totalWeight: 0,
-                            updateStats() {
-                                let weight = 0;
-                                this.selectedParcels.forEach(p => {
-                                    weight += parseFloat(p.weight);
-                                });
-                                this.totalWeight = weight.toFixed(2);
-                            },
-                            toggleParcel(id, weight) {
-                                const index = this.selectedParcels.findIndex(p => p.id === id);
-                                if (index > -1) {
-                                    this.selectedParcels.splice(index, 1);
-                                } else {
-                                    this.selectedParcels.push({id: id, weight: weight});
+                                selectedParcels: [], 
+                                totalWeight: 0,
+                                updateStats() {
+                                    let weight = 0;
+                                    this.selectedParcels.forEach(p => {
+                                        weight += parseFloat(p.weight);
+                                    });
+                                    this.totalWeight = weight.toFixed(2);
+                                },
+                                toggleParcel(id, weight) {
+                                    const index = this.selectedParcels.findIndex(p => p.id === id);
+                                    if (index > -1) {
+                                        this.selectedParcels.splice(index, 1);
+                                    } else {
+                                        this.selectedParcels.push({id: id, weight: weight});
+                                    }
+                                    this.updateStats();
                                 }
-                                this.updateStats();
-                            }
-                         }">
+                             }">
 
         {{-- الهيدر --}}
         <div class="flex items-center justify-between mb-2">
@@ -238,8 +238,8 @@
                 <button type="submit" {{-- 💡 الحل هنا: استخدام setTimeout لتأخير التعطيل 50 جزء من الثانية --}}
                     @click="if(selectedParcels.length > 0 && $el.closest('form').checkValidity()) { setTimeout(() => isSubmitting = true, 50); }"
                     :disabled="selectedParcels.length === 0 || isSubmitting" class="w-full sm:w-auto h-14 px-8 bg-slate-900 text-white rounded-2xl font-black text-sm
-            shadow-[0_10px_25px_rgba(15,23,42,0.3)] disabled:bg-slate-100 disabled:text-slate-400
-            disabled:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3">
+                shadow-[0_10px_25px_rgba(15,23,42,0.3)] disabled:bg-slate-100 disabled:text-slate-400
+                disabled:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3">
 
                     {{-- حالة التحميل (تظهر فقط عند الإرسال) --}}
                     <template x-if="isSubmitting">
