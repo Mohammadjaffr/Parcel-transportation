@@ -395,7 +395,7 @@ class ShipmentController extends Controller
         if ($request->isMobile){
             return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
         }
-        return view('mobile.pages.shipment.show', compact('shipment'));
+        return view('pages.shipment.outgoing.show', compact('shipment'));
     }
 
     /* ========== 5- صفحة تعديل الطرد ========== */
@@ -748,10 +748,7 @@ public function edit($id)
 
             // استجابة النجاح (AJAX)
             if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تم التحديث!');
-                session()->flash('success_message', 'تم تحديث بيانات المرسل والمستلم بنجاح.');
-                return response()->json(['success' => true]);
+              return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المرسل والمستلم بنجاح.', 'حسناً', 'shipment.outgoing.index');
             }
 
             return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المرسل والمستلم بنجاح.', 'حسناً', 'shipment.outgoing.index');
@@ -784,10 +781,7 @@ public function edit($id)
 
             // استجابة النجاح (AJAX)
             if ($request->wantsJson()) {
-                session()->flash('success', true);
-                session()->flash('success_title', 'تم التحديث!');
-                session()->flash('success_message', 'تم تحديث تفاصيل الطرد بنجاح.');
-                return response()->json(['success' => true]);
+               return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث تفاصيل الطرد بنجاح.', 'حسناً', 'shipment.outgoing.index');
             }
 
             return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث تفاصيل الطرد بنجاح.', 'حسناً', 'shipment.outgoing.index');

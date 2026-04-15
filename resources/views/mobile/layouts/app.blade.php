@@ -14,6 +14,7 @@
 
     <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -78,6 +79,7 @@
             scrollbar-width: none;
         }
     </style>
+
 </head>
 
 <body class="min-h-screen bg-gray-50 bg-surface text-on-surface">
@@ -87,7 +89,9 @@
     <main class="px-6 pt-24 pb-32">
         @yield('content')
     </main>
-
+    <x-modals.warning-modal />
+    <x-modals.error-modal />
+    <x-modals.success-modal />
     @include('mobile.layouts.sidebar')
     <a href="{{ route('shipment.create') }}"
         class="flex fixed left-6 bottom-28 z-50 justify-center items-center w-14 h-14 text-white rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-200 bg-primary/80 shadow-primary/20 hover:scale-105 active:scale-95 group border-white/20">
@@ -109,7 +113,7 @@
             btn.classList.toggle('text-primary');
         }
 
-        document.addEventListener('click', function (event) {
+        document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('notif-dropdown');
             const wrapper = document.getElementById('header-actions');
 
