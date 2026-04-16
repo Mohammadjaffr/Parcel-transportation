@@ -166,7 +166,7 @@
 
         <div class="flex justify-between items-center px-2 mb-8">
             <h3 class="text-xl font-black font-headline text-slate-800">إضافة سائق جديد</h3>
-            <button type="button" @click="closeModals()" class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100 transition-colors">
+            <button type="button" @click="closeModals()" class="flex justify-center items-center w-10 h-10 rounded-xl transition-colors bg-slate-50 text-slate-400 hover:bg-slate-100">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
@@ -201,20 +201,20 @@
                 <div class="relative">
                     <input type="hidden" name="phone" :value="(selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber">
                     
-                    <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden">
+                    <div class="flex overflow-hidden relative items-center rounded-2xl ring-1 transition-all group bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
                         
                         {{-- Phone Input --}}
                         <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
                             class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
                         
                         {{-- Phone Icon --}}
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+                        <div class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
                             <span class="material-symbols-outlined">smartphone</span>
                         </div>
 
                         {{-- Country Selector Button --}}
                         <button type="button" @click="open = !open"
-                            class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
+                            class="flex gap-2 items-center px-3 h-14 border-r transition-colors bg-slate-100 border-slate-200 shrink-0 hover:bg-slate-200">
                             <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                             <span class="text-sm font-bold text-slate-600 dir-ltr" x-text="selectedCountry?.dial_code"></span>
                             <template x-if="selectedCountry?.svg">
@@ -228,14 +228,14 @@
                         class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
                         <div class="p-2 border-b border-slate-50">
                             <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                class="px-4 py-2 w-full text-sm outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 rounded-xl transition-colors font-headline">
+                                class="px-4 py-2 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 font-headline">
                         </div>
                         <div class="overflow-y-auto max-h-40 custom-scrollbar">
                             <template x-for="country in filteredCountries" :key="country.code">
                                 <div @click="selectedCountry = country; open = false; search = ''"
                                     class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
                                     <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                    <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
+                                    <span class="flex-grow text-sm font-medium truncate text-slate-700 font-headline" x-text="country.name"></span>
                                     <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
                                 </div>
                             </template>
@@ -339,7 +339,7 @@
                                 
                                 {{-- Country Selector Button --}}
                                 <button type="button" @click="open = !open"
-                                    class="flex gap-2 items-center px-4 bg-transparent rounded-r-2xl border-l border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                    class="flex gap-2 items-center px-4 bg-transparent rounded-r-2xl border-l transition-colors border-slate-200 shrink-0 hover:bg-slate-100">
                                     <template x-if="selectedCountry">
                                         <svg class="w-5 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
                                     </template>
@@ -349,7 +349,7 @@
 
                                 {{-- Phone Input --}}
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7xx xxx xxx" required
-                                    class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-none outline-none font-headline rounded-l-2xl" dir="ltr">
+                                    class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent rounded-l-2xl border-none outline-none font-headline" dir="ltr">
                                 
                             </div>
 
@@ -359,14 +359,14 @@
                                 style="display: none;">
                                 <div class="p-2 border-b border-slate-50">
                                     <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
-                                        class="px-4 py-2 w-full text-sm outline-none bg-slate-50 rounded-xl font-headline">
+                                        class="px-4 py-2 w-full text-sm rounded-xl outline-none bg-slate-50 font-headline">
                                 </div>
                                 <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                     <template x-for="country in filteredCountries" :key="country.code">
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
                                             <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
-                                            <span class="flex-grow text-sm font-medium text-slate-700 font-headline truncate" x-text="country.name"></span>
+                                            <span class="flex-grow text-sm font-medium truncate text-slate-700 font-headline" x-text="country.name"></span>
                                             <span class="font-mono text-xs font-bold text-slate-500 shrink-0" dir="ltr" x-text="country.dial_code"></span>
                                         </div>
                                     </template>

@@ -61,7 +61,7 @@ class ShipmentPackagesController extends Controller
             return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
         }
         // السعدي حط المسار حق الدسك توب 
-        return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
+        return view('pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
     }
     //معتمد
     public function sentStore(Request $request){
@@ -174,7 +174,7 @@ class ShipmentPackagesController extends Controller
             return view('mobile.pages.shipmentpackage.outgoing.show', compact('package', 'statusMap','availableShipments'));
         }
         // السعدي غير المسار الى صفحة الدسك توب 
-        return view('mobile.pages.shipmentpackage.outgoing.show', compact('package', 'statusMap', 'availableShipments'));
+        return view('pages.shipmentpackage.outgoing.show', compact('package', 'statusMap', 'availableShipments'));
     }
     //معتمد
     public function updateStatus(Request $request, $id)
@@ -305,7 +305,7 @@ class ShipmentPackagesController extends Controller
             return view('mobile.pages.shipmentpackage.incoming.index', compact('packages'));
         }
 
-        return view('pages.shipment_packages.incoming.index', compact('packages'));
+        return view('pages.shipmentpackage.incoming.index', compact('packages'));
     }
     public function incomingCreate(Request $request)
     {

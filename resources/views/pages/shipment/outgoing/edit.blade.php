@@ -4,7 +4,7 @@
 
 @section('content')
     @include('components.modals.error-modal')
-    @include('components.modals.success-modal')
+    @include('components.modals.green-modal')
 
     <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-[2rem] dark:bg-boxdark dark:border-gray-800" 
          x-data="{
@@ -463,7 +463,7 @@
                         <button type="button" @click="isPaymentModalOpen = false" class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"><span class="material-symbols-outlined text-[24px]">close</span></button>
                         <div class="flex gap-3 items-center">
                             <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل طريقة الدفع</h2>
-                            <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 text-success-500 dark:bg-success-500/10"><span class="material-symbols-outlined text-[22px]">payments</span></div>
+                            <div class="flex justify-center items-center w-10 h-10 text-green-500 bg-green-50 rounded-xl dark:bg-green-500/10"><span class="material-symbols-outlined text-[22px]">payments</span></div>
                         </div>
                     </div>
 

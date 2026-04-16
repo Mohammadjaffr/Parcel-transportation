@@ -3,9 +3,8 @@
 @section('title', 'إعدادات الشركة')
 @section('Breadcrumb', 'إعدادات الشركة')
 
+
 @section('content')
-
-
     <div x-data="{ 
             showAddBranchModal: false, 
             showEditCompanyModal: false,
@@ -102,7 +101,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 @if(isset($company))
                     @forelse($company->branches as $branch)
                         <div
@@ -161,6 +160,76 @@
             </div>
         </div>
 
+        {{-- ================= بطاقة الشروط والأحكام (Company Terms & Conditions) ================= --}}
+        <div class="px-4 mt-8 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                    <span class="material-symbols-outlined text-primary">gavel</span>
+                    الشروط والأحكام
+                </h3>
+                <button @click="showEditCompanyModal = true"
+                    class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-100 text-slate-500 active:scale-90 hover:text-primary hover:bg-primary/10">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                {{-- 💡 التنبيه الذكي للمستخدم --}}
+                <div class="lg:col-span-1">
+                    <div class="flex gap-4 items-start p-5 h-full rounded-2xl border shadow-sm bg-blue-50/70 border-blue-100/80">
+                        <div class="p-2 text-blue-500 rounded-xl bg-blue-100/50 shrink-0">
+                            <span class="material-symbols-outlined text-[24px]">receipt_long</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold leading-relaxed text-blue-800">
+                                <span class="block mb-1 font-black text-blue-600">ملاحظة هامة:</span> 
+                                سيتم طباعة هذه الشروط والأحكام تلقائياً في أسفل جميع الفواتير المصدرة للعملاء من خلال النظام.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    @if (isset($company) && !empty($company->terms_and_conditions) && count(array_filter($company->terms_and_conditions)) > 0)
+                        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full">
+                            {{-- زخرفة خلفية توحي بالرسمية --}}
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] -z-0"></div>
+                            <span class="material-symbols-outlined absolute top-6 right-6 text-[60px] text-primary/10 -z-0 -rotate-12"
+                                style="font-variation-settings: 'FILL' 1;">policy</span>
+
+                            <div class="relative z-10">
+                                <ul class="grid grid-cols-1 gap-y-4 gap-x-8 md:grid-cols-2">
+                                    @foreach (array_filter($company->terms_and_conditions) as $index => $term)
+                                        <li class="flex gap-3 items-start group">
+                                            <div
+                                                class="mt-0.5 w-6 h-6 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-[11px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors shrink-0">
+                                                {{ $index + 1 }}
+                                            </div>
+                                            <p class="pt-0.5 text-xs font-bold leading-relaxed text-slate-600">
+                                                {{ $term }}
+                                            </p>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    @else
+                        {{-- حالة عدم وجود شروط مسجلة --}}
+                        <div class="py-12 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 h-full">
+                            <div class="flex justify-center items-center mb-4 w-16 h-16 rounded-full bg-slate-50 text-slate-300">
+                                <span class="material-symbols-outlined text-[32px]">description</span>
+                            </div>
+                            <p class="text-base font-bold text-slate-500">لم يتم إضافة شروط وأحكام للشركة</p>
+                            <button @click="showEditCompanyModal = true"
+                                class="mt-3 text-sm font-black text-primary hover:underline underline-offset-4">
+                                أضف شروطك الآن لتظهر في الفواتير
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <div x-data="{ 
                 isSubmitting: false,
                 allCountries: @js(array_values(config('countries', []))),
@@ -191,7 +260,7 @@
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showAddBranchModal = false" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors">
+                <button @click="showAddBranchModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -326,7 +395,10 @@
             </div>
         </div>
 
-        <div x-data="{ isSubmittingCompany: false }" x-show="showEditCompanyModal" x-cloak
+        <div x-data="{ 
+                isSubmittingCompany: false,
+                terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+            }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -339,7 +411,7 @@
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showEditCompanyModal = false" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors">
+                <button @click="showEditCompanyModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -389,6 +461,46 @@
                             <input type="email" name="email" value="{{ $company->email }}" placeholder="info@company.com"
                                 dir="ltr"
                                 class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+                    </div>
+
+                    {{-- ================= الشروط والأحكام الديناميكية ================= --}}
+                    <div class="pt-4 mt-2 border-t border-slate-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <label class="block px-1 text-sm font-bold text-slate-700 font-headline">الشروط والأحكام للشركة</label>
+                                <p class="text-[10px] text-slate-400 px-1 mt-0.5">ستظهر هذه الشروط في أسفل الفواتير</p>
+                            </div>
+                            {{-- زر إضافة شرط جديد --}}
+                            <button type="button" @click="terms.push('')"
+                                class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary/20 active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">add</span>
+                                إضافة شرط
+                            </button>
+                        </div>
+
+                        <div class="overflow-y-auto pr-1 space-y-3 max-h-60 custom-scrollbar">
+                            <template x-for="(term, index) in terms" :key="index">
+                                <div class="flex gap-3 items-center group">
+                                    <div class="relative flex-1">
+                                        <input type="text" x-model="terms[index]" name="terms_and_conditions[]"
+                                            placeholder="اكتب الشرط هنا (مثال: البضاعة لا ترد ولا تستبدل)..."
+                                            class="px-4 w-full h-11 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                                    </div>
+                                    {{-- زر الحذف --}}
+                                    <button type="button" @click="terms.splice(index, 1)"
+                                        class="flex justify-center items-center w-11 h-11 text-rose-500 bg-rose-50 rounded-xl transition-all hover:bg-rose-100 hover:text-rose-600 shrink-0 active:scale-90">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            {{-- رسالة إذا كانت القائمة فارغة --}}
+                            <div x-show="terms.length === 0"
+                                class="py-6 text-center rounded-2xl border-2 border-dashed bg-slate-50 border-slate-200">
+                                <span class="material-symbols-outlined text-slate-300 text-[32px] mb-1">list_alt</span>
+                                <p class="text-xs font-bold text-slate-400">لا توجد شروط مسجلة. اضغط "إضافة شرط" للبدء.</p>
+                            </div>
                         </div>
                     </div>
 
@@ -450,7 +562,7 @@
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showEditBranchModal = false" class="absolute top-6 left-6 text-slate-400 hover:text-slate-600 transition-colors">
+                <button @click="showEditBranchModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 

@@ -45,8 +45,9 @@
         </div>
 
         <a href="{{ route('shipment.create') }}"
-            class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-lg transition-transform shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90">
+            class="flex justify-center items-center p-2 h-12 text-white rounded-2xl shadow-lg transition-transform w-50 shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90">
             <span class="text-[26px] material-symbols-outlined">add_box</span>
+            <span class="text-sm font-bold text-white">إضافة طرد</span>
         </a>
     </div>
 

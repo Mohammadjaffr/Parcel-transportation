@@ -14,7 +14,7 @@
 @section('content')
 
     {{-- الحاوية الرئيسية: أضفنا لها مستمع لفتح مودال الإضافة --}}
-    <div class="space-y-6 font-outfit" dir="rtl" 
+    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl" 
          x-data="customerRegistry()" 
          @open-create-customer-modal.window="createModalOpen = true">
         
@@ -22,31 +22,31 @@
         @include('pages.customers.create-customer-modal')
         @include('pages.customers.edit-customer-modal')
 
-        {{-- ===== Stats Cards ===== --}}
-        <div class="grid grid-cols-1 gap-4 xl:grid-cols-3 md:gap-6">
+        {{-- ====================== Stats Cards (Grid Layout) ====================== --}}
+        <div class="grid grid-cols-1 gap-2 mx-auto max-w-7xl xl:grid-cols-3 md:gap-6">
             {{-- إجمالي العملاء --}}
             <div @click="filterStatus = 'all'; updateVisibility()"
-                :class="filterStatus === 'all' ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-gray-800'"
-                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 dark:bg-primary/10 text-primary">
-                    <span class="material-symbols-outlined text-[22px]">group</span>
+                :class="filterStatus === 'all' ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md">
+                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[24px]">group</span>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">إجمالي العملاء</span>
-                    <h4 class="text-xl font-black dark:text-white">{{ $customers->total() }}</h4>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">إجمالي العملاء</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">{{ $customers->total() }}</h4>
                 </div>
             </div>
 
             {{-- المديونين --}}
             <div @click="filterStatus = 'debtor'; updateVisibility()"
-                :class="filterStatus === 'debtor' ? 'border-red-500 ring-2 ring-red-500/20' : 'border-gray-100 hover:border-red-300 dark:border-gray-800'"
-                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm border-r-4 border-r-red-500">
-                <div class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl dark:bg-red-500/10">
-                    <span class="material-symbols-outlined text-[22px]">account_balance_wallet</span>
+                :class="filterStatus === 'debtor' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-gray-100 hover:border-rose-300 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-rose-500 dark:border-r-rose-500">
+                <div class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10">
+                    <span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest text-red-500 uppercase text-theme-xs">المديونين</span>
-                    <h4 class="text-xl font-black dark:text-white">
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-rose-500 uppercase">المديونين</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
                         {{ $customers->getCollection()->filter(fn($c) => ($c->debit_sum ?? 0) > ($c->credit_sum ?? 0))->count() }}
                     </h4>
                 </div>
@@ -54,146 +54,169 @@
 
             {{-- رصيد مسدد --}}
             <div @click="filterStatus = 'cleared'; updateVisibility()"
-                :class="filterStatus === 'cleared' ? 'border-success-500 ring-2 ring-success-500/20' : 'border-gray-100 hover:border-success-300 dark:border-gray-800'"
-                class="relative flex flex-col items-start justify-between p-5 transition-all bg-white border cursor-pointer rounded-2xl dark:bg-white/[0.03] hover:shadow-md shadow-theme-sm border-r-4 border-r-success-500">
-                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 dark:bg-success-500/10 text-success-500">
-                    <span class="material-symbols-outlined text-[22px]">task_alt</span>
+                :class="filterStatus === 'cleared' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-100 hover:border-emerald-300 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-emerald-500 dark:border-r-emerald-500">
+                <div class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10">
+                    <span class="material-symbols-outlined text-[24px]">task_alt</span>
                 </div>
-                <div class="mt-3">
-                    <span class="font-bold tracking-widest uppercase text-theme-xs text-success-500">رصيد مسدد</span>
-                    <h4 class="text-xl font-black dark:text-white">
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-emerald-500 uppercase">رصيد مسدد</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
                         {{ $customers->getCollection()->filter(fn($c) => ($c->debit_sum ?? 0) <= ($c->credit_sum ?? 0))->count() }}
                     </h4>
                 </div>
             </div>
         </div>
 
-        {{-- ===== Search & Table Section ===== --}}
-        <div class="bg-white dark:bg-boxdark rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-theme-sm overflow-hidden transition-colors">
+        {{-- ====================== Search & Table Section ====================== --}}
+        <div class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-hidden transition-colors max-w-7xl mx-auto">
             
             {{-- شريط البحث --}}
-            <div class="p-4 w-full bg-white rounded-2xl border-b border-gray-100 dark:bg-transparent dark:border-gray-800">
-                <div class="relative rounded-2xl border border-gray-200 transition-all group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:border-gray-700">
+            <div class="p-5 w-full bg-white border-b border-gray-100 md:p-6 dark:bg-boxdark dark:border-boxdark-2">
+                <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-96 dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                     <input type="text" x-model="search" @input.debounce.300ms="updateVisibility()"
-                        placeholder="ابحث باسم العميل أو رقم الهاتف (في هذه الصفحة)..."
-                        class="pr-11 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 rounded-2xl border-none transition-all outline-none bg-gray-50/50 dark:bg-gray-900 focus:ring-0 dark:text-white">
+                        placeholder="ابحث بالاسم أو رقم الهاتف..."
+                        class="pr-12 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
                     <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                         <span class="material-symbols-outlined text-[22px]">search</span>
                     </div>
                 </div>
             </div>
 
-            {{-- ===== Mobile View ===== --}}
-            <div class="flex flex-col gap-4 p-4 lg:hidden">
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-5 lg:hidden">
                 @forelse($customers as $customer)
                     @php
                         $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
                         $is_debtor = $balance > 0;
                     @endphp
-                    <div class="flex flex-col gap-3 p-4 rounded-xl border border-gray-100 transition-all customer-row bg-gray-50/50 dark:bg-gray-800/50 dark:border-gray-700 hover:border-primary/30"
+                    <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all customer-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
                         x-show="showRow('{{ $customer->name }}', '{{ $customer->phone }}', {{ $is_debtor ? 'true' : 'false' }})">
                         
                         <div class="flex justify-between items-start">
                             <div class="flex gap-3 items-center">
-                                <div class="flex justify-center items-center w-10 h-10 text-sm font-black text-white rounded-full shadow-sm bg-primary">
+                                <div class="flex justify-center items-center w-12 h-12 text-lg font-black text-white rounded-xl shadow-inner bg-primary">
                                     {{ mb_substr($customer->name, 0, 1) }}
                                 </div>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ $customer->name }}</span>
-                                    <x-phone-number :value="$customer->phone" class="text-xs text-gray-500 dark:text-gray-400" />
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $customer->name }}</span>
+                                    <x-phone-number :value="$customer->phone" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
                                 </div>
                             </div>
                             
-                            {{-- Mobile Actions --}}
-                            <div class="flex gap-1">
-                                <button type="button" @click="openEditModal({{ $customer->id }})" 
-                                        class="p-1.5 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-primary dark:bg-gray-900 dark:border-gray-800">
-                                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                            {{-- القائمة المنسدلة (Kebab Menu) للإجراءات --}}
+                            <div x-data="{ menuOpen: false }" class="relative">
+                                <button @click="menuOpen = !menuOpen" @click.away="menuOpen = false" class="p-2 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2">
+                                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                 </button>
+
+                                <div x-show="menuOpen" x-transition x-cloak class="overflow-hidden absolute left-0 top-full z-50 py-1.5 mt-2 w-48 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark">
+                                    <a href="{{ route('customers.show', $customer->id) }}" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-surface dark:hover:bg-boxdark">
+                                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                        كشف الحساب
+                                    </a>
+                                    <button @click="openEditModal({{ $customer->id }}); menuOpen = false" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-surface dark:hover:bg-boxdark">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        تعديل البيانات
+                                    </button>
+                                    @if ($is_debtor)
+                                        <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+                                        <div class="px-2">
+                                            @include('pages.customers.clearamount', ['customer' => $customer])
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <div class="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800">
-                            <span class="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-[10px] font-black uppercase">
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-boxdark">
+                            <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 shadow-sm text-gray-500 dark:text-gray-300 text-[10px] font-black uppercase flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px] text-primary">store</span>
                                 {{ $customer->branch->name ?? 'N/A' }}
                             </span>
                             
                             <div class="flex flex-col items-end">
-                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-black {{ $is_debtor ? 'bg-red-50 text-red-600 dark:bg-red-500/10' : 'bg-success-50 text-success-600 dark:bg-success-500/10' }}">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-black {{ $is_debtor ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
                                     {{ $is_debtor ? 'مديون' : 'مسدد' }}
                                 </span>
                                 @if ($is_debtor)
-                                    <span class="mt-1 text-[11px] font-bold text-red-500">{{ number_format($balance, 0) }} ر.ي</span>
+                                    <span class="mt-1.5 text-xs font-black text-rose-500">{{ number_format($balance, 0) }} ر.ي</span>
                                 @endif
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="py-12 text-center text-gray-400">لا توجد بيانات عملاء مطابقة..</div>
+                    <div class="flex flex-col gap-3 items-center py-16 text-center text-gray-400 rounded-2xl border-2 border-gray-100 border-dashed dark:text-bodydark dark:border-boxdark-2 bg-surface dark:bg-boxdark-2">
+                        <span class="material-symbols-outlined text-[40px] opacity-30">group_off</span>
+                        <p class="text-sm font-bold">لا توجد بيانات عملاء مطابقة..</p>
+                    </div>
                 @endforelse
 
-                {{-- رسالة بحث الموبايل --}}
-                <div x-show="visibleCount === 0 && {{ $customers->count() }} > 0" x-cloak class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-700">
-                    <span class="text-3xl text-gray-400 material-symbols-outlined">search_off</span>
-                    <h4 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">لا توجد نتائج</h4>
+                {{-- رسالة بحث الموبايل (ديناميكية مع Alpine) --}}
+                <div x-show="visibleCount === 0 && {{ $customers->count() }} > 0" x-cloak class="py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                    <div class="flex flex-col justify-center items-center">
+                        <span class="mb-3 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
+                        <h4 class="text-sm font-black text-on-surface dark:text-white font-headline">لا توجد نتائج</h4>
+                        <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">لا توجد نتائج تطابق بحثك أو تصفيتك في هذه الصفحة.</p>
+                    </div>
                 </div>
             </div>
 
-            {{-- ===== Desktop View (Table) ===== --}}
-            <div class="hidden overflow-x-auto px-4 pb-4 mt-4 lg:block">
+            {{-- ===== Desktop View (Data Table) ===== --}}
+            <div class="hidden overflow-x-auto px-6 pb-6 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
-                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] dark:text-bodydark2">
-                            <th class="px-6 py-4">العميل</th>
-                            <th class="px-6 py-4 text-center">المكتب</th>
-                            <th class="px-6 py-4 text-center">الحالة</th>
-                            <th class="px-6 py-4 text-center">الإجراءات</th>
+                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] dark:text-bodydark bg-surface dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark">
+                            <th class="px-6 py-5">العميل</th>
+                            <th class="px-6 py-5 text-center">الفرع المسجل</th>
+                            <th class="px-6 py-5 text-center">الرصيد المالي</th>
+                            <th class="px-6 py-5 text-center">الإجراءات</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y-0">
                         @forelse($customers as $customer)
                             @php
                                 $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
                                 $is_debtor = $balance > 0;
                             @endphp
-                            <tr class="bg-white rounded-2xl border border-transparent shadow-sm transition-all customer-row dark:bg-gray-900/50 hover:shadow-md hover:border-primary/30 dark:hover:border-primary/30"
+                            <tr class="rounded-2xl border border-transparent shadow-sm transition-all bg-surface customer-row dark:bg-boxdark-2 hover:shadow-md hover:border-gray-200 dark:hover:border-boxdark group"
                                 x-show="showRow('{{ $customer->name }}', '{{ $customer->phone }}', {{ $is_debtor ? 'true' : 'false' }})">
                                 
-                                <td class="px-6 py-5 border-r border-gray-100 border-y dark:border-gray-800 first:rounded-r-2xl">
-                                    <div class="flex gap-3 items-center">
-                                        <div class="flex justify-center items-center w-10 h-10 text-sm font-bold text-white rounded-full shadow-sm bg-primary">
+                                <td class="px-6 py-4 border-r border-gray-50 border-y dark:border-boxdark-2 first:rounded-r-2xl">
+                                    <div class="flex gap-4 items-center">
+                                        <div class="flex justify-center items-center w-12 h-12 text-lg font-black text-white rounded-xl shadow-inner bg-primary">
                                             {{ mb_substr($customer->name, 0, 1) }}
                                         </div>
-                                        <div class="flex flex-col">
-                                            <span class="font-black text-gray-900 dark:text-white">{{ $customer->name }}</span>
-                                            <x-phone-number :value="$customer->phone" class="text-xs text-gray-400" />
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $customer->name }}</span>
+                                            <x-phone-number :value="$customer->phone" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
                                         </div>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-gray-100 border-y dark:border-gray-800">
-                                    <span class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-[10px] font-black">
+                                <td class="px-6 py-4 text-center border-gray-50 border-y dark:border-boxdark-2">
+                                    <span class="px-3 py-1.5 rounded-lg bg-white border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 text-gray-500 dark:text-gray-300 text-[10px] font-black">
                                         {{ $customer->branch->name ?? 'N/A' }}
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-gray-100 border-y dark:border-gray-800">
+                                <td class="px-6 py-4 text-center border-gray-50 border-y dark:border-boxdark-2">
                                     <div class="flex flex-col gap-1 items-center">
-                                        <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase {{ $is_debtor ? 'bg-red-50 text-red-600 dark:bg-red-500/10' : 'bg-success-50 text-success-600 dark:bg-success-500/10' }}">
+                                        <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase {{ $is_debtor ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
                                             {{ $is_debtor ? 'مديون' : 'مسدد' }}
                                         </span>
                                         @if ($is_debtor)
-                                            <span class="text-xs font-bold text-red-500">{{ number_format($balance, 0) }} ر.ي</span>
+                                            <span class="text-xs font-black text-rose-500">{{ number_format($balance, 0) }} ر.ي</span>
                                         @endif
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-5 text-center border-l border-gray-100 border-y dark:border-gray-800 last:rounded-l-2xl">
+                                <td class="px-6 py-4 text-center border-l border-gray-50 border-y dark:border-boxdark-2 last:rounded-l-2xl">
                                     <div class="flex gap-2 justify-center items-center">
                                         
                                         {{-- كشف حساب --}}
                                         <a href="{{ route('customers.show', $customer->id) }}" title="كشف الحساب"
-                                            class="inline-flex p-2 text-gray-400 bg-gray-50 rounded-lg transition-all dark:bg-gray-800 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20">
+                                            class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 dark:hover:bg-blue-500/10 dark:hover:text-blue-400 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">receipt_long</span>
                                         </a>
 
@@ -204,14 +227,14 @@
 
                                         {{-- تعديل --}}
                                         <button type="button" @click="openEditModal({{ $customer->id }})" title="تعديل العميل"
-                                            class="inline-flex p-2 text-gray-400 bg-gray-50 rounded-lg transition-all dark:bg-gray-800 hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20">
+                                            class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-primary-container hover:text-primary hover:border-primary/20 dark:hover:bg-primary/10 dark:hover:text-primary active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
 
                                         {{-- حذف --}}
                                         <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف العميل؟')" class="inline">
                                             @csrf @method('DELETE')
-                                            <button type="submit" title="حذف" class="inline-flex p-2 text-gray-400 bg-gray-50 rounded-lg transition-all dark:bg-gray-800 hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/10">
+                                            <button type="submit" title="حذف" class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-95">
                                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                                             </button>
                                         </form>
@@ -220,15 +243,23 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="4" class="py-12 text-center text-gray-400">لا توجد بيانات عملاء مطابقة..</td></tr>
+                            <tr>
+                                <td colspan="4" class="py-20 text-center">
+                                    <div class="flex flex-col gap-3 justify-center items-center text-gray-400 dark:text-bodydark">
+                                        <span class="material-symbols-outlined text-[40px] opacity-30">group_off</span>
+                                        <p class="text-sm font-bold">لا توجد بيانات عملاء مطابقة..</p>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
 
-                        {{-- رسالة بحث الديسكتوب المتزامنة --}}
+                        {{-- رسالة بحث الديسكتوب (ديناميكية مع Alpine) --}}
                         <tr x-show="visibleCount === 0 && {{ $customers->count() }} > 0" x-cloak>
-                            <td colspan="4" class="py-20 text-center">
+                            <td colspan="4" class="py-24 text-center">
                                 <div class="flex flex-col justify-center items-center">
-                                    <span class="mb-2 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
-                                    <div class="text-sm font-semibold text-gray-500 dark:text-gray-400">لا توجد نتائج تطابق بحثك في هذه الصفحة.</div>
+                                    <span class="mb-4 text-[40px] text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
+                                    <div class="text-sm font-black text-on-surface dark:text-white font-headline">لا توجد نتائج</div>
+                                    <div class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">لا توجد نتائج تطابق بحثك أو تصفيتك في هذه الصفحة.</div>
                                 </div>
                             </td>
                         </tr>
@@ -238,7 +269,7 @@
 
             {{-- Pagination --}}
             @if ($customers->hasPages())
-                <div class="px-6 pt-4 pb-6 mt-4 border-t border-gray-100 dark:border-gray-800">
+                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-surface/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
                     {{ $customers->links() }}
                 </div>
             @endif

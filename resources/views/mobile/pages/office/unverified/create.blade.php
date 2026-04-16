@@ -44,9 +44,9 @@
             }
          }">
 
-        <div class="flex items-center gap-4 px-2">
+        <div class="flex gap-4 items-center px-2">
             <a href="{{ route('offices.unverified.index') }}"
-                class="flex justify-center items-center w-10 h-10 rounded-xl bg-white shadow-sm text-slate-400">
+                class="flex justify-center items-center w-10 h-10 bg-white rounded-xl shadow-sm text-slate-400">
                 <span class="material-symbols-outlined">arrow_forward</span>
             </a>
             <h1 class="text-xl font-black font-headline text-slate-800">إضافة مكتب جديد</h1>
@@ -57,7 +57,7 @@
 
             <div class="px-2">
                 <div class="p-6 bg-white rounded-[2rem] shadow-sm border border-slate-100 space-y-4">
-                    <div class="flex items-center gap-2 mb-2 text-primary">
+                    <div class="flex gap-2 items-center mb-2 text-primary">
                         <span class="material-symbols-outlined">domain</span>
                         <span class="font-bold font-headline">بيانات المكتب</span>
                     </div>
@@ -67,21 +67,21 @@
                             <span class="text-rose-500">*</span></label>
                         <input type="text" name="name" value="{{ old('name') }}" required
                             placeholder="مثلاً: شركة الصقر للمقاولات"
-                            class="w-full h-14 px-4 text-sm rounded-2xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
-                        @error('name') <p class="mt-1 text-xs text-rose-500 font-bold">{{ $message }}</p> @enderror
+                            class="px-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        @error('name') <p class="mt-1 text-xs font-bold text-rose-500">{{ $message }}</p> @enderror
                     </div>
                 </div>
             </div>
 
             <div class="px-2 space-y-4">
                 <div class="flex justify-between items-center px-2">
-                    <div class="flex items-center gap-2 text-slate-500">
+                    <div class="flex gap-2 items-center text-slate-500">
                         <span class="material-symbols-outlined text-primary">location_city</span>
                         <span class="font-bold font-headline">الفروع التابعة للمكتب</span>
                     </div>
                     <button type="button" @click="addBranch()"
-                        class="flex items-center gap-1 text-xs font-bold text-primary bg-primary/5 px-3 py-2 rounded-lg active:scale-95 transition-all">
-                        <span class="material-symbols-outlined text-sm">add</span> إضافة فرع
+                        class="flex gap-1 items-center px-3 py-2 text-xs font-bold rounded-lg transition-all text-primary bg-primary/5 active:scale-95">
+                        <span class="text-sm material-symbols-outlined">add</span> إضافة فرع
                     </button>
                 </div>
 
@@ -91,8 +91,8 @@
                             <span class="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/5 px-2 py-0.5 rounded"
                                 x-text="'الفرع #' + (index + 1)"></span>
                             <button type="button" x-show="branches.length > 1" @click="removeBranch(index)"
-                                class="text-rose-400 hover:text-rose-600 active:scale-90 transition-transform">
-                                <span class="material-symbols-outlined text-xl">delete_sweep</span>
+                                class="text-rose-400 transition-transform hover:text-rose-600 active:scale-90">
+                                <span class="text-xl material-symbols-outlined">delete_sweep</span>
                             </button>
                         </div>
 
@@ -100,33 +100,33 @@
                             <div class="grid grid-cols-2 gap-3">
                                 <input type="text" :name="`branches[${index}][name]`" x-model="branch.name" required
                                     placeholder="اسم الفرع"
-                                    class="w-full h-12 px-4 text-xs rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
+                                    class="px-4 w-full h-12 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
 
                                 <input type="text" :name="`branches[${index}][city]`" x-model="branch.city" required
                                     placeholder="المدينة"
-                                    class="w-full h-12 px-4 text-xs rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
+                                    class="px-4 w-full h-12 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             </div>
 
                             <div class="relative">
                                 {{-- الحقل المخفي الذي سيتم إرساله للسيرفر --}}
                                 <input type="hidden" :name="`branches[${index}][phone]`" x-model="branch.fullPhone">
 
-                                <div class="relative group flex items-center bg-slate-50 rounded-xl overflow-hidden ring-1 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+                                <div class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
                                     {{-- حقل إدخال الرقم المحلي --}}
                                     <input type="tel" x-model="branch.localPhone" @input="updatePhone(index)" required placeholder="7XXXXXXXX" inputmode="numeric"
-                                        class="flex-1 bg-transparent border-0 px-4 py-3 pr-11 text-sm text-left font-headline dir-ltr focus:ring-0">
+                                        class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
 
-                                    <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary pointer-events-none">
-                                        <span class="material-symbols-outlined text-lg">call</span>
+                                    <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
+                                        <span class="text-lg material-symbols-outlined">call</span>
                                     </div>
 
                                     {{-- زر اختيار الدولة --}}
                                     <button type="button" @click="branch.open = !branch.open" 
-                                        class="flex items-center gap-2 px-3 h-12 bg-slate-100 border-r border-slate-200 hover:bg-slate-200 transition-colors shrink-0">
+                                        class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
                                         <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                                         <span class="text-xs font-bold text-slate-700 dir-ltr" x-text="branch.selectedCountry?.dial_code"></span>
                                         <template x-if="branch.selectedCountry?.svg">
-                                            <div class="w-5 h-auto rounded-sm overflow-hidden" x-html="branch.selectedCountry.svg"></div>
+                                            <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="branch.selectedCountry.svg"></div>
                                         </template>
                                     </button>
                                 </div>
@@ -136,14 +136,14 @@
                                     class="absolute top-[calc(100%+6px)] left-0 z-50 w-full bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden">
                                     <div class="p-2 border-b border-slate-50">
                                         <input type="text" x-model="branch.search" placeholder="بحث عن دولة..."
-                                            class="px-3 py-2 w-full text-xs outline-none bg-slate-50 focus:bg-slate-100 rounded-lg font-headline">
+                                            class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
                                     </div>
                                     <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                         <template x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(branch.search.toLowerCase()) || c.dial_code.includes(branch.search))" :key="country.code">
                                             <div @click="branch.selectedCountry = country; branch.open = false; branch.search = ''; updatePhone(index)"
                                                 class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
                                                 <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
-                                                <span class="flex-grow text-xs font-medium text-slate-700 truncate" x-text="country.name"></span>
+                                                <span class="flex-grow text-xs font-medium truncate text-slate-700" x-text="country.name"></span>
                                                 <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr" x-text="country.dial_code"></span>
                                             </div>
                                         </template>
@@ -154,7 +154,7 @@
                             <div>
                                 <input type="text" :name="`branches[${index}][address]`" x-model="branch.address"
                                     placeholder="العنوان التفصيلي"
-                                    class="w-full h-12 px-4 text-xs rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 outline-none transition-all font-headline">
+                                    class="px-4 w-full h-12 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             </div>
                         </div>
                     </div>
@@ -163,8 +163,8 @@
 
             <div class="px-2 pt-4">
                 <button type="submit" :disabled="isSubmitting"
-                    class="w-full h-16 flex justify-center items-center gap-3 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20 font-black font-headline active:scale-95 disabled:opacity-70 transition-all">
-                    <span x-show="!isSubmitting" class="material-symbols-outlined text-2xl">check_circle</span>
+                    class="flex gap-3 justify-center items-center w-full h-16 font-black text-white rounded-2xl shadow-xl transition-all bg-primary shadow-primary/20 font-headline active:scale-95 disabled:opacity-70">
+                    <span x-show="!isSubmitting" class="text-2xl material-symbols-outlined">check_circle</span>
                     <span x-show="isSubmitting" class="animate-spin material-symbols-outlined">progress_activity</span>
                     <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ المكتب وفروعه'"></span>
                 </button>
