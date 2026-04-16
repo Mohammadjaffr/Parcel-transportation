@@ -120,95 +120,116 @@
                 </div>
 
                 <div class="max-h-[340px] overflow-y-auto overscroll-contain flex flex-col scrollbar-hide">
-                    @forelse(auth()->user()->notifications->take(15) as $notification)
-                        @php 
-                            $type = $notification->data['type'] ?? ''; 
-                            $isUnread = $notification->unread();
-                            
-                            $actionUrl = $notification->data['action_url'] ?? '#';
-                            if($actionUrl !== '#') {
-                                $actionUrl .= (parse_url($actionUrl, PHP_URL_QUERY) ? '&' : '?') . 'notify_id=' . $notification->id;
-                            }
-                        @endphp
+                    @php
+    // 1. جلب أحدث 15 إشعار للتعامل معها
+    $allNotifications = auth()->user()->notifications()->take(15)->get();
+    
+    // 2. فصل الإشعارات غير المقروءة والمقروءة
+    $unreadNotifications = $allNotifications->whereNull('read_at');
+    $readNotifications = $allNotifications->whereNotNull('read_at');
+    
+    // 3. اللوجيك الذكي للعدد:
+    if ($unreadNotifications->count() >= 3) {
+        // إذا كان هناك 3 أو أكثر غير مقروءة، نعرضها جميعاً
+        $displayNotifications = $unreadNotifications;
+    } else {
+        // إذا كان غير المقروء أقل من 3 (مثلاً 1)، نحسب كم نحتاج لنصل إلى 3 (نحتاج 2)
+        $neededReadCount = 3 - $unreadNotifications->count();
+        
+        // ندمج غير المقروء مع العدد المطلوب من المقروء
+        $displayNotifications = $unreadNotifications->concat($readNotifications->take($neededReadCount));
+    }
+@endphp
 
-                        <div class="flex flex-col border-b border-slate-50 relative group {{ $isUnread ? 'bg-primary/[0.02]' : 'hover:bg-slate-50' }} transition-colors">
-                            
-                            @if($isUnread)
-                                <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
-                            @endif
+@forelse($displayNotifications as $notification)
+    @php 
+        $type = $notification->data['type'] ?? ''; 
+        $isUnread = $notification->unread();
+        
+        $actionUrl = $notification->data['action_url'] ?? '#';
+        if($actionUrl !== '#') {
+            $actionUrl .= (parse_url($actionUrl, PHP_URL_QUERY) ? '&' : '?') . 'notify_id=' . $notification->id;
+        }
+    @endphp
 
-                            <div class="flex items-start gap-4 p-4">
-                                {{-- تحديد ألوان وخلفية الأيقونة حسب نوع الإشعار --}}
-                                <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
-                                    @if($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
-                                    @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
-                                    @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
-                                    @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
-                                    @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100
-                                    @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
-                                    @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
-                                    @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
-                                    @else bg-slate-100 text-slate-500 border-slate-200 @endif">
-                                    
-                                    <span class="material-symbols-outlined text-[22px]">
-                                        @if($type == 'connection_request') person_add
-                                        @elseif($type == 'connection_accepted') handshake
-                                        @elseif($type == 'connection_rejected') block
-                                        @elseif($type == 'shipment_dispatched') local_shipping
-                                        @elseif($type == 'admin_new_shipment') add_box
-                                        @elseif($type == 'admin_new_manifest') all_inbox
-                                        @elseif($type == 'new_shipment') unarchive
-                                        @elseif($type == 'admin_status_updated') {{ $notification->data['icon'] ?? 'update' }}
-                                        @else notifications @endif
-                                    </span>
-                                </div>
+    <div class="flex flex-col border-b border-slate-50 relative group {{ $isUnread ? 'bg-primary/[0.02]' : 'hover:bg-slate-50' }} transition-colors">
+        
+        @if($isUnread)
+            <div class="absolute right-0 top-3 bottom-3 w-1 bg-primary rounded-l-full"></div>
+        @endif
 
-                                <div class="flex flex-col gap-1 w-full text-right relative">
-                                    <a href="{{ $actionUrl }}" class="flex flex-col w-full">
-                                        <div class="flex justify-between items-start w-full gap-2">
-                                            <p class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
-                                                @if($type == 'connection_request') طلب ربط جديد
-                                                @elseif($type == 'connection_accepted') تم قبول طلبك 🎉
-                                                @elseif($type == 'connection_rejected') تم رفض طلبك
-                                                @elseif($type == 'shipment_dispatched') طرد في الطريق
-                                                @elseif($type == 'admin_new_shipment') طرد جديد (الإدارة)
-                                                @elseif($type == 'admin_new_manifest') إرسالية مجمعة (الإدارة)
-                                                @elseif($type == 'new_shipment') طرد وارد 📦
-                                                @elseif($type == 'admin_status_updated') تحديث حالة 🔄
-                                                @else إشعار @endif
-                                            </p>
-                                            <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">
-                                                {{ $notification->created_at->diffForHumans() }}
-                                            </span>
-                                        </div>
-                                        <p class="text-xs text-slate-500 leading-relaxed mt-1">
-                                            {{ $notification->data['message'] }}
-                                        </p>
-                                    </a>
+        <div class="flex items-start gap-4 p-4">
+            {{-- تحديد ألوان وخلفية الأيقونة حسب نوع الإشعار --}}
+            <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
+                @if($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
+                @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
+                @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
+                @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
+                @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100
+                @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
+                @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
+                @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
+                @else bg-slate-100 text-slate-500 border-slate-200 @endif">
+                
+                <span class="material-symbols-outlined text-[22px]">
+                    @if($type == 'connection_request') person_add
+                    @elseif($type == 'connection_accepted') handshake
+                    @elseif($type == 'connection_rejected') block
+                    @elseif($type == 'shipment_dispatched') local_shipping
+                    @elseif($type == 'admin_new_shipment') add_box
+                    @elseif($type == 'admin_new_manifest') all_inbox
+                    @elseif($type == 'new_shipment') unarchive
+                    @elseif($type == 'admin_status_updated') {{ $notification->data['icon'] ?? 'update' }}
+                    @else notifications @endif
+                </span>
+            </div>
 
-                                    {{-- أزرار القبول والرفض لطلبات الربط --}}
-                                    @if($type == 'connection_request' && $isUnread)
-                                        <div class="flex gap-2 mt-3 z-10 relative">
-                                            <form action="{{ route('connections.accept', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
-                                                @csrf
-                                                <button class="w-full py-2 bg-primary text-white text-[10px] font-bold rounded-xl active:scale-95 transition-all shadow-sm shadow-primary/20">قبول</button>
-                                            </form>
-                                            
-                                            <form action="{{ route('connections.reject', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
-                                                @csrf
-                                                <button class="w-full py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl active:scale-95 transition-all">رفض</button>
-                                            </form>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="py-12 flex flex-col items-center justify-center text-slate-400">
-                            <span class="material-symbols-outlined text-5xl mb-2 opacity-20">notifications_off</span>
-                            <p class="text-xs font-bold">لا توجد إشعارات حالياً</p>
-                        </div>
-                    @endforelse
+            <div class="flex flex-col gap-1 w-full text-right relative">
+                <a href="{{ $actionUrl }}" class="flex flex-col w-full">
+                    <div class="flex justify-between items-start w-full gap-2">
+                        <p class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
+                            @if($type == 'connection_request') طلب ربط جديد
+                            @elseif($type == 'connection_accepted') تم قبول طلبك 🎉
+                            @elseif($type == 'connection_rejected') تم رفض طلبك
+                            @elseif($type == 'shipment_dispatched') طرد في الطريق
+                            @elseif($type == 'admin_new_shipment') طرد جديد (الإدارة)
+                            @elseif($type == 'admin_new_manifest') إرسال شحنة جديده(الإدارة)
+                            @elseif($type == 'new_shipment') طرد وارد 📦
+                            @elseif($type == 'admin_status_updated') تحديث حالة 🔄
+                            @else إشعار @endif
+                        </p>
+                        <span class="text-[10px] text-slate-400 font-bold whitespace-nowrap mt-0.5">
+                            {{ $notification->created_at->diffForHumans() }}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 leading-relaxed mt-1">
+                        {{ $notification->data['message'] }}
+                    </p>
+                </a>
+
+                {{-- أزرار القبول والرفض لطلبات الربط --}}
+                @if($type == 'connection_request' && $isUnread)
+                    <div class="flex gap-2 mt-3 z-10 relative">
+                        <form action="{{ route('connections.accept', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
+                            @csrf
+                            <button class="w-full py-2 bg-primary text-white text-[10px] font-bold rounded-xl active:scale-95 transition-all shadow-sm shadow-primary/20">قبول</button>
+                        </form>
+                        
+                        <form action="{{ route('connections.reject', $notification->data['connection_id'] ?? 0) }}?notify_id={{ $notification->id }}" method="POST" class="flex-1">
+                            @csrf
+                            <button class="w-full py-2 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-xl active:scale-95 transition-all">رفض</button>
+                        </form>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+@empty
+    <div class="py-12 flex flex-col items-center justify-center text-slate-400">
+        <span class="material-symbols-outlined text-5xl mb-2 opacity-20">notifications_off</span>
+        <p class="text-xs font-bold">لا توجد إشعارات حالياً</p>
+    </div>
+@endforelse
                 </div>
             </div>
         </div>

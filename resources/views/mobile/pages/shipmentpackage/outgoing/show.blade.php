@@ -1,9 +1,16 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'تفاصيل الإرسالية - ' . $package->tracking_number)
+@section('title', 'تفاصيل الشحنة - ' . $package->tracking_number)
 
 @section('content')
-    <div class="flex flex-col gap-5 px-4 pb-8 relative min-h-screen bg-slate-50/50 pt-6">
+    {{-- إضافة x-data رئيسي للتحكم بالمودال في مستوى الصفحة بالكامل --}}
+    <div class="flex flex-col gap-5 px-4 pb-8 relative min-h-screen bg-slate-50/50 pt-6" x-data="{ 
+                            isAddModalOpen: false, 
+                            searchShipment: '',
+                            showDeleteModal: false,
+                            isSubmitting: false,
+                            deleteShipmentData: { bond_number: '', url: '' }
+                        }">
 
         {{-- ================= الهيدر السريع ================= --}}
         <div class="flex items-center justify-between">
@@ -13,12 +20,12 @@
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <div>
-                    <h1 class="text-lg font-black font-headline text-slate-800">رقم الإرسالية</h1>
+                    <h1 class="text-lg font-black font-headline text-slate-800">رقم الشحنة</h1>
                     <p class="text-sm font-bold text-primary tracking-wider">{{ $package->tracking_number }}</p>
                 </div>
             </div>
 
-            {{-- حالة الإرسالية --}}
+            {{-- حالة الشحنة --}}
             @php
                 $statusColors = [
                     'pending' => 'bg-amber-50 text-amber-600 border-amber-200',
@@ -297,7 +304,6 @@
                 @forelse($package->shipments as $shipment)
                     <div
                         class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4 group hover:bg-white hover:shadow-md hover:border-primary/20 transition-all duration-300">
-
                         <div
                             class="w-12 h-12 bg-white rounded-[14px] flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 shadow-sm group-hover:text-primary transition-colors">
                             <span class="material-symbols-outlined text-[22px]">package_2</span>
@@ -320,48 +326,228 @@
                             </div>
                         </div>
 
-                        {{-- أزرار التحكم --}}
-                        {{-- أزرار التحكم --}}
-                        <div class="flex items-center gap-2 shrink-0">
-                            {{-- زر الانتقال لتفاصيل الطرد --}}
-                            <a href="{{ route('shipment.show', $shipment->id) }}"
-                                class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-300 hover:text-primary hover:bg-primary/5 border border-slate-100 shadow-sm transition-all active:scale-90"
-                                title="عرض التفاصيل">
-                                <span class="material-symbols-outlined text-[16px]">visibility</span>
-                            </a>
+                        {{-- أزرار التحكم (قائمة منسدلة ثلاث نقاط) --}}
+                        <div class="relative shrink-0" x-data="{ menuOpen: false }">
 
-                            {{-- 💡 اللوجيك: إخفاء زر الفك إذا كانت الإرسالية في حالة نهائية (مكتملة أو مرتجعة) --}}
-                            @if(!in_array($package->status, ['delivered']))
-                                {{-- زر فك الارتباط --}}
-                                <form
-                                    action="{{ route('shipmentpackage.removeShipment', ['package' => $package->id, 'shipment' => $shipment->id]) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('هل أنت متأكد من فك ارتباط هذا الطرد وإعادته للمستودع؟');">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-rose-300 hover:text-rose-500 hover:bg-rose-50 border border-slate-100 shadow-sm transition-all active:scale-90"
-                                        title="فك ارتباط الطرد">
-                                        <span class="material-symbols-outlined text-[16px]">link_off</span>
+                            {{-- زر الثلاث نقاط --}}
+                            <button type="button" @click="menuOpen = !menuOpen" @click.outside="menuOpen = false"
+                                class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 border border-slate-100 shadow-sm transition-all active:scale-90">
+                                <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                            </button>
+
+                            {{-- القائمة المنسدلة الذكية --}}
+                            <div x-show="menuOpen" x-cloak x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+                                class="absolute left-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[50]">
+
+                                {{-- خيار عرض التفاصيل --}}
+                                <a href="{{ route('shipment.show', $shipment->id) }}"
+                                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors mb-1 active:scale-[0.98]">
+                                    <div
+                                        class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                    </div>
+                                    <span class="text-xs font-black">عرض التفاصيل</span>
+                                </a>
+
+                                {{-- خيار فك الارتباط (يظهر فقط إذا لم تكن الرحلة منتهية) --}}
+                                @if(!in_array($package->status, ['delivered', 'returned']))
+                                    <button type="button" @click="
+                                                                    deleteShipmentData = { 
+                                                                        bond_number: '{{ $shipment->bond_number }}', 
+                                                                        url: '{{ route('shipmentpackage.removeShipment', ['package' => $package->id, 'shipment' => $shipment->id]) }}' 
+                                                                    }; 
+                                                                    showDeleteModal = true; 
+                                                                    menuOpen = false;
+                                                                "
+                                        class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 transition-colors text-right active:scale-[0.98]">
+                                        <div
+                                            class="w-7 h-7 rounded-lg bg-rose-100/50 flex items-center justify-center text-rose-500">
+                                            <span class="material-symbols-outlined text-[16px]">link_off</span>
+                                        </div>
+                                        <span class="text-xs font-black">فك ارتباط الطرد</span>
                                     </button>
-                                </form>
-                            @else
-                                {{-- زر مقفل للتوضيح للموظف أنه لا يمكن التعديل --}}
-                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 cursor-not-allowed"
-                                    title="لا يمكن فك ارتباط الطرد من رحلة مغلقة">
-                                    <span class="material-symbols-outlined text-[16px]">lock</span>
-                                </div>
-                            @endif
+                                @else
+                                    {{-- خيار مقفل يوضح أن الرحلة مغلقة --}}
+                                    <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 text-slate-400 cursor-not-allowed"
+                                        title="لا يمكن فك ارتباط الطرد من رحلة مغلقة">
+                                        <div
+                                            class="w-7 h-7 rounded-lg bg-slate-200/50 flex items-center justify-center text-slate-400">
+                                            <span class="material-symbols-outlined text-[16px]">lock</span>
+                                        </div>
+                                        <span class="text-xs font-black">مغلق (تم الاستلام)</span>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
-
                     </div>
                 @empty
                     <div class="text-center py-8">
                         <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inbox</span>
-                        <p class="text-xs font-bold text-slate-400">لا توجد طرود مضمنة في هذه الإرسالية.</p>
+                        <p class="text-xs font-bold text-slate-400">لا توجد طرود مضمنة في هذه الشحنة.</p>
                     </div>
                 @endforelse
+
+                {{-- ================= زر إضافة طرد جديد يظهر فقط إذا الإرسالية غير مغلقة ================= --}}
+                @if(!in_array($package->status, ['delivered']))
+                    <button type="button" @click="isAddModalOpen = true"
+                        class="mt-3 w-full h-12 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">add_box</span>
+                        إضافة طرد جديد للإشحنة
+                    </button>
+                @endif
             </div>
         </div>
 
+        {{-- ================= نافذة إضافة طرد منبثقة (Bottom Sheet Modal) ================= --}}
+        {{-- تتطلب تمرير متغير $availableShipments من الكنترولر (وهي الطرود التي حالتها pending وليس لها package_id) --}}
+        @if(!in_array($package->status, ['delivered']) && isset($availableShipments))
+            <div x-show="isAddModalOpen" x-cloak class="fixed inset-0 z-[100] flex justify-center items-end sm:items-center">
+
+                {{-- الخلفية المظللة --}}
+                <div x-show="isAddModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                    class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="isAddModalOpen = false"></div>
+
+                {{-- المودال نفسه --}}
+                <div x-show="isAddModalOpen" x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+                    x-transition:leave="transform transition ease-in duration-200" x-transition:leave-start="translate-y-0"
+                    x-transition:leave-end="translate-y-full"
+                    class="relative bg-white w-full sm:max-w-md h-[80vh] sm:h-auto sm:max-h-[85vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden">
+
+                    {{-- شريط السحب والإغلاق --}}
+                    <div
+                        class="px-6 pt-5 pb-4 bg-white z-10 border-b border-slate-50 flex items-center justify-between shrink-0">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-800">إضافة طرد للإشحنة</h2>
+                            <p class="text-[10px] font-bold text-slate-400 mt-1">ابحث عن الطرد المطلوب واضغط إضافة</p>
+                        </div>
+                    </div>
+
+                    {{-- حقل البحث --}}
+                    <div class="px-6 py-4 bg-slate-50/50 shrink-0 border-b border-slate-100">
+                        <div class="relative group">
+                            <input type="text" x-model="searchShipment" placeholder="ابحث برقم السند أو اسم المستلم..."
+                                class="w-full h-12 pl-4 pr-11 bg-white rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-700">
+                            <div
+                                class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 group-focus-within:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">search</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- قائمة الطرود المتاحة للإضافة --}}
+                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/30">
+                        <div class="space-y-3">
+                            @forelse($availableShipments as $availShipment)
+                                {{-- x-show للبحث المباشر عن طريق رقم البوليصة أو اسم المستلم --}}
+                                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-colors"
+                                    x-show="'{{ $availShipment->bond_number }}'.includes(searchShipment) || '{{ $availShipment->receiverCustomer->name ?? '' }}'.includes(searchShipment)">
+
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span
+                                                class="text-xs font-black text-slate-800 font-mono">{{ $availShipment->bond_number }}</span>
+                                            <span
+                                                class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ $availShipment->receiverBranch->name ?? 'مستودع' }}</span>
+                                        </div>
+                                        <p class="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                                            <span class="material-symbols-outlined text-[12px]">person</span>
+                                            {{ $availShipment->receiverCustomer->name ?? 'غير مسجل' }}
+                                        </p>
+                                    </div>
+
+                                    {{-- نموذج مصغر للإضافة --}}
+                                    <form action="{{ route('shipmentpackage.addShipment', $package->id) }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="shipment_id" value="{{ $availShipment->id }}">
+                                        <button type="submit"
+                                            class="h-9 px-4 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-xl text-[11px] font-black transition-all active:scale-95 flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[16px]">add</span>
+                                            إضافة
+                                        </button>
+                                    </form>
+                                </div>
+                            @empty
+                                <div class="text-center py-10">
+                                    <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inventory_2</span>
+                                    <p class="text-xs font-bold text-slate-500">لا توجد طرود متاحة في المستودع</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">جميع الطرود تم شحنها أو تسليمها.</p>
+                                </div>
+                            @endforelse
+
+                            {{-- رسالة تظهر عندما لا يتطابق البحث مع أي نتيجة (باستخدام Alpine) --}}
+                            @if($availableShipments->isNotEmpty())
+                                <div class="text-center py-8"
+                                    x-show="searchShipment !== '' && $el.previousElementSibling.querySelectorAll('div[x-show]').length && Array.from($el.previousElementSibling.querySelectorAll('div[x-show]')).every(el => el.style.display === 'none')"
+                                    x-cloak>
+                                    <p class="text-xs font-bold text-slate-400">لا توجد نتائج مطابقة للبحث.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+        <div x-show="showDeleteModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-full"
+            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+
+            {{-- الخلفية المظللة --}}
+            <div x-show="showDeleteModal" x-transition.opacity.duration.300ms
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto"
+                @click="showDeleteModal = false">
+            </div>
+
+            {{-- بطاقة المودال --}}
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
+
+                {{-- شريط الإغلاق العلوي --}}
+                <div @click="showDeleteModal = false"
+                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
+                </div>
+
+                {{-- الأيقونة --}}
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-rose-50 text-rose-500 rounded-[1.5rem]">
+                    <span class="text-4xl material-symbols-outlined">link_off</span>
+                </div>
+
+                <h3 class="mb-3 text-2xl font-black font-headline text-slate-800">تأكيد فك الارتباط</h3>
+
+                <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
+                    هل أنت متأكد من فك ارتباط الطرد رقم <br>
+                    <span class="text-base font-bold text-slate-800 font-headline"
+                        x-text="deleteShipmentData.bond_number"></span>؟<br>
+                    <span class="text-rose-500/80">سيتم إرجاع هذا الطرد إلى المستودع.</span>
+                </p>
+
+                {{-- فورم الإرسال --}}
+                <form :action="deleteShipmentData.url" method="POST" @submit="isSubmitting = true" class="flex gap-3 px-2">
+                    @csrf
+
+                    <button type="button" @click="showDeleteModal = false"
+                        class="flex-1 py-4 text-sm font-bold rounded-2xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 font-headline">
+                        تراجع
+                    </button>
+
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex-1 py-4 text-sm font-bold text-white bg-rose-500 rounded-2xl shadow-lg transition-all hover:bg-rose-600 shadow-rose-500/30 active:scale-95 font-headline flex items-center justify-center gap-2">
+                        <span x-show="!isSubmitting">نعم، فك الارتباط</span>
+                        <span x-show="isSubmitting"
+                            class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection

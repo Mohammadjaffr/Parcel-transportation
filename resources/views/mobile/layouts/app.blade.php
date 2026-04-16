@@ -83,7 +83,7 @@
 </head>
 
 <body class="min-h-screen bg-gray-50 bg-surface text-on-surface">
-
+    
     @include('mobile.layouts.header')
 
     <main class="px-6 pt-24 pb-32">

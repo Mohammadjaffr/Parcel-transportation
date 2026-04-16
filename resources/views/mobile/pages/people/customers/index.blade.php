@@ -190,12 +190,12 @@
                                 </button>
 
                                 {{-- حذف العميل --}}
-                                <button type="button"
+                                {{-- <button type="button"
                                     @click="openMenu = false; openDeleteModal({{ $customer->id }}, {{ json_encode($customer->name) }})"
                                     class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors text-right">
                                     <span class="material-symbols-outlined text-[18px]">delete_outline</span>
                                     حذف العميل
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>

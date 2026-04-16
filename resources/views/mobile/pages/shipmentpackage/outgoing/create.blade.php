@@ -32,7 +32,7 @@
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <div>
-                    <h1 class="text-xl font-black font-headline text-slate-800">إنشاء شحنة</h1>
+                    <h1 class="text-xl font-black font-headline text-slate-800">تجهيز شحنة</h1>
                 </div>
             </div>
         </div>

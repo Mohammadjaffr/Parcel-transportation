@@ -16,6 +16,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptHeaderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
@@ -48,6 +49,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
     Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing.index');
+    Route::get('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
+    Route::put('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
     Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming.index');
     Route::resource('shipment', ShipmentController::class);
     Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
@@ -183,6 +186,7 @@ Route::middleware('auth')->group(function () {
     Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
     Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
     Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
+        Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
     Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
     Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
     Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
@@ -260,6 +264,8 @@ Route::middleware('auth')->group(function () {
     Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
     
     
+
+    Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 });
 
 
