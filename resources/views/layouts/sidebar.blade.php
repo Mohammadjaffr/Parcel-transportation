@@ -151,7 +151,7 @@
                                 <ul
                                     class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
-                                        <a href="{{ route('offices.index') }}"
+                                        <a href="{{ route('app.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('offices.index') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             المكاتب الموثوقة
                                         </a>
@@ -168,19 +168,54 @@
                     </li>
 
                     {{-- إدارة الطرود --}}
-                    <li>
-                        <a href="{{ route('shipment.index') }}"
+                    {{-- إدارة الطرود (قائمة منسدلة) --}}
+                    <li x-init="@if (request()->routeIs('shipment.outgoing.*') || request()->routeIs('shipment.incoming.*') || request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
+                        <a href="#" @click.prevent="selected = (selected === 'Shipments' ? '' : 'Shipments')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="request()->routeIs('shipment.index') ?
-                                                              'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' : 
-                                                              'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
+                            :class="(selected === 'Shipments' ||
+                                {{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }}) ?
+                            'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
+                            'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="request()->routeIs('shipment.index') ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="(selected === 'Shipments' ||
+                                    {{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }}) ?
+                                'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 inventory_2
                             </span>
                             <span :class="sidebarToggle ? 'lg:hidden' : 'block'">إدارة الطرود</span>
+
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="[selected === 'Shipments' ? 'rotate-180' : '', sidebarToggle ? 'lg:hidden' : '']">
+                                expand_more
+                            </span>
                         </a>
+
+                        {{-- القائمة الفرعية --}}
+                        <div x-cloak x-show="selected === 'Shipments'" x-collapse>
+                            <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
+                                :class="sidebarToggle ? 'lg:hidden' : 'block'">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                    <li>
+                                        <a href="{{ route('shipment.outgoing.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            الطرود الصادرة
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('shipment.incoming.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            الطرود الواردة
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </li>
 
                     {{-- حركة الشحنات (قائمة منسدلة) --}}
@@ -217,13 +252,13 @@
                                 <ul
                                     class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
-                                        <a href="{{ route('shipmentpackage.index') }}"
+                                        <a href="{{ route('shipmentpackage.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الشحنات المرسلة
                                         </a>
                                     </li>
                                     <li>
-                                        <a href="{{ route('receipts.index') }}"
+                                        <a href="{{ route('shipmentpackage.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('receipts.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الشحنات المستلمة
                                         </a>

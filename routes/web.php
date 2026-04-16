@@ -48,7 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
     Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing.index');
-    Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming');
+    Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming.index');
     Route::resource('shipment', ShipmentController::class);
     Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
@@ -239,6 +239,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/offices/create', [OfficeController::class, 'create'])->name('offices.create');
     Route::get('/offices/{office}', [OfficeController::class, 'show'])->name('offices.show');
     Route::get('/offices/{office}', [OfficeController::class, 'edit'])->name('offices.edit');
+
     Route::delete('/offices/{office}', [OfficeController::class, 'destroy'])->name('offices.destroy');
     Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
     Route::get('/app', [AppController::class, 'index'])->name('app.index');

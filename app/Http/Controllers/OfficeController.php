@@ -18,8 +18,8 @@ class OfficeController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.office.index');
         }
-
-        return view('pages.office.index');
+        $offices = Office::latest()->paginate(10)->withQueryString();
+        return view('pages.office.index', compact('offices'));
     }
 
     public function unverifiedIndex(Request $request)
@@ -79,20 +79,25 @@ class OfficeController extends Controller
             }
         });
 
-        session()->flash('success_title', 'تم الحفظ!');
-        session()->flash('success_message', 'تم إضافة المكتب وفروعه بنجاح.');
-
-        return redirect()->route('offices.unverified.index');
+        return WebResponseClass::sendResponse(
+            'تم الحفظ!',
+            'تم إضافة المكتب وفروعه بنجاح.',
+            'حسناً',
+              'offices.unverified.index'
+        );
 
     } catch (\Exception $e) {
-        return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
+        return WebResponseClass::sendExceptionError($e);
     }
 }
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $office = Office::with('branches')->findOrFail($id);
-        return view('mobile.pages.office.unverified.edit', compact('office'));
+        if ($request->isMobile) {
+            return view('mobile.pages.office.unverified.edit', compact('office'));
+        }
+        return view('pages.office.unverified.edit', compact('office'));
     }
 
     public function show(Request $request, $id)
@@ -109,8 +114,8 @@ class OfficeController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.office.unverified.show', compact('office', 'shipments'));
         }
-        // ضبظ النسار ي السعدي 
-        return view('pages.offices.show', compact('office', 'shipments'));
+        // ضبط المسار ليعمل في الديسكتوب
+        return view('pages.office.unverified.show', compact('office', 'shipments'));
     }
     public function update(Request $request, $id)
     {
@@ -137,9 +142,14 @@ class OfficeController extends Controller
                 }
             });
 
-            return redirect()->route('offices.unverified.index')->with('success', 'تم تحديث البيانات بنجاح');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث المكتب بنجاح.',
+                'حسناً',
+                'offices.unverified.index'
+            );
         } catch (\Exception $e) {
-            return back()->withInput()->with('error', 'حدث خطأ أثناء التحديث');
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -150,7 +160,8 @@ class OfficeController extends Controller
             return WebResponseClass::sendResponse(
                 'تم الحذف!',
                 'تم حذف المكتب بنجاح.',
-                'حسناً'
+                'حسناً',
+                'offices.unverified.index'
             );
         } catch (\Exception $e) {
             return WebResponseClass::sendExceptionError($e);
