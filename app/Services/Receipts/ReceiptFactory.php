@@ -5,6 +5,7 @@ namespace App\Services\Receipts;
 use App\Interfaces\ReceiptStrategyInterface;
 use App\Services\Receipts\Types\ReceiverDeliveryReceipt;
 use App\Services\Receipts\Types\SenderShipmentReceipt;
+use App\Services\Receipts\Types\ShipmentDetection;
 use Exception;
 
 class ReceiptFactory
@@ -14,6 +15,7 @@ class ReceiptFactory
         return match ($type) {
             'sender'   => new SenderShipmentReceipt(),
             'receiver' => new ReceiverDeliveryReceipt(),
+            'ShipmentDetection'     => new ShipmentDetection(),
             default    => throw new Exception("نوع السند غير مدعوم: {$type}")
         };
     }

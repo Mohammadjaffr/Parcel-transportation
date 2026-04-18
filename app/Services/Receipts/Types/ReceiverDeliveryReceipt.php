@@ -7,6 +7,10 @@ use App\Interfaces\ReceiptStrategyInterface;
 
 class ReceiverDeliveryReceipt implements ReceiptStrategyInterface
 {
+    public function sizepage(): string|array
+    {
+        return array(80, 150); // Default size
+    }
     public function fetchData(int $referenceId): array
     {
         $shipment = Shipment::with(['receiverCustomer', 'creator'])->findOrFail($referenceId);

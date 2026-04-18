@@ -3,14 +3,14 @@
 @section('title', 'الشحنات المرسلة')
 
 @section('content')
-    <div class="flex flex-col gap-5 px-4 pb-28 pt-4">
+    <div class="flex flex-col gap-5 px-4 pt-4 pb-28">
 
         {{-- الهيدر الاحترافي --}}
-        <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-4">
+        <div class="flex justify-between items-center mb-2">
+            <div class="flex gap-4 items-center">
                 {{-- زر الرجوع للقائمة السابقة --}}
                 <a href="{{ route('mobile.shipmentpackage.index') }}"
-                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 active:scale-90 transition-all">
+                    class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <div>
@@ -28,7 +28,7 @@
         {{-- شريط البحث المطور --}}
         <div class="relative group">
             <span
-                class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+                class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</span>
             <input type="text" placeholder="ابحث برقم التتبع أو الوجهة..."
                 class="w-full h-14 pr-12 pl-4 bg-white border-none rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 outline-none text-sm font-bold transition-all placeholder:text-slate-300">
         </div>
@@ -77,7 +77,7 @@
                     </div>
 
                     {{-- ================= 1. الرأس (Header) ================= --}}
-                    <div class="p-5 flex justify-between items-start">
+                    <div class="flex justify-between items-start p-5">
                         <div class="flex gap-3 items-center">
                             {{-- أيقونة الإرسالية بشكل عصري --}}
                             <div
@@ -85,7 +85,7 @@
                                 <span class="material-symbols-outlined text-slate-500 text-[22px]">local_shipping</span>
                             </div>
                             <div class="flex flex-col">
-                                <h3 class="text-sm font-black text-slate-900 font-headline tracking-tight">
+                                <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
                                     {{ $package->tracking_number }}
                                 </h3>
                                 <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1">
@@ -95,7 +95,7 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex gap-2 items-center">
                             {{-- شارة الحالة (Pill Badge) بتصميم FinTech --}}
                             @php
                                 $statusMap = [
@@ -114,7 +114,7 @@
                             {{-- قائمة الثلاث نقاط (Kebab Menu) الاحترافية --}}
                             <div class="relative">
                                 <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                    class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                    class="flex justify-center items-center w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20">
                                     <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                 </button>
 
@@ -123,22 +123,22 @@
 
                                     {{-- رابط عرض التفاصيل --}}
                                     <a href="{{ route('shipmentpackage.outgoing.show', $package->id) }}"
-                                        class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors">
+                                        class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                                         عرض التفاصيل
                                     </a>
 
-                                    <a href="#"
-                                        class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors">
+                                    <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}" target="_blank"
+                                        class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">print</span>
                                         طباعة كشف الرحلة
                                     </a>
 
                                     @if($package->driver && $package->driver->phone)
-                                        <div class="h-px bg-slate-100/80 my-1 mx-3"></div>
+                                        <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
                                         {{-- التواصل مع السائق (واتساب) --}}
                                         <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}" target="_blank"
-                                            class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                                            class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                                             {{-- 💡 أيقونة واتساب باللون الأخضر الرسمي --}}
                                             <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
                                                 xmlns="http://www.w3.org/2000/svg">
@@ -154,22 +154,22 @@
                     </div>
 
                     {{-- ================= 2. الفاصل المقطّع (Ticket Divider) ================= --}}
-                    <div class="relative flex items-center h-4 overflow-hidden">
+                    <div class="flex overflow-hidden relative items-center h-4">
                         <div
-                            class="absolute -right-2 w-4 h-4 bg-slate-50/50 rounded-full border-l border-slate-200/60 shadow-inner">
+                            class="absolute -right-2 w-4 h-4 rounded-full border-l shadow-inner bg-slate-50/50 border-slate-200/60">
                         </div>
                         <div class="w-full border-t-[1.5px] border-dashed border-slate-200/70"></div>
                         <div
-                            class="absolute -left-2 w-4 h-4 bg-slate-50/50 rounded-full border-r border-slate-200/60 shadow-inner">
+                            class="absolute -left-2 w-4 h-4 rounded-full border-r shadow-inner bg-slate-50/50 border-slate-200/60">
                         </div>
                     </div>
 
                     {{-- ================= 3. جسد البطاقة ================= --}}
                     <div class="p-5 pt-4 space-y-5">
-                        <div class="flex items-start justify-between gap-4">
+                        <div class="flex gap-4 justify-between items-start">
 
                             {{-- العمود الأيمن: خط السير (من المستودع للسائق) --}}
-                            <div class="flex items-stretch gap-3 w-1/2">
+                            <div class="flex gap-3 items-stretch w-1/2">
                                 <div class="flex flex-col items-center mt-1">
                                     <div class="w-2.5 h-2.5 rounded-full border-[2.5px] border-slate-300 bg-white z-10"></div>
                                     <div class="w-[1.5px] h-10 bg-slate-200 my-0.5"></div>
@@ -178,7 +178,7 @@
                                     </div>
                                 </div>
 
-                                <div class="flex-1 flex flex-col justify-between space-y-4">
+                                <div class="flex flex-col flex-1 justify-between space-y-4">
                                     <div>
                                         <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">فرع التجميع</p>
                                         <p class="text-xs font-bold text-slate-800 truncate max-w-[100px]">
@@ -198,15 +198,15 @@
 
                             {{-- العمود الأيسر: تفاصيل إضافية للإرسالية --}}
                             <div
-                                class="w-1/2 bg-slate-50/70 rounded-xl p-3 border border-slate-100/80 flex flex-col gap-2.5 justify-center">
-                                <div class="flex items-center justify-between">
+                                class="flex flex-col gap-2.5 justify-center p-3 w-1/2 rounded-xl border bg-slate-50/70 border-slate-100/80">
+                                <div class="flex justify-between items-center">
                                     <span class="text-[10px] text-slate-400 font-bold">بواسطة:</span>
                                     <span
                                         class="text-[10px] font-black text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-100 shadow-sm truncate max-w-[70px]">
                                         {{ $package->creator->name ?? 'النظام' }}
                                     </span>
                                 </div>
-                                <div class="flex items-center justify-between mt-1 pt-2 border-t border-slate-200/50">
+                                <div class="flex justify-between items-center pt-2 mt-1 border-t border-slate-200/50">
                                     <span class="text-[10px] text-slate-400 font-bold">رقم السائق:</span>
                                     <span class="text-[11px] font-black text-slate-600 dir-ltr text-right">
                                         {{ $package->driver->phone ?? '---' }}
@@ -221,7 +221,7 @@
 
                             {{-- الحالة --}}
                             <div class="flex gap-2.5 items-center">
-                                <div class="w-9 h-9 rounded-xl bg-slate-700 flex items-center justify-center text-slate-300">
+                                <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-slate-700 text-slate-300">
                                     <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                                 </div>
                                 <div>
@@ -233,9 +233,9 @@
                             </div>
 
                             {{-- إجمالي الطرود (مساحة بارزة جداً) --}}
-                            <div class="text-left pl-2">
+                            <div class="pl-2 text-left">
                                 <p class="text-[9px] font-bold text-slate-400 mb-0.5">إجمالي الطرود</p>
-                                <p class="text-lg font-black text-amber-400 font-headline tracking-tight leading-none">
+                                <p class="text-lg font-black tracking-tight leading-none text-amber-400 font-headline">
                                     {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}
                                     <span class="text-[10px] font-bold text-slate-300">طرد</span>
                                 </p>
@@ -248,7 +248,7 @@
                 <div
                     class="flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-dashed border-slate-200/70 mt-4 shadow-sm">
                     <div class="relative mb-4">
-                        <div class="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                        <div class="absolute inset-0 rounded-full blur-xl bg-primary/20"></div>
                         <div
                             class="w-16 h-16 bg-gradient-to-br from-slate-50 to-slate-100 rounded-[18px] flex items-center justify-center border border-white shadow-sm relative z-10">
                             <span class="material-symbols-outlined text-[32px] text-slate-300">search_off</span>
@@ -268,7 +268,7 @@
 
         {{-- الترقيم المخصص --}}
         @if($packages->hasPages())
-            <div class="mt-6 px-2">
+            <div class="px-2 mt-6">
                 {{ $packages->links('vendor.pagination.tailwind') }}
             </div>
         @endif

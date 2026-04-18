@@ -4,18 +4,18 @@
 
 @section('content')
     {{-- تم تقليل pb-24 إلى pb-8 لأننا أزلنا الزر العائم --}}
-    <div class="flex flex-col gap-5 px-4 pb-8 relative min-h-screen bg-slate-50/50 pt-6">
+    <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50">
 
         {{-- ================= الهيدر السريع ================= --}}
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div class="flex justify-between items-center">
+            <div class="flex gap-3 items-center">
                 <a href="{{ route('shipment.index') }}"
-                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 hover:text-primary active:scale-90 transition-all">
+                    class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <div>
                     <h1 class="text-lg font-black font-headline text-slate-800">رقم الطرد</h1>
-                    <p class="text-sm font-bold text-primary tracking-wider">{{ $shipment->bond_number }}</p>
+                    <p class="text-sm font-bold tracking-wider text-primary">{{ $shipment->bond_number }}</p>
                 </div>
             </div>
 
@@ -51,7 +51,7 @@
         </div>
 
         {{-- ================= أزرار الإجراءات الراقية (Premium Actions) ================= --}}
-        <div class="flex items-center gap-3 mt-1">
+        <div class="flex gap-3 items-center mt-1">
 
             @php
                 $currentStatus = $shipment->status;
@@ -95,7 +95,7 @@
                         {{-- الزر الرئيسي --}}
                         <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
                             class="w-full flex items-center justify-between px-4 h-12 bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(30,41,59,0.2)] hover:bg-slate-700 active:scale-95 transition-all">
-                            <div class="flex items-center gap-2">
+                            <div class="flex gap-2 items-center">
                                 <span class="material-symbols-outlined text-[18px]">update</span>
                                 <span>تحديث حالة الطرد</span>
                             </div>
@@ -133,8 +133,8 @@
             @endif
 
             {{-- زر الطباعة --}}
-            <a href="#"
-                class="flex-1 flex items-center justify-center gap-2 h-12 bg-white text-slate-600 rounded-2xl font-bold text-xs shadow-sm border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all">
+            <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}"
+                class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 طباعة
             </a>
@@ -144,17 +144,17 @@
         <div
             class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
             {{-- تأثيرات الإضاءة الخلفية (Glassmorphism Glow) --}}
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none">
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none bg-primary/5"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-3xl pointer-events-none bg-emerald-500/5">
             </div>
 
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-3">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex gap-3 items-center">
                     <div
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shadow-inner">
+                        class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-primary/20 to-primary/5 text-primary">
                         <span class="material-symbols-outlined text-[20px]">route</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-sm font-headline">مسار الرحلة</h3>
+                    <h3 class="text-sm font-black text-slate-800 font-headline">مسار الرحلة</h3>
                 </div>
                 <span class="px-3 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-bold border border-slate-100">
                     {{ $shipment->created_at->format('Y-m-d h:i A') }}
@@ -176,7 +176,7 @@
             @endphp
 
             {{-- التايم لاين (Timeline) الحديث --}}
-            <div class="relative pl-2 pr-6 space-y-8">
+            <div class="relative pr-6 pl-2 space-y-8">
                 {{-- الخط المتصل المتدرج --}}
                 <div
                     class="absolute right-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-primary/30 to-primary rounded-full">
@@ -188,18 +188,18 @@
                         class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-white border-4 border-slate-300 rounded-full shadow-sm">
                     </div>
                     <div
-                        class="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                        class="p-3.5 rounded-2xl border transition-colors bg-slate-50/50 border-slate-100/50 hover:bg-slate-50">
                         <span class="text-[10px] font-black text-slate-400 mb-1 block">المرسل •
                             {{ $shipment->senderBranch?->name ?? 'مكتب خارجي' }}</span>
-                        <div class="flex items-center justify-between">
+                        <div class="flex justify-between items-center">
                             <div>
                                 <span
-                                    class="font-black text-sm text-slate-800 block">{{ $shipment->senderCustomer?->name ?? 'عميل نقدي' }}</span>
+                                    class="block text-sm font-black text-slate-800">{{ $shipment->senderCustomer?->name ?? 'عميل نقدي' }}</span>
                                 <span
-                                    class="text-xs text-slate-500 dir-ltr text-right mt-0.5 block font-medium">{{ $shipment->senderCustomer?->phone }}</span>
+                                    class="block mt-0.5 text-xs font-medium text-right text-slate-500 dir-ltr">{{ $shipment->senderCustomer?->phone }}</span>
                             </div>
                             @if($shipment->senderCustomer?->phone)
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للمرسل --}}
                                     <a href="https://wa.me/{{ ltrim($shipment->senderCustomer->phone, '+') }}?text={{ urlencode($senderMsg) }}"
                                         target="_blank"
@@ -212,7 +212,7 @@
                                     </a>
                                     {{-- زر الاتصال للمرسل --}}
                                     <a href="tel:{{ $shipment->senderCustomer?->phone }}"
-                                        class="w-10 h-10 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center text-slate-600 hover:text-primary hover:border-primary/30 active:scale-95 transition-all">
+                                        class="flex justify-center items-center w-10 h-10 bg-white rounded-xl border shadow-sm transition-all border-slate-100 text-slate-600 hover:text-primary hover:border-primary/30 active:scale-95">
                                         <span class="material-symbols-outlined text-[18px]">call</span>
                                     </a>
                                 </div>
@@ -230,15 +230,15 @@
                         class="bg-primary/[0.02] p-3.5 rounded-2xl border border-primary/10 hover:bg-primary/5 transition-colors">
                         <span class="text-[10px] font-black text-primary/60 mb-1 block">المستلم •
                             {{ $shipment->receiverBranch?->name ?? 'مكتب خارجي' }}</span>
-                        <div class="flex items-center justify-between">
+                        <div class="flex justify-between items-center">
                             <div>
                                 <span
-                                    class="font-black text-sm text-primary block">{{ $shipment->receiverCustomer?->name ?? 'عميل نقدي' }}</span>
+                                    class="block text-sm font-black text-primary">{{ $shipment->receiverCustomer?->name ?? 'عميل نقدي' }}</span>
                                 <span
-                                    class="text-xs text-primary/70 dir-ltr text-right mt-0.5 block font-medium">{{ $shipment->receiverCustomer?->phone }}</span>
+                                    class="block mt-0.5 text-xs font-medium text-right text-primary/70 dir-ltr">{{ $shipment->receiverCustomer?->phone }}</span>
                             </div>
                             @if($shipment->receiverCustomer?->phone)
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للمستلم --}}
                                     <a href="https://wa.me/{{ ltrim($shipment->receiverCustomer->phone, '+') }}?text={{ urlencode($receiverMsg) }}"
                                         target="_blank"
@@ -251,7 +251,7 @@
                                     </a>
                                     {{-- زر الاتصال للمستلم --}}
                                     <a href="tel:{{ $shipment->receiverCustomer?->phone }}"
-                                        class="w-10 h-10 bg-primary text-white rounded-xl shadow-sm shadow-primary/30 flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all">
+                                        class="flex justify-center items-center w-10 h-10 text-white rounded-xl shadow-sm transition-all bg-primary shadow-primary/30 hover:bg-primary/90 active:scale-95">
                                         <span class="material-symbols-outlined text-[18px]">call</span>
                                     </a>
                                 </div>
@@ -271,22 +271,22 @@
 
             <div class="bg-gradient-to-br from-white to-blue-50/30 p-6 rounded-[2rem] border border-blue-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
                 {{-- تأثيرات الإضاءة --}}
-                <div class="absolute -top-10 -left-10 w-40 h-40 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -top-10 -left-10 w-40 h-40 rounded-full blur-3xl pointer-events-none bg-blue-500/5"></div>
 
-                <div class="flex items-center justify-between mb-5 relative z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
+                <div class="flex relative z-10 justify-between items-center mb-5">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex justify-center items-center w-10 h-10 text-blue-600 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl shadow-inner">
                             <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                         </div>
-                        <h3 class="font-black text-slate-800 text-sm font-headline">بيانات رحلة التوصيل</h3>
+                        <h3 class="text-sm font-black text-slate-800 font-headline">بيانات رحلة التوصيل</h3>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-3 relative z-10">
+                <div class="flex relative z-10 flex-col gap-3">
                     {{-- تفاصيل السائق --}}
-                    <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-blue-50 flex items-center justify-between shadow-sm">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500">
+                    <div class="flex justify-between items-center p-4 rounded-2xl border border-blue-50 shadow-sm backdrop-blur-sm bg-white/80">
+                        <div class="flex gap-3 items-center">
+                            <div class="flex justify-center items-center w-10 h-10 rounded-full bg-slate-100 text-slate-500">
                                 <span class="material-symbols-outlined text-[20px]">person</span>
                             </div>
                             <div>
@@ -298,7 +298,7 @@
 
                         {{-- أزرار التواصل (واتساب + اتصال) --}}
                         @if($shipment->package->driver && $shipment->package->driver->phone)
-                            <div class="flex items-center gap-1.5">
+                            <div class="flex gap-1.5 items-center">
                                 {{-- زر الواتساب --}}
                                 <a href="https://wa.me/{{ ltrim($shipment->package->driver->phone, '+') }}?text={{ urlencode($driverMsg) }}"
                                     target="_blank"
@@ -310,7 +310,7 @@
 
                                 {{-- زر الاتصال --}}
                                 <a href="tel:{{ $shipment->package->driver->phone }}"
-                                    class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl shadow-sm border border-blue-100 flex items-center justify-center hover:bg-blue-600 hover:text-white active:scale-95 transition-all">
+                                    class="flex justify-center items-center w-10 h-10 text-blue-600 bg-blue-50 rounded-xl border border-blue-100 shadow-sm transition-all hover:bg-blue-600 hover:text-white active:scale-95">
                                     <span class="material-symbols-outlined text-[18px]">call</span>
                                 </a>
                             </div>
@@ -318,10 +318,10 @@
                     </div>
 
                     {{-- تفاصيل الإرسالية المجمعة وزر الانتقال --}}
-                    <div class="bg-blue-600 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-blue-600/20">
+                    <div class="flex justify-between items-center p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20">
                         <div>
                             <p class="text-[9px] font-black text-blue-200 mb-0.5 uppercase tracking-wider">ضمن الإرسالية المجمعة</p>
-                            <p class="text-sm font-black text-white tracking-widest font-mono">
+                            <p class="font-mono text-sm font-black tracking-widest text-white">
                                 {{ $shipment->package->tracking_number }}</p>
                         </div>
 
@@ -338,55 +338,55 @@
 
         {{-- ================= بطاقة المحتويات (Bento Style) ================= --}}
         <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-center gap-3 mb-5">
+            <div class="flex gap-3 items-center mb-5">
                 <div
-                    class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center text-slate-600 shadow-inner">
+                    class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-slate-100 to-slate-50 text-slate-600">
                     <span class="material-symbols-outlined text-[20px]">inventory_2</span>
                 </div>
-                <h3 class="font-black text-slate-800 text-sm font-headline">محتويات الطرد</h3>
+                <h3 class="text-sm font-black text-slate-800 font-headline">محتويات الطرد</h3>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col gap-1.5 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                <div class="flex flex-col gap-1.5 p-4 rounded-2xl border bg-slate-50/80 border-slate-100">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">نوع التغليف</span>
-                    <span class="text-sm font-black text-slate-800 flex items-center gap-1">
+                    <span class="flex gap-1 items-center text-sm font-black text-slate-800">
                         @if($shipment->package_type == 'carton') كرتون 📦
                         @elseif($shipment->package_type == 'bag') كيس 🛍️
                         @elseif($shipment->package_type == 'envelope') مغلف ✉️
                         @else أخرى 📦 @endif
                     </span>
                 </div>
-                <div class="flex flex-col gap-1.5 bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                <div class="flex flex-col gap-1.5 p-4 rounded-2xl border bg-slate-50/80 border-slate-100">
                     <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">الوزن الفعلي</span>
                     <span class="text-sm font-black text-slate-800">{{ $shipment->weight }} <span
-                            class="text-xs text-slate-500 font-bold">كجم</span> ⚖️</span>
+                            class="text-xs font-bold text-slate-500">كجم</span> ⚖️</span>
                 </div>
 
                 @if($shipment->no_gallons_honey > 0 || $shipment->no_honey_jars > 0)
                     <div
-                        class="col-span-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100/50 p-4 rounded-2xl flex items-center justify-around relative overflow-hidden">
+                        class="flex overflow-hidden relative col-span-2 justify-around items-center p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-100/50">
                         {{-- زخرفة للخلفية --}}
                         <span
                             class="material-symbols-outlined absolute -left-4 -bottom-4 text-[80px] text-amber-500/5 rotate-12">hive</span>
 
                         @if($shipment->no_gallons_honey > 0)
-                            <div class="flex flex-col items-center gap-1 relative z-10">
+                            <div class="flex relative z-10 flex-col gap-1 items-center">
                                 <span class="text-[10px] font-black text-amber-600/70">دباب عسل</span>
                                 <span
-                                    class="text-xl font-black text-amber-700 flex items-center gap-1">{{ $shipment->no_gallons_honey }}
+                                    class="flex gap-1 items-center text-xl font-black text-amber-700">{{ $shipment->no_gallons_honey }}
                                     <span class="text-sm">🍯</span></span>
                             </div>
                         @endif
 
                         @if($shipment->no_gallons_honey > 0 && $shipment->no_honey_jars > 0)
-                            <div class="w-px h-10 bg-amber-200/50 rounded-full relative z-10"></div>
+                            <div class="relative z-10 w-px h-10 rounded-full bg-amber-200/50"></div>
                         @endif
 
                         @if($shipment->no_honey_jars > 0)
-                            <div class="flex flex-col items-center gap-1 relative z-10">
+                            <div class="flex relative z-10 flex-col gap-1 items-center">
                                 <span class="text-[10px] font-black text-amber-600/70">قوارير عسل</span>
                                 <span
-                                    class="text-xl font-black text-amber-700 flex items-center gap-1">{{ $shipment->no_honey_jars }}
+                                    class="flex gap-1 items-center text-xl font-black text-amber-700">{{ $shipment->no_honey_jars }}
                                     <span class="text-sm">🏺</span></span>
                             </div>
                         @endif
@@ -395,14 +395,14 @@
             </div>
 
             @if($shipment->notes)
-                <div class="mt-3 p-4 bg-rose-50/50 border border-rose-100 rounded-2xl flex gap-3 items-start">
-                    <div class="bg-rose-100 text-rose-500 rounded-full p-1 shrink-0 mt-0.5">
+                <div class="flex gap-3 items-start p-4 mt-3 rounded-2xl border border-rose-100 bg-rose-50/50">
+                    <div class="p-1 mt-0.5 text-rose-500 bg-rose-100 rounded-full shrink-0">
                         <span class="material-symbols-outlined text-[14px]">priority_high</span>
                     </div>
                     <div>
                         <span class="text-[10px] font-black text-rose-500 block mb-0.5 uppercase tracking-wider">ملاحظات
                             هامة</span>
-                        <p class="text-xs font-bold text-rose-800 leading-relaxed">{{ $shipment->notes }}</p>
+                        <p class="text-xs font-bold leading-relaxed text-rose-800">{{ $shipment->notes }}</p>
                     </div>
                 </div>
             @endif
@@ -410,13 +410,13 @@
 
         {{-- ================= بطاقة المالية (Digital Wallet Style) ================= --}}
         <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-3">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex gap-3 items-center">
                     <div
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center text-emerald-600 shadow-inner">
+                        class="flex justify-center items-center w-10 h-10 text-emerald-600 bg-gradient-to-br from-emerald-100 to-emerald-50 rounded-xl shadow-inner">
                         <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-sm font-headline">الخلاصة المالية</h3>
+                    <h3 class="text-sm font-black text-slate-800 font-headline">الخلاصة المالية</h3>
                 </div>
                 <div
                     class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[10px] font-black flex items-center gap-1.5 shadow-sm">
@@ -428,7 +428,7 @@
                 </div>
             </div>
 
-            <div class="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-4">
+            <div class="p-4 space-y-4 rounded-2xl border bg-slate-50/50 border-slate-100">
                 <div class="flex justify-between items-center">
                     <span class="text-xs font-black text-slate-500">إجمالي رسوم الشحن</span>
                     <span class="text-sm font-black text-slate-800">{{ number_format($shipment->total_amount, 0) }} <span
@@ -443,7 +443,7 @@
                     </div>
 
                     {{-- فاصل --}}
-                    <div class="border-t border-dashed border-slate-200 my-2"></div>
+                    <div class="my-2 border-t border-dashed border-slate-200"></div>
 
                     <div class="flex justify-between items-end">
                         <div class="flex flex-col">
@@ -457,7 +457,7 @@
                     </div>
                 @elseif($shipment->payment_method == 'cod')
                     {{-- فاصل --}}
-                    <div class="border-t border-dashed border-slate-200 my-2"></div>
+                    <div class="my-2 border-t border-dashed border-slate-200"></div>
 
                     <div class="flex justify-between items-end">
                         <div class="flex flex-col">

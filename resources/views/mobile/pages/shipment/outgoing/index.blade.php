@@ -136,7 +136,7 @@
                                     @endif
 
                                     {{-- طباعة السند --}}
-                                    <a href="{{ route('receipt.generate', ['type' => 'receiver', 'id' => $shipment->id]) }}" target="_blank"
+                                    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}" target="_blank"
                                         class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">print</span>
                                         طباعة السند

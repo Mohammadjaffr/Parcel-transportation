@@ -4,7 +4,7 @@
 
 @section('content')
     {{-- إضافة x-data رئيسي للتحكم بالمودال في مستوى الصفحة بالكامل --}}
-    <div class="flex flex-col gap-5 px-4 pb-8 relative min-h-screen bg-slate-50/50 pt-6" x-data="{ 
+    <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
                             isAddModalOpen: false, 
                             searchShipment: '',
                             showDeleteModal: false,
@@ -13,15 +13,15 @@
                         }">
 
         {{-- ================= الهيدر السريع ================= --}}
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div class="flex justify-between items-center">
+            <div class="flex gap-3 items-center">
                 <a href="{{ route('shipmentpackage.outgoing.index') }}"
-                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 hover:text-primary active:scale-90 transition-all">
+                    class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <div>
                     <h1 class="text-lg font-black font-headline text-slate-800">رقم الشحنة</h1>
-                    <p class="text-sm font-bold text-primary tracking-wider">{{ $package->tracking_number }}</p>
+                    <p class="text-sm font-bold tracking-wider text-primary">{{ $package->tracking_number }}</p>
                 </div>
             </div>
 
@@ -57,7 +57,7 @@
         </div>
 
         {{-- ================= أزرار الإجراءات الراقية (Premium Actions) ================= --}}
-        <div class="flex items-center gap-3 mt-1">
+        <div class="flex gap-3 items-center mt-1">
 
             @php
                 $currentStatus = $package->status;
@@ -105,7 +105,7 @@
                         {{-- الزر الرئيسي --}}
                         <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
                             class="w-full flex items-center justify-between px-4 h-12 bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(30,41,59,0.2)] hover:bg-slate-700 active:scale-95 transition-all">
-                            <div class="flex items-center gap-2">
+                            <div class="flex gap-2 items-center">
                                 <span class="material-symbols-outlined text-[18px]">update</span>
                                 <span>تحديث حالة الرحلة</span>
                             </div>
@@ -119,7 +119,7 @@
                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                             class="absolute top-full right-0 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
 
-                            <div class="px-3 py-2 border-b border-slate-50 mb-1">
+                            <div class="px-3 py-2 mb-1 border-b border-slate-50">
                                 <span class="text-[9px] font-bold text-slate-400">تنبيه: سيتم تحديث حالة جميع الطرود بداخلها
                                     تلقائياً.</span>
                             </div>
@@ -148,8 +148,8 @@
             @endif
 
             {{-- زر الطباعة --}}
-            <a href="#"
-                class="flex-1 flex items-center justify-center gap-2 h-12 bg-white text-slate-600 rounded-2xl font-bold text-xs shadow-sm border border-slate-100 hover:bg-slate-50 active:scale-95 transition-all">
+            <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}" target="_blank"
+                class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 طباعة
             </a>
@@ -158,17 +158,17 @@
         {{-- ================= بطاقة المسار (من الفرع -> السائق -> الوجهات) ================= --}}
         <div
             class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none">
+            <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-3xl pointer-events-none bg-primary/5"></div>
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-3xl pointer-events-none bg-emerald-500/5">
             </div>
 
-            <div class="flex items-center justify-between mb-8 relative z-10">
-                <div class="flex items-center gap-3">
+            <div class="flex relative z-10 justify-between items-center mb-8">
+                <div class="flex gap-3 items-center">
                     <div
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary shadow-inner">
+                        class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-primary/20 to-primary/5 text-primary">
                         <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-sm font-headline">تفاصيل التكليف وخط السير</h3>
+                    <h3 class="text-sm font-black text-slate-800 font-headline">تفاصيل التكليف وخط السير</h3>
                 </div>
                 <span class="px-3 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-bold border border-slate-100">
                     {{ $package->created_at->format('Y-m-d h:i A') }}
@@ -194,7 +194,7 @@
             @endphp
 
             {{-- التايم لاين الحديث للإرسالية --}}
-            <div class="relative pl-2 pr-6 space-y-8 z-10">
+            <div class="relative z-10 pr-6 pl-2 space-y-8">
                 {{-- الخط المتصل المتدرج --}}
                 <div
                     class="absolute right-[11px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-slate-200 via-primary/50 to-emerald-400 rounded-full">
@@ -206,13 +206,13 @@
                         class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-white border-4 border-slate-300 rounded-full shadow-sm">
                     </div>
                     <div
-                        class="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/50 hover:bg-slate-50 transition-colors">
+                        class="p-3.5 rounded-2xl border transition-colors bg-slate-50/50 border-slate-100/50 hover:bg-slate-50">
                         <span class="text-[10px] font-black text-slate-400 mb-1 block">نقطة الانطلاق (فرع التجميع)</span>
-                        <div class="flex items-center justify-between">
+                        <div class="flex justify-between items-center">
                             <div>
                                 <span
-                                    class="font-black text-sm text-slate-800 block">{{ $package->senderBranch->name ?? 'مستودع غير محدد' }}</span>
-                                <span class="text-xs text-slate-500 mt-0.5 block font-medium flex items-center gap-1">
+                                    class="block text-sm font-black text-slate-800">{{ $package->senderBranch->name ?? 'مستودع غير محدد' }}</span>
+                                <span class="block flex gap-1 items-center mt-0.5 text-xs font-medium text-slate-500">
                                     <span class="material-symbols-outlined text-[14px]">person</span>
                                     بواسطة: {{ $package->creator->name ?? 'النظام' }}
                                 </span>
@@ -229,15 +229,15 @@
                     <div
                         class="bg-primary/[0.02] p-3.5 rounded-2xl border border-primary/10 hover:bg-primary/5 transition-colors">
                         <span class="text-[10px] font-black text-primary/60 mb-1 block">السائق المسؤول</span>
-                        <div class="flex items-center justify-between">
+                        <div class="flex justify-between items-center">
                             <div>
                                 <span
-                                    class="font-black text-sm text-primary block">{{ $package->driver->name ?? 'غير محدد' }}</span>
+                                    class="block text-sm font-black text-primary">{{ $package->driver->name ?? 'غير محدد' }}</span>
                                 <span
-                                    class="text-xs text-primary/70 dir-ltr text-right mt-0.5 block font-medium">{{ $package->driver->phone }}</span>
+                                    class="block mt-0.5 text-xs font-medium text-right text-primary/70 dir-ltr">{{ $package->driver->phone }}</span>
                             </div>
                             @if($package->driver && $package->driver->phone)
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للسائق --}}
                                     <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}?text={{ urlencode($driverMsg) }}"
                                         target="_blank"
@@ -250,7 +250,7 @@
                                     </a>
                                     {{-- زر الاتصال للسائق --}}
                                     <a href="tel:{{ $package->driver->phone }}"
-                                        class="w-10 h-10 bg-primary text-white rounded-xl shadow-sm shadow-primary/30 flex items-center justify-center hover:bg-primary/90 active:scale-95 transition-all">
+                                        class="flex justify-center items-center w-10 h-10 text-white rounded-xl shadow-sm transition-all bg-primary shadow-primary/30 hover:bg-primary/90 active:scale-95">
                                         <span class="material-symbols-outlined text-[18px]">call</span>
                                     </a>
                                 </div>
@@ -266,7 +266,7 @@
                             class="absolute -right-[31px] top-1.5 w-3.5 h-3.5 bg-emerald-500 ring-4 ring-emerald-500/20 rounded-full">
                         </div>
                         <div
-                            class="bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100 hover:bg-emerald-50 transition-colors">
+                            class="p-3.5 rounded-2xl border border-emerald-100 transition-colors bg-emerald-50/50 hover:bg-emerald-50">
                             <span class="text-[10px] font-black text-emerald-600/70 mb-2 block">الوجهات المقصودة</span>
 
                             <div class="flex flex-wrap gap-2 mt-1">
@@ -287,13 +287,13 @@
 
         {{-- ================= بطاقة الطرود المضمنة ================= --}}
         <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-center justify-between mb-5">
-                <div class="flex items-center gap-3">
+            <div class="flex justify-between items-center mb-5">
+                <div class="flex gap-3 items-center">
                     <div
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center text-slate-600 shadow-inner">
+                        class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-slate-100 to-slate-50 text-slate-600">
                         <span class="material-symbols-outlined text-[20px]">inventory_2</span>
                     </div>
-                    <h3 class="font-black text-slate-800 text-sm font-headline">الطرود المضمنة</h3>
+                    <h3 class="text-sm font-black text-slate-800 font-headline">الطرود المضمنة</h3>
                 </div>
                 <div class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[10px] font-black shadow-sm">
                     إجمالي: {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }} طرد
@@ -303,7 +303,7 @@
             <div class="flex flex-col gap-3">
                 @forelse($package->shipments as $shipment)
                     <div
-                        class="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex items-center gap-4 group hover:bg-white hover:shadow-md hover:border-primary/20 transition-all duration-300">
+                        class="flex gap-4 items-center p-4 rounded-2xl border transition-all duration-300 bg-slate-50/50 border-slate-100 group hover:bg-white hover:shadow-md hover:border-primary/20">
                         <div
                             class="w-12 h-12 bg-white rounded-[14px] flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 shadow-sm group-hover:text-primary transition-colors">
                             <span class="material-symbols-outlined text-[22px]">package_2</span>
@@ -312,14 +312,14 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-center mb-1">
                                 <span
-                                    class="text-sm font-black text-slate-800 font-mono tracking-tight">{{ $shipment->bond_number }}</span>
+                                    class="font-mono text-sm font-black tracking-tight text-slate-800">{{ $shipment->bond_number }}</span>
                                 <span
                                     class="text-[9px] font-black text-primary bg-primary/5 px-2 py-0.5 rounded-md flex items-center gap-1 border border-primary/10">
                                     <span class="material-symbols-outlined text-[10px]">store</span>
                                     {{ $shipment->receiverBranch->name ?? 'مستودع' }}
                                 </span>
                             </div>
-                            <div class="flex items-center gap-1 mt-1">
+                            <div class="flex gap-1 items-center mt-1">
                                 <span class="material-symbols-outlined text-[12px] text-slate-400">person</span>
                                 <span class="text-[10px] font-bold text-slate-500 truncate">المستلم:
                                     {{ $shipment->receiverCustomer->name ?? 'غير مسجل' }}</span>
@@ -331,7 +331,7 @@
 
                             {{-- زر الثلاث نقاط --}}
                             <button type="button" @click="menuOpen = !menuOpen" @click.outside="menuOpen = false"
-                                class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 border border-slate-100 shadow-sm transition-all active:scale-90">
+                                class="flex justify-center items-center w-8 h-8 bg-white rounded-full border shadow-sm transition-all text-slate-400 hover:text-primary hover:bg-primary/5 border-slate-100 active:scale-90">
                                 <span class="material-symbols-outlined text-[18px]">more_vert</span>
                             </button>
 
@@ -348,7 +348,7 @@
                                 <a href="{{ route('shipment.show', $shipment->id) }}"
                                     class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors mb-1 active:scale-[0.98]">
                                     <div
-                                        class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                                        class="flex justify-center items-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500">
                                         <span class="material-symbols-outlined text-[16px]">visibility</span>
                                     </div>
                                     <span class="text-xs font-black">عرض التفاصيل</span>
@@ -366,17 +366,17 @@
                                                                 "
                                         class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 transition-colors text-right active:scale-[0.98]">
                                         <div
-                                            class="w-7 h-7 rounded-lg bg-rose-100/50 flex items-center justify-center text-rose-500">
+                                            class="flex justify-center items-center w-7 h-7 text-rose-500 rounded-lg bg-rose-100/50">
                                             <span class="material-symbols-outlined text-[16px]">link_off</span>
                                         </div>
                                         <span class="text-xs font-black">فك ارتباط الطرد</span>
                                     </button>
                                 @else
                                     {{-- خيار مقفل يوضح أن الرحلة مغلقة --}}
-                                    <div class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-slate-50 text-slate-400 cursor-not-allowed"
+                                    <div class="flex gap-2.5 items-center px-3 py-2.5 rounded-xl cursor-not-allowed bg-slate-50 text-slate-400"
                                         title="لا يمكن فك ارتباط الطرد من رحلة مغلقة">
                                         <div
-                                            class="w-7 h-7 rounded-lg bg-slate-200/50 flex items-center justify-center text-slate-400">
+                                            class="flex justify-center items-center w-7 h-7 rounded-lg bg-slate-200/50 text-slate-400">
                                             <span class="material-symbols-outlined text-[16px]">lock</span>
                                         </div>
                                         <span class="text-xs font-black">مغلق (تم الاستلام)</span>
@@ -386,7 +386,7 @@
                         </div>
                     </div>
                 @empty
-                    <div class="text-center py-8">
+                    <div class="py-8 text-center">
                         <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inbox</span>
                         <p class="text-xs font-bold text-slate-400">لا توجد طرود مضمنة في هذه الشحنة.</p>
                     </div>
@@ -395,7 +395,7 @@
                 {{-- ================= زر إضافة طرد جديد يظهر فقط إذا الإرسالية غير مغلقة ================= --}}
                 @if(!in_array($package->status, ['delivered']))
                     <button type="button" @click="isAddModalOpen = true"
-                        class="mt-3 w-full h-12 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold text-xs hover:border-primary hover:text-primary hover:bg-primary/5 transition-all active:scale-95">
+                        class="flex gap-2 justify-center items-center mt-3 w-full h-12 text-xs font-bold rounded-2xl border-2 border-dashed transition-all border-slate-200 text-slate-400 hover:border-primary hover:text-primary hover:bg-primary/5 active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">add_box</span>
                         إضافة طرد جديد للإشحنة
                     </button>
@@ -412,7 +412,7 @@
                 <div x-show="isAddModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
                     x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                    class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="isAddModalOpen = false"></div>
+                    class="absolute inset-0 backdrop-blur-sm bg-slate-900/60" @click="isAddModalOpen = false"></div>
 
                 {{-- المودال نفسه --}}
                 <div x-show="isAddModalOpen" x-transition:enter="transform transition ease-out duration-300"
@@ -423,7 +423,7 @@
 
                     {{-- شريط السحب والإغلاق --}}
                     <div
-                        class="px-6 pt-5 pb-4 bg-white z-10 border-b border-slate-50 flex items-center justify-between shrink-0">
+                        class="flex z-10 justify-between items-center px-6 pt-5 pb-4 bg-white border-b border-slate-50 shrink-0">
                         <div>
                             <h2 class="text-lg font-black text-slate-800">إضافة طرد للإشحنة</h2>
                             <p class="text-[10px] font-bold text-slate-400 mt-1">ابحث عن الطرد المطلوب واضغط إضافة</p>
@@ -431,29 +431,29 @@
                     </div>
 
                     {{-- حقل البحث --}}
-                    <div class="px-6 py-4 bg-slate-50/50 shrink-0 border-b border-slate-100">
+                    <div class="px-6 py-4 border-b bg-slate-50/50 shrink-0 border-slate-100">
                         <div class="relative group">
                             <input type="text" x-model="searchShipment" placeholder="ابحث برقم السند أو اسم المستلم..."
-                                class="w-full h-12 pl-4 pr-11 bg-white rounded-xl border border-slate-200 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-700">
+                                class="pr-11 pl-4 w-full h-12 text-sm font-bold bg-white rounded-xl border transition-all outline-none border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
                             <div
-                                class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 group-focus-within:text-primary transition-colors">
+                                class="flex absolute inset-y-0 right-0 items-center pr-3.5 transition-colors text-slate-400 group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[20px]">search</span>
                             </div>
                         </div>
                     </div>
 
                     {{-- قائمة الطرود المتاحة للإضافة --}}
-                    <div class="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/30">
+                    <div class="overflow-y-auto flex-1 p-4 custom-scrollbar bg-slate-50/30">
                         <div class="space-y-3">
                             @forelse($availableShipments as $availShipment)
                                 {{-- x-show للبحث المباشر عن طريق رقم البوليصة أو اسم المستلم --}}
-                                <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/30 transition-colors"
+                                <div class="flex justify-between items-center p-4 bg-white rounded-2xl border shadow-sm transition-colors border-slate-100 group hover:border-primary/30"
                                     x-show="'{{ $availShipment->bond_number }}'.includes(searchShipment) || '{{ $availShipment->receiverCustomer->name ?? '' }}'.includes(searchShipment)">
 
                                     <div>
-                                        <div class="flex items-center gap-2 mb-1">
+                                        <div class="flex gap-2 items-center mb-1">
                                             <span
-                                                class="text-xs font-black text-slate-800 font-mono">{{ $availShipment->bond_number }}</span>
+                                                class="font-mono text-xs font-black text-slate-800">{{ $availShipment->bond_number }}</span>
                                             <span
                                                 class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{{ $availShipment->receiverBranch->name ?? 'مستودع' }}</span>
                                         </div>
@@ -475,7 +475,7 @@
                                     </form>
                                 </div>
                             @empty
-                                <div class="text-center py-10">
+                                <div class="py-10 text-center">
                                     <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inventory_2</span>
                                     <p class="text-xs font-bold text-slate-500">لا توجد طرود متاحة في المستودع</p>
                                     <p class="text-[10px] text-slate-400 mt-1">جميع الطرود تم شحنها أو تسليمها.</p>
@@ -484,7 +484,7 @@
 
                             {{-- رسالة تظهر عندما لا يتطابق البحث مع أي نتيجة (باستخدام Alpine) --}}
                             @if($availableShipments->isNotEmpty())
-                                <div class="text-center py-8"
+                                <div class="py-8 text-center"
                                     x-show="searchShipment !== '' && $el.previousElementSibling.querySelectorAll('div[x-show]').length && Array.from($el.previousElementSibling.querySelectorAll('div[x-show]')).every(el => el.style.display === 'none')"
                                     x-cloak>
                                     <p class="text-xs font-bold text-slate-400">لا توجد نتائج مطابقة للبحث.</p>
@@ -541,7 +541,7 @@
                     </button>
 
                     <button type="submit" :disabled="isSubmitting"
-                        class="flex-1 py-4 text-sm font-bold text-white bg-rose-500 rounded-2xl shadow-lg transition-all hover:bg-rose-600 shadow-rose-500/30 active:scale-95 font-headline flex items-center justify-center gap-2">
+                        class="flex flex-1 gap-2 justify-center items-center py-4 text-sm font-bold text-white bg-rose-500 rounded-2xl shadow-lg transition-all hover:bg-rose-600 shadow-rose-500/30 active:scale-95 font-headline">
                         <span x-show="!isSubmitting">نعم، فك الارتباط</span>
                         <span x-show="isSubmitting"
                             class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>

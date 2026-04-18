@@ -9,17 +9,19 @@ use TCPDF;
 class ReceiptController extends Controller
 {
     public function generate(Request $request, $type, $id)
+
     {
         try {
             $strategy = ReceiptFactory::make($type);
             $data = $strategy->fetchData($id);
             $template = $strategy->getTemplatePath();
+            $size = $strategy->sizepage();
 
             // 2. تحويل الـ Blade إلى HTML
             $html = view($template, $data)->render();
 
             // 3. تهيئة إعدادات الطابعة الحرارية (عرض 80mm، طول ديناميكي نضع له 150mm كمثال)
-            $pageFormat = array(80, 150); 
+            $pageFormat = $size; 
             $pdf = new TCPDF('P', 'mm', $pageFormat, true, 'UTF-8', false);
 
             // إزالة الهيدر والفوتر والهوامش الكبيرة لتناسب الطابعة
