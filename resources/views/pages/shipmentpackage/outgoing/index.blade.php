@@ -45,9 +45,10 @@
         </div>
 
         <a href="{{ route('shipmentpackage.outgoing.create') }}"
-            class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-lg transition-transform shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90"
+            class="flex justify-center items-center w-32 h-12 text-white rounded-2xl shadow-lg transition-transform text-md shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90"
             title="إضافة إرسالية جديدة">
             <span class="text-[26px] material-symbols-outlined">add_box</span>
+            إضافة شحنة
         </a>
     </div>
 
@@ -201,9 +202,13 @@
                                     </p>
                                 </div>
                                 <div>
-                                    <p class="text-[9px] font-black text-gray-400 mb-0.5 tracking-wide flex items-center gap-1 dark:text-gray-500">مع السائق:</p>
-                                    <p class="text-xs font-bold text-primary truncate max-w-[100px]">
-                                        {{ $package->driver->name ?? 'غير محدد' }}
+                                    <p class="text-[9px] font-black text-gray-400 mb-0.5 tracking-wide flex items-center gap-1 dark:text-gray-500">الوجهة:</p>
+                                    @php
+                                        $destinations = $package->shipments->pluck('receiverBranch.name')->filter()->unique()->values();
+                                        $destText = $destinations->count() > 1 ? 'وجهات متعددة ('.$destinations->count().')' : ($destinations->first() ?? 'غير محدد');
+                                    @endphp
+                                    <p class="text-xs font-bold text-primary truncate max-w-[100px]" title="{{ $destinations->join('، ') }}">
+                                        {{ $destText }}
                                     </p>
                                 </div>
                             </div>
@@ -211,16 +216,16 @@
 
                         {{-- العمود الأيسر: تفاصيل إضافية --}}
                         <div class="flex flex-col gap-2.5 justify-center p-3 w-1/2 rounded-xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
-                            <div class="flex justify-between items-center">
-                                <span class="text-[10px] text-gray-400 font-bold dark:text-gray-500">بواسطة:</span>
+                            <div class="flex justify-between items-center" title="{{ $package->driver->phone ?? '---' }}">
+                                <span class="text-[10px] text-gray-400 font-bold dark:text-gray-500">السائق:</span>
                                 <span class="text-[10px] font-black text-on-surface bg-white px-2 py-0.5 rounded-md border border-gray-100 shadow-sm truncate max-w-[70px] dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-200">
-                                    {{ $package->creator->name ?? 'النظام' }}
+                                    {{ $package->driver->name ?? 'غير محدد' }}
                                 </span>
                             </div>
                             <div class="flex justify-between items-center pt-2 mt-1 border-t border-gray-200/50 dark:border-boxdark">
-                                <span class="text-[10px] text-gray-400 font-bold dark:text-gray-500">رقم السائق:</span>
-                                <span class="text-[11px] font-black text-gray-600 dir-ltr text-right dark:text-gray-300">
-                                    {{ $package->driver->phone ?? '---' }}
+                                <span class="text-[10px] text-gray-400 font-bold dark:text-gray-500">بواسطة:</span>
+                                <span class="text-[10px] font-black text-gray-600 truncate max-w-[70px] dark:text-gray-300">
+                                    {{ $package->creator->name ?? 'النظام' }}
                                 </span>
                             </div>
                         </div>

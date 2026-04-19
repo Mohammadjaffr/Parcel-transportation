@@ -38,8 +38,17 @@
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
             @forelse($offices as $office)
+                @php
+                    $searchData = collect([$office->name, $office->phone ?? ''])
+                        ->merge($office->branches->pluck('phone'))
+                        ->merge($office->branches->pluck('name'))
+                        ->filter()
+                        ->join(' ');
+                @endphp
                 {{-- Office Card --}}
-                <div x-data="{ isSending: false }"
+                <div x-data="{ isSending: false, searchData: {{ json_encode($searchData, JSON_UNESCAPED_UNICODE) }} }"
+                    x-show="searchQuery === '' || searchData.toLowerCase().includes(searchQuery.toLowerCase())"
+                    x-transition
                     class="flex flex-col overflow-hidden transition-all bg-white border border-gray-100 group rounded-[2rem] dark:bg-boxdark dark:border-gray-800 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-none hover:border-primary/30">
 
                     {{-- Card Header (Office Info) --}}

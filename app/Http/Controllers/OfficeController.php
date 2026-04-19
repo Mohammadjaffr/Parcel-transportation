@@ -39,57 +39,57 @@ class OfficeController extends Controller
     }
 
     public function create(Request $request)
-    {   if ($request->isMobile) {
+    {
+        if ($request->isMobile) {
             return view('mobile.pages.office.unverified.create');
         }
         return view('pages.office.unverified.create');
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255', 
-        'phone' => 'nullable|string|max:20', 
-        'branches' => 'required|array|min:1',
-        'branches.*.name' => 'required|string|max:255',
-        'branches.*.city' => 'required|string|max:255',
-        'branches.*.phone' => 'nullable|string|max:20',
-        'branches.*.address' => 'nullable|string',
-    ]);
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'branches' => 'required|array|min:1',
+            'branches.*.name' => 'required|string|max:255',
+            'branches.*.city' => 'required|string|max:255',
+            'branches.*.phone' => 'nullable|string|max:20',
+            'branches.*.address' => 'nullable|string',
+        ]);
 
-    try {
-        DB::transaction(function () use ($request) {
-            $user = auth()->user();
+        try {
+            DB::transaction(function () use ($request) {
+                $user = auth()->user();
 
-            $office = Office::create([
-                'app_id'     => $user->app_id,
-                'created_by' => $user->id,
-                'name'       => $request->name,
-                'phone'      => $request->phone,
-                'address'    => $request->address,
-            ]);
-
-            foreach ($request->branches as $branchData) {
-                $office->branches()->create([
-                    'name'    => $branchData['name'],
-                    'city'    => $branchData['city'],
-                    'phone'   => $branchData['phone'],
-                    'address' => $branchData['address'],
+                $office = Office::create([
+                    'app_id'     => $user->app_id,
+                    'created_by' => $user->id,
+                    'name'       => $request->name,
+                    'phone'      => $request->phone,
+                    'address'    => $request->address,
                 ]);
-            }
-        });
 
-        return WebResponseClass::sendResponse(
-            'تم الحفظ!',
-            'تم إضافة المكتب وفروعه بنجاح.',
-            'حسناً',
-              'offices.unverified.index'
-        );
+                foreach ($request->branches as $branchData) {
+                    $office->branches()->create([
+                        'name'    => $branchData['name'],
+                        'city'    => $branchData['city'],
+                        'phone'   => $branchData['phone'],
+                        'address' => $branchData['address'],
+                    ]);
+                }
+            });
 
-    } catch (\Exception $e) {
-        return WebResponseClass::sendExceptionError($e);
+            return WebResponseClass::sendResponse(
+                'تم الحفظ!',
+                'تم إضافة المكتب وفروعه بنجاح.',
+                'حسناً',
+                'offices.unverified.index'
+            );
+        } catch (\Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
-}
 
     public function edit(Request $request, $id)
     {
@@ -155,7 +155,7 @@ class OfficeController extends Controller
 
     public function destroy(Office $office)
     {
-       try {
+        try {
             $office->delete();
             return WebResponseClass::sendResponse(
                 'تم الحذف!',

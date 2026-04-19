@@ -27,7 +27,7 @@ class ShipmentPackagesController extends Controller
 
         $query = ShipmentPackage::with([
             'senderBranch',     
-            'shipments',         
+            'shipments.receiverBranch',         
             'driver',       
             'creator'
         ])->where('sender_branch_id', $user->branch_id);

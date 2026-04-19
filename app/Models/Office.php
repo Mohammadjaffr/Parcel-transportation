@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Office extends Model
 {
-    use HasFactory,BelongsToApp;
+    use HasFactory, BelongsToApp;
 
     protected $fillable = [
         'app_id',
