@@ -29,7 +29,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         // 3. تجهيز مسار الشعار الديناميكي
         $logoPath = $app?->logo
             ? public_path('storage/' . $app->logo)
-            : public_path('images/new.svg');
+            : public_path('assets/image/icon_without_bg.png');
 
         // 4. إعداد فرع السند وأرقام الفروع
         $senderBranch = $shipment->senderBranch;
@@ -84,7 +84,14 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             : null;
         
 
-        // 6. إرجاع البيانات المنظمة
+        // 6. الثيم والألوان
+        $theme = $app ? $app->theme : [
+            'primary'   => '#ea580c',
+            'secondary' => '#1e293b',
+            'bg_light'  => '#fffaf5',
+        ];
+
+        // 7. إرجاع البيانات المنظمة
         return [
             // --- معلومات الشركة والفرع ---
             'company' => [
@@ -129,9 +136,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 ? $app->terms_and_conditions 
                 : ['لا توجد شروط وأحكام'],
             'design' => [
-                'primary_color'   => $app->theme['primary'],
-                'secondary_color' => $app->theme['secondary'],
-                'bg_color'        => $app->theme['bg_light'],
+                'primary_color'   => $theme['primary'],
+                'secondary_color' => $theme['secondary'],
+                'bg_color'        => $theme['bg_light'],
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'a4',
             ]

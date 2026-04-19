@@ -54,7 +54,7 @@
                     <img src="{{ $company['logo'] }}" height="75" alt="Logo" />
                     <div style="height: 12px; line-height: 12px;">&nbsp;</div>
                 @endif
-                <span class="text-xl font-bold text-brand" style="background-color: #fffaf5; padding: 4px 12px; border-radius: 4px; border: 1px solid #ffedd5;">إيصال استلام شحنة</span>
+                <span class="text-xl font-bold text-brand" style="background-color: {{ $design['bg_color'] ?? '#fffaf5' }}; padding: 4px 12px; border-radius: 4px; border: 1px solid #ffedd5;">إيصال استلام شحنة</span>
             </td>
 
             <td width="35%" align="center" valign="top" style="line-height: 1.6;">

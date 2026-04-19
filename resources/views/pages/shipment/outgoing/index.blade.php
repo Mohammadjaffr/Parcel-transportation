@@ -109,7 +109,7 @@
                                     التفاصيل
                                 </a>
                                 
-                                <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}" class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
+                                <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid]) }}" target="_blank" class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
                                     <span class="text-[18px] material-symbols-outlined">print</span>
                                     طباعة السند
                                 </a>

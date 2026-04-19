@@ -30,7 +30,7 @@ class DriverDetection implements ReceiptStrategyInterface
 
         $logoPath = $app?->logo
             ? public_path('storage/' . $app->logo)
-            : public_path('images/new.svg');
+            : public_path('assets/image/icon_without_bg.png');
 
         // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
@@ -110,7 +110,14 @@ class DriverDetection implements ReceiptStrategyInterface
             $totalShipmentsCount++;
         }
 
-        // 5. إرجاع البيانات المنظمة
+        // 5. الثيم والألوان
+        $theme = $app ? $app->theme : [
+            'primary'   => '#fb6514',
+            'secondary' => '#333333',
+            'bg_light'  => '#fcfcfc',
+        ];
+
+        // 6. إرجاع البيانات المنظمة
         return [
             'company' => [
                 'name'        => $app?->name ?? 'اسم الشركة غير محدد',
@@ -134,9 +141,9 @@ class DriverDetection implements ReceiptStrategyInterface
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
             'design' => [
-                'primary_color'   => $app->theme['primary'],
-                'secondary_color' => $app->theme['secondary'],
-                'bg_color'        => $app->theme['bg_light'],
+                'primary_color'   => $theme['primary'],
+                'secondary_color' => $theme['secondary'],
+                'bg_color'        => $theme['bg_light'],
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'a4',
             ]

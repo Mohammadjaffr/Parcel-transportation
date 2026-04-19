@@ -167,7 +167,7 @@
                 <div style="font-size: 9.5pt; margin-top: 8px; color: #666; line-height: 1.5;">
                     تاريخ الطباعة: <span dir="ltr">{{ $print_date }}</span><br>
                     رقم التتبع: <span
-                        style="background-color: #ffd8b1; padding: 1px 6px; border-radius: 4px; color:#000; font-weight:bold;">{{ $package_number }}</span>
+                        style="background-color: {{ $design['bg_color'] ?? '#ffd8b1' }}; padding: 1px 6px; border-radius: 4px; color:#000; font-weight:bold;">{{ $package_number }}</span>
                 </div>
             </td>
 
@@ -288,7 +288,7 @@
                     <td style="direction: ltr;" nowrap="nowrap">{{ $s['receiver_phone'] }}</td>
 
                     <td>{{ $s['sender_branch'] }}</td>
-                    <td style="font-weight: bold; background-color: #fff4ee;">{{ $s['receiver_branch'] }}</td>
+                    <td style="font-weight: bold; background-color: {{ $design['bg_color'] ?? '#fff4ee' }};">{{ $s['receiver_branch'] }}</td>
 
                     <td>
                         <div style="font-weight: bold;">{{ $s['package_type'] }}</div>
