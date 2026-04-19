@@ -397,7 +397,8 @@
 
         <div x-data="{ 
                 isSubmittingCompany: false,
-                terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+                terms: {{ json_encode($company->terms_and_conditions ?? ['']) }},
+                companyColor: '{{ $company->color ?? '#f97316' }}'
             }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
@@ -461,6 +462,17 @@
                             <input type="email" name="email" value="{{ $company->email }}" placeholder="info@company.com"
                                 dir="ltr"
                                 class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+                    </div>
+
+                    {{-- خيار اختيار لون لتمييز الشركة --}}
+                    <div>
+                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اللون الأساسي (هوية الشركة)</label>
+                        <div class="flex gap-3 items-center px-2 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20">
+                            <input type="color" name="color" x-model="companyColor"
+                                class="w-8 h-8 rounded-[6px] cursor-pointer border-0 bg-transparent overflow-hidden p-0! shrink-0">
+                            <input type="text" x-model="companyColor" dir="ltr"
+                                class="flex-1 w-full bg-transparent border-0 outline-none text-slate-600 font-mono text-sm focus:ring-0 uppercase">
                         </div>
                     </div>
 

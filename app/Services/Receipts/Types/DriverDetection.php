@@ -135,7 +135,7 @@ class DriverDetection implements ReceiptStrategyInterface
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
             'design' => [
-                'primary_color'   => '#fb6514',
+                'primary_color'   => $app->color,
                 'secondary_color' => '#333333',
                 'bg_color'        => '#fcfcfc',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",

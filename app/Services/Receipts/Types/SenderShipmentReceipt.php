@@ -152,7 +152,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 ? $app->terms_and_conditions 
                 : ['لا توجد شروط وأحكام'],
             'design' => [
-                'primary_color'   => '#fb6514',
+                'primary_color'   => $app->color,
                 'secondary_color' => '#333333',
                 'bg_color'        => '#fcfcfc',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",

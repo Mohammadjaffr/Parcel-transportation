@@ -17,6 +17,7 @@ class AppSeeder extends Seeder
             'name' => 'مكتب الزاجل',
             'phone' => '967780236552',
             'email' => 'zajel@gmail.com',
+            'color' => '#ea580c',
             'is_active' => true,
         ]);
 
@@ -24,6 +25,7 @@ class AppSeeder extends Seeder
             'name' => 'مكتب السعدي',
             'phone' => '967780236551',
             'email' => 'admin@gmail.com',
+            'color' => '#0ea5e9',
             'is_active' => true,
         ]);
 
@@ -31,6 +33,7 @@ class AppSeeder extends Seeder
             'name' => 'مكتب عوض',
             'phone' => '967780236553',
             'email' => 'awad@gmail.com',
+            'color' => '#10b981',
             'is_active' => false,
         ]);
     }

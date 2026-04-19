@@ -59,6 +59,7 @@ class AppController extends Controller
             'name'  => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'color' => 'nullable|string|max:15',
             'logo'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
             'terms_and_conditions'   => 'nullable|array',
             'terms_and_conditions.*' => 'nullable|string|max:500',
@@ -69,6 +70,7 @@ class AppController extends Controller
                 'name'  => $request->name,
                 'phone' => $request->phone,
                 'email' => $request->email,
+                'color' => $request->color,
             ];
             if ($request->has('terms_and_conditions')) {
                 $cleanTerms = array_filter($request->terms_and_conditions, function ($value) {
