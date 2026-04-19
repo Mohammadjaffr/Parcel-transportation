@@ -384,8 +384,8 @@ class ShipmentController extends Controller
     {
 
         $rules = [
-            'office_id'            => 'required|string', // مثال: internal_1 أو untrusted_5
-            'receiver_branch_id'   => 'required|integer', // المعرف (ID) القادم من قائمة الفروع
+            'office_id'            => 'required|string', 
+            'receiver_branch_id'   => 'required|integer',
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
             'sender_name'          => 'required_without:sender_customer_id|string|max:255',

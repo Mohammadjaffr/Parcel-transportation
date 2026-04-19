@@ -7,6 +7,7 @@ use App\Services\WhatsApp\Messages\DriverMessage;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use Illuminate\Database\Eloquent\Model;
 
+
 class WhatsAppLinkService
 {
     
@@ -31,7 +32,7 @@ class WhatsAppLinkService
         if ($strategy->getReceiptType()) {
             $receiptUrl = route('receipt.generate', [
                 'type' => $strategy->getReceiptType(), 
-                'id' => $entity->id
+                'id'   => $entity->uuid
             ]);
         }
 

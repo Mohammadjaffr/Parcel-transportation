@@ -8,12 +8,12 @@ use TCPDF;
 
 class ReceiptController extends Controller
 {
-    public function generate(Request $request, $type, $id)
+    public function generate(Request $request, $type, $uuid)
 
     {
         try {
             $strategy = ReceiptFactory::make($type);
-            $data = $strategy->fetchData($id);
+            $data = $strategy->fetchData($uuid);
             $template = $strategy->getTemplatePath();
             $size = $strategy->sizepage();
 

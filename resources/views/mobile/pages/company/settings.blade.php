@@ -7,26 +7,26 @@
     <x-modals.error-modal />
 
     <div x-data="{
-        showAddBranchModal: false,
-        showEditCompanyModal: false,
-        showEditBranchModal: false,
-        editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
-        editBranchAction: '',
-    
-        openEditBranchModal(branch) {
-            this.editBranchForm = {
-                name: branch.name,
-                code: branch.code,
-                city: branch.city,
-                address: branch.address || '',
-                map_link: branch.map_link || '',
-                is_main: branch.is_main == 1
-            };
-            this.editBranchAction = '/branch/' + branch.id;
-            this.showEditBranchModal = true;
-            this.$dispatch('load-edit-phone', { phone: branch.phone });
-        }
-    }" class="flex flex-col gap-6 pb-24 min-h-screen">
+                showAddBranchModal: false,
+                showEditCompanyModal: false,
+                showEditBranchModal: false,
+                editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
+                editBranchAction: '',
+
+                openEditBranchModal(branch) {
+                    this.editBranchForm = {
+                        name: branch.name,
+                        code: branch.code,
+                        city: branch.city,
+                        address: branch.address || '',
+                        map_link: branch.map_link || '',
+                        is_main: branch.is_main == 1
+                    };
+                    this.editBranchAction = '/branch/' + branch.id;
+                    this.showEditBranchModal = true;
+                    this.$dispatch('load-edit-phone', { phone: branch.phone });
+                }
+            }" class="flex flex-col gap-6 pb-24 min-h-screen">
 
         {{-- <div class="flex gap-4 items-center px-4 pt-4">
             <button onclick="history.back()"
@@ -112,8 +112,7 @@
                                 <div class="absolute top-0 right-0 bottom-0 w-1.5 bg-primary"></div>
                             @endif
 
-                            <div
-                                class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
+                            <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
                                 <span class="text-2xl material-symbols-outlined">store</span>
                             </div>
 
@@ -186,9 +185,11 @@
                 </p>
             </div>
 
-            @if (isset($company) &&
+            @if (
+                    isset($company) &&
                     !empty($company->terms_and_conditions) &&
-                    count(array_filter($company->terms_and_conditions)) > 0)
+                    count(array_filter($company->terms_and_conditions)) > 0
+                )
                 <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
                     {{-- زخرفة خلفية توحي بالرسمية --}}
                     <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-[3rem] -z-0"></div>
@@ -228,23 +229,23 @@
         </div>
 
         <div x-data="{
-            isSubmitting: false,
-            allCountries: @js(array_values(config('countries', []))),
-            selectedCountry: null,
-            localPhone: '',
-            fullPhone: '',
-            openCountry: false,
-            search: '',
-            init() {
-                this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
-                this.$watch('localPhone', () => this.updatePhone());
-                this.$watch('selectedCountry', () => this.updatePhone());
-            },
-            updatePhone() {
-                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-            }
-        }" x-show="showAddBranchModal" x-cloak
+                    isSubmitting: false,
+                    allCountries: @js(array_values(config('countries', []))),
+                    selectedCountry: null,
+                    localPhone: '',
+                    fullPhone: '',
+                    openCountry: false,
+                    search: '',
+                    init() {
+                        this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+                        this.$watch('localPhone', () => this.updatePhone());
+                        this.$watch('selectedCountry', () => this.updatePhone());
+                    },
+                    updatePhone() {
+                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+                    }
+                }" x-show="showAddBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
@@ -372,8 +373,7 @@
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
                             (Google Maps)</label>
                         <div class="relative">
-                            <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..."
-                                dir="ltr"
+                            <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..." dir="ltr"
                                 class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                 <span class="text-lg material-symbols-outlined">map</span>
@@ -395,9 +395,9 @@
         </div>
 
         <div x-data="{
-            isSubmittingCompany: false,
-            terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
-        }" x-show="showEditCompanyModal" x-cloak
+                    isSubmittingCompany: false,
+                    terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+                }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -457,8 +457,8 @@
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">البريد
                                 الإلكتروني</label>
-                            <input type="email" name="email" value="{{ $company->email }}"
-                                placeholder="info@company.com" dir="ltr"
+                            <input type="email" name="email" value="{{ $company->email }}" placeholder="info@company.com"
+                                dir="ltr"
                                 class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
                     </div>
@@ -498,6 +498,38 @@
                             </div>
                         </div>
                     </div>
+                    <div>
+                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب (التمييز
+                            البصري)</label>
+
+                        <div
+                            class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+
+                            {{-- حقل اختيار اللون --}}
+                            <input type="color" name="color" x-model="editBranchForm.color"
+                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
+
+                            {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
+                            <div class="flex-1 px-3">
+                                <input type="text" x-model="editBranchForm.color" placeholder="#000000" dir="ltr"
+                                    class="w-full text-sm font-mono text-left bg-transparent border-none outline-none text-slate-600 uppercase focus:ring-0 placeholder:text-slate-400">
+                            </div>
+
+                            {{-- أيقونة جمالية --}}
+                            <div class="pr-2 pointer-events-none text-slate-400">
+                                <span class="text-lg material-symbols-outlined">palette</span>
+                            </div>
+                        </div>
+
+                        {{-- 💡 الرسالة التوضيحية الأنيقة --}}
+                        <div class="flex gap-1.5 items-start mt-2 px-1 text-slate-500">
+                            <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
+                            <p class="text-[10px] leading-relaxed font-medium">
+                                سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
+                                    class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا المكتب.
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <button type="submit" :disabled="isSubmittingCompany"
@@ -513,40 +545,38 @@
         </div>
 
         <div x-data="{
-            isSubmittingEdit: false,
-            allCountries: @js(array_values(config('countries', []))),
-            selectedCountry: null,
-            localPhone: '',
-            fullPhone: '',
-            openCountry: false,
-            search: '',
-            init() {
-                this.$watch('localPhone', () => this.updatePhone());
-                this.$watch('selectedCountry', () => this.updatePhone());
-            },
-            updatePhone() {
-                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-            }
-        }"
-            @load-edit-phone.window="
-                            let phone = $event.detail.phone || '';
-                            if(!phone) {
-                                selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                                localPhone = '';
-                            } else {
-                                let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
-                                if(matched) {
-                                    selectedCountry = matched;
-                                    localPhone = phone.substring(matched.dial_code.replace('+', '').length);
-                                } else {
-                                    selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                                    localPhone = phone;
-                                }
-                            }
-                            updatePhone();
-                         "
-            x-show="showEditBranchModal" x-cloak
+                    isSubmittingEdit: false,
+                    allCountries: @js(array_values(config('countries', []))),
+                    selectedCountry: null,
+                    localPhone: '',
+                    fullPhone: '',
+                    openCountry: false,
+                    search: '',
+                    init() {
+                        this.$watch('localPhone', () => this.updatePhone());
+                        this.$watch('selectedCountry', () => this.updatePhone());
+                    },
+                    updatePhone() {
+                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+                    }
+                }" @load-edit-phone.window="
+                                    let phone = $event.detail.phone || '';
+                                    if(!phone) {
+                                        selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                        localPhone = '';
+                                    } else {
+                                        let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
+                                        if(matched) {
+                                            selectedCountry = matched;
+                                            localPhone = phone.substring(matched.dial_code.replace('+', '').length);
+                                        } else {
+                                            selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                            localPhone = phone;
+                                        }
+                                    }
+                                    updatePhone();
+                                 " x-show="showEditBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms
@@ -597,8 +627,7 @@
                     <div>
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
                                 class="text-rose-500">*</span></label>
-                        <input type="text" name="name" x-model="editBranchForm.name" required
-                            placeholder="مثال: فرع الرياض"
+                        <input type="text" name="name" x-model="editBranchForm.name" required placeholder="مثال: فرع الرياض"
                             class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                     </div>
 
@@ -687,6 +716,7 @@
                             </div>
                         </div>
                     </div>
+
 
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <button type="submit" :disabled="isSubmittingEdit"

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('shipment_packages', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             $table->string('tracking_number');
             $table->foreignId('app_id')->constrained('apps')->onDelete('cascade');
             $table->foreignId('driver_id')->nullable()->constrained('drivers')->onDelete('set null');

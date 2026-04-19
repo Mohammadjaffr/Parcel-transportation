@@ -282,16 +282,43 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-2">
+
+                    {{-- حقل النوع (Combobox - اختيار أو كتابة حرة) --}}
+                    <div class="flex flex-col gap-2" x-data="{
+                isOpen: false,
+                options: ['كرتون', 'كيس', 'مغلف'],
+                packageType: 'كرتون' {{-- القيمة الافتراضية --}}
+            }">
                         <label class="text-[11px] font-bold text-slate-400">النوع</label>
-                        <select name="package_type"
-                            class="px-3 w-full h-12 text-sm rounded-xl border-none ring-1 appearance-none outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
-                            <option value="carton">كرتون</option>
-                            <option value="bag">كيس</option>
-                            <option value="envelope">مغلف</option>
-                            <option value="other">أخرى</option>
-                        </select>
+
+                        <div class="relative">
+                            {{-- حقل الإدخال النصي --}}
+                            <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true"
+                                @click.away="isOpen = false" placeholder="اختر أو اكتب النوع..." autocomplete="off"
+                                class="px-3 w-full h-12 text-sm rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700 transition-all">
+
+                            {{-- أيقونة السهم الجمالية (لتبدو كقائمة منسدلة) --}}
+                            <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <span class="material-symbols-outlined text-[20px] transition-transform"
+                                    :class="isOpen ? 'rotate-180' : ''">expand_more</span>
+                            </div>
+
+                            {{-- القائمة المنسدلة الذكية --}}
+                            <div x-show="isOpen" x-cloak x-transition
+                                class="absolute z-[60] top-full mt-1.5 right-0 w-full bg-white rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden">
+                                <template x-for="option in options">
+                                    <button type="button" @click="packageType = option; isOpen = false"
+                                        class="w-full text-right px-4 py-3 text-sm font-bold text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors border-b border-slate-50 last:border-none flex items-center justify-between">
+                                        <span x-text="option"></span>
+                                        <span x-show="packageType === option"
+                                            class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
                     </div>
+
+                    {{-- حقل الوزن (كما هو) --}}
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-slate-400">الوزن (كجم)</label>
                         <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"

@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Shipment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'sender_branch_id',    
         'receiver_branch_id',
         'receiver_office_branch_id',  
@@ -43,7 +45,9 @@ class Shipment extends Model
         parent::boot();
 
         static::creating(function ($shipment) {
-            
+            if (empty($shipment->uuid)) {
+                $shipment->uuid = (string) Str::uuid();
+            }
             // جلب الفرع المُرسل لاستخدام الكود الخاص به في رقم السند
             $branch = Branch::find($shipment->sender_branch_id);
             

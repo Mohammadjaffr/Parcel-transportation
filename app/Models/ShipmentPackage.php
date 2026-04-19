@@ -3,14 +3,14 @@
 namespace App\Models;
 use App\Traits\BelongsToApp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class ShipmentPackage extends Model
 {
     use HasFactory,BelongsToApp;
     protected $fillable = [
-        'tracking_number', 'app_id', 'driver_id', 'created_by', 
+        'uuid','tracking_number', 'app_id', 'driver_id', 'created_by', 
         'sender_branch_id', 'status', 'notes'
     ];
 
@@ -22,7 +22,9 @@ class ShipmentPackage extends Model
         parent::boot();
 
         static::creating(function ($package) {
-
+             if (empty($shipment->uuid)) {
+                $package->uuid = (string) Str::uuid();
+            }
             // جلب الفرع المُرسل لاستخدام الكود الخاص به
             $branch = Branch::find($package->sender_branch_id);
             

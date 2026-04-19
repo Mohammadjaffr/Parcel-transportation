@@ -11,9 +11,9 @@ class ReceiverDeliveryReceipt implements ReceiptStrategyInterface
     {
         return array(80, 150); // Default size
     }
-    public function fetchData(int $referenceId): array
+    public function fetchData(string $referenceId): array
     {
-        $shipment = Shipment::with(['receiverCustomer', 'creator'])->findOrFail($referenceId);
+        $shipment = Shipment::with(['receiverCustomer', 'creator'])->where('uuid', $referenceId)->firstOrFail();
 
         $amountDue = $shipment->payment_method === 'cod' ? $shipment->total_amount : 0;
 

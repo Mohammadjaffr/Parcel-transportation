@@ -13,7 +13,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
         return array(300, 300);
     }
 
-    public function fetchData(int $referenceId): array
+    public function fetchData(string $referenceId): array
     {
         // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها
         $package = ShipmentPackage::with([
@@ -25,7 +25,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'shipments.senderBranch',
             'shipments.receiverBranch',
             'shipments.receiverOfficeBranch',
-        ])->findOrFail($referenceId);
+        ])->where('uuid', $referenceId)->firstOrFail();
 
         $app = auth()->user()->app;
 
@@ -135,9 +135,9 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
             'design' => [
-                'primary_color'   => $app->color,
-                'secondary_color' => '#333333',
-                'bg_color'        => '#fcfcfc',
+                'primary_color'   => $app->theme['primary'],
+                'secondary_color' => $app->theme['secondary'],
+                'bg_color'        => $app->theme['bg_light'],
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'a4',
             ]

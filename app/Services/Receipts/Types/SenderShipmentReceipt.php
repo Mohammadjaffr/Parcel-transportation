@@ -11,31 +11,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
     {
         return 'A4'; // Default size
     }
-    // public function fetchData(int $referenceId): array
-
-    // {
-    //     $shipment = Shipment::with(['senderCustomer', 'creator'])->findOrFail($referenceId);
-
-    //     $paymentMethods = [
-    //         'prepaid' => 'مدفوع مقدماً',
-    //         'cod' => 'الدفع عند الاستلام',
-    //         'partial_payment' => 'دفع جزئي',
-    //         'customer_credit' => 'آجل (ذمة)'
-    //     ];
-
-    //     return [
-    //         'title'          => 'سند استلام طرد',
-    //         'bond_number'    => $shipment->code,
-    //         'date'           => $shipment->created_at->format('Y-m-d h:i A'),
-    //         'customer_name'  => $shipment->senderCustomer->name ?? 'عميل غير مسجل',
-    //         'customer_phone' => $shipment->senderCustomer->phone ?? '-',
-    //         'amount'         => number_format($shipment->total_amount, 2),
-    //         'payment_method' => $paymentMethods[$shipment->payment_method] ?? $shipment->payment_method,
-    //         'package_type'   => $shipment->package_type,
-    //         'creator_name'   => $shipment->creator->name ?? 'النظام',
-    //     ];
-    // }
-    public function fetchData(int $referenceId): array
+    public function fetchData(string $referenceId): array
     {
         // 1. جلب الشحنة مع العلاقات
         $shipment = Shipment::with([
@@ -45,7 +21,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'receiverBranch',
             'receiverOfficeBranch',
             'creator'
-        ])->findOrFail($referenceId);
+        ])->where('uuid', $referenceId)->firstOrFail();
 
         // 2. جلب بيانات التطبيق (الشركة) من المستخدم الحالي
         $app = auth()->user()->app;
@@ -106,6 +82,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
             ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
             : null;
+        
 
         // 6. إرجاع البيانات المنظمة
         return [
@@ -152,9 +129,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 ? $app->terms_and_conditions 
                 : ['لا توجد شروط وأحكام'],
             'design' => [
-                'primary_color'   => $app->color,
-                'secondary_color' => '#333333',
-                'bg_color'        => '#fcfcfc',
+                'primary_color'   => $app->theme['primary'],
+                'secondary_color' => $app->theme['secondary'],
+                'bg_color'        => $app->theme['bg_light'],
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'a4',
             ]

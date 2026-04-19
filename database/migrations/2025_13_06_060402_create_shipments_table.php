@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('shipments', function (Blueprint $table) {
             $table->id();
+            $table->uuid('uuid')->unique();
             
             // 1. فروع الإرسال والاستقبال (باستخدام ID الفرع)
             $table->foreignId('sender_branch_id')->constrained('branches')->cascadeOnDelete();
@@ -25,9 +26,9 @@ return new class extends Migration
             
             // 3. معلومات الطرد
             $table->foreignId('shipment_package_id')->nullable()->constrained('shipment_packages')->nullOnDelete();
-            $table->string('code')->nullable(); // كود تتبع الشحنة
-            $table->string('bond_number')->unique(); // رقم السند
-            $table->string('package_type')->nullable(); // نوع الطرد (كرتون، كيس، الخ)
+            $table->string('code')->nullable(); 
+            $table->string('bond_number')->unique(); 
+            $table->string('package_type')->nullable(); 
             $table->decimal('weight', 8, 2)->nullable();
             
             // 4. الحقول الخاصة بالعسل
