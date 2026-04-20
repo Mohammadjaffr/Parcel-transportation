@@ -7,6 +7,7 @@ use App\Services\Receipts\Types\ReceiverDeliveryReceipt;
 use App\Services\Receipts\Types\SenderShipmentReceipt;
 use App\Services\Receipts\Types\ShipmentDetection;
 use App\Services\Receipts\Types\DriverDetection;
+
 use Exception;
 
 class ReceiptFactory

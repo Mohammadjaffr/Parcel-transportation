@@ -41,7 +41,7 @@
                         {{-- اسم المكتب --}}
                         <div class="lg:col-span-2">
                             <label for="office_name" class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                اسم المكتب <span class="text-error">*</span>
+                                اسم المكتب <span class="text-red">*</span>
                             </label>
                             <div class="relative">
                                 <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
@@ -50,7 +50,7 @@
                                 <input type="text" id="office_name" name="name" value="{{ old('name') }}" required placeholder="مثال: مكتب الإنجاز السريع"
                                     class="block pr-11 pl-4 w-full h-12 text-sm text-gray-800 bg-white rounded-xl border border-gray-300 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-boxdark-2 dark:border-boxdark dark:text-white dark:focus:border-primary">
                             </div>
-                            @error('name') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                            @error('name') <p class="mt-1 text-xs text-red">{{ $message }}</p> @enderror
                         </div>
 
                         {{-- رقم الهاتف الأساسي --}}
@@ -83,7 +83,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @error('phone') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                            @error('phone') <p class="mt-1 text-xs text-red">{{ $message }}</p> @enderror
                         </div>
 
                         {{-- العنوان --}}
@@ -96,7 +96,7 @@
                                 <input type="text" id="office_address" name="address" value="{{ old('address') }}" placeholder="الشارع، الحي، المبنى..."
                                     class="block pr-11 pl-4 w-full h-12 text-sm text-gray-800 bg-white rounded-xl border border-gray-300 transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-boxdark-2 dark:border-boxdark dark:text-white dark:focus:border-primary">
                             </div>
-                            @error('address') <p class="mt-1 text-xs text-error">{{ $message }}</p> @enderror
+                            @error('address') <p class="mt-1 text-xs text-red">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>
@@ -111,7 +111,7 @@
                         <div class="flex justify-center items-center w-10 h-10 rounded-xl text-primary-hover bg-primary-container dark:bg-primary/10 dark:text-primary">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
                         </div>
-                        <h3 class="text-lg font-bold text-on-surface dark:text-white">فروع المكتب <span class="text-error">*</span></h3>
+                        <h3 class="text-lg font-bold text-on-surface dark:text-white">فروع المكتب <span class="text-red">*</span></h3>
                     </div>
                     <button type="button" @click="branches.push({ name: '', city: '', phone: '', address: '' })"
                         class="inline-flex gap-2 items-center px-6 py-3 text-sm font-bold rounded-xl transition-all text-primary-hover bg-primary-container hover:bg-primary/20 dark:bg-primary/10 dark:text-primary hover:scale-95">
@@ -126,7 +126,7 @@
                             
                             {{-- زر الحذف --}}
                             <button type="button" @click="branches.splice(index, 1)" x-show="branches.length > 1"
-                                class="absolute top-4 left-4 p-2.5 text-gray-400 rounded-xl transition-all bg-surface hover:text-error hover:bg-error/10 dark:bg-boxdark-2 dark:hover:bg-error/20 dark:hover:text-error" title="حذف الفرع">
+                                class="absolute top-4 left-4 p-2.5 text-gray-400 rounded-xl transition-all bg-surface hover:text-red hover:bg-error/10 dark:bg-boxdark-2 dark:hover:bg-error/20 dark:hover:text-red" title="حذف الفرع">
                                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
 
@@ -138,7 +138,7 @@
                             <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2">
                                 {{-- اسم الفرع --}}
                                 <div>
-                                    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">اسم الفرع <span class="text-error">*</span></label>
+                                    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">اسم الفرع <span class="text-red">*</span></label>
                                     <div class="relative">
                                         <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
@@ -150,7 +150,7 @@
 
                                 {{-- المدينة --}}
                                 <div>
-                                    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">المدينة <span class="text-error">*</span></label>
+                                    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">المدينة <span class="text-red">*</span></label>
                                     <div class="relative">
                                         <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

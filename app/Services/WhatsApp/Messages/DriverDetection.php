@@ -3,35 +3,34 @@
 namespace App\Services\WhatsApp\Messages;
 
 use App\Interfaces\WhatsAppMessageInterface;
-use App\Models\Shipment;
+use App\Models\ShipmentPackage;
 use Illuminate\Database\Eloquent\Model;
 
-class SenderMessage implements WhatsAppMessageInterface
+class DriverDetection implements WhatsAppMessageInterface
 {
     public function getPhoneNumber(Model $entity): ?string
     {
-        if (!$entity instanceof Shipment) {
+        if (!$entity instanceof ShipmentPackage) {
             return null;
         }
-        return $entity->senderCustomer->phone ?? null;
+        return $entity->driver->phone ?? null;
     }
 
     public function getReceiptType(): ?string
     {
-        return 'sender';
+        return 'DriverDetection';
     }
 
     public function getMessageBody(Model $entity, ?string $receiptUrl): string
     {
-        if (!$entity instanceof Shipment) {
+        if (!$entity instanceof ShipmentPackage) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $name = $entity->senderCustomer->name ?? 'عميلنا العزيز';
+        $name = $entity->driver->name ?? 'عميلنا العزيز';
         
         $msg = "مرحباً *$name*، 📦\n\n";
         $msg .= "تم إصدار الشحنة بنجاح.\n";
-        $msg .= "📌 *رقم الطرد:* {$entity->bond_number}\n";
-        $msg .= "💰 *المبلغ:* " . number_format($entity->total_amount) . " ريال\n\n";
+        $msg .= "📌 *رقم الطرد:* {$entity->tracking_number}\n";
         
         if ($receiptUrl) {
             $msg .= "📄 *لعرض سند الاستلام:* \n{$receiptUrl}\n\n";

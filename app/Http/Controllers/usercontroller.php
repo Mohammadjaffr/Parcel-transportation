@@ -202,6 +202,7 @@ class UserController extends Controller
                 'phone'           => $request->phone,
                 'branch_id'       => $request->branch_id,
                 'whatsapp_number' => $request->whatsapp_number,
+                'is_banned'       => $request->is_banned ?? 0,
                 // تحديث كلمة المرور فقط إذا تم إرسالها
                 'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
             ]);

@@ -18,12 +18,7 @@
                     <p class="mt-0.5 text-xs text-gray-500 dark:text-bodydark">تفاصيل الحساب وسجل الشحنات</p>
                 </div>
             </div>
-              {{-- زر إضافة شحنة جديدة للعميل (يظهر في الديسكتوب بشكل بارز) --}}
-            <a href="{{ route('shipmentpackage.outgoing.create') }}"
-                class="hidden gap-2 justify-center items-center p-1 h-14 text-sm font-black text-white rounded-2xl shadow-lg transition-all 1 w-100 xl:flex bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-95">
-                <span class="material-symbols-outlined text-[24px]">add_box</span>
-                إنشاء شحنة جديدة
-            </a>
+          
             {{-- زر مراسلة العميل واتساب (يظهر كأيقونة في الموبايل ونص في الديسكتوب) --}}
             <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
                 class="flex gap-2 justify-center items-center px-3 h-10 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform md:px-4 dark:bg-emerald-500/10 dark:text-emerald-400 active:scale-95 dark:border-emerald-500/20 hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-500/20">
@@ -124,7 +119,7 @@
                 <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar">
                     <a href="{{ request()->fullUrlWithQuery(['direction' => 'all', 'page' => null]) }}"
                         class="shrink-0 px-5 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                        {{ $direction == 'all' ? 'bg-boxdark text-white border-boxdark shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-surface text-gray-500 border-gray-100 hover:bg-gray-100 dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
+                        {{ $direction == 'all' ? 'bg-primary text-white border-primary shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-surface text-gray-500 border-gray-100 hover:bg-gray-100 dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
                         الكل
                     </a>
                     

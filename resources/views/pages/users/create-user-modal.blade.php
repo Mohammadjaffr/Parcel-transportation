@@ -67,52 +67,58 @@
 
                     {{-- رقم الهاتف الأساسي --}}
                     <div class="relative" x-data="{
-                            open: false,
-                            search: '',
-                            selectedDialCode: '967',
-                            selectedFlag: '🇾🇪',
-                            localPhoneNumber: '{{ old('phone') ? substr(old('phone'), 3) : '' }}',
-                            countries: [
-                                { name: 'اليمن', code: 'YE', dial_code: '967', flag: '🇾🇪' },
-                                { name: 'السعودية', code: 'SA', dial_code: '966', flag: '🇸🇦' },
-                                { name: 'الإمارات', code: 'AE', dial_code: '971', flag: '🇦🇪' },
-                                { name: 'مصر', code: 'EG', dial_code: '20', flag: '🇪🇬' },
-                            ],
-                            get filteredCountries() {
-                                if (this.search === '') return this.countries;
-                                return this.countries.filter(c => c.name.includes(this.search) || c.dial_code.includes(this.search));
-                            }
-                        }">
+                                phoneOpen: false,
+                                searchCountry: '',
+                                localPhoneNumber: '{{ old('phone') ? substr(old('phone'), 3) : '' }}',
+                                selectedCountry: null,
+                                init() {
+                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                },
+                                get filteredCountries() {
+                                    if (this.searchCountry === '') return this.countries;
+                                    const term = this.searchCountry.toLowerCase();
+                                    return this.countries.filter(c => 
+                                        (c.name && c.name.toLowerCase().includes(term)) || 
+                                        (c.dial_code && c.dial_code.includes(term))
+                                    );
+                                }
+                            }">
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             رقم الجوال <span class="text-red-500">*</span>
                         </label>
                         
-                        <input type="hidden" name="phone" :value="localPhoneNumber ? selectedDialCode + localPhoneNumber : ''">
+                        <input type="hidden" name="phone" :value="localPhoneNumber ? (selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber : ''">
 
                         <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
-                            <button type="button" @click="open = !open"
+                            <button type="button" @click="phoneOpen = !phoneOpen"
                                     class="flex gap-2 items-center px-3 h-full bg-gray-100 border-l border-gray-200 transition-colors shrink-0 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + selectedDialCode"></span>
-                                <span class="text-lg leading-none" x-text="selectedFlag"></span>
+                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="phoneOpen ? 'rotate-180' : ''">expand_more</span>
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + (selectedCountry?.dial_code || '967').replace('+', '')"></span>
+                                <template x-if="selectedCountry && selectedCountry.svg">
+                                    <div class="flex items-center justify-center w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="selectedCountry.svg"></div>
+                                </template>
+                                <template x-if="!selectedCountry || !selectedCountry.svg">
+                                    <span class="material-symbols-outlined text-[18px] text-gray-400">language</span>
+                                </template>
                             </button>
-                            <input type="tel" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
+                            <input type="tel" x-ref="user_phone" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
                                    class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
                         </div>
 
-                        <div x-cloak x-show="open" @click.outside="open = false" 
+                        <div x-cloak x-show="phoneOpen" @click.outside="phoneOpen = false" 
                              x-transition class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700">
-                                <input type="text" x-model="search" placeholder="ابحث..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                             </div>
                             <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                 <template x-for="c in filteredCountries" :key="c.code">
-                                    <button type="button" @click="selectedDialCode = c.dial_code; selectedFlag = c.flag; open = false;" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
+                                    <button type="button" @click="selectedCountry = c; phoneOpen = false; $refs.user_phone?.focus()" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
                                         <div class="flex gap-3 items-center">
-                                            <span class="text-lg leading-none" x-text="c.flag"></span>
+                                            <template x-if="c.svg"><div class="w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="c.svg"></div></template>
+                                            <template x-if="!c.svg"><span class="material-symbols-outlined text-[16px] text-gray-400">language</span></template>
                                             <span class="font-medium dark:text-gray-300" x-text="c.name"></span>
                                         </div>
-                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + c.dial_code"></span>
+                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + (c.dial_code || '').replace('+', '')"></span>
                                     </button>
                                 </template>
                             </div>
@@ -129,52 +135,58 @@
 
                     {{-- رقم هاتف إضافي (واتساب) --}}
                     <div class="relative" x-data="{
-                            open: false,
-                            search: '',
-                            selectedDialCode: '967',
-                            selectedFlag: '🇾🇪',
-                            localPhoneNumber: '{{ old('whatsapp_number') ? substr(old('whatsapp_number'), 3) : '' }}', 
-                            countries: [
-                                { name: 'اليمن', code: 'YE', dial_code: '967', flag: '🇾🇪' },
-                                { name: 'السعودية', code: 'SA', dial_code: '966', flag: '🇸🇦' },
-                                { name: 'الإمارات', code: 'AE', dial_code: '971', flag: '🇦🇪' },
-                                { name: 'مصر', code: 'EG', dial_code: '20', flag: '🇪🇬' },
-                            ],
-                            get filteredCountries() {
-                                if (this.search === '') return this.countries;
-                                return this.countries.filter(c => c.name.includes(this.search) || c.dial_code.includes(this.search));
-                            }
-                        }">
+                                phoneOpen: false,
+                                searchCountry: '',
+                                localPhoneNumber: '{{ old('whatsapp_number') ? substr(old('whatsapp_number'), 3) : '' }}', 
+                                selectedCountry: null,
+                                init() {
+                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                },
+                                get filteredCountries() {
+                                    if (this.searchCountry === '') return this.countries;
+                                    const term = this.searchCountry.toLowerCase();
+                                    return this.countries.filter(c => 
+                                        (c.name && c.name.toLowerCase().includes(term)) || 
+                                        (c.dial_code && c.dial_code.includes(term))
+                                    );
+                                }
+                            }">
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             رقم إضافي <span class="text-xs font-normal text-gray-400">(اختياري)</span>
                         </label>
                         
-                        <input type="hidden" name="whatsapp_number" :value="localPhoneNumber ? selectedDialCode + localPhoneNumber : ''">
+                        <input type="hidden" name="whatsapp_number" :value="localPhoneNumber ? (selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber : ''">
 
                         <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
-                            <button type="button" @click="open = !open"
+                            <button type="button" @click="phoneOpen = !phoneOpen"
                                     class="flex gap-2 items-center px-3 h-full bg-gray-100 border-l border-gray-200 transition-colors shrink-0 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + selectedDialCode"></span>
-                                <span class="text-lg leading-none" x-text="selectedFlag"></span>
+                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="phoneOpen ? 'rotate-180' : ''">expand_more</span>
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + (selectedCountry?.dial_code || '967').replace('+', '')"></span>
+                                <template x-if="selectedCountry && selectedCountry.svg">
+                                    <div class="flex items-center justify-center w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="selectedCountry.svg"></div>
+                                </template>
+                                <template x-if="!selectedCountry || !selectedCountry.svg">
+                                    <span class="material-symbols-outlined text-[18px] text-gray-400">language</span>
+                                </template>
                             </button>
-                            <input type="tel" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off"
+                            <input type="tel" x-ref="user_whatsapp" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off"
                                    class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
                         </div>
 
-                        <div x-cloak x-show="open" @click.outside="open = false" 
+                        <div x-cloak x-show="phoneOpen" @click.outside="phoneOpen = false" 
                              x-transition class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700">
-                                <input type="text" x-model="search" placeholder="ابحث..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                             </div>
                             <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                 <template x-for="c in filteredCountries" :key="c.code">
-                                    <button type="button" @click="selectedDialCode = c.dial_code; selectedFlag = c.flag; open = false;" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
+                                    <button type="button" @click="selectedCountry = c; phoneOpen = false; $refs.user_whatsapp?.focus()" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
                                         <div class="flex gap-3 items-center">
-                                            <span class="text-lg leading-none" x-text="c.flag"></span>
+                                            <template x-if="c.svg"><div class="w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="c.svg"></div></template>
+                                            <template x-if="!c.svg"><span class="material-symbols-outlined text-[16px] text-gray-400">language</span></template>
                                             <span class="font-medium dark:text-gray-300" x-text="c.name"></span>
                                         </div>
-                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + c.dial_code"></span>
+                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + (c.dial_code || '').replace('+', '')"></span>
                                     </button>
                                 </template>
                             </div>

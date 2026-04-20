@@ -3,8 +3,7 @@
 @section('Breadcrumb', 'تعديل طرد')
 
 @section('content')
-    @include('components.modals.error-modal')
-    @include('components.modals.success-modal')
+
 
     <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-[2rem] dark:bg-boxdark dark:border-gray-800"
         x-data="{

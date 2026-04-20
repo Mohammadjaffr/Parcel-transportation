@@ -12,24 +12,24 @@ class DriverMessage implements WhatsAppMessageInterface
         if (!$entity instanceof ShipmentPackage) {
             return null;
         }
-        return $shipment->driver->phone ?? null; 
+        return $entity->driver->phone ?? null; 
     }
 
     public function getReceiptType(): ?string
     {
-        return 'driver_manifest';
+        return 'DriverDetection';
     }
 
     public function getMessageBody(Model $entity, ?string $receiptUrl): string
     {
         if (!$entity instanceof ShipmentPackage) {
-            return "بيانات الرحلة غير صالحة.";
+            return "بيانات الشحنة غير صالحة.";
         }
         $driverName = $entity->driver->name ?? 'كابتن';
         
         $msg = "مرحباً كابتن *$driverName*، 🚚\n\n";
         $msg .= "تم تكليفك بتوصيل شحنة جديده.\n";
-        $msg .= "📌 *رقم الشنحة:* {$entity->bond_number}\n";
+        $msg .= "📌 *رقم الشحنة:* {$entity->bond_number}\n";
         $msg .= "📍 *وجهة التسليم:* " . ($entity->receiverBranch->name ?? 'غير محدد') . "\n";
         
         if ($entity->payment_method === 'cod') {

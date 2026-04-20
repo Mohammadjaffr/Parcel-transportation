@@ -232,12 +232,12 @@
                                         </button>
 
                                         {{-- حذف --}}
-                                        <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف العميل؟')" class="inline">
+                                        {{-- <form action="{{ route('customers.destroy', $customer->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف العميل؟')" class="inline">
                                             @csrf @method('DELETE')
                                             <button type="submit" title="حذف" class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-95">
                                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                                             </button>
-                                        </form>
+                                        </form> --}}
 
                                     </div>
                                 </td>

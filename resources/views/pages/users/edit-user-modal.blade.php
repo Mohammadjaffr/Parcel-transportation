@@ -67,72 +67,73 @@
 
                     {{-- رقم الهاتف الأساسي --}}
                     <div class="relative" x-data="{
-                            open: false,
-                            search: '',
-                            selectedDialCode: '967',
-                            selectedFlag: '🇾🇪',
-                            localPhoneNumber: '',
-                            countries: [
-                                { name: 'اليمن', code: 'YE', dial_code: '967', flag: '🇾🇪' },
-                                { name: 'السعودية', code: 'SA', dial_code: '966', flag: '🇸🇦' },
-                                { name: 'الإمارات', code: 'AE', dial_code: '971', flag: '🇦🇪' },
-                                { name: 'مصر', code: 'EG', dial_code: '20', flag: '🇪🇬' },
-                            ],
-                            init() {
-                                this.$watch('editModalOpen', (isOpen) => {
-                                    if(isOpen) {
-                                        let phone = editUser.phone || '';
-                                        phone = phone.replace('+', '');
-                                        let sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
-                                        let found = sorted.find(c => phone.startsWith(c.dial_code));
-                                        
-                                        if(found) {
-                                            this.selectedDialCode = found.dial_code;
-                                            this.selectedFlag = found.flag;
-                                            this.localPhoneNumber = phone.substring(found.dial_code.length);
-                                        } else {
-                                            this.selectedDialCode = '967';
-                                            this.selectedFlag = '🇾🇪';
-                                            this.localPhoneNumber = phone;
+                                phoneOpen: false,
+                                searchCountry: '',
+                                localPhoneNumber: '',
+                                selectedCountry: null,
+                                init() {
+                                    this.$watch('editModalOpen', (isOpen) => {
+                                        if(isOpen) {
+                                            let phone = editUser.phone || '';
+                                            phone = phone.replace('+', '');
+                                            let sorted = [...this.countries].sort((a, b) => b.dial_code.replace('+', '').length - a.dial_code.replace('+', '').length);
+                                            let found = sorted.find(c => phone.startsWith(c.dial_code.replace('+', '')));
+                                            
+                                            if(found) {
+                                                this.selectedCountry = found;
+                                                this.localPhoneNumber = phone.substring(found.dial_code.replace('+', '').length);
+                                            } else {
+                                                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                                this.localPhoneNumber = phone;
+                                            }
                                         }
-                                    }
-                                });
-                            },
-                            get filteredCountries() {
-                                if (this.search === '') return this.countries;
-                                return this.countries.filter(c => c.name.includes(this.search) || c.dial_code.includes(this.search));
-                            }
-                        }">
+                                    });
+                                },
+                                get filteredCountries() {
+                                    if (this.searchCountry === '') return this.countries;
+                                    const term = this.searchCountry.toLowerCase();
+                                    return this.countries.filter(c => 
+                                        (c.name && c.name.toLowerCase().includes(term)) || 
+                                        (c.dial_code && c.dial_code.includes(term))
+                                    );
+                                }
+                            }">
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             رقم الجوال <span class="text-red-500">*</span>
                         </label>
 
-                        <input type="hidden" name="phone" :value="localPhoneNumber ? selectedDialCode + localPhoneNumber : ''">
+                        <input type="hidden" name="phone" :value="localPhoneNumber ? (selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber : ''">
 
                         <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
-                            <button type="button" @click="open = !open"
+                            <button type="button" @click="phoneOpen = !phoneOpen"
                                     class="flex gap-2 items-center px-3 h-full bg-gray-100 border-l border-gray-200 transition-colors shrink-0 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + selectedDialCode"></span>
-                                <span class="text-lg leading-none" x-text="selectedFlag"></span>
+                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="phoneOpen ? 'rotate-180' : ''">expand_more</span>
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + (selectedCountry?.dial_code || '967').replace('+', '')"></span>
+                                <template x-if="selectedCountry && selectedCountry.svg">
+                                    <div class="flex items-center justify-center w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="selectedCountry.svg"></div>
+                                </template>
+                                <template x-if="!selectedCountry || !selectedCountry.svg">
+                                    <span class="material-symbols-outlined text-[18px] text-gray-400">language</span>
+                                </template>
                             </button>
-                            <input type="tel" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
+                            <input type="tel" x-ref="edit_user_phone" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
                                    class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
                         </div>
 
-                        <div x-cloak x-show="open" @click.outside="open = false" 
+                        <div x-cloak x-show="phoneOpen" @click.outside="phoneOpen = false" 
                              x-transition class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700">
-                                <input type="text" x-model="search" placeholder="ابحث..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                             </div>
                             <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                 <template x-for="c in filteredCountries" :key="c.code">
-                                    <button type="button" @click="selectedDialCode = c.dial_code; selectedFlag = c.flag; open = false;" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
+                                    <button type="button" @click="selectedCountry = c; phoneOpen = false; $refs.edit_user_phone?.focus()" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
                                         <div class="flex gap-3 items-center">
-                                            <span class="text-lg leading-none" x-text="c.flag"></span>
+                                            <template x-if="c.svg"><div class="w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="c.svg"></div></template>
+                                            <template x-if="!c.svg"><span class="material-symbols-outlined text-[16px] text-gray-400">language</span></template>
                                             <span class="font-medium dark:text-gray-300" x-text="c.name"></span>
                                         </div>
-                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + c.dial_code"></span>
+                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + (c.dial_code || '').replace('+', '')"></span>
                                     </button>
                                 </template>
                             </div>
@@ -144,76 +145,77 @@
 
                     {{-- رقم هاتف إضافي (واتساب) --}}
                     <div class="relative" x-data="{
-                            open: false,
-                            search: '',
-                            selectedDialCode: '967',
-                            selectedFlag: '🇾🇪',
-                            localPhoneNumber: '', 
-                            countries: [
-                                { name: 'اليمن', code: 'YE', dial_code: '967', flag: '🇾🇪' },
-                                { name: 'السعودية', code: 'SA', dial_code: '966', flag: '🇸🇦' },
-                                { name: 'الإمارات', code: 'AE', dial_code: '971', flag: '🇦🇪' },
-                                { name: 'مصر', code: 'EG', dial_code: '20', flag: '🇪🇬' },
-                            ],
-                            init() {
-                                this.$watch('editModalOpen', (isOpen) => {
-                                    if(isOpen) {
-                                        let phone = editUser.whatsapp_number || '';
-                                        if(!phone) {
-                                            this.localPhoneNumber = '';
-                                            return;
+                                phoneOpen: false,
+                                searchCountry: '',
+                                localPhoneNumber: '', 
+                                selectedCountry: null,
+                                init() {
+                                    this.$watch('editModalOpen', (isOpen) => {
+                                        if(isOpen) {
+                                            let phone = editUser.whatsapp_number || '';
+                                            if(!phone) {
+                                                this.localPhoneNumber = '';
+                                                return;
+                                            }
+                                            phone = phone.replace('+', '');
+                                            let sorted = [...this.countries].sort((a, b) => b.dial_code.replace('+', '').length - a.dial_code.replace('+', '').length);
+                                            let found = sorted.find(c => phone.startsWith(c.dial_code.replace('+', '')));
+                                            
+                                            if(found) {
+                                                this.selectedCountry = found;
+                                                this.localPhoneNumber = phone.substring(found.dial_code.replace('+', '').length);
+                                            } else {
+                                                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                                this.localPhoneNumber = phone;
+                                            }
                                         }
-                                        phone = phone.replace('+', '');
-                                        let sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
-                                        let found = sorted.find(c => phone.startsWith(c.dial_code));
-                                        
-                                        if(found) {
-                                            this.selectedDialCode = found.dial_code;
-                                            this.selectedFlag = found.flag;
-                                            this.localPhoneNumber = phone.substring(found.dial_code.length);
-                                        } else {
-                                            this.selectedDialCode = '967';
-                                            this.selectedFlag = '🇾🇪';
-                                            this.localPhoneNumber = phone;
-                                        }
-                                    }
-                                });
-                            },
-                            get filteredCountries() {
-                                if (this.search === '') return this.countries;
-                                return this.countries.filter(c => c.name.includes(this.search) || c.dial_code.includes(this.search));
-                            }
-                        }">
+                                    });
+                                },
+                                get filteredCountries() {
+                                    if (this.searchCountry === '') return this.countries;
+                                    const term = this.searchCountry.toLowerCase();
+                                    return this.countries.filter(c => 
+                                        (c.name && c.name.toLowerCase().includes(term)) || 
+                                        (c.dial_code && c.dial_code.includes(term))
+                                    );
+                                }
+                            }">
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
                             رقم إضافي <span class="text-xs font-normal text-gray-400">(اختياري)</span>
                         </label>
 
-                        <input type="hidden" name="whatsapp_number" :value="localPhoneNumber ? selectedDialCode + localPhoneNumber : ''">
+                        <input type="hidden" name="whatsapp_number" :value="localPhoneNumber ? (selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber : ''">
 
                         <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
-                            <button type="button" @click="open = !open"
+                            <button type="button" @click="phoneOpen = !phoneOpen"
                                     class="flex gap-2 items-center px-3 h-full bg-gray-100 border-l border-gray-200 transition-colors shrink-0 hover:bg-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="open ? 'rotate-180' : ''">expand_more</span>
-                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + selectedDialCode"></span>
-                                <span class="text-lg leading-none" x-text="selectedFlag"></span>
+                                <span class="material-symbols-outlined text-[16px] text-gray-400 transition-transform" :class="phoneOpen ? 'rotate-180' : ''">expand_more</span>
+                                <span class="text-sm font-bold text-gray-600 dark:text-gray-300" dir="ltr" x-text="'+' + (selectedCountry?.dial_code || '967').replace('+', '')"></span>
+                                <template x-if="selectedCountry && selectedCountry.svg">
+                                    <div class="flex items-center justify-center w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="selectedCountry.svg"></div>
+                                </template>
+                                <template x-if="!selectedCountry || !selectedCountry.svg">
+                                    <span class="material-symbols-outlined text-[18px] text-gray-400">language</span>
+                                </template>
                             </button>
-                            <input type="tel" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off"
+                            <input type="tel" x-ref="edit_user_whatsapp" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off"
                                    class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
                         </div>
 
-                        <div x-cloak x-show="open" @click.outside="open = false" 
+                        <div x-cloak x-show="phoneOpen" @click.outside="phoneOpen = false" 
                              x-transition class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
                             <div class="p-2 border-b border-gray-100 dark:border-gray-700">
-                                <input type="text" x-model="search" placeholder="ابحث..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                             </div>
                             <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                 <template x-for="c in filteredCountries" :key="c.code">
-                                    <button type="button" @click="selectedDialCode = c.dial_code; selectedFlag = c.flag; open = false;" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
+                                    <button type="button" @click="selectedCountry = c; phoneOpen = false; $refs.edit_user_whatsapp?.focus()" class="flex justify-between items-center px-4 py-2.5 w-full text-sm transition-colors hover:bg-primary/5 dark:hover:bg-gray-800">
                                         <div class="flex gap-3 items-center">
-                                            <span class="text-lg leading-none" x-text="c.flag"></span>
+                                            <template x-if="c.svg"><div class="w-6 h-4 overflow-hidden rounded-[2px] shadow-sm border border-gray-100 dark:border-gray-600" x-html="c.svg"></div></template>
+                                            <template x-if="!c.svg"><span class="material-symbols-outlined text-[16px] text-gray-400">language</span></template>
                                             <span class="font-medium dark:text-gray-300" x-text="c.name"></span>
                                         </div>
-                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + c.dial_code"></span>
+                                        <span class="font-mono text-gray-500" dir="ltr" x-text="'+' + (c.dial_code || '').replace('+', '')"></span>
                                     </button>
                                 </template>
                             </div>
@@ -272,15 +274,25 @@
 
                     {{-- حالة الحظر --}}
                     <div class="sm:col-span-2 pt-4 mt-2 border-t border-gray-100 dark:border-gray-800">
+                        <input type="hidden" name="is_banned" value="0">
                         <label class="inline-flex items-center cursor-pointer group">
                             <div class="relative">
-                                <input type="checkbox" name="is_banned" value="1" class="sr-only peer" :checked="editUser.is_banned == 1">
-                                <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-red-500 peer-focus:ring-4 peer-focus:ring-red-500/20 transition-all duration-300"></div>
-                                <div class="absolute top-[2px] start-[2px] w-5 h-5 bg-white border border-gray-300 rounded-full transition-all duration-300 peer-checked:translate-x-5 rtl:peer-checked:-translate-x-5"></div>
+                                <input type="checkbox" name="is_banned" value="1" class="sr-only peer"
+                                       x-on:change="editUser.is_banned = $event.target.checked ? 1 : 0"
+                                       :checked="editUser.is_banned == 1">
+                                <div class="w-11 h-6 rounded-full peer transition-all duration-300"
+                                     :class="editUser.is_banned == 1 ? 'bg-rose-500 peer-focus:ring-4 peer-focus:ring-rose-500/20' : 'bg-emerald-500 peer-focus:ring-4 peer-focus:ring-emerald-500/20'"></div>
+                                <div class="absolute top-[2px] start-[2px] w-5 h-5 bg-white border rounded-full transition-all duration-300"
+                                     :class="editUser.is_banned == 1 ? 'translate-x-5 rtl:-translate-x-5 border-rose-500' : 'border-emerald-500'"></div>
                             </div>
-                            <span class="mr-3 text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-red-600 transition-colors">حظر الحساب</span>
+                            <span class="mr-3 text-sm font-bold transition-colors"
+                                  :class="editUser.is_banned == 1 ? 'text-rose-600 dark:text-rose-500' : 'text-emerald-600 dark:text-emerald-500'"
+                                  x-text="editUser.is_banned == 1 ? 'الحساب محظور (موقوف)' : 'حساب نشط (فعال)'">
+                            </span>
                         </label>
-                        <p class="mt-2 text-xs text-gray-500 leading-relaxed pr-[3.25rem]">عند تفعيل هذا الخيار، لن يتمكن المستخدم من تسجيل الدخول إلى النظام بأي شكل من الأشكال.</p>
+                        <p class="mt-2 text-xs text-gray-500 leading-relaxed pr-[3.25rem]"
+                           x-text="editUser.is_banned == 1 ? 'عند إيقاف هذا الخيار المضاء باللون الأحمر، سيتمكن المستخدم من تسجيل الدخول واستخدام النظام مجدداً.' : 'تبديل الزر للأحمر سيؤدي إلى حظر المستخدم فوراً ولن يتمكن من الدخول للنظام.'">
+                        </p>
                     </div>
 
                 </div>

@@ -209,10 +209,11 @@
                                             <span class="material-symbols-outlined text-[18px]"
                                                 style="font-variation-settings: 'FILL' 1;">call</span>
                                         </a>
-                                        <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
+                                     <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
                                             title="واتساب"
                                             class="flex justify-center items-center w-10 h-10 text-emerald-500 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 active:scale-95">
-                                            <i class="fa-brands fa-whatsapp text-[20px]"></i>
+                                            <span class="material-symbols-outlined text-[18px]"
+                                                style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
                                         </a>
                                     </div>
                                 </td>
@@ -227,12 +228,12 @@
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
 
-                                        <button
+                                        {{-- <button
                                             @click="openDeleteModal({{ $driver->id }}, {{ json_encode($driver->name) }})"
                                             title="حذف"
                                             class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
+                                        </button> --}}
                                     </div>
                                 </td>
                             </tr>

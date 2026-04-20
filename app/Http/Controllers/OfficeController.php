@@ -123,14 +123,22 @@ class OfficeController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
             'branches' => 'required|array|min:1',
             'branches.*.name' => 'required|string|max:255',
             'branches.*.city' => 'required|string|max:100',
+            'branches.*.phone' => 'nullable|string|max:20',
+            'branches.*.address' => 'nullable|string',
         ]);
 
         try {
             DB::transaction(function () use ($request, $office) {
-                $office->update(['name' => $request->name]);
+                $office->update([
+                    'name'    => $request->name,
+                    'phone'   => $request->phone,
+                    'address' => $request->address,
+                ]);
                 $office->branches()->delete();
                 foreach ($request->branches as $branchData) {
                     $office->branches()->create([

@@ -77,8 +77,7 @@ class ShipmentController extends Controller
             $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
 
             // إذا أردت تجهيز رابط المستلم أيضاً (مفيد في صفحة الوارد)
-            // $shipment->receiver_whatsapp_link = \App\Services\WhatsApp\WhatsAppLinkService::generate($shipment, 'receiver');
-
+            $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
             return $shipment;
         });
 
@@ -182,6 +181,15 @@ class ShipmentController extends Controller
             ->where('sender_branch_id', $user->branch_id)
             ->latest()
             ->paginate(6);
+        $shipments->getCollection()->transform(function ($shipment) {
+
+            // إذا أردت رابط المرسل دائماً (مثلاً في صفحة الصادر)
+            $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
+
+            // إذا أردت تجهيز رابط المستلم أيضاً (مفيد في صفحة الوارد)
+            $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
+            return $shipment;
+        });
 
         if ($request->isMobile) {
             return view('mobile.pages.shipment.outgoing.index', compact('shipments'));
@@ -384,7 +392,7 @@ class ShipmentController extends Controller
     {
 
         $rules = [
-            'office_id'            => 'required|string', 
+            'office_id'            => 'required|string',
             'receiver_branch_id'   => 'required|integer',
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
@@ -563,7 +571,7 @@ class ShipmentController extends Controller
 
             return WebResponseClass::sendResponse(
                 'تم إضافة الطرد!',
-                'تم إنشاء بوليصة الشحن بنجاح.',
+                'تم إنشاء الشحنة بنجاح.',
                 'حسناً',
                 'shipment.outgoing.index'
             );
@@ -575,14 +583,23 @@ class ShipmentController extends Controller
         }
     }
     // معتمد
-    public function show(Request $request, $id)
-    {
-        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
-        if ($request->isMobile) {
-            return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
-        }
-        return view('pages.shipment.outgoing.show', compact('shipment'));
+public function show(Request $request, $id)
+{
+    $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
+
+    // تجهيز روابط الواتساب
+    $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
+    $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
+
+    // تم إزالة return $shipment; من هنا لكي يكمل الكود مساره
+
+    // التحقق من نوع الجهاز لإرجاع العرض (View) المناسب
+    if ($request->isMobile) {
+        return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
     }
+    
+    return view('pages.shipment.outgoing.show', compact('shipment'));
+}
 
     /* ========== 5- صفحة تعديل الطرد ========== */
     // public function edit($id)

@@ -250,6 +250,7 @@
                 search: "",
                 statusFilter: "all",
                 users: @json($users->items()),
+                countries: @json(array_values(config('countries') ?? [])),
                 isModalOpen: false,
                 editModalOpen: false,
                 

@@ -6,19 +6,19 @@ use App\Interfaces\WhatsAppMessageInterface;
 use App\Models\Shipment;
 use Illuminate\Database\Eloquent\Model;
 
-class SenderMessage implements WhatsAppMessageInterface
+class ReceiverMessage implements WhatsAppMessageInterface
 {
     public function getPhoneNumber(Model $entity): ?string
     {
         if (!$entity instanceof Shipment) {
             return null;
         }
-        return $entity->senderCustomer->phone ?? null;
+        return $entity->receiverCustomer->phone ?? null;
     }
 
     public function getReceiptType(): ?string
     {
-        return 'sender';
+        return 'receiver';
     }
 
     public function getMessageBody(Model $entity, ?string $receiptUrl): string
@@ -26,10 +26,10 @@ class SenderMessage implements WhatsAppMessageInterface
         if (!$entity instanceof Shipment) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $name = $entity->senderCustomer->name ?? 'عميلنا العزيز';
+        $name = $entity->receiverCustomer->name ?? 'عميلنا العزيز';
         
         $msg = "مرحباً *$name*، 📦\n\n";
-        $msg .= "تم إصدار الشحنة بنجاح.\n";
+        $msg .= "تم استلام الشحنة بنجاح.\n";
         $msg .= "📌 *رقم الطرد:* {$entity->bond_number}\n";
         $msg .= "💰 *المبلغ:* " . number_format($entity->total_amount) . " ريال\n\n";
         

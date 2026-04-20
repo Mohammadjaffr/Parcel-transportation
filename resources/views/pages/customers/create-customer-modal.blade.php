@@ -53,7 +53,7 @@
                         {{-- حقل اسم العميل --}}
                         <div>
                             <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                اسم العميل <span class="text-error-500">*</span>
+                                اسم العميل <span class="text-red-500">*</span>
                             </label>
                             <div class="relative group">
                                 <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors pointer-events-none group-focus-within:text-primary">
@@ -64,7 +64,7 @@
                                        class="pr-11 pl-4 w-full h-12 text-sm placeholder-gray-400 bg-gray-50 rounded-xl border border-gray-200 transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                             </div>
                             @error('name')
-                                <p class="mt-1 text-xs font-medium text-error-500">{{ $message }}</p>
+                                <p class="mt-1 text-xs font-medium text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -87,7 +87,7 @@
                                 }
                             }">
                             <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                                رقم الجوال <span class="text-error-500">*</span>
+                                رقم الجوال <span class="text-red-500">*</span>
                             </label>
                             
                             {{-- الحقل المخفي الذي يذهب للسيرفر --}}
@@ -158,4 +158,4 @@
 
             </div>
         </div>
-    </template>
+    </template>

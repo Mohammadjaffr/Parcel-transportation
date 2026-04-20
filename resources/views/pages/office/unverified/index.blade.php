@@ -112,6 +112,18 @@
                                         <div>
                                             <div class="text-xs font-bold text-on-surface dark:text-white font-headline">{{ $branch->name }}</div>
                                             <div class="text-[10px] text-gray-500 dark:text-bodydark mt-0.5">{{ $branch->city }}</div>
+                                            @if($branch->address)
+                                                <div class="text-[10px] text-gray-400 dark:text-gray-500 mt-1 flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[10px]">location_on</span>
+                                                    <span class="truncate">{{ $branch->address }}</span>
+                                                </div>
+                                            @endif
+                                            @if($branch->phone)
+                                                <div class="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 flex items-center gap-1" dir="ltr">
+                                                    <span class="material-symbols-outlined text-[10px]">call</span>
+                                                    <span>{{ $branch->phone }}</span>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                     <a href="tel:{{ $branch->phone }}"
@@ -202,9 +214,25 @@
                                                 <div class="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 dark:border-boxdark-2 pb-2 mb-2">الفروع التابعة</div>
                                                 <div class="flex overflow-y-auto flex-col gap-2 max-h-32 custom-scrollbar">
                                                     @foreach($office->branches as $branch)
-                                                        <div class="flex justify-between items-center text-right">
-                                                            <span class="text-xs font-bold text-on-surface dark:text-white">{{ $branch->name }}</span>
-                                                            <span class="text-[10px] text-gray-500 dark:text-bodydark">{{ $branch->city }}</span>
+                                                        <div class="flex flex-col gap-1 pb-2 border-b border-gray-50 dark:border-boxdark-2 last:border-0 last:pb-0">
+                                                            <div class="flex justify-between items-center text-right">
+                                                                <span class="text-xs font-bold text-on-surface dark:text-white">{{ $branch->name }}</span>
+                                                                <span class="text-[10px] text-gray-500 dark:text-bodydark">{{ $branch->city }}</span>
+                                                            </div>
+                                                            <div class="flex flex-col gap-0.5 mt-1 text-[10px] text-gray-400 dark:text-gray-500">
+                                                                @if($branch->phone)
+                                                                    <div class="flex gap-1 items-center" dir="ltr">
+                                                                        <span class="material-symbols-outlined text-[12px]">call</span>
+                                                                        <span>{{ $branch->phone }}</span>
+                                                                    </div>
+                                                                @endif
+                                                                @if($branch->address)
+                                                                    <div class="flex gap-1 items-center">
+                                                                        <span class="material-symbols-outlined text-[12px]">location_on</span>
+                                                                        <span class="truncate">{{ $branch->address }}</span>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -225,10 +253,10 @@
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </a>
 
-                                        <button @click="openDeleteModal({{ $office }})" title="حذف"
+                                        {{-- <button @click="openDeleteModal({{ $office }})" title="حذف"
                                             class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
+                                        </button> --}}
                                     </div>
                                 </td>
                             </tr>

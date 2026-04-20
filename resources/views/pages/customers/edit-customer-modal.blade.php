@@ -24,7 +24,7 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100 translate-y-0 scale-100"
              x-transition:leave-end="opacity-0 translate-y-8 scale-95"
-             class="relative w-full max-w-md p-6 bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark sm:p-8" dir="rtl">
+             class="relative w-full max-w-md p-6 bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark-2 sm:p-8" dir="rtl">
 
             <form :action="editCustomer.url" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
                 @csrf
@@ -37,8 +37,8 @@
                     </button>
                     
                     <div class="flex gap-3 items-center">
-                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات العميل</h3>
-                        <div class="flex justify-center items-center w-10 h-10 rounded-xl shadow-inner bg-warning-50 text-warning-500">
+                        <h3 class="text-lg font-bold text-primary dark:text-white">تعديل بيانات العميل</h3>
+                        <div class="flex justify-center items-center w-10 h-10 text-white rounded-xl shadow-inner bg-primary">
                             <span class="material-symbols-outlined text-[22px]">edit_square</span>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                     {{-- حقل اسم العميل --}}
                     <div>
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                            اسم العميل <span class="text-error-500">*</span>
+                            اسم العميل <span class="text-red-500">*</span>
                         </label>
                         <div class="relative group">
                             <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors pointer-events-none group-focus-within:text-primary">
@@ -61,14 +61,14 @@
                                    class="pr-11 pl-4 w-full h-12 text-sm placeholder-gray-400 bg-gray-50 rounded-xl border border-gray-200 transition-all outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                         </div>
                         @error('name')
-                            <p class="mt-1 text-xs font-medium text-error-500">{{ $message }}</p>
+                            <p class="mt-1 text-xs font-medium text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- حقل رقم الهاتف الاحترافي --}}
                     <div class="relative" x-data="{ phoneOpen: false, searchCountry: '' }">
                         <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
-                            رقم الجوال <span class="text-error-500">*</span>
+                            رقم الجوال <span class="text-red-500">*</span>
                         </label>
                         
                         {{-- الحقل المخفي الذي يذهب للسيرفر --}}

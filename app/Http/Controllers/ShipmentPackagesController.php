@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
+use App\Services\WhatsApp\WhatsAppLinkService;
 
 class ShipmentPackagesController extends Controller
 {
@@ -35,9 +36,13 @@ class ShipmentPackagesController extends Controller
         if ($request->has('status') && !empty($request->status)) {
             $query->where('status', $request->status);
         }
-
+       
         $packages = $query->latest()->paginate(15);
         $packages->appends($request->all());
+        $packages->getCollection()->transform(function ($package) {
+            $package->DriverDetection = WhatsAppLinkService::generate($package, 'DriverDetection');
+            return $package;
+        });
 
         // 4. توجيه الواجهات (موبايل / ويب)
         if ($request->isMobile){    

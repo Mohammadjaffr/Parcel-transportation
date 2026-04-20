@@ -5,6 +5,8 @@ namespace App\Services\WhatsApp;
 
 use App\Services\WhatsApp\Messages\DriverMessage;
 use App\Services\WhatsApp\Messages\SenderMessage;
+use App\Services\WhatsApp\Messages\DriverDetection;
+use App\Services\WhatsApp\Messages\ReceiverMessage;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -16,6 +18,8 @@ class WhatsAppLinkService
         $strategy = match ($target) {
             'sender'   => new SenderMessage(),
             'driver'   => new DriverMessage(),
+            'DriverDetection'   => new DriverDetection(),
+            'receiver'   => new ReceiverMessage(),
             default    => null,
         };
 
