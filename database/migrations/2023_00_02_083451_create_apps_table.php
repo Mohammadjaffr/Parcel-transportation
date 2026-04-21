@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->json('terms_and_conditions')->nullable();
             $table->string('color')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
             $table->timestamps();
         });
     }

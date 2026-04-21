@@ -30,9 +30,19 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', [LandingPageController::class,'index'])->name('welcome');
+Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/account/pending', function () {
+        
+        $adminPhone = "967781152674";
+        return view('auth.pending', compact('adminPhone'));
+    })->name('account.pending');
+    // ===================================================)}|===========
+    // 2. نظام إدارة الشحن (محمي: يتطلب أن يكون التطبيق مف)}|عل is_active = true)
+    // ===================================================)}|===========
+    Route::middleware(['app.active'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
@@ -264,8 +274,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
     
     
-
-    Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
+    });
 });
 
 

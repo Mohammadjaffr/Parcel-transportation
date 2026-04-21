@@ -48,13 +48,6 @@ class LoginRequest extends FormRequest
                 'phone' => 'البيانات المدخلة غير صحيحة',
             ]);
         }
-        $user = Auth::user();
-        if ($user->app_id && !$user->app->is_active) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'phone' => 'عذراً، اشتراك الشركة غير فعال أو منتهي. يرجى التواصل مع الإدارة.',
-            ]);
-        }
         RateLimiter::clear($this->throttleKey());
     }
 

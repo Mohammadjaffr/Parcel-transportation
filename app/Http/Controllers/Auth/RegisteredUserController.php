@@ -49,7 +49,7 @@ class RegisteredUserController extends Controller
             
             $app = App::create([
                 'name' =>  $request->office_name, 
-                'is_active' => true,
+                'is_active' => false,
                 'terms_and_conditions' => [
                     'نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.',
                     'نحن غير مسؤولين عن الأشياء الثمينة الممنوع إرسالها في الطرود.',
