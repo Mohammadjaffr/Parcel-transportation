@@ -92,12 +92,12 @@
                     <div class="hidden w-px h-8 bg-gray-200 dark:bg-gray-700 md:block"></div>
 
                     {{-- أزرار الطباعة --}}
-                    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}" target="_blank" title="طباعة الفاتورة"
+                    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid]) }}" target="_blank" title="طباعة الفاتورة"
                         class="flex justify-center items-center w-10 h-10 text-gray-600 bg-white rounded-xl border border-gray-200 transition-colors hover:bg-gray-50 hover:text-primary dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                         <span class="material-symbols-outlined text-[20px]">print</span>
                     </a>
                     
-                    <a href="{{ route('shipment.printThermal', $shipment->id) }}" target="_blank" title="طباعة بوليصة حرارية"
+                    <a href="{{ route('receipt.generate',['type' => 'thermal', 'id' => $shipment->uuid]) }}" target="_blank" title="طباعة بوليصة حرارية"
                         class="flex justify-center items-center w-10 h-10 text-gray-600 bg-white rounded-xl border border-gray-200 transition-colors hover:bg-gray-50 hover:text-primary dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-700">
                         <span class="material-symbols-outlined text-[20px]">receipt_long</span>
                     </a>
