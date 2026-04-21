@@ -101,7 +101,9 @@ class ShipmentController extends Controller
         $receivedAccepted = $currentApp->receivedConnections()->where('status', 'accepted')->pluck('sender_app_id');
         $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
 
-        $trustedApps = App::whereIn('id', $connectedAppIds)->with('branches')->get();
+        $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
+            $query->withoutGlobalScope('app_id'); 
+        }])->get();
 
         // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
         // هذه المكاتب تابعة لتطبيقك عبر BelongsToApp
