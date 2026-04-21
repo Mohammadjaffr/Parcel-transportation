@@ -309,7 +309,7 @@
                                             <span
                                                 class="inline-flex px-2 py-1.5 text-[10px] font-black rounded-lg bg-primary-container dark:bg-primary/10 text-primary truncate max-w-[150px] items-center gap-1.5">
                                                 <span class="material-symbols-outlined text-[14px]">store</span>
-                                                {{ $parcel->receiverBranch->name ?? 'فرع غير محدد' }}
+                                                {{ $parcel->receiverBranch?->name ?? $parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد' }}
                                             </span>
                                         </td>
 

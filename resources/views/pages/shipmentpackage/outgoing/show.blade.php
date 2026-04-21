@@ -18,7 +18,7 @@
                 <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">{{ $package->created_at->format('Y-m-d h:i A') }}</p>
             </div>
         </div>
-        
+        @if(!in_array($package->status, ['returned', 'cancelled']))
         <div class="flex gap-3 items-center w-full md:w-auto">
             @php
                 $statusColors = [
@@ -48,7 +48,7 @@
                 {{ $name }}
             </div>
             
-            <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}" target="_blank" class="flex gap-2 items-center px-5 h-11 text-xs font-black text-gray-700 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark-2 dark:text-white hover:bg-gray-50 dark:hover:bg-boxdark dark:border-boxdark">
+            <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}" target="_blank" class="flex gap-2 items-center px-5 h-11 text-xs font-black text-gray-700 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark-2 dark:text-white hover:bg-gray-50 dark:hover:bg-boxdark dark:border-boxdark">
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 طباعة
             </a>
@@ -91,6 +91,7 @@
                 </div>
             @endif
         </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">

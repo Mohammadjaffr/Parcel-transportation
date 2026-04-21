@@ -12,9 +12,9 @@ class Shipment extends Model
 
     protected $fillable = [
         'uuid',
-        'sender_branch_id',    
+        'sender_branch_id',
         'receiver_branch_id',
-        'receiver_office_branch_id',  
+        'receiver_office_branch_id',
         'sender_customer_id',
         'receiver_customer_id',
         'customer_debt_status',
@@ -50,13 +50,13 @@ class Shipment extends Model
             }
             // جلب الفرع المُرسل لاستخدام الكود الخاص به في رقم السند
             $branch = Branch::find($shipment->sender_branch_id);
-            
+
             // إذا كان للفرع كود نستخدمه، وإلا نستخدم الحرف B مع رقم الفرع كبديل
             $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $shipment->sender_branch_id;
 
             // التعديل هنا: حرف y الصغير يعطي 26 بدلاً من 2026
             // النتيجة ستكون مثلاً: 260408 (سنة 26، شهر 04، يوم 08)
-            $date = now()->format('ymd'); 
+            $date = now()->format('ymd');
 
             // البحث عن آخر شحنة لنفس الفرع في نفس اليوم باستخدام الـ ID
             $lastShipment = Shipment::where('sender_branch_id', $shipment->sender_branch_id)
@@ -118,7 +118,7 @@ class Shipment extends Model
     {
         return $this->hasMany(CustomerPayment::class);
     }
-    
+
     public function customerPayments()
     {
         return $this->hasMany(CustomerPayment::class);
@@ -131,4 +131,8 @@ class Shipment extends Model
     {
         return $this->hasOne(Transaction::class);
     }
+
+
+
+
 }

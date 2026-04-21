@@ -153,7 +153,7 @@
                                     <span class="material-symbols-outlined text-[18px]">visibility</span>
                                     عرض التفاصيل
                                 </a>
-
+                                @if(!in_array($package->status, ['returned', 'cancelled']))
                                 <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}" target="_blank"
                                     class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
                                     <span class="material-symbols-outlined text-[18px]">print</span>
@@ -169,6 +169,7 @@
                                         </svg>
                                         إرسال لسائق
                                     </a>
+                                @endif
                                 @endif
                             </div>
                         </div>

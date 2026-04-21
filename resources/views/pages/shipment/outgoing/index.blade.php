@@ -91,7 +91,7 @@
                         @elseif($shipment->status == 'delivered')
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20">تم التسليم</span>
                         @else
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-gray-50 text-gray-500 ring-1 ring-gray-500/20 ring-inset dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700">ملغي / مرتجع</span>
+                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-gray-50 text-red-500 ring-1 ring-red-500/20 ring-inset dark:bg-red-800 dark:text-gray-400 dark:ring-gray-700">ملغي / مرتجع</span>
                         @endif
 
                         {{-- قائمة الثلاث نقاط --}}
@@ -108,7 +108,7 @@
                                     <span class="text-[18px] material-symbols-outlined">visibility</span>
                                     التفاصيل
                                 </a>
-                                
+                                @if(!in_array($shipment->status, ['returned', 'cancelled']))
                                 <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid]) }}" target="_blank" class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
                                     <span class="text-[18px] material-symbols-outlined">print</span>
                                     طباعة السند
@@ -141,7 +141,9 @@
                                         </svg>
                                         إرسال للمستلم
                                     </a>
-                                @endif
+                                    
+                                    @endif
+                                    @endif
                             </div>
                         </div>
                     </div>

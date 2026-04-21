@@ -1,6 +1,12 @@
 @extends('layouts.app')
 @section('title', 'تعديل طرد #' . $shipment->bond_number)
-@section('Breadcrumb', 'تعديل طرد')
+@section('Breadcrumb')
+    <a href="{{ route('shipment.outgoing.index') }}"
+        class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
+        <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
+    </a>
+    <span class="text-gray-600">تعديل طرد</span>
+@endsection
 
 @section('content')
 

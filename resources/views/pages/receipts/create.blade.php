@@ -150,7 +150,7 @@
 
                             {{-- قائمة الدول --}}
                             <div x-show="countryOpen" @click.outside="countryOpen = false" x-transition x-cloak
-                                class="overflow-hidden absolute z-40 mt-1 w-full max-h-60 bg-white rounded-xl border border-gray-100 shadow-lg dark:bg-gray-800 dark:border-gray-700 custom-scrollbar" style="top: 100%;">
+                                class="overflow-hidden absolute z-10 mt-1 w-full max-h-60 bg-white rounded-xl border border-gray-100 shadow-lg dark:bg-gray-800 dark:border-gray-700 custom-scrollbar" style="top: 100%;">
                                 <div class="p-2 border-b border-gray-50 dark:border-gray-700">
                                     <input type="text" x-model="countrySearch" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-xs bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
                                 </div>

@@ -23,8 +23,8 @@ class CustomerController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhere('whatsapp_number', 'like', "%{$search}%"); 
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
             });
         }
 
@@ -45,8 +45,8 @@ class CustomerController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $appId = $user->app_id; 
-        $branchId = $user->branch_id; 
+        $appId = $user->app_id;
+        $branchId = $user->branch_id;
         $userId = $user->id;
 
         $validator = Validator::make($request->all(), [
@@ -98,7 +98,7 @@ class CustomerController extends Controller
     public function show(Request $request, $id)
     {
         $user = auth()->user();
-        
+
         // جلب العميل مع آخر عملياته
         $customer = Customer::where('branch_id', $user->branch_id)
             ->with(['transactions' => function ($query) {
@@ -109,15 +109,15 @@ class CustomerController extends Controller
         // 1. المنطق المحاسبي (حساب ديون العميل)
         // ==========================================
         // 💡 قمنا بتغيير اسم المتغير هنا إلى $creditShipments لتجنب التعارض
-        $creditShipments = Shipment::with('payments') 
-            ->where('sender_customer_id', $id) 
+        $creditShipments = Shipment::with('payments')
+            ->where('sender_customer_id', $id)
             ->where('payment_method', 'customer_credit') // الشحنات الآجلة فقط
             ->get();
 
-        $grandTotalCost = 0;      
-        $grandTotalPaid = 0;      
-        $grandTotalRemaining = 0; 
-        $unpaidShipmentsCount = 0; 
+        $grandTotalCost = 0;
+        $grandTotalPaid = 0;
+        $grandTotalRemaining = 0;
+        $unpaidShipmentsCount = 0;
 
         foreach ($creditShipments as $shipment) {
             $shipmentCost = $shipment->total_amount ?? 0;
@@ -127,7 +127,7 @@ class CustomerController extends Controller
             $grandTotalCost += $shipmentCost;
             $grandTotalPaid += $paidAmount;
             $grandTotalRemaining += $remaining;
-            
+
             if ($remaining > 0) {
                 $unpaidShipmentsCount++;
             }
@@ -144,13 +144,13 @@ class CustomerController extends Controller
                 // فرعنا هو المرسل والعميل هو المرسل
                 $query->where(function ($q) use ($branchCode, $id) {
                     $q->where('sender_branch_id', $branchCode) // عدلها لـ branch_code إذا كانت هكذا بقاعدة بياناتك
-                      ->where('sender_customer_id', $id);
+                        ->where('sender_customer_id', $id);
                 })
-                // أو فرعنا هو المستقبل والعميل هو المستقبل
-                ->orWhere(function ($q) use ($branchCode, $id) {
-                    $q->where('receiver_branch_id', $branchCode)
-                      ->where('receiver_customer_id', $id);
-                });
+                    // أو فرعنا هو المستقبل والعميل هو المستقبل
+                    ->orWhere(function ($q) use ($branchCode, $id) {
+                        $q->where('receiver_branch_id', $branchCode)
+                            ->where('receiver_customer_id', $id);
+                    });
             });
 
         // تطبيق فلتر (صادرة / واردة)
@@ -161,7 +161,7 @@ class CustomerController extends Controller
         } else {
             $shipmentsQuery->where(function ($q) use ($id) {
                 $q->where('sender_customer_id', $id)
-                  ->orWhere('receiver_customer_id', $id);
+                    ->orWhere('receiver_customer_id', $id);
             });
         }
 
@@ -175,127 +175,137 @@ class CustomerController extends Controller
 
         if ($request->isMobile) {
             return view('mobile.pages.people.customers.show', compact(
-                'customer', 'shipments', 'grandTotalCost', 
-                'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount', 'direction'
+                'customer',
+                'shipments',
+                'grandTotalCost',
+                'grandTotalPaid',
+                'grandTotalRemaining',
+                'unpaidShipmentsCount',
+                'direction'
             ));
         }
 
         return view('pages.customers.show', compact(
-            'customer', 'shipments', 'grandTotalCost', 
-            'grandTotalPaid', 'grandTotalRemaining', 'unpaidShipmentsCount', 'direction'
+            'customer',
+            'shipments',
+            'grandTotalCost',
+            'grandTotalPaid',
+            'grandTotalRemaining',
+            'unpaidShipmentsCount',
+            'direction'
         ));
     }
 
     /** صفحة تعديل */
-  public function edit($id)
-{
-    /** @var \App\Models\User $user */
-    $user = auth()->user();
-    
-    try {
-        // استخدم branch_id ليتوافق مع بقية الكود الخاص بك
-        $customer = Customer::where('branch_id', $user->branch_id)
-            ->findOrFail($id);
+    public function edit($id)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
 
-        if (request()->ajax() || request()->wantsJson()) {
-            return response()->json($customer);
-        }
+        try {
+            // استخدم branch_id ليتوافق مع بقية الكود الخاص بك
+            $customer = Customer::where('branch_id', $user->branch_id)
+                ->findOrFail($id);
 
-        return view('pages.customers.edit-customer-modal', compact('customer'));
-    } catch (\Exception $e) {
-        if (request()->ajax() || request()->wantsJson()) {
-            return response()->json(['message' => 'العميل غير موجود أو لا تملك صلاحية الوصول إليه'], 404);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json($customer);
+            }
+
+            return view('pages.customers.edit-customer-modal', compact('customer'));
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['message' => 'العميل غير موجود أو لا تملك صلاحية الوصول إليه'], 404);
+            }
+            abort(404);
         }
-        abort(404);
     }
-}
 
     // معتمد
-   public function update(Request $request, $id)
-{
-    $user = auth()->user();
-    $branchId = $user->branch_id;
+    public function update(Request $request, $id)
+    {
+        $user = auth()->user();
+        $branchId = $user->branch_id;
 
-    $customer = Customer::where('branch_id', $branchId)->findOrFail($id);
+        $customer = Customer::where('branch_id', $branchId)->findOrFail($id);
 
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'phone' => 'required|string|max:20|unique:customers,phone,' . $customer->id . ',id,branch_id,' . $branchId,
-    ], [
-        'name.required' => 'اسم العميل مطلوب',
-        'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
-        'phone.required' => 'رقم الهاتف مطلوب',
-        'phone.unique' => 'رقم الهاتف مسجل بالفعل لعميل آخر في هذا الفرع',
-    ]);
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'phone' => 'required|string|max:20|unique:customers,phone,' . $customer->id . ',id,branch_id,' . $branchId,
+        ], [
+            'name.required' => 'اسم العميل مطلوب',
+            'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
+            'phone.required' => 'رقم الهاتف مطلوب',
+            'phone.unique' => 'رقم الهاتف مسجل بالفعل لعميل آخر في هذا الفرع',
+        ]);
 
-    if ($validator->fails()) {
-        if ($request->wantsJson()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        if ($validator->fails()) {
+            if ($request->wantsJson()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+            return WebResponseClass::sendValidationError($validator);
         }
-        return WebResponseClass::sendValidationError($validator);
+
+        try {
+            $validated = $validator->validated();
+            $customer->update($validated);
+
+            if ($request->wantsJson()) {
+                session()->flash('success', true);
+                session()->flash('success_title', 'تم التحديث!');
+                session()->flash('success_message', 'تم تحديث بيانات العميل بنجاح.');
+                return response()->json(['success' => true]);
+            }
+
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات العميل بنجاح.',
+                'حسناً'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
+            }
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
-
-    try {
-        $validated = $validator->validated();
-        $customer->update($validated);
-
-        if ($request->wantsJson()) {
-            session()->flash('success', true);
-            session()->flash('success_title', 'تم التحديث!');
-            session()->flash('success_message', 'تم تحديث بيانات العميل بنجاح.');
-            return response()->json(['success' => true]);
-        }
-
-        return WebResponseClass::sendResponse(
-            'تم التحديث!',
-            'تم تحديث بيانات العميل بنجاح.',
-            'حسناً'
-        );
-    } catch (\Exception $e) {
-        if ($request->wantsJson()) {
-            return response()->json(['message' => 'حدث خطأ في السيرفر'], 500);
-        }
-        return WebResponseClass::sendExceptionError($e);
-    }
-}
     // معتمد
     public function destroy(Request $request, $id)
-{
+    {
 
-    $user = auth()->user();
-    
-    $customer = Customer::where('branch_id', $user->branch_id)->findOrFail($id);
+        $user = auth()->user();
 
-    if ($customer->transactions()->exists()) {
-        if ($request->wantsJson()) {
-            return response()->json(['message' => 'لا يمكن حذف عميل لديه حركات مالية.'], 400);
+        $customer = Customer::where('branch_id', $user->branch_id)->findOrFail($id);
+
+        if ($customer->transactions()->exists()) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'لا يمكن حذف عميل لديه حركات مالية.'], 400);
+            }
+            return WebResponseClass::sendError('لا يمكن حذف عميل لديه حركات مالية.', 'لا يمكن الحذف!');
         }
-        return WebResponseClass::sendError('لا يمكن حذف عميل لديه حركات مالية.', 'لا يمكن الحذف!');
+
+        try {
+            $customer->delete();
+
+            if ($request->wantsJson()) {
+                session()->flash('success', true);
+                session()->flash('success_title', 'تم الحذف!');
+                session()->flash('success_message', 'تم حذف العميل بنجاح.');
+                return response()->json(['success' => true]);
+            }
+
+            return WebResponseClass::sendResponse(
+                'تم الحذف!',
+                'تم حذف العميل بنجاح.',
+                'حسناً',
+                'customers.index'
+            );
+        } catch (\Exception $e) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'حدث خطأ في السيرفر أثناء الحذف'], 500);
+            }
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
-
-    try {
-        $customer->delete();
-
-        if ($request->wantsJson()) {
-            session()->flash('success', true);
-            session()->flash('success_title', 'تم الحذف!');
-            session()->flash('success_message', 'تم حذف العميل بنجاح.');
-            return response()->json(['success' => true]);
-        }
-
-        return WebResponseClass::sendResponse(
-            'تم الحذف!',
-            'تم حذف العميل بنجاح.',
-            'حسناً',
-            'customers.index'
-        );
-    } catch (\Exception $e) {
-        if ($request->wantsJson()) {
-            return response()->json(['message' => 'حدث خطأ في السيرفر أثناء الحذف'], 500);
-        }
-        return WebResponseClass::sendExceptionError($e);
-    }
-}
     /** البحث */
     public function search(Request $request)
     {
@@ -316,113 +326,143 @@ class CustomerController extends Controller
     }
 
     /** تقرير شامل للعميل PDF */
-    public function comprehensiveReport($id)
+    public function accountStatement($id)
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
         $branchId = $user->branch_id;
         $branchCode = $user->branch_code;
 
-        // جلب بيانات العميل والتأكد من أنه ينتمي للفرع
+        // بيانات العميل
         $customer = Customer::where('branch_id', $branchId)
-            ->with(['branch'])
+            ->with('branch')
             ->findOrFail($id);
 
-        // جلب الشحنات المرسلة من الفرع الحالي
+        // جلب الشحنات المرتبطة بالعميل في هذا الفرع
         $sentShipments = Shipment::with(['receiverBranch', 'payments'])
             ->where('sender_customer_id', $id)
-            ->where('sender_branch_code', $branchCode)
-            ->latest()
+            ->where('sender_branch_id', $branchId)
             ->get();
 
-        // جلب الشحنات المستقبلة في الفرع الحالي
         $receivedShipments = Shipment::with(['senderBranch', 'payments'])
             ->where('receiver_customer_id', $id)
-            ->where('receiver_branch_code', $branchCode)
-            ->latest()
+            ->where('receiver_branch_id', $branchId)
             ->get();
 
-        // حساب الديون والرصيد من خلال الشحنات والدفعات
-        // نحسب فقط الشحنات الآجلة والجزئية (نستثني COD لأن المستلم سيدفعها)
-        $totalShipmentsCost = 0;  // إجمالي قيمة كل الشحنات
-        $totalPaid = 0;           // إجمالي المدفوع
+        // تجهيز الحركات
+        $entries = collect();
 
-        // حساب من الشحنات المرسلة - فقط customer_credit و partial_payment
+        // الشحنات المرسلة
         foreach ($sentShipments as $shipment) {
-            // نحسب فقط الشحنات الآجلة والجزئية
-            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
-                $shipmentCost = $shipment->total_amount ?? 0;
-                $paidAmount = $shipment->payments->sum('amount');
+            $paid = $shipment->payments->sum('amount');
+            $shipmentAmount = (float) ($shipment->total_amount ?? 0);
 
-                $totalShipmentsCost += $shipmentCost;
-                $totalPaid += $paidAmount;
+            // فقط الآجل والجزئي تدخل في الذمم
+            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
+                $entries->push([
+                    'date' => $shipment->created_at,
+                    'type' => 'shipment',
+                    'description' => 'شحنة مرسلة - سند رقم ' . ($shipment->bond_number ?? '---'),
+                    'reference' => $shipment->bond_number ?? '---',
+                    'debit' => $shipmentAmount,
+                    'credit' => 0,
+                    'payment_method' => $shipment->payment_method,
+                    'notes' => $shipment->notes,
+                ]);
+
+                if ($paid > 0) {
+                    $entries->push([
+                        'date' => $shipment->created_at,
+                        'type' => 'payment',
+                        'description' => 'دفعة على الشحنة - سند رقم ' . ($shipment->bond_number ?? '---'),
+                        'reference' => $shipment->bond_number ?? '---',
+                        'debit' => 0,
+                        'credit' => $paid,
+                        'payment_method' => $shipment->payment_method,
+                        'notes' => null,
+                    ]);
+                }
             }
         }
 
-        // حساب من الشحنات المستقبلة - فقط customer_credit و partial_payment
+        // الشحنات المستقبلة
         foreach ($receivedShipments as $shipment) {
-            // نحسب فقط الشحنات الآجلة والجزئية
-            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
-                $shipmentCost = $shipment->total_amount ?? 0;
-                $paidAmount = $shipment->payments->sum('amount');
+            $paid = $shipment->payments->sum('amount');
+            $shipmentAmount = (float) ($shipment->total_amount ?? 0);
 
-                $totalShipmentsCost += $shipmentCost;
-                $totalPaid += $paidAmount;
+            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
+                $entries->push([
+                    'date' => $shipment->created_at,
+                    'type' => 'shipment',
+                    'description' => 'شحنة مستقبلة - سند رقم ' . ($shipment->bond_number ?? '---'),
+                    'reference' => $shipment->bond_number ?? '---',
+                    'debit' => $shipmentAmount,
+                    'credit' => 0,
+                    'payment_method' => $shipment->payment_method,
+                    'notes' => $shipment->notes,
+                ]);
+
+                if ($paid > 0) {
+                    $entries->push([
+                        'date' => $shipment->created_at,
+                        'type' => 'payment',
+                        'description' => 'دفعة على الشحنة - سند رقم ' . ($shipment->bond_number ?? '---'),
+                        'reference' => $shipment->bond_number ?? '---',
+                        'debit' => 0,
+                        'credit' => $paid,
+                        'payment_method' => $shipment->payment_method,
+                        'notes' => null,
+                    ]);
+                }
             }
         }
 
-        // الرصيد = إجمالي قيمة الشحنات - إجمالي المدفوع
-        $balance = $totalShipmentsCost - $totalPaid;
-        $isDebtor = $balance > 0;
+        // ترتيب الحركات حسب التاريخ
+        $entries = $entries->sortBy('date')->values();
 
-        // للعرض في التقرير
-        $debit = $totalShipmentsCost;  // إجمالي المستحقات (قيمة الشحنات)
-        $credit = $totalPaid;           // إجمالي المدفوع
+        // حساب الرصيد الجاري
+        $runningBalance = 0;
+        $entries = $entries->map(function ($entry) use (&$runningBalance) {
+            $runningBalance += ($entry['debit'] - $entry['credit']);
+            $entry['balance'] = $runningBalance;
+            return $entry;
+        });
 
-        // إحصائيات الشحنات المرسلة
-        $sentTotal = $sentShipments->sum('total_amount');
+        // المجاميع
+        $totalDebit = $entries->sum('debit');
+        $totalCredit = $entries->sum('credit');
+        $finalBalance = $totalDebit - $totalCredit;
+        $isDebtor = $finalBalance > 0;
+
+        // إحصائيات إضافية
         $sentCount = $sentShipments->count();
-        $sentPrepaid = $sentShipments->where('payment_method', 'prepaid')->count();
-        $sentCod = $sentShipments->where('payment_method', 'cod')->count();
-        $sentCustomerCredit = $sentShipments->where('payment_method', 'customer_credit')->count();
-
-        // إحصائيات الشحنات المستقبلة
-        $receivedTotal = $receivedShipments->sum('total_amount');
         $receivedCount = $receivedShipments->count();
-        $receivedPrepaid = $receivedShipments->where('payment_method', 'prepaid')->count();
-        $receivedCod = $receivedShipments->where('payment_method', 'cod')->count();
-        $receivedCustomerCredit = $receivedShipments->where('payment_method', 'customer_credit')->count();
+        $totalShipments = $sentCount + $receivedCount;
 
-        // توليد PDF
-        $pdf = new \TCPDF;
+        $pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
         $pdf->setRTL(true);
+        $pdf->SetMargins(8, 8, 8);
+        $pdf->SetAutoPageBreak(true, 10);
         $pdf->SetFont('dejavusans', '', 10);
         $pdf->AddPage();
 
-        $html = view('pages.customers.comprehensive_report_pdf', compact(
+        $html = view('receipts.templates.CoustomerAcoountDetection', compact(
             'customer',
-            'sentShipments',
-            'receivedShipments',
-            'debit',
-            'credit',
-            'balance',
+            'entries',
+            'totalDebit',
+            'totalCredit',
+            'finalBalance',
             'isDebtor',
-            'sentTotal',
             'sentCount',
-            'sentPrepaid',
-            'sentCod',
-            'sentCustomerCredit',
-            'receivedTotal',
             'receivedCount',
-            'receivedPrepaid',
-            'receivedCod',
-            'receivedCustomerCredit'
+            'totalShipments'
         ))->render();
 
-        $pdf->writeHTML($html);
+        $pdf->writeHTML($html, true, false, true, false, '');
 
-        return $pdf->Output("customer_comprehensive_report_{$customer->id}.pdf", 'I');
+        return $pdf->Output("customer_account_statement_{$customer->id}.pdf", 'I');
     }
+
 
     /** تصدير */
     public function export()
@@ -452,7 +492,7 @@ class CustomerController extends Controller
 
         // حساب إجمالي دين العميل للتحقق
         $totalDebt = Shipment::where('sender_customer_id', $customer->id)
-            ->where('sender_branch_code', $user->branch_code)
+            ->where('sender_branch_id', $user->branch_code)
             ->where('payment_method', 'customer_credit')
             ->get()
             ->sum(function ($shipment) {
@@ -493,7 +533,7 @@ class CustomerController extends Controller
             // جلب الشحنات الآجلة غير المسددة بالكامل - مرتبة من الأقدم للأحدث (Water-Filling Algorithm)
             $shipments = Shipment::with(['payments'])
                 ->where('sender_customer_id', $customer->id)
-                ->where('sender_branch_code', $user->branch_code)
+                ->where('sender_branch_id', $user->branch_code)
                 ->where('payment_method', 'customer_credit')
                 ->orderBy('created_at', 'ASC') // الأقدم أولاً
                 ->get();
