@@ -5,6 +5,7 @@ namespace App\Services\WhatsApp\Messages;
 use App\Interfaces\WhatsAppMessageInterface;
 use App\Models\ShipmentPackage;
 use Illuminate\Database\Eloquent\Model;
+
 class DriverMessage implements WhatsAppMessageInterface
 {
     public function getPhoneNumber(Model $entity): ?string
@@ -12,7 +13,7 @@ class DriverMessage implements WhatsAppMessageInterface
         if (!$entity instanceof ShipmentPackage) {
             return null;
         }
-        return $entity->driver->phone ?? null; 
+        return $entity->driver->phone ?? null;
     }
 
     public function getReceiptType(): ?string
@@ -25,20 +26,35 @@ class DriverMessage implements WhatsAppMessageInterface
         if (!$entity instanceof ShipmentPackage) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $driverName = $entity->driver->name ?? 'كابتن';
-        
-        $msg = "مرحباً كابتن *$driverName*، 🚚\n\n";
-        $msg .= "تم تكليفك بتوصيل شحنة جديده.\n";
-        $msg .= "📌 *رقم الشحنة:* {$entity->bond_number}\n";
-        $msg .= "📍 *وجهة التسليم:* " . ($entity->receiverBranch->name ?? 'غير محدد') . "\n";
-        
-        if ($entity->payment_method === 'cod') {
-            $msg .= "⚠️ *تنبيه:* يرجى تحصيل مبلغ " . number_format($entity->total_amount) . " ريال من المستلم.\n\n";
+
+        $driverName   = $entity->driver->name ?? 'السائق';
+        $trackingNo   = $entity->tracking_number ?? 'غير متوفر';
+        $branchName   = $entity->senderBranch->name ?? 'غير محدد';
+        $shipmentsCnt = $entity->shipments?->count() ?? 0;
+
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+
+        $msg .= "الأخ / {$driverName} المحترم،\n";
+        $msg .= "تحية طيبة وبعد،\n\n";
+
+        $msg .= "نود إشعاركم بأنه تم إصدار إرسالية جديدة بنجاح، وقد تم تعيينكم مسؤولاً عنها ضمن عمليات النقل والتسليم.\n\n";
+
+        $msg .= "تفاصيل الإرسالية:\n";
+        $msg .= "رقم الإرسالية : {$trackingNo}\n";
+        $msg .= "فرع الإرسال   : {$branchName}\n";
+
+        if ($shipmentsCnt > 0) {
+            $msg .= "عدد الشحنات  : {$shipmentsCnt}\n";
         }
 
         if ($receiptUrl) {
-            $msg .= "📄 *بوليصة الشحن للسائق:* \n{$receiptUrl}";
+            $msg .= "\nرابط سند الاستلام:\n{$receiptUrl}\n";
         }
+
+        $msg .= "\nنأمل منكم الاطلاع على التفاصيل واتخاذ الإجراءات اللازمة وفق النظام.\n\n";
+
+        $msg .= "وتفضلوا بقبول فائق الاحترام والتقدير.\n";
+        $msg .= "إدارة النظام";
 
         return $msg;
     }

@@ -16,7 +16,7 @@
             payment_method: @js(old('payment_method', $shipment->payment_method)),
             prepaid_method: @js(old('prepaid_payment_method', 'cash')),
         
-            isSenderReceiverModalOpen: @js($errors->has('sender_name') || $errors->has('sender_phone') || $errors->has('sender_customer_id') || $errors->has('sender_branch_code') || $errors->has('receiver_name') || $errors->has('receiver_phone') || $errors->has('receiver_customer_id') || $errors->has('receiver_branch_code') || $errors->has('no_honey_jars') || $errors->has('no_gallons_honey')),
+            isSenderReceiverModalOpen: @js($errors->has('sender_name') || $errors->has('sender_phone') || $errors->has('sender_customer_id') || $errors->has('sender_branch_id') || $errors->has('receiver_name') || $errors->has('receiver_phone') || $errors->has('receiver_customer_id') || $errors->has('receiver_branch_id') || $errors->has('no_honey_jars') || $errors->has('no_gallons_honey')),
         
             isDetailsModalOpen: @js($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes')),
         
@@ -289,7 +289,8 @@
                             <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات المرسل والمستلم</h2>
                             <div
                                 class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 text-warning-500 dark:bg-warning-500/10">
-                                <span class="material-symbols-outlined text-[22px]">manage_accounts</span></div>
+                                <span class="material-symbols-outlined text-[22px]">manage_accounts</span>
+                            </div>
                         </div>
                     </div>
 
@@ -435,19 +436,30 @@
                                 <input type="hidden" name="receiver_customer_id" x-model="selectedId">
 
                                 <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">الجهة
-                                        إلى (فرع الاستلام)</label>
-                                    <select name="receiver_branch_code" required
+                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">
+                                        الجهة إلى (فرع الاستلام)
+                                    </label>
+
+                                    <select name="receiver_branch_id" required
                                         class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+
                                         <option value="" disabled
-                                            {{ old('receiver_branch_code', $shipment->receiver_branch_code) ? '' : 'selected' }}>
-                                            اختر فرع الاستلام</option>
+                                            {{ old('receiver_branch_id', $shipment->receiver_branch_id) ? '' : 'selected' }}>
+                                            اختر فرع الاستلام
+                                        </option>
+
                                         @foreach ($branches as $branch)
-                                            @continue($branch->code === auth()->user()->branch_code)
-                                            <option value="{{ $branch->code }}" @selected(old('receiver_branch_code', $shipment->receiver_branch_code) == $branch->code)>
-                                                {{ $branch->name }}</option>
+                                            @continue((int) $branch->id === (int) auth()->user()->branch_id)
+
+                                            <option value="{{ $branch->id }}" @selected((int) old('receiver_branch_id', $shipment->receiver_branch_id) === (int) $branch->id)>
+                                                {{ $branch->name }}
+                                            </option>
                                         @endforeach
                                     </select>
+
+                                    @error('receiver_branch_id')
+                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                                    @enderror
                                 </div>
 
                                 <div>
@@ -538,7 +550,8 @@
                             <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل تفاصيل الطرد</h2>
                             <div
                                 class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 text-warning-500 dark:bg-warning-500/10">
-                                <span class="material-symbols-outlined text-[22px]">inventory_2</span></div>
+                                <span class="material-symbols-outlined text-[22px]">inventory_2</span>
+                            </div>
                         </div>
                     </div>
 
@@ -644,7 +657,8 @@
                             <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل طريقة الدفع</h2>
                             <div
                                 class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 text-success-500 dark:bg-success-500/10">
-                                <span class="material-symbols-outlined text-[22px]">payments</span></div>
+                                <span class="material-symbols-outlined text-[22px]">payments</span>
+                            </div>
                         </div>
                     </div>
 

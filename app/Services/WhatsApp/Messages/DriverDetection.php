@@ -26,17 +26,27 @@ class DriverDetection implements WhatsAppMessageInterface
         if (!$entity instanceof ShipmentPackage) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $name = $entity->driver->name ?? 'عميلنا العزيز';
-        
-        $msg = "مرحباً *$name*، 📦\n\n";
-        $msg .= "تم إصدار الشحنة بنجاح.\n";
-        $msg .= "📌 *رقم الطرد:* {$entity->tracking_number}\n";
-        
+
+        $driverName = $entity->driver->name ?? 'السائق';
+        $trackingNo = $entity->tracking_number ?? 'غير متوفر';
+
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+        $msg .= "الأخ / {$driverName} المحترم،\n";
+        $msg .= "تحية طيبة وبعد،\n\n";
+
+        $msg .= "نود إشعاركم بأنه تم إصدار إرسالية جديدة بنجاح، وقد تم تعيينكم مسؤولاً عنها.\n\n";
+
+        $msg .= "رقم الإرسالية : {$trackingNo}\n";
+
         if ($receiptUrl) {
-            $msg .= "📄 *لعرض سند الاستلام:* \n{$receiptUrl}\n\n";
+            $msg .= "\nسند الاستلام:\n{$receiptUrl}\n";
         }
-        
-        $msg .= "شكراً لتعاملك معنا!";
+
+        $msg .= "\nنأمل منكم الاطلاع على التفاصيل واتخاذ الإجراءات اللازمة.\n\n";
+
+        $msg .= "وتفضلوا بقبول فائق الاحترام والتقدير.\n";
+        $msg .= "إدارة النظام";
+
         return $msg;
     }
 }

@@ -102,7 +102,7 @@ class ShipmentController extends Controller
         $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
 
         $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
-            $query->withoutGlobalScope('app_id'); 
+            $query->withoutGlobalScope('app_id');
         }])->get();
 
         // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
@@ -201,45 +201,37 @@ class ShipmentController extends Controller
     }
     public function outgoingEdit(Request $request, $id)
     {
-        // جلب الطرد مع العلاقات اللازمة للواجهة
         $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'receiverBranch'])->findOrFail($id);
 
-        // 🛡️ الحماية البرمجية: منع التعديل إذا لم يكن قيد الانتظار (إلا إذا كان أدمن)
         if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
             return back()->with('error', 'لا يمكن تعديل هذا الطرد لأن حالته الحالية لا تسمح بذلك.');
         }
 
-        // جلب العملاء للـ Combobox الذكي
-        $customers = Customer::where('app_id', auth()->user()->app_id)->get(['id', 'name', 'phone']);
+        $customers = Customer::where('app_id', auth()->user()->app_id)
+            ->get(['id', 'name', 'phone']);
 
-        // 💡 إضافة: جلب المكاتب والفروع (نفس الاستعلام الذي تستخدمه في دالة Create)
-        // لتشغيل القائمة المنسدلة الديناميكية لاختيار الوجهة
-        $offices = \App\Models\Office::with('branches')
+        $branches = Branch::where('app_id', auth()->user()->app_id)->get();
+
+        $offices = Office::with('branches')
             ->where('app_id', auth()->user()->app_id)
             ->get();
 
         if ($request->isMobile) {
-            return view('mobile.pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices'));
+            return view('mobile.pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices', 'branches'));
         }
 
-        // حط المسار تبع الدسك توب ي السعدي 😂
-        return view('pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices'));
+        return view('pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices', 'branches'));
     }
     public function outgoingUpdate(Request $request, $id)
     {
         $shipment = Shipment::findOrFail($id);
-
-        // 🛡️ الحماية البرمجية: منع التعديل إذا لم يكن قيد الانتظار (إلا إذا كان أدمن)
+       
         if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
             return back()->with('error', 'لا تملك صلاحية تعديل هذا الطرد.');
         }
 
-        // ========================================================
-        // 1. قواعد التحقق (Validation Rules) - مطابقة لدالة الإنشاء
-        // ========================================================
         $rules = [
-            'office_id'            => 'required|string',
-            'receiver_branch_id'   => 'required|integer',
+            'receiver_branch_id'   => 'required|integer|exists:branches,id',
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
             'sender_name'          => 'required_without:sender_customer_id|string|max:255',
@@ -262,115 +254,103 @@ class ShipmentController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        // تحقق إضافي للدفع الجزئي
         $validator->after(function ($validator) use ($request) {
             if ($request->payment_method === 'partial_payment') {
                 $total = (float) $request->total_amount;
                 $partial = (float) $request->partial_amount;
+
                 if ($partial >= $total) {
                     $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
                 }
             }
+
+            if ((int) $request->receiver_branch_id === (int) auth()->user()->branch_id) {
+                $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+            }
         });
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput()->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
         }
 
         try {
             DB::beginTransaction();
+
             $data = $validator->validated();
             $user = auth()->user();
 
-            // ========================================================
-            // 2. اللوجيك الذكي: تحديد مسار الفرع الوجهة
-            // ========================================================
-            $officeIdParts = explode('_', $data['office_id']);
-            $officeType = $officeIdParts[0]; // (internal, trusted, untrusted)
-
-            $finalReceiverBranchId = null;
-            $finalReceiverOfficeBranchId = null;
-
-            if ($officeType === 'untrusted') {
-                $finalReceiverOfficeBranchId = $data['receiver_branch_id'];
-            } else {
-                $finalReceiverBranchId = $data['receiver_branch_id'];
-            }
-
-            // ========================================================
-            // 3. معالجة العملاء الصامتة (إنشاء أو تحديث)
-            // ========================================================
-
-            // --- أ. المرسل ---
-            $senderCustomerId = $data['sender_customer_id'];
+            $senderCustomerId = $data['sender_customer_id'] ?? null;
             if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
                 $senderCustomer = Customer::firstOrCreate(
                     ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
                     [
-                        'name' => $data['sender_name'],
-                        'branch_id' => $user->branch_id,
-                        'created_by' => $user->id
+                        'name'       => $data['sender_name'],
+                        'branch_id'  => $user->branch_id,
+                        'created_by' => $user->id,
                     ]
                 );
-                // تحديث الاسم إذا قام المستخدم بتغييره لنفس الرقم
+
                 if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
                     $senderCustomer->update(['name' => $data['sender_name']]);
                 }
+
                 $senderCustomerId = $senderCustomer->id;
             }
 
-            // --- ب. المستلم ---
-            $receiverCustomerId = $data['receiver_customer_id'];
+            $receiverCustomerId = $data['receiver_customer_id'] ?? null;
             if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
                 $receiverCustomer = Customer::firstOrCreate(
                     ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
                     [
-                        'name' => $data['receiver_name'],
-                        'branch_id' => $user->branch_id,
-                        'created_by' => $user->id
+                        'name'       => $data['receiver_name'],
+                        'branch_id'  => $user->branch_id,
+                        'created_by' => $user->id,
                     ]
                 );
-                // تحديث الاسم إذا قام المستخدم بتغييره لنفس الرقم
+
                 if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
                     $receiverCustomer->update(['name' => $data['receiver_name']]);
                 }
+
                 $receiverCustomerId = $receiverCustomer->id;
             }
 
-            // ========================================================
-            // 4. تحديث الشحنة (الطرد)
-            // ========================================================
             $shipment->update([
-                // الوجهات
-                'receiver_branch_id'        => $finalReceiverBranchId,
-                'receiver_office_branch_id' => $finalReceiverOfficeBranchId,
+                'receiver_branch_id'        => $data['receiver_branch_id'],
+                'receiver_office_branch_id' => null,
 
-                // العملاء
                 'sender_customer_id'        => $senderCustomerId,
                 'receiver_customer_id'      => $receiverCustomerId,
 
-                // بيانات الطرد الأساسية
                 'package_type'              => $data['package_type'],
                 'weight'                    => $data['weight'] ?? 0,
                 'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
                 'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
 
-                // المالية
                 'payment_method'            => $data['payment_method'],
                 'total_amount'              => $data['total_amount'],
-                'partial_amount'            => $data['payment_method'] === 'partial_payment' ? $data['partial_amount'] : 0,
-                'notes'                     => $data['notes'],
+                'partial_amount'            => $data['payment_method'] === 'partial_payment'
+                    ? ($data['partial_amount'] ?? 0)
+                    : 0,
+                'notes'                     => $data['notes'] ?? null,
 
-                // حالة الدين (نحفظها كما هي إذا لم تكن customer_credit، وإلا نعينها كـ pending إذا كانت جديدة)
-                'customer_debt_status'      => $data['payment_method'] === 'customer_credit' ? ($shipment->customer_debt_status ?? 'pending') : null,
+                'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
+                    ? ($shipment->customer_debt_status ?? 'pending')
+                    : null,
             ]);
 
             DB::commit();
 
             return back()->with('success', 'تم تعديل بيانات الطرد بنجاح.');
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
         }
     }
     public function incoming(Request $request)
@@ -392,7 +372,6 @@ class ShipmentController extends Controller
     }
     public function store(Request $request)
     {
-
         $rules = [
             'office_id'            => 'required|string',
             'receiver_branch_id'   => 'required|integer',
@@ -585,23 +564,22 @@ class ShipmentController extends Controller
         }
     }
     // معتمد
-public function show(Request $request, $id)
-{
-    $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
+    public function show(Request $request, $id)
+    {
+        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
 
-    // تجهيز روابط الواتساب
-    $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
-    $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
+        // تجهيز روابط الواتساب
+        $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
+        $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
 
-    // تم إزالة return $shipment; من هنا لكي يكمل الكود مساره
-
-    // التحقق من نوع الجهاز لإرجاع العرض (View) المناسب
-    if ($request->isMobile) {
-        return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
-    }
     
-    return view('pages.shipment.outgoing.show', compact('shipment'));
-}
+        // التحقق من نوع الجهاز لإرجاع العرض (View) المناسب
+        if ($request->isMobile) {
+            return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
+        }
+
+        return view('pages.shipment.outgoing.show', compact('shipment'));
+    }
 
     /* ========== 5- صفحة تعديل الطرد ========== */
     // public function edit($id)
@@ -871,6 +849,7 @@ public function show(Request $request, $id)
             if ($request->wantsJson()) {
                 return response()->json(['message' => 'عذراً، لا يمكن تعديل شحنة ملغية.'], 403);
             }
+
             return WebResponseClass::sendError('عذراً، لا يمكن تعديل شحنة ملغية.', 'خطأ!', 'حسناً');
         }
 
@@ -882,7 +861,7 @@ public function show(Request $request, $id)
         // ==========================================
         if ($section === 'sender_receiver') {
             $rules = [
-                'receiver_branch_id' => 'required|exists:branches,code',
+                'receiver_branch_id'   => 'required|integer|exists:branches,id',
                 'sender_customer_id'   => 'nullable|exists:customers,id',
                 'receiver_customer_id' => 'nullable|exists:customers,id',
                 'sender_name'          => 'required_without:sender_customer_id|string|max:255',
@@ -899,8 +878,9 @@ public function show(Request $request, $id)
             $validator->after(function ($validator) use ($request, $shipment) {
                 /** @var \App\Models\User $user */
                 $user = auth()->user();
-                $sender = $user->branch_id;
-                $receiver = $request->receiver_branch_id ?? $shipment->receiver_branch_id;
+
+                $sender = (int) $user->branch_id;
+                $receiver = (int) ($request->receiver_branch_id ?? $shipment->receiver_branch_id);
 
                 if ($sender && $receiver && $sender === $receiver) {
                     $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس جهة الإرسال.');
@@ -912,38 +892,52 @@ public function show(Request $request, $id)
                 if ($request->wantsJson()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
+
                 return WebResponseClass::sendValidationError($validator);
             }
 
             $data = $validator->validated();
-
+$user = auth()->user();
             // إنشاء / تحديث العميل المرسل
             if (empty($data['sender_customer_id'])) {
                 $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
+
                 if ($senderCustomer) {
-                    $senderCustomer->update(['name' => $data['sender_name']]);
+                    $senderCustomer->update([
+                        'name' => $data['sender_name'],
+                    ]);
                 } else {
                     $senderCustomer = Customer::create([
-                        'phone' => $data['sender_phone'],
-                        'name' => $data['sender_name'],
-                        'branch_id' => auth()->user()->branch_id,
+                        'phone'      => $data['sender_phone'],
+                        'name'       => $data['sender_name'],
+                        'branch_id'  => $user->branch_id,
+                        'app_id'     => $user->app_id,
+                        'created_by' => $user->id,
                     ]);
                 }
+
                 $data['sender_customer_id'] = $senderCustomer->id;
             }
 
             // إنشاء / تحديث العميل المستلم
             if (empty($data['receiver_customer_id'])) {
                 $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->first();
+
                 if ($receiverCustomer) {
-                    $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    $receiverCustomer->update([
+                        'name' => $data['receiver_name'],
+                    ]);
                 } else {
                     $receiverCustomer = Customer::create([
-                        'phone' => $data['receiver_phone'],
-                        'name' => $data['receiver_name'],
-                        'branch_id' => $data['receiver_branch_id'],
+                        'phone'      => $data['receiver_phone'],
+                        'name'       => $data['receiver_name'],
+                        'branch_id'  => $data['receiver_branch_id'],
+                        'app_id'     => $user->app_id,
+                        'created_by' => $user->id,
                     ]);
+
                 }
+
                 $data['receiver_customer_id'] = $receiverCustomer->id;
             }
 
@@ -953,10 +947,20 @@ public function show(Request $request, $id)
 
             // استجابة النجاح (AJAX)
             if ($request->wantsJson()) {
-                return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المرسل والمستلم بنجاح.', 'حسناً', 'shipment.outgoing.index');
+                return WebResponseClass::sendResponse(
+                    'تم التحديث!',
+                    'تم تحديث بيانات المرسل والمستلم بنجاح.',
+                    'حسناً',
+                    'shipment.outgoing.index'
+                );
             }
 
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المرسل والمستلم بنجاح.', 'حسناً', 'shipment.outgoing.index');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات المرسل والمستلم بنجاح.',
+                'حسناً',
+                'shipment.outgoing.index'
+            );
         }
 
         // ==========================================
@@ -978,6 +982,7 @@ public function show(Request $request, $id)
                 if ($request->wantsJson()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
+
                 return WebResponseClass::sendValidationError($validator);
             }
 
@@ -986,10 +991,20 @@ public function show(Request $request, $id)
 
             // استجابة النجاح (AJAX)
             if ($request->wantsJson()) {
-                return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث تفاصيل الطرد بنجاح.', 'حسناً', 'shipment.outgoing.index');
+                return WebResponseClass::sendResponse(
+                    'تم التحديث!',
+                    'تم تحديث تفاصيل الطرد بنجاح.',
+                    'حسناً',
+                    'shipment.outgoing.index'
+                );
             }
 
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث تفاصيل الطرد بنجاح.', 'حسناً', 'shipment.outgoing.index');
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث تفاصيل الطرد بنجاح.',
+                'حسناً',
+                'shipment.outgoing.index'
+            );
         }
 
         // ==========================================
@@ -1010,6 +1025,7 @@ public function show(Request $request, $id)
                 if (($request->payment_method ?? $shipment->payment_method) === 'partial_payment') {
                     $totalAmount = $request->total_amount ?? $shipment->total_amount;
                     $partialAmount = $request->partial_amount;
+
                     if (!is_null($partialAmount) && is_numeric($partialAmount) && is_numeric($totalAmount)) {
                         if ((float) $partialAmount >= (float) $totalAmount) {
                             $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئيًا يجب أن يكون أقل من المبلغ الإجمالي.');
@@ -1022,6 +1038,7 @@ public function show(Request $request, $id)
                 if ($request->wantsJson()) {
                     return response()->json(['errors' => $validator->errors()], 422);
                 }
+
                 return WebResponseClass::sendValidationError($validator);
             }
 
@@ -1045,9 +1062,16 @@ public function show(Request $request, $id)
                     session()->flash('success', true);
                     session()->flash('success_title', 'تم التحديث!');
                     session()->flash('success_message', 'تم تحديث بيانات الدفع بنجاح.');
+
                     return response()->json(['success' => true]);
                 }
-                return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.', 'حسناً', 'shipment.outgoing.index');
+
+                return WebResponseClass::sendResponse(
+                    'تم التحديث!',
+                    'تم تحديث بيانات الدفع بنجاح.',
+                    'حسناً',
+                    'shipment.outgoing.index'
+                );
             }
 
             $paymentType = $request->prepaid_payment_method ?? 'cash';
@@ -1059,7 +1083,6 @@ public function show(Request $request, $id)
                 $paidAmount = (float) $shipment->total_amount;
             }
 
-            // تأكد من وجود الـ Service الصحيح
             if (isset($this->shipmentPaymentService)) {
                 $this->shipmentPaymentService->handlePaymentForNewShipment(
                     $shipment,
@@ -1073,15 +1096,23 @@ public function show(Request $request, $id)
                 session()->flash('success', true);
                 session()->flash('success_title', 'تم التحديث!');
                 session()->flash('success_message', 'تم تحديث بيانات الدفع بنجاح.');
+
                 return response()->json(['success' => true]);
             }
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات الدفع بنجاح.', 'حسناً', 'shipment.outgoing.index');
+
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات الدفع بنجاح.',
+                'حسناً',
+                'shipment.outgoing.index'
+            );
         }
 
         // إذا لم يتطابق أي قسم
         if ($request->wantsJson()) {
             return response()->json(['message' => 'قسم التحديث غير معروف.'], 400);
         }
+
         return WebResponseClass::sendError('قسم التحديث غير معروف.');
     }
     public function updatePaymentMethod(Request $request, $id)

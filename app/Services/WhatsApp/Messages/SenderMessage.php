@@ -26,18 +26,28 @@ class SenderMessage implements WhatsAppMessageInterface
         if (!$entity instanceof Shipment) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $name = $entity->senderCustomer->name ?? 'عميلنا العزيز';
-        
-        $msg = "مرحباً *$name*، 📦\n\n";
-        $msg .= "تم إصدار الشحنة بنجاح.\n";
-        $msg .= "📌 *رقم الطرد:* {$entity->bond_number}\n";
-        $msg .= "💰 *المبلغ:* " . number_format($entity->total_amount) . " ريال\n\n";
-        
+
+        $name       = $entity->senderCustomer->name ?? 'عميلنا العزيز';
+        $bondNumber = $entity->bond_number ?? 'غير متوفر';
+        $amount     = number_format($entity->total_amount ?? 0);
+
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+        $msg .= "الأستاذ / {$name} المحترم،\n";
+        $msg .= "تحية طيبة وبعد،\n\n";
+
+        $msg .= "تم استلام طلب الشحن الخاص بكم بنجاح، وجاري العمل على معالجته.\n\n";
+
+        $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
+        $msg .= "💰 المبلغ : {$amount} ريال\n";
+
         if ($receiptUrl) {
-            $msg .= "📄 *لعرض سند الاستلام:* \n{$receiptUrl}\n\n";
+            $msg .= "\n📄 سند الاستلام:\n{$receiptUrl}\n";
         }
-        
-        $msg .= "شكراً لتعاملك معنا!";
+
+        $msg .= "\nيمكنكم متابعة حالة الشحنة باستخدام رقم الشحنة أعلاه.\n\n";
+        $msg .= "نشكر ثقتكم بخدماتنا.\n";
+        $msg .= "إدارة النظام";
+
         return $msg;
     }
 }

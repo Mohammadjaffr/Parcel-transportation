@@ -21,23 +21,33 @@ class ReceiverMessage implements WhatsAppMessageInterface
         return 'receiver';
     }
 
-    public function getMessageBody(Model $entity, ?string $receiptUrl): string
+  public function getMessageBody(Model $entity, ?string $receiptUrl): string
     {
         if (!$entity instanceof Shipment) {
             return "بيانات الشحنة غير صالحة.";
         }
-        $name = $entity->receiverCustomer->name ?? 'عميلنا العزيز';
-        
-        $msg = "مرحباً *$name*، 📦\n\n";
-        $msg .= "تم استلام الشحنة بنجاح.\n";
-        $msg .= "📌 *رقم الطرد:* {$entity->bond_number}\n";
-        $msg .= "💰 *المبلغ:* " . number_format($entity->total_amount) . " ريال\n\n";
-        
+
+        $name       = $entity->receiverCustomer->name ?? 'عميلنا العزيز';
+        $bondNumber = $entity->bond_number ?? 'غير متوفر';
+        $amount     = number_format($entity->total_amount ?? 0);
+
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+        $msg .= "الأستاذ / {$name} المحترم،\n";
+        $msg .= "تحية طيبة وبعد،\n\n";
+
+        $msg .= "نود إشعاركم بأنه تم تسجيل الشحنة الخاصة بكم بنجاح، والبيانات كما يلي:\n\n";
+
+        $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
+        $msg .= "💰 المبلغ : {$amount} ريال\n";
+
         if ($receiptUrl) {
-            $msg .= "📄 *لعرض سند الاستلام:* \n{$receiptUrl}\n\n";
+            $msg .= "\n📄 سند الاستلام:\n{$receiptUrl}\n";
         }
-        
-        $msg .= "شكراً لتعاملك معنا!";
+
+        $msg .= "\nيرجى الاحتفاظ برقم الشحنة للمتابعة عند الحاجة.\n\n";
+        $msg .= "نشكر ثقتكم بخدماتنا.\n";
+        $msg .= "إدارة النظام";
+
         return $msg;
     }
 }

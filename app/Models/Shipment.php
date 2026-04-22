@@ -90,12 +90,12 @@ class Shipment extends Model
     // --- تعديل علاقات الفروع ---
     public function senderBranch()
     {
-        return $this->belongsTo(Branch::class, 'sender_branch_id');
+        return $this->belongsTo(Branch::class, 'sender_branch_id')->withoutGlobalScopes();
     }
 
     public function receiverBranch()
     {
-        return $this->belongsTo(Branch::class, 'receiver_branch_id');
+        return $this->belongsTo(Branch::class, 'receiver_branch_id')->withoutGlobalScopes();
     }
 
     public function receiverOfficeBranch()
