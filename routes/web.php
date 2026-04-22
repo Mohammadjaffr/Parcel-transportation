@@ -15,12 +15,14 @@ use App\Http\Controllers\FinanceSettlementController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\OfficeController;
+use App\Http\Controllers\PackageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptHeaderController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -31,8 +33,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingPageController::class,'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
+Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/subscription/request', [SubscriptionController::class, 'requestSubscription'])->name('subscription.request');
     Route::get('/account/pending', function () {
         
         $adminPhone = "967781152674";
@@ -41,7 +45,8 @@ Route::middleware('auth')->group(function () {
     // ===================================================)}|===========
     // 2. نظام إدارة الشحن (محمي: يتطلب أن يكون التطبيق مف)}|عل is_active = true)
     // ===================================================)}|===========
-    Route::middleware(['app.active'])->group(function () {
+    Route::middleware(['app.active','active.Subscription'])->group(function () {
+        
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -52,7 +57,7 @@ Route::middleware('auth')->group(function () {
     // Branch routes with super admin middleware for create and store
     Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
     Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('admin');
-    Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware('admin');
+    Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware(['admin','check.limit:branches']);
     Route::get('branch/{branch}', [BranchController::class, 'show'])->name('branch.show');
     Route::get('branch/{branch}/edit', [BranchController::class, 'edit'])->name('branch.edit');
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
@@ -62,6 +67,7 @@ Route::middleware('auth')->group(function () {
     Route::get('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
     Route::put('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
     Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming.index');
+    Route::post('/shipment/outgoing',[ShipmentController::class,'store'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
     Route::resource('shipment', ShipmentController::class);
     Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
@@ -192,7 +198,7 @@ Route::middleware('auth')->group(function () {
     // معتمد
     Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
     Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('shipmentpackage.outgoing.create');
-    Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->name('shipmentpackage.outgoing.store');
+    Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
     Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
     Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
     Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');

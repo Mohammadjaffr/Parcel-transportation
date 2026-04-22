@@ -22,7 +22,7 @@ class ShipmentPackage extends Model
         parent::boot();
 
         static::creating(function ($package) {
-             if (empty($shipment->uuid)) {
+             if (empty($package->uuid)) {
                 $package->uuid = (string) Str::uuid();
             }
             // جلب الفرع المُرسل لاستخدام الكود الخاص به

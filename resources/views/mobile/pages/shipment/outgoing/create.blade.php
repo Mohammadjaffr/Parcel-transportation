@@ -17,7 +17,7 @@
             </div>
         </div> --}}
 
-        <form action="{{ route('shipment.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }"
+        <form action="{{ route('shipment.outgoing.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }"
             @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
             @csrf
             {{-- بيانات الفروع --}}

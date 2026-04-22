@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\CheckActiveSubscription;
+use App\Http\Middleware\CheckAdminApiKey;
 use App\Http\Middleware\CheckAppIsActive;
+use App\Http\Middleware\CheckSubscriptionLimits;
 use App\Http\Middleware\DriverMiddleware;
 use App\Http\Middleware\SanctumApiAuthMiddleware;
 use App\Http\Middleware\SuperAdminMiddleware;
@@ -27,13 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
             "user"=>  UserMiddleware::class,
             "driver" => DriverMiddleware::class,
             "auth.sanctum.api" => SanctumApiAuthMiddleware::class,
-            "verify.app.access" => VerifyAppAccessMiddleware::class,
             "super.admin" => SuperAdminMiddleware::class,
             "admin" => AdminMiddleware::class,
             'app.active' => CheckAppIsActive::class,
+            'admin.key' => CheckAdminApiKey::class,
+            'active.Subscription' => CheckActiveSubscription::class,
+            'check.limit' => CheckSubscriptionLimits::class,
         ]);
         $middleware->appendToGroup('api', [
-            'verify.app.access', 
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

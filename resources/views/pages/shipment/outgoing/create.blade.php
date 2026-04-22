@@ -35,7 +35,7 @@
         {{-- ================= محتوى النموذج (Grid Layout) ================= --}}
         <div class="p-4 mx-auto mt-4 max-w-7xl md:p-6">
 
-            <form id="shipmentForm" action="{{ route('shipment.store') }}" method="POST"
+            <form id="shipmentForm" action="{{ route('shipment.outgoing.store') }}" method="POST"
                 @submit="if(!isSubmitting) { isSubmitting = true; return true; } else { $event.preventDefault(); return false; }"
                 class="grid grid-cols-1 gap-6 items-start lg:grid-cols-12">
                 @csrf

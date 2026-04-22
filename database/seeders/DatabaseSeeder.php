@@ -22,12 +22,13 @@ class DatabaseSeeder extends Seeder
         // ]);
         $this->call([
             // VehicleSeeder::class,
-            AppSeeder::class,
-            OfficeSeeder::class,
-            BranchSeeder::class,
-            UserSeeder::class,
-            AppSettingsSeeder::class,
-            TransactionCategorySeeder::class,
+            PackageSeeder::class,
+            // AppSeeder::class,
+            // OfficeSeeder::class,
+            // BranchSeeder::class,
+            // UserSeeder::class,
+            // AppSettingsSeeder::class,
+            // TransactionCategorySeeder::class,
             // VehiclePricingSeeder::class,
         ]);
     }
