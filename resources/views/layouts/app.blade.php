@@ -11,54 +11,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-    <title>@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')</title>
+    @php
+        $appName = $currentApp->name ?? 'نظام مرسل';
+        $appLogo = (isset($currentApp) && $currentApp->logo) 
+                    ? asset('storage/' . $currentApp->logo) 
+                    : asset('assets/images/mursal-preview.png');
+    @endphp
 
-    <meta name="description"
-        content="نظام مرسل هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. نوفر حلولاً لوجستية متكاملة لتسهيل إدارة المناديب، تتبع الطلبات، وضمان سرعة التوصيل." />
-    <meta name="keywords"
-        content="نظام مرسل, نقل طرود, تتبع الشحنات, إدارة التوصيل, نظام لوجستي, شحن وتوصيل, إدارة المناديب, برنامج نقل طرود" />
-    <meta name="author" content="نظام مرسل - Mursal System" />
+    <title>@yield('title', $appName . ' | لإدارة ونقل الطرود وتتبع الشحنات')</title>
+
+    <meta name="description" content="{{ $appName }} هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. نوفر حلولاً لوجستية متكاملة لتسهيل إدارة المناديب، تتبع الطلبات، وضمان سرعة التوصيل." />
+    <meta name="keywords" content="نظام مرسل, نقل طرود, تتبع الشحنات, إدارة التوصيل, نظام لوجستي, شحن وتوصيل, إدارة المناديب, برنامج نقل طرود" />
+    <meta name="author" content="{{ $appName }}" />
     <meta name="robots" content="index, follow" />
 
     <link rel="canonical" href="{{ url()->current() }}" />
 
     <meta property="og:locale" content="{{ app()->getLocale() == 'ar' ? 'ar_AR' : 'en_US' }}" />
-    <meta property="og:site_name" content="نظام مرسل لنقل الطرود" />
+    <meta property="og:site_name" content="{{ $appName }}" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')" />
-    <meta property="og:description"
-        content="نظام مرسل هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في إدارة العمليات اللوجستية." />
+    <meta property="og:title" content="@yield('title', $appName . ' | لإدارة ونقل الطرود وتتبع الشحنات')" />
+    <meta property="og:description" content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في إدارة العمليات اللوجستية." />
     <meta property="og:url" content="{{ url()->current() }}" />
 
-    <meta property="og:image" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
-    <meta property="og:image:secure_url" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
+    <meta property="og:image" content="{{ $appLogo }}" />
+    <meta property="og:image:secure_url" content="{{ $appLogo }}" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="نظام مرسل لنقل الطرود" />
+    <meta property="og:image:alt" content="{{ $appName }}" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')" />
-    <meta name="twitter:description"
-        content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في الإدارة اللوجستية." />
-    <meta name="twitter:image" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
+    <meta name="twitter:title" content="@yield('title', $appName)" />
+    <meta name="twitter:description" content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية." />
+    <meta name="twitter:image" content="{{ $appLogo }}" />
 
+    <link rel="icon" type="image/png" href="{{ $appLogo }}" />
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicons/favicon.ico') }}" />
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
     <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
-    <link rel="icon" type="image/png" sizes="192x192"
-        href="{{ asset('assets/favicons/web-app-manifest-192x192.png') }}" />
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('assets/favicons/web-app-manifest-192x192.png') }}" />
     <link rel="apple-touch-icon" href="{{ asset('assets/favicons/apple-touch-icon.png') }}" />
     <link rel="manifest" href="{{ asset('assets/favicons/site.webmanifest') }}" />
 
     <meta name="msapplication-TileImage" content="{{ asset('assets/favicons/favicon-96x96.png') }}" />
-    <meta name="msapplication-TileColor" content="#f79009" />
+    <meta name="msapplication-TileColor" content="{{ $currentApp->color ?? '#f79009' }}" />
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 
     <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
@@ -68,7 +68,8 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#f79009",
+                        // يمكنك لاحقاً ربط هذه الألوان بـ $currentApp->theme إذا أردت تخصيص الألوان لكل تطبيق
+                        "primary": "{{ $currentApp->color ?? '#f79009' }}",
                         "primary-hover": "#dc6803",
                         "primary-container": "#fffaeb",
                         "on-primary-container": "#b54708",
@@ -97,32 +98,14 @@
     </script>
     <style type="text/tailwindcss">
         @layer base {
-            [x-cloak] {
-                display: none !important;
-            }
-
-            body {
-                @apply font-body bg-surface text-on-surface min-h-screen;
-            }
-
-            .material-symbols-outlined {
-                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            }
+            [x-cloak] { display: none !important; }
+            body { @apply font-body bg-surface text-on-surface min-h-screen; }
+            .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         }
-
         @layer components {
-            .glass-nav {
-                @apply bg-white/80 backdrop-blur-md dark:bg-boxdark/80;
-            }
-
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-            }
+            .glass-nav { @apply bg-white/80 backdrop-blur-md dark:bg-boxdark/80; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
         }
     </style>
     @yield('style')
