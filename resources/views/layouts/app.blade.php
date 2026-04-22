@@ -1,53 +1,65 @@
 <!doctype html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}" x-data="{ 
-    darkMode: localStorage.getItem('darkMode') === 'true', 
-    sidebarToggle: false, 
-    loaded: true 
-}" x-init="$watch('darkMode', value => localStorage.setItem('darkMode', value))" :class="{ 'dark': darkMode }">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}" x-data="{
+    darkMode: localStorage.getItem('darkMode') === 'true',
+    sidebarToggle: false,
+    loaded: true
+}"
+    x-init="$watch('darkMode', value => localStorage.setItem('darkMode', value))" :class="{ 'dark': darkMode }">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>@yield('title', 'لوحة التحكم')</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <title>@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')</title>
 
-    {{-- <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="description"
+        content="نظام مرسل هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. نوفر حلولاً لوجستية متكاملة لتسهيل إدارة المناديب، تتبع الطلبات، وضمان سرعة التوصيل." />
+    <meta name="keywords"
+        content="نظام مرسل, نقل طرود, تتبع الشحنات, إدارة التوصيل, نظام لوجستي, شحن وتوصيل, إدارة المناديب, برنامج نقل طرود" />
+    <meta name="author" content="نظام مرسل - Mursal System" />
+    <meta name="robots" content="index, follow" />
 
-    <script>
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#f79009",
-                        "primary-hover": "#dc6803",
-                        "primary-container": "#fffaeb",
-                        "on-primary-container": "#b54708",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface": "#191c1d",
-                        "on-surface-variant": "#454652",
-                        "error": "#ba1a1a",
-                        "surface-container-low": "#f3f4f5",
-                        "secondary-container": "#ff9800",
-                        "on-secondary-fixed-variant": "#693c00",
-                        "secondary": "#8b5000",
-                        "surface": "#f8fafc",
-                        "boxdark": "#24303F",
-                        "boxdark-2": "#1A222C",
-                        "bodydark": "#AEB7C0",
-                    },
-                    fontFamily: {
-                        "headline": ["IBM Plex Sans Arabic", "sans-serif"],
-                        "body": ["IBM Plex Sans Arabic", "sans-serif"],
-                    },
-                },
-            },
-        }
-    </script> --}}
+    <link rel="canonical" href="{{ url()->current() }}" />
+
+    <meta property="og:locale" content="{{ app()->getLocale() == 'ar' ? 'ar_AR' : 'en_US' }}" />
+    <meta property="og:site_name" content="نظام مرسل لنقل الطرود" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')" />
+    <meta property="og:description"
+        content="نظام مرسل هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في إدارة العمليات اللوجستية." />
+    <meta property="og:url" content="{{ url()->current() }}" />
+
+    <meta property="og:image" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
+    <meta property="og:image:secure_url" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="نظام مرسل لنقل الطرود" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@yield('title', 'نظام مرسل | لإدارة ونقل الطرود وتتبع الشحنات')" />
+    <meta name="twitter:description"
+        content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في الإدارة اللوجستية." />
+    <meta name="twitter:image" content="{{ asset('assets/favicons/mursal-preview.png') }}" />
+
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicons/favicon.ico') }}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
+    <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
+    <link rel="icon" type="image/png" sizes="192x192"
+        href="{{ asset('assets/favicons/web-app-manifest-192x192.png') }}" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/favicons/apple-touch-icon.png') }}" />
+    <link rel="manifest" href="{{ asset('assets/favicons/site.webmanifest') }}" />
+
+    <meta name="msapplication-TileImage" content="{{ asset('assets/favicons/favicon-96x96.png') }}" />
+    <meta name="msapplication-TileColor" content="#f79009" />
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
+
     <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
     <script id="tailwind-config">
@@ -85,22 +97,29 @@
     </script>
     <style type="text/tailwindcss">
         @layer base {
-            [x-cloak] { display: none !important; }
+            [x-cloak] {
+                display: none !important;
+            }
+
             body {
                 @apply font-body bg-surface text-on-surface min-h-screen;
             }
+
             .material-symbols-outlined {
                 font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             }
         }
+
         @layer components {
             .glass-nav {
                 @apply bg-white/80 backdrop-blur-md dark:bg-boxdark/80;
             }
+
             .scrollbar-hide {
                 -ms-overflow-style: none;
                 scrollbar-width: none;
             }
+
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
             }
@@ -117,16 +136,15 @@
     </div>
 
     <div class="flex overflow-hidden h-screen">
-        
+
         @include('layouts.sidebar')
 
         <div class="flex overflow-y-auto overflow-x-hidden relative flex-col flex-1">
-            
-            <div @click="sidebarToggle = false" 
-                 x-show="sidebarToggle" 
-                 class="fixed inset-0 z-40 transition-opacity bg-black/50 lg:hidden"
-                 x-transition:enter="opacity-0" x-transition:enter-end="opacity-100"
-                 x-transition:leave="opacity-100" x-transition:leave-end="opacity-0">
+
+            <div @click="sidebarToggle = false" x-show="sidebarToggle"
+                class="fixed inset-0 z-40 transition-opacity bg-black/50 lg:hidden" x-transition:enter="opacity-0"
+                x-transition:enter-end="opacity-100" x-transition:leave="opacity-100"
+                x-transition:leave-end="opacity-0">
             </div>
 
             @include('layouts.header')
@@ -150,4 +168,5 @@
 
     @yield('script')
 </body>
+
 </html>
