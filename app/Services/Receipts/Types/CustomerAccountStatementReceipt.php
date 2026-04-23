@@ -24,7 +24,7 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
         $customer = Customer::with('branch')
             ->where('branch_id', $branchId)
             ->findOrFail($referenceId);
-
+        $appName = $user->cached_app_name;
         $app = $user->app;
 
         $logoPath = $app?->logo
@@ -151,7 +151,7 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
 
         return [
             'company' => [
-                'name'         => $app?->name ?? 'اسم الشركة غير محدد',
+                'name'         => $appName ?? 'اسم الشركة غير محدد',
                 'logo'         => $logoPath,
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,

@@ -110,6 +110,7 @@ class AppController extends Controller
             $company->update($dataToUpdate);
             Cache::forget('app_logo_' . auth()->user()->app_id);
             Cache::forget('app_name_' . auth()->user()->app_id);
+            Cache::forget('app_terms_' . auth()->user()->app_id);
 
            
         return WebResponseClass::sendResponse(

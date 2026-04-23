@@ -204,30 +204,43 @@
 
     <br>
 
-    <table width="100%" cellpadding="4" cellspacing="0" border="0" style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
-        <tr>
-            <td colspan="2" class="text-sm font-bold text-slate-500" style="padding-bottom: 8px;">الشروط والأحكام (سياسة الشحن):</td>
-        </tr>
-  
-        <tr>
-            @php
-                $termsCount = count($terms_and_conditions);
-                $half = ceil($termsCount / 2);
-                $firstHalf = array_slice($terms_and_conditions, 0, $half, true);
-                $secondHalf = array_slice($terms_and_conditions, $half, null, true);
-            @endphp
-            <td width="50%" align="right" valign="top" class="text-xs text-slate-400" style="line-height: 1.6; padding-left: 10px;">
-                @foreach($firstHalf as $index => $term)
-                    {{ $index + 1 }}. {{ $term }}<br>
-                @endforeach
-            </td>
-            <td width="50%" align="right" valign="top" class="text-xs text-slate-400" style="line-height: 1.6;">
-                @foreach($secondHalf as $index => $term)
-                    {{ $index + 1 }}. {{ $term }}<br>
-                @endforeach
-            </td>
-        </tr>
-    </table>
+     @php
+        // جلب الشروط والأحكام مباشرة من الكاش السريع
+        $cachedTerms = auth()->user()->cached_app_terms ?? [];
+        $termsCount = count($cachedTerms);
+    @endphp
+
+    {{-- 💡 لا نطبع الجدول أبداً إلا إذا كان هناك شروط فعلية --}}
+    @if($termsCount > 0)
+        <table width="100%" cellpadding="4" cellspacing="0" border="0"
+            style="border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            <tr>
+                <td colspan="2" class="text-sm font-bold text-slate-500" style="padding-bottom: 8px;">الشروط والأحكام (سياسة
+                    الشحن):</td>
+            </tr>
+
+            <tr>
+                @php
+                    $half = ceil($termsCount / 2);
+                    $firstHalf = array_slice($cachedTerms, 0, $half, true);
+                    $secondHalf = array_slice($cachedTerms, $half, null, true);
+                @endphp
+
+                <td width="50%" align="right" valign="top" class="text-xs text-slate-400"
+                    style="line-height: 1.6; padding-left: 10px;">
+                    @foreach($firstHalf as $index => $term)
+                        {{ $index + 1 }}. {{ $term }}<br>
+                    @endforeach
+                </td>
+
+                <td width="50%" align="right" valign="top" class="text-xs text-slate-400" style="line-height: 1.6;">
+                    @foreach($secondHalf as $index => $term)
+                        {{ $index + 1 }}. {{ $term }}<br>
+                    @endforeach
+                </td>
+            </tr>
+        </table>
+    @endif
 
     <br><br>
 

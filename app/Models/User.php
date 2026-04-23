@@ -80,9 +80,22 @@ public function getCachedAppNameAttribute()
         return 'اسم الشركة';
     }
 
-    return \Illuminate\Support\Facades\Cache::remember('app_name_' . $this->app_id, 86400, function () {
+    return Cache::remember('app_name_' . $this->app_id, 86400, function () {
         $app = $this->app;
         return $app && $app->name ? $app->name : 'اسم الشركة';
+    });
+}
+public function getCachedAppTermsAttribute()
+{
+    if (!$this->app_id) {
+        return [];
+    }
+
+    return Cache::remember('app_terms_' . $this->app_id, 86400, function () {
+        $app = $this->app;
+        return $app && $app->terms_and_conditions 
+            ? array_filter($app->terms_and_conditions) 
+            : [];
     });
 }
 

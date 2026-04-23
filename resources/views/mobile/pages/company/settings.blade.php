@@ -47,13 +47,15 @@
                     <span class="material-symbols-outlined text-[18px]">edit_square</span>
                 </button>
 
-                <div
-                    class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
-                    <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
-                        <img src="{{ $company->logo ? asset('storage/' . $company->logo) : asset('assets/image/icon_4K.png') }}"
-                            alt="شعار الشركة" class="object-cover w-full h-full">
-                    </div>
-                </div>
+                <div class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
+    <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
+        
+        {{-- 💡 التعديل هنا: استدعاء الكاش مباشرة، وهو سيتكفل بالرابط والصورة الافتراضية --}}
+        <img src="{{ auth()->user()->cached_app_logo }}"
+            alt="شعار الشركة" class="object-cover w-full h-full">
+            
+    </div>
+</div>
 
                 <h2 class="flex gap-2 justify-center items-center mb-2 text-2xl font-black font-headline text-slate-800">
                     {{ $company->name ?? 'اسم الشركة غير محدد' }}
@@ -271,12 +273,13 @@
                     جميع الفواتير المصدرة للعملاء.
                 </p>
             </div>
-
+                @php
+                    $cachedTerms = auth()->user()->cached_app_terms;
+                @endphp
             @if (
-                    isset($company) &&
-                    !empty($company->terms_and_conditions) &&
-                    count(array_filter($company->terms_and_conditions)) > 0
+                    count($cachedTerms) > 0
                 )
+               
                 <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
                     {{-- زخرفة خلفية توحي بالرسمية --}}
                     <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-[3rem] -z-0"></div>
@@ -285,10 +288,10 @@
 
                     <div class="relative z-10">
                         <ul class="space-y-3">
-                            @foreach (array_filter($company->terms_and_conditions) as $index => $term)
+                            
+                            @foreach ($cachedTerms as $index => $term)
                                 <li class="flex gap-3 items-start group">
-                                    <div
-                                        class="mt-0.5 w-5 h-5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors shrink-0">
+                                    <div class="mt-0.5 w-5 h-5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
                                         {{ $index + 1 }}
                                     </div>
                                     <p class="pt-0.5 text-xs font-bold leading-relaxed text-slate-600">
