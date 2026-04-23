@@ -22,6 +22,6 @@ class PackageController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.pricing.index', compact('packages','pendingSubscription'));
         }
-        return view('mobile.pages.pricing.index', compact('packages','pendingSubscription'));
+        return view('pages.pricing.index', compact('packages','pendingSubscription'));
     }
 }

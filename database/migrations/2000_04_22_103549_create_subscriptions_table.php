@@ -17,8 +17,8 @@ return new class extends Migration
             $table->integer('allowed_drivers');
             $table->integer('allowed_shipments');
             $table->integer('allowed_packages');
-            $table->timestamp('starts_at');
-            $table->timestamp('ends_at')->index(); 
+            $table->dateTime('starts_at');
+            $table->dateTime('ends_at')->index(); 
             $table->enum('status', ['pending', 'active', 'expired', 'cancelled'])->default('pending')->index();
             $table->timestamps();
         });
