@@ -38,19 +38,39 @@ class AppController extends Controller
         return view('pages.office.verified.index', compact('offices'));
     }
     public function settings(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $company = $user->App()
-            ->with('branches') // تأكد أن اسم العلاقة في موديل App هو branches (أو offices حسب تسميتك)
-            ->withCount(['branches', 'users'])
-            ->first();
-        if ($request->isMobile) {
-            return view('mobile.pages.company.settings', compact('company'));
-        }
-        // عدل الصفحه الخاصه ب الدسك توب  ي السعدي
-        return view('pages.company.settings', compact('company'));
+    // جلب بيانات الشركة مع الفروع والاشتراك الحالي وتفاصيل الباقة
+    $company = $user->App()
+        ->with(['branches', 'currentSubscription.package']) 
+        ->withCount(['branches', 'users','drivers'])
+        ->first();
+
+    $subscription = $company->currentSubscription;
+    $remainingDays = 0;
+    $shipmentsCount = 0;
+    $packagesCount = 0;
+
+    if ($subscription) {
+        $remainingDays = (int) ceil(now()->diffInDays($subscription->ends_at, false));
+        $remainingDays = $remainingDays < 0 ? 0 : $remainingDays;
+        $shipmentsCount = $company->shipments()
+            ->whereBetween('shipments.created_at', [$subscription->starts_at, $subscription->ends_at])
+            ->count();
+        $packagesCount = $company->shipmentPackages()
+            ->whereBetween('shipment_packages.created_at', [$subscription->starts_at, $subscription->ends_at])
+            ->count();
     }
+
+    // إرجاع الواجهة مع الاحتفاظ بـ compact بالشكل المعتاد
+    if ($request->isMobile) {
+        return view('mobile.pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
+    }
+    
+    // صفحة الديسكتوب
+    return view('pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
+}
 
     public function update(Request $request)
     {

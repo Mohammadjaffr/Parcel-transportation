@@ -38,7 +38,11 @@ Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page'
 Route::middleware('auth')->group(function () {
     Route::post('/subscription/request', [SubscriptionController::class, 'requestSubscription'])->name('subscription.request');
     Route::get('/account/pending', function () {
-        
+        $app = auth()->user()->App ?? null;
+        if ($app && $app->hasActiveSubscription()) {
+            return redirect()->route('dashboard.index')
+                             ->with('info', 'تم تفعيل حسابك بنجاح! أهلاً بك.');
+        }
         $adminPhone = "967781152674";
         return view('auth.pending', compact('adminPhone'));
     })->name('account.pending');

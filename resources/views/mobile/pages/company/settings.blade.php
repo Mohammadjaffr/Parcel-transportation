@@ -7,26 +7,26 @@
     <x-modals.error-modal />
 
     <div x-data="{
-                showAddBranchModal: false,
-                showEditCompanyModal: false,
-                showEditBranchModal: false,
-                editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
-                editBranchAction: '',
+                                showAddBranchModal: false,
+                                showEditCompanyModal: false,
+                                showEditBranchModal: false,
+                                editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
+                                editBranchAction: '',
 
-                openEditBranchModal(branch) {
-                    this.editBranchForm = {
-                        name: branch.name,
-                        code: branch.code,
-                        city: branch.city,
-                        address: branch.address || '',
-                        map_link: branch.map_link || '',
-                        is_main: branch.is_main == 1
-                    };
-                    this.editBranchAction = '/branch/' + branch.id;
-                    this.showEditBranchModal = true;
-                    this.$dispatch('load-edit-phone', { phone: branch.phone });
-                }
-            }" class="flex flex-col gap-6 pb-24 min-h-screen">
+                                openEditBranchModal(branch) {
+                                    this.editBranchForm = {
+                                        name: branch.name,
+                                        code: branch.code,
+                                        city: branch.city,
+                                        address: branch.address || '',
+                                        map_link: branch.map_link || '',
+                                        is_main: branch.is_main == 1
+                                    };
+                                    this.editBranchAction = '/branch/' + branch.id;
+                                    this.showEditBranchModal = true;
+                                    this.$dispatch('load-edit-phone', { phone: branch.phone });
+                                }
+                            }" class="flex flex-col gap-6 pb-24 min-h-screen">
 
         {{-- <div class="flex gap-4 items-center px-4 pt-4">
             <button onclick="history.back()"
@@ -66,7 +66,9 @@
                         class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-amber-600 bg-amber-50 rounded-xl border border-amber-100/50 font-headline">
                         <span class="material-symbols-outlined text-[16px]"
                             style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
-                        الباقة الاحترافية
+
+                        {{-- عرض اسم الباقة بشكل ديناميكي --}}
+                        {{ $subscription->package->name ?? 'بدون باقة' }}
                     </span>
                 </div>
 
@@ -88,6 +90,91 @@
                 </div>
             </div>
         </div>
+
+        {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+@if(isset($subscription))
+    @php
+        // 1. الفروع
+        $branchLimit = $subscription->allowed_branches ?? 0;
+        $branchPercent = ($branchLimit > 0) ? ($company->branches_count / $branchLimit) * 100 : 0;
+
+        // 2. السائقين 💡 (الجديد)
+        $driverLimit = $subscription->allowed_drivers ?? 0;
+        $driverPercent = ($driverLimit > 0) ? ($company->drivers_count / $driverLimit) * 100 : 0;
+
+        // 3. الشحنات
+        $shipmentLimit = $subscription->allowed_shipments ?? 0;
+        $shipmentPercent = ($shipmentLimit > 0) ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
+
+        // 4. الرحلات المجمعة 💡 (الجديد)
+        $packageLimit = $subscription->allowed_packages ?? 0;
+        $packagePercent = ($packageLimit > 0) ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
+    @endphp
+
+    <div class="px-4 space-y-4 mt-6">
+        <div class="flex justify-between items-center">
+            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                تفاصيل الباقة
+            </h3>
+            <a href="{{ route('pricing.page') }}" class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
+            </a>
+        </div>
+
+        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+            {{-- حالة الاشتراك --}}
+            <div class="mb-5 relative z-10">
+                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
+                </p>
+            </div>
+
+            <div class="space-y-5 relative z-10">
+                {{-- 1. الفروع --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الفروع',
+                    'icon' => 'domain',
+                    'current' => $company->branches_count,
+                    'limit' => $branchLimit,
+                    'percent' => $branchPercent,
+                    'color' => 'bg-amber-500'
+                ])
+
+                {{-- 2. السائقين (الجديد) --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد السائقين',
+                    'icon' => 'person_pin_circle',
+                    'current' => $company->drivers_count,
+                    'limit' => $driverLimit,
+                    'percent' => $driverPercent,
+                    'color' => 'bg-blue-500'
+                ])
+
+                {{-- 3. الطرود --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الطرود',
+                    'icon' => 'inventory_2',
+                    'current' => $shipmentsCount,
+                    'limit' => $shipmentLimit,
+                    'percent' => $shipmentPercent,
+                    'color' => 'bg-primary'
+                ])
+
+                {{-- 4. الرحلات المجمعة (الجديد) --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الشحنات',
+                    'icon' => 'local_shipping',
+                    'current' => $packagesCount,
+                    'limit' => $packageLimit,
+                    'percent' => $packagePercent,
+                    'color' => 'bg-indigo-500'
+                ])
+            </div>
+        </div>
+    </div>
+@endif
 
         <div class="px-4 space-y-4">
             <div class="flex justify-between items-center">
@@ -229,23 +316,23 @@
         </div>
 
         <div x-data="{
-                    isSubmitting: false,
-                    allCountries: @js(array_values(config('countries', []))),
-                    selectedCountry: null,
-                    localPhone: '',
-                    fullPhone: '',
-                    openCountry: false,
-                    search: '',
-                    init() {
-                        this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
-                        this.$watch('localPhone', () => this.updatePhone());
-                        this.$watch('selectedCountry', () => this.updatePhone());
-                    },
-                    updatePhone() {
-                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                    }
-                }" x-show="showAddBranchModal" x-cloak
+                                    isSubmitting: false,
+                                    allCountries: @js(array_values(config('countries', []))),
+                                    selectedCountry: null,
+                                    localPhone: '',
+                                    fullPhone: '',
+                                    openCountry: false,
+                                    search: '',
+                                    init() {
+                                        this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+                                        this.$watch('localPhone', () => this.updatePhone());
+                                        this.$watch('selectedCountry', () => this.updatePhone());
+                                    },
+                                    updatePhone() {
+                                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+                                    }
+                                }" x-show="showAddBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
@@ -395,9 +482,9 @@
         </div>
 
         <div x-data="{
-                    isSubmittingCompany: false,
-                    terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
-                }" x-show="showEditCompanyModal" x-cloak
+                                    isSubmittingCompany: false,
+                                    terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+                                }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -526,7 +613,8 @@
                             <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
                             <p class="text-[10px] leading-relaxed font-medium">
                                 سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
-                                    class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا المكتب.
+                                    class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا
+                                المكتب.
                             </p>
                         </div>
                     </div>
@@ -545,38 +633,38 @@
         </div>
 
         <div x-data="{
-                    isSubmittingEdit: false,
-                    allCountries: @js(array_values(config('countries', []))),
-                    selectedCountry: null,
-                    localPhone: '',
-                    fullPhone: '',
-                    openCountry: false,
-                    search: '',
-                    init() {
-                        this.$watch('localPhone', () => this.updatePhone());
-                        this.$watch('selectedCountry', () => this.updatePhone());
-                    },
-                    updatePhone() {
-                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                    }
-                }" @load-edit-phone.window="
-                                    let phone = $event.detail.phone || '';
-                                    if(!phone) {
-                                        selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                                        localPhone = '';
-                                    } else {
-                                        let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
-                                        if(matched) {
-                                            selectedCountry = matched;
-                                            localPhone = phone.substring(matched.dial_code.replace('+', '').length);
-                                        } else {
-                                            selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
-                                            localPhone = phone;
-                                        }
+                                    isSubmittingEdit: false,
+                                    allCountries: @js(array_values(config('countries', []))),
+                                    selectedCountry: null,
+                                    localPhone: '',
+                                    fullPhone: '',
+                                    openCountry: false,
+                                    search: '',
+                                    init() {
+                                        this.$watch('localPhone', () => this.updatePhone());
+                                        this.$watch('selectedCountry', () => this.updatePhone());
+                                    },
+                                    updatePhone() {
+                                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
                                     }
-                                    updatePhone();
-                                 " x-show="showEditBranchModal" x-cloak
+                                }" @load-edit-phone.window="
+                                                    let phone = $event.detail.phone || '';
+                                                    if(!phone) {
+                                                        selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                                        localPhone = '';
+                                                    } else {
+                                                        let matched = allCountries.find(c => phone.startsWith(c.dial_code.replace('+', '')));
+                                                        if(matched) {
+                                                            selectedCountry = matched;
+                                                            localPhone = phone.substring(matched.dial_code.replace('+', '').length);
+                                                        } else {
+                                                            selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
+                                                            localPhone = phone;
+                                                        }
+                                                    }
+                                                    updatePhone();
+                                                 " x-show="showEditBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms

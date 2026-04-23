@@ -13,10 +13,10 @@ class PackageSeeder extends Seeder
             'name'             => 'الباقة التجريبية (مجاناً)',
             'price'            => 0.00,
             'duration_in_days' => 14,
-            'max_branches'     => 1,
-            'max_drivers'      => 2,
-            'max_shipments'    => 50,  
-            'max_packages'     => 10,  
+            'max_branches'     => 2,
+            'max_drivers'      => 0,
+            'max_shipments'    => 30,  
+            'max_packages'     => 7,  
             'is_active'        => true,
         ]);
 
