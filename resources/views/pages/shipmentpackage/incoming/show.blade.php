@@ -47,7 +47,7 @@
             </form>
         @else
             <div class="flex gap-3">
-                <a href="{{ route('shipmentpackage.print',[type=>] $package->id) }}" target="_blank"
+                <a href="{{ route('shipmentpackage.print',[type=> $package->id] }}" target="_blank"
                     class="flex gap-2 justify-center items-center px-6 h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-boxdark hover:bg-black hover:scale-[1.02] shadow-boxdark/20 dark:bg-primary dark:shadow-primary/20">
                     <span class="material-symbols-outlined text-[20px]">print</span>
                     طباعة المانيفست
