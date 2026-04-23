@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('mobile.layouts.app')
 
 @section('title', 'استلام إرسالية جديدة')
 
