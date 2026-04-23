@@ -44,7 +44,7 @@ class CheckSubscriptionLimits
             case 'shipments':
                 $limit = $subscription->allowed_shipments;
                 $currentCount = $app->shipments()
-                    ->whereBetween('created_at', [$subscription->starts_at, $subscription->ends_at])
+                    ->whereBetween('shipments.created_at', [$subscription->starts_at, $subscription->ends_at])
                     ->count();
                 $resourceName = 'الطرود';
                 break;
