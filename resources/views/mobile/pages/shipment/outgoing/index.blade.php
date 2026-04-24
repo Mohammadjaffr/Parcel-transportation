@@ -165,7 +165,7 @@
                                             @php
                                                 $receiverMsg = "مرحباً *" . $shipment->receiverCustomer->name . "*،\nلديك طرد قادم برقم بوليصة: *" . $shipment->bond_number . "*\nالإجمالي المطلوب: *" . number_format($shipment->total_amount - $shipment->partial_amount, 0) . "* ريال.";
                                             @endphp
-                                            <a href="https://wa.me/{{ ltrim($shipment->receiverCustomer->phone, '+') }}?text={{ urlencode($receiverMsg) }}"
+                                            <a href="{{  $shipment->receiver_whatsapp_link }}"
                                                 target="_blank"
                                                 class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                                                 <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"

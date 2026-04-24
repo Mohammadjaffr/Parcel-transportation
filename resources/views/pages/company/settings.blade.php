@@ -49,7 +49,7 @@
                 <div
                     class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
                     <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
-                        <img src="{{ $company->logo ? asset('storage/' . $company->logo) : asset('assets/image/icon_4K.png') }}"
+                        <img src="{{ auth()->user()->cached_app_logo }}"
                             alt="شعار الشركة" class="object-cover w-full h-full">
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                         class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-amber-600 bg-amber-50 rounded-xl border border-amber-100/50 font-headline">
                         <span class="material-symbols-outlined text-[16px]"
                             style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
-                        الباقة الاحترافية
+                        {{ $subscription->package->name ?? 'بدون باقة' }}
                     </span>
                 </div>
 
@@ -88,7 +88,92 @@
             </div>
         </div>
 
-        <div class="px-4 space-y-4">
+        {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+@if(isset($subscription))
+    @php
+        // 1. الفروع
+        $branchLimit = $subscription->allowed_branches ?? 0;
+        $branchPercent = ($branchLimit > 0) ? ($company->branches_count / $branchLimit) * 100 : 0;
+
+        // 2. السائقين 💡 (الجديد)
+        $driverLimit = $subscription->allowed_drivers ?? 0;
+        $driverPercent = ($driverLimit > 0) ? ($company->drivers_count / $driverLimit) * 100 : 0;
+
+        // 3. الشحنات
+        $shipmentLimit = $subscription->allowed_shipments ?? 0;
+        $shipmentPercent = ($shipmentLimit > 0) ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
+
+        // 4. الرحلات المجمعة 💡 (الجديد)
+        $packageLimit = $subscription->allowed_packages ?? 0;
+        $packagePercent = ($packageLimit > 0) ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
+    @endphp
+
+    <div class="px-4 space-y-4 mt-6">
+        <div class="flex justify-between items-center">
+            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                تفاصيل الباقة
+            </h3>
+            <a href="{{ route('pricing.page') }}" class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
+            </a>
+        </div>
+
+        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+            {{-- حالة الاشتراك --}}
+            <div class="mb-5 relative z-10">
+                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
+                {{-- 1. الفروع --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الفروع',
+                    'icon' => 'domain',
+                    'current' => $company->branches_count,
+                    'limit' => $branchLimit,
+                    'percent' => $branchPercent,
+                    'color' => 'bg-amber-500'
+                ])
+
+                {{-- 2. السائقين (الجديد) --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد السائقين',
+                    'icon' => 'person_pin_circle',
+                    'current' => $company->drivers_count,
+                    'limit' => $driverLimit,
+                    'percent' => $driverPercent,
+                    'color' => 'bg-blue-500'
+                ])
+
+                {{-- 3. الطرود --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الطرود',
+                    'icon' => 'inventory_2',
+                    'current' => $shipmentsCount,
+                    'limit' => $shipmentLimit,
+                    'percent' => $shipmentPercent,
+                    'color' => 'bg-primary'
+                ])
+
+                {{-- 4. الرحلات المجمعة (الجديد) --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الشحنات',
+                    'icon' => 'local_shipping',
+                    'current' => $packagesCount,
+                    'limit' => $packageLimit,
+                    'percent' => $packagePercent,
+                    'color' => 'bg-indigo-500'
+                ])
+            </div>
+        </div>
+    </div>
+@endif
+
+        <div class="px-4 space-y-4 mt-6">
             <div class="flex justify-between items-center">
                 <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
                     <span class="material-symbols-outlined text-primary">account_tree</span>
@@ -190,7 +275,10 @@
                 </div>
 
                 <div class="lg:col-span-2">
-                    @if (isset($company) && !empty($company->terms_and_conditions) && count(array_filter($company->terms_and_conditions)) > 0)
+                    @php
+                        $cachedTerms = auth()->user()->cached_app_terms ?? [];
+                    @endphp
+                    @if (count($cachedTerms) > 0)
                         <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full">
                             {{-- زخرفة خلفية توحي بالرسمية --}}
                             <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] -z-0"></div>
@@ -199,7 +287,7 @@
 
                             <div class="relative z-10">
                                 <ul class="grid grid-cols-1 gap-y-4 gap-x-8 md:grid-cols-2">
-                                    @foreach (array_filter($company->terms_and_conditions) as $index => $term)
+                                    @foreach ($cachedTerms as $index => $term)
                                         <li class="flex gap-3 items-start group">
                                             <div
                                                 class="mt-0.5 w-6 h-6 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-[11px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors shrink-0">
@@ -264,7 +352,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6">
+                <div class="flex gap-3 items-center mb-6 shrink-0">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">add_business</span>
@@ -276,9 +364,10 @@
                 </div>
 
                 <form action="{{ route('branch.store') }}" method="POST" @submit="isSubmitting = true"
-                    class="overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                    class="flex flex-col min-h-0 flex-1">
                     @csrf
 
+                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
                     <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
                         <div>
                             <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
@@ -381,8 +470,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
-                    <div class="pt-4 mt-4 border-t border-slate-100">
+                    <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
                         <button type="submit" :disabled="isSubmitting"
                             class="flex gap-3 justify-center items-center w-full h-14 font-black text-white rounded-xl shadow-lg transition-all bg-primary shadow-primary/30 font-headline active:scale-95 disabled:opacity-70">
                             <span x-show="!isSubmitting" class="text-xl material-symbols-outlined">save</span>
@@ -416,7 +506,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6">
+                <div class="flex gap-3 items-center mb-6 shrink-0">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_document</span>
@@ -428,10 +518,11 @@
                 </div>
 
                 <form action="{{ route('app.update') }}" method="POST" enctype="multipart/form-data"
-                    @submit="isSubmittingCompany = true" class="overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                    @submit="isSubmittingCompany = true" class="flex flex-col min-h-0 flex-1">
                     @csrf
                     @method('PUT')
 
+                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
                     <div>
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">شعار الشركة
                             (اختياري)</label>
@@ -465,14 +556,33 @@
                         </div>
                     </div>
 
-                    {{-- خيار اختيار لون لتمييز الشركة --}}
                     <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اللون الأساسي (هوية الشركة)</label>
-                        <div class="flex gap-3 items-center px-2 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/20">
+                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب (التمييز البصري)</label>
+
+                        <div class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+
+                            {{-- حقل اختيار اللون --}}
                             <input type="color" name="color" x-model="companyColor"
-                                class="w-8 h-8 rounded-[6px] cursor-pointer border-0 bg-transparent overflow-hidden p-0! shrink-0">
-                            <input type="text" x-model="companyColor" dir="ltr"
-                                class="flex-1 w-full bg-transparent border-0 outline-none text-slate-600 font-mono text-sm focus:ring-0 uppercase">
+                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
+
+                            {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
+                            <div class="flex-1 px-3">
+                                <input type="text" x-model="companyColor" placeholder="#000000" dir="ltr"
+                                    class="w-full text-sm font-mono text-left bg-transparent border-none outline-none text-slate-600 uppercase focus:ring-0 placeholder:text-slate-400">
+                            </div>
+
+                            {{-- أيقونة جمالية --}}
+                            <div class="pr-2 pointer-events-none text-slate-400">
+                                <span class="text-lg material-symbols-outlined">palette</span>
+                            </div>
+                        </div>
+
+                        {{-- 💡 الرسالة التوضيحية الأنيقة --}}
+                        <div class="flex gap-1.5 items-start mt-2 px-1 text-slate-500">
+                            <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
+                            <p class="text-[10px] leading-relaxed font-medium">
+                                سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا المكتب.
+                            </p>
                         </div>
                     </div>
 
@@ -515,8 +625,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
-                    <div class="pt-4 mt-4 border-t border-slate-100">
+                    <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
                         <button type="submit" :disabled="isSubmittingCompany"
                             class="flex gap-3 justify-center items-center w-full h-14 font-black text-white rounded-xl shadow-lg transition-all bg-primary shadow-primary/30 font-headline active:scale-95 disabled:opacity-70">
                             <span x-show="!isSubmittingCompany" class="text-xl material-symbols-outlined">save</span>
@@ -578,7 +689,7 @@
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6">
+                <div class="flex gap-3 items-center mb-6 shrink-0">
                     <div class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_square</span>
@@ -590,10 +701,11 @@
                 </div>
 
                 <form :action="editBranchAction" method="POST" @submit="isSubmittingEdit = true"
-                    class="overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                    class="flex flex-col min-h-0 flex-1">
                     @csrf
                     @method('PUT')
 
+                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
                     <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
                         <div>
                             <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
@@ -700,8 +812,9 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
-                    <div class="pt-4 mt-4 border-t border-slate-100">
+                    <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
                         <button type="submit" :disabled="isSubmittingEdit"
                             class="flex gap-3 justify-center items-center w-full h-14 font-black text-white bg-blue-500 rounded-xl shadow-lg transition-all shadow-blue-500/30 font-headline active:scale-95 disabled:opacity-70">
                             <span x-show="!isSubmittingEdit" class="text-xl material-symbols-outlined">update</span>

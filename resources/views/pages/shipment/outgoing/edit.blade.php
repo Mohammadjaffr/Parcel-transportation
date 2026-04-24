@@ -866,11 +866,18 @@
                         this.selectedPhone = '';
                         return;
                     }
-                    const found = this.countries.find(c => phone.startsWith(c.code));
+                    
+                    let normalizedPhone = phone;
+                    // إذا كان الرقم يبدأ برقم (بدون +)، نضيف + لتسهيل استخراج مفتاح الدولة
+                    if (/^\d/.test(phone)) {
+                        normalizedPhone = '+' + phone;
+                    }
+
+                    const found = this.countries.find(c => normalizedPhone.startsWith(c.code));
                     if (found) {
                         this.countryCode = found.code;
                         this.countryFlag = found.flag;
-                        this.localNumber = phone.substring(found.code.length);
+                        this.localNumber = normalizedPhone.substring(found.code.length);
                     } else {
                         this.setCountry('+967');
                         this.localNumber = phone;

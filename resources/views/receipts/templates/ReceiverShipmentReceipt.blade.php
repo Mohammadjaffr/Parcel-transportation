@@ -126,6 +126,10 @@
                                     <td width="75%" align="right" class="value-ltr">{{ $sender_phone ?? '---' }}</td>
                                 </tr>
                                 <tr>
+                                    <td width="25%" align="right" class="label">المكتب:</td>
+                                    <td width="75%" align="right" class="value text-brand">{{ $sender_office ?? '---' }}</td>
+                                </tr>
+                                <tr>
                                     <td width="25%" align="right" class="label">الفرع:</td>
                                     <td width="75%" align="right" class="value text-brand">{{ $sender_branch ?? '---' }}</td>
                                 </tr>
@@ -153,7 +157,11 @@
                                     <td width="75%" align="right" class="value-ltr">{{ $receiver_phone ?? '---' }}</td>
                                 </tr>
                                 <tr>
-                                    <td width="25%" align="right" class="label">الوجهة:</td>
+                                    <td width="25%" align="right" class="label">المكتب:</td>
+                                    <td width="75%" align="right" class="value text-slate-900">{{ $receiver_office ?? '---' }}</td>
+                                </tr>
+                                <tr>
+                                    <td width="25%" align="right" class="label">الفرع:</td>
                                     <td width="75%" align="right" class="value text-slate-900">{{ $receiver_branch ?? '---' }}</td>
                                 </tr>
                             </table>
