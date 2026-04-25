@@ -1,5 +1,5 @@
 <header x-data="{ menuToggle: false, notifOpen: false }"
-    class="flex sticky top-0 z-40 w-full bg-white border-b transition-colors duration-300 dark:border-gray-800 dark:bg-boxdark">
+    class="flex sticky top-0 z-[99] w-full bg-white border-b transition-colors duration-300 dark:border-gray-800 dark:bg-boxdark">
 
     <div class="flex flex-col justify-between items-center grow lg:flex-row lg:px-6">
 

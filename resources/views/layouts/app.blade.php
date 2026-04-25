@@ -125,7 +125,7 @@
         <div class="flex overflow-y-auto overflow-x-hidden relative flex-col flex-1">
 
             <div @click="sidebarToggle = false" x-show="sidebarToggle"
-                class="fixed inset-0 z-40 transition-opacity bg-black/50 lg:hidden" x-transition:enter="opacity-0"
+                class="fixed inset-0 z-[998] transition-opacity bg-black/50 lg:hidden" x-transition:enter="opacity-0"
                 x-transition:enter-end="opacity-100" x-transition:leave="opacity-100"
                 x-transition:leave-end="opacity-0">
             </div>

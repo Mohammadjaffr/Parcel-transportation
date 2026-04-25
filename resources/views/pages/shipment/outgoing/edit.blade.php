@@ -1,814 +1,528 @@
 @extends('layouts.app')
+
 @section('title', 'تعديل طرد #' . $shipment->bond_number)
-@section('Breadcrumb')
-    <a href="{{ route('shipment.outgoing.index') }}"
-        class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
-        <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
-    </a>
-    <span class="text-gray-600">تعديل طرد</span>
-@endsection
 
 @section('content')
+    <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl" x-data="{ paymentMethod: '{{ old('payment_method', $shipment->payment_method) }}', isSubmitting: false }">
 
+        {{-- ================= الشريط العلوي (Sticky Header) ================= --}}
+        <div
+            class="sticky top-0 z-40 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/90 dark:bg-boxdark/90 dark:border-boxdark-2">
+            <div class="flex justify-between items-center px-4 py-4 mx-auto max-w-7xl md:px-6">
+                <div class="flex gap-4 items-center">
+                    <a href="{{ url()->previous() }}"
+                        class="flex justify-center items-center w-10 h-10 text-gray-500 rounded-xl border border-gray-100 shadow-sm transition-colors bg-surface dark:bg-boxdark-2 dark:text-bodydark hover:text-primary dark:hover:text-white dark:border-boxdark active:scale-90">
+                        <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                    </a>
+                    <div>
+                        <h1 class="text-xl font-black md:text-2xl font-headline text-on-surface dark:text-white">تعديل طرد
+                        </h1>
+                        <p class="mt-0.5 text-xs text-gray-500 dark:text-bodydark">تعديل بيانات بوليصة الشحن
+                            #{{ $shipment->bond_number }}</p>
+                    </div>
+                </div>
 
-    <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-[2rem] dark:bg-boxdark dark:border-gray-800"
-        x-data="{
-            payment_method: @js(old('payment_method', $shipment->payment_method)),
-            prepaid_method: @js(old('prepaid_payment_method', 'cash')),
-        
-            isSenderReceiverModalOpen: @js($errors->has('sender_name') || $errors->has('sender_phone') || $errors->has('sender_customer_id') || $errors->has('sender_branch_id') || $errors->has('receiver_name') || $errors->has('receiver_phone') || $errors->has('receiver_customer_id') || $errors->has('receiver_branch_id') || $errors->has('no_honey_jars') || $errors->has('no_gallons_honey')),
-        
-            isDetailsModalOpen: @js($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes')),
-        
-            isPaymentModalOpen: @js($errors->has('payment_method') || $errors->has('partial_amount') || $errors->has('prepaid_payment_method') || $errors->has('prepaid_reference') || $errors->has('prepaid_attachment') || $errors->has('customer_debt_status')),
-        
-            activeTab: @js($errors->has('payment_method') || $errors->has('partial_amount') || $errors->has('prepaid_payment_method') || $errors->has('prepaid_reference') || $errors->has('prepaid_attachment') || $errors->has('customer_debt_status') ? 'payment' : ($errors->has('code') || $errors->has('package_type') || $errors->has('weight') || $errors->has('total_amount') || $errors->has('status') || $errors->has('notes') ? 'details' : 'sender_receiver'))
-        }">
-
-        <div class="max-w-[1200px] mx-auto space-y-6 font-outfit" dir="rtl">
-
-            {{-- ===== التابات ===== --}}
-            <div
-                class="flex overflow-x-auto items-center p-1.5 mb-6 bg-gray-50 rounded-2xl border border-gray-100 shadow-inner dark:bg-gray-900/50 dark:border-gray-800 w-fit">
-                <button type="button" @click="activeTab = 'sender_receiver'"
-                    :class="activeTab === 'sender_receiver'
-                        ?
-                        'bg-white text-primary shadow-sm dark:bg-gray-800 dark:text-primary ring-1 ring-gray-200 dark:ring-gray-700' :
-                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
-                    class="flex gap-2 items-center px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
-                    <span class="material-symbols-outlined text-[18px]">group</span>
-                    بيانات المرسل والمستلم
-                </button>
-
-                <button type="button" @click="activeTab = 'details'"
-                    :class="activeTab === 'details'
-                        ?
-                        'bg-white text-primary shadow-sm dark:bg-gray-800 dark:text-primary ring-1 ring-gray-200 dark:ring-gray-700' :
-                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
-                    class="flex gap-2 items-center px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
-                    <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                    تفاصيل الطرد
-                </button>
-
-                <button type="button" @click="activeTab = 'payment'"
-                    :class="activeTab === 'payment'
-                        ?
-                        'bg-white text-primary shadow-sm dark:bg-gray-800 dark:text-primary ring-1 ring-gray-200 dark:ring-gray-700' :
-                        'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
-                    class="flex gap-2 items-center px-6 py-2.5 text-sm font-bold whitespace-nowrap rounded-xl transition-all duration-300">
-                    <span class="material-symbols-outlined text-[18px]">payments</span>
-                    طريقة الدفع
+                {{-- زر الحفظ يظهر في الديسكتوب في الأعلى --}}
+                <button type="submit" form="shipmentForm" :disabled="isSubmitting"
+                    class="hidden gap-2 justify-center items-center px-6 h-11 text-sm font-bold text-white rounded-xl shadow-md transition-all md:flex bg-primary hover:bg-primary-hover shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:shadow-none">
+                    <span x-show="!isSubmitting" class="material-symbols-outlined text-[18px]">save</span>
+                    <span x-show="isSubmitting"
+                        class="animate-spin material-symbols-outlined text-[18px]">progress_activity</span>
+                    <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'"></span>
                 </button>
             </div>
-
-            {{-- ===== تبويب: المرسل/المستلم ===== --}}
-            <div x-show="activeTab === 'sender_receiver'" x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-                class="p-6 bg-gray-50 border border-gray-100 rounded-[2rem] dark:bg-gray-900/30 dark:border-gray-800">
-
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div
-                            class="flex gap-2 items-center mb-4 text-sm font-black tracking-widest text-gray-400 uppercase dark:text-gray-500">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                            بيانات الأطراف الحالية
-                        </div>
-
-                        <div
-                            class="grid grid-cols-1 gap-y-3 gap-x-12 text-sm font-medium text-gray-700 sm:grid-cols-2 dark:text-gray-300">
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">person</span>
-                                <span class="font-bold text-gray-500">المرسل:</span>
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ $shipment->senderCustomer->name ?? $shipment->sender_name }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">person</span>
-                                <span class="font-bold text-gray-500">المستلم:</span>
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ $shipment->receiverCustomer->name ?? $shipment->receiver_name }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">storefront</span>
-                                <span class="font-bold text-gray-500">من الفرع:</span>
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ auth()->user()->branch->name ?? '-' }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">storefront</span>
-                                <span class="font-bold text-gray-500">إلى الفرع:</span>
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ $shipment->receiverBranch->name ?? '-' }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">hive</span>
-                                <span class="font-bold text-gray-500">عدد القروف:</span>
-                                <span class="font-black text-gray-900 dark:text-white">{{ $shipment->no_honey_jars }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="text-gray-400 material-symbols-outlined text-[18px]">water_drop</span>
-                                <span class="font-bold text-gray-500">عدد الجوالين:</span>
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ $shipment->no_gallons_honey }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="button" @click="isSenderReceiverModalOpen = true"
-                        class="flex gap-2 justify-center items-center px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 shrink-0">
-                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                        تعديل البيانات
-                    </button>
-                </div>
-            </div>
-
-            {{-- ===== تبويب: تفاصيل الطرد ===== --}}
-            <div x-show="activeTab === 'details'" x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-                class="p-6 bg-gray-50 border border-gray-100 rounded-[2rem] dark:bg-gray-900/30 dark:border-gray-800"
-                style="display: none;">
-
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div
-                            class="flex gap-2 items-center mb-4 text-sm font-black tracking-widest text-gray-400 uppercase dark:text-gray-500">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                            تفاصيل الطرد الحالية
-                        </div>
-
-                        <div
-                            class="grid grid-cols-1 gap-y-3 gap-x-12 text-sm font-medium text-gray-700 sm:grid-cols-2 dark:text-gray-300">
-                            <div class="flex gap-2 items-center">
-                                <span class="font-bold text-gray-500">الرمز:</span>
-                                <span
-                                    class="font-mono font-black text-gray-900 dark:text-white">{{ $shipment->code }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="font-bold text-gray-500">نوع الطرد:</span>
-                                <span class="font-black text-gray-900 dark:text-white">{{ $shipment->package_type }}</span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="font-bold text-gray-500">إجمالي المبلغ:</span>
-                                <span
-                                    class="font-mono font-black text-primary">{{ number_format($shipment->total_amount, 0) }}
-                                    <span class="font-sans text-[10px] text-gray-500">ر.ي</span></span>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <span class="font-bold text-gray-500">الحالة:</span>
-                                @php
-                                    $statusText = [
-                                        'pending' => 'قيد الانتظار',
-                                        'in_transit' => 'في الطريق',
-                                        'delivered' => 'تم التسليم',
-                                        'cancelled' => 'ملغي',
-                                        'returned' => 'مرتجع',
-                                    ];
-                                @endphp
-                                <span
-                                    class="font-black text-gray-900 dark:text-white">{{ $statusText[$shipment->status] ?? $shipment->status }}</span>
-                            </div>
-                            <div class="flex gap-2 sm:col-span-2">
-                                <span class="font-bold text-gray-500 shrink-0">الملاحظات:</span>
-                                <span
-                                    class="text-gray-900 dark:text-gray-300">{{ $shipment->notes ?: 'لا توجد ملاحظات مسجلة' }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="button" @click="isDetailsModalOpen = true"
-                        class="flex gap-2 justify-center items-center px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 shrink-0">
-                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                        تعديل التفاصيل
-                    </button>
-                </div>
-            </div>
-
-            {{-- ===== تبويب: طريقة الدفع ===== --}}
-            <div x-show="activeTab === 'payment'" x-transition:enter="transition ease-out duration-300 transform"
-                x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-                class="p-6 bg-gray-50 border border-gray-100 rounded-[2rem] dark:bg-gray-900/30 dark:border-gray-800"
-                style="display: none;">
-
-                <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                        <div
-                            class="flex gap-2 items-center mb-4 text-sm font-black tracking-widest text-gray-400 uppercase dark:text-gray-500">
-                            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                            معلومات الدفع الحالية
-                        </div>
-
-                        <div
-                            class="grid grid-cols-1 gap-y-3 gap-x-12 text-sm font-medium text-gray-700 sm:grid-cols-2 dark:text-gray-300">
-                            <div class="flex gap-2 items-center">
-                                <span class="font-bold text-gray-500">طريقة الدفع:</span>
-                                <span class="font-black text-gray-900 dark:text-white">
-                                    @switch($shipment->payment_method)
-                                        @case('prepaid')
-                                            دفع مقدم
-                                        @break
-
-                                        @case('cod')
-                                            عند التسليم (COD)
-                                        @break
-
-                                        @case('partial_payment')
-                                            دفع جزئي
-                                        @break
-
-                                        @case('customer_credit')
-                                            آجل على حساب العميل
-                                        @break
-
-                                        @default
-                                            {{ $shipment->payment_method }}
-                                    @endswitch
-                                </span>
-                            </div>
-
-                            @if ($shipment->customer_debt_status)
-                                <div class="flex gap-2 items-center">
-                                    <span class="font-bold text-gray-500">حالة المديونية:</span>
-                                    <span class="font-black text-gray-900 dark:text-white">
-                                        @switch($shipment->customer_debt_status)
-                                            @case('fully_paid')
-                                                مدفوع بالكامل
-                                            @break
-
-                                            @case('partially_paid')
-                                                مدفوع جزئياً
-                                            @break
-
-                                            @case('pending')
-                                                غير مدفوع
-                                            @break
-
-                                            @case('overdue')
-                                                متأخر
-                                            @break
-
-                                            @default
-                                                {{ $shipment->customer_debt_status }}
-                                        @endswitch
-                                    </span>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <button type="button" @click="isPaymentModalOpen = true"
-                        class="flex gap-2 justify-center items-center px-5 py-2.5 text-sm font-bold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 shrink-0">
-                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                        تعديل الدفع
-                    </button>
-                </div>
-            </div>
-
         </div>
-
-        {{-- ====================== المودالات (Modals) ====================== --}}
-
-        {{-- 1. مودال المرسل والمستلم --}}
-        <template x-teleport="body">
-            <div x-show="isSenderReceiverModalOpen" x-cloak
-                class="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6"
-                @keydown.escape.window="isSenderReceiverModalOpen = false">
-                <div x-show="isSenderReceiverModalOpen" x-transition.opacity
-                    class="fixed inset-0 backdrop-blur-sm bg-gray-900/60" @click="isSenderReceiverModalOpen = false">
-                </div>
-                <div x-show="isSenderReceiverModalOpen" x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                    class="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark sm:p-8 custom-scrollbar"
-                    dir="rtl">
-
-                    <div class="flex justify-between items-center pb-5 mb-6 border-b border-gray-100 dark:border-gray-800">
-                        <button type="button" @click="isSenderReceiverModalOpen = false"
-                            class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"><span
-                                class="material-symbols-outlined text-[24px]">close</span></button>
-                        <div class="flex gap-3 items-center">
-                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل بيانات المرسل والمستلم</h2>
-                            <div
-                                class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 text-warning-500 dark:bg-warning-500/10">
-                                <span class="material-symbols-outlined text-[22px]">manage_accounts</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- الفورم الكلاسيكي --}}
-                    <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }"
-                        @submit="isSubmitting = true">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="section" value="sender_receiver">
-
-                        <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-                            {{-- بيانات المرسل --}}
-                            <div class="p-5 space-y-4 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800/30 dark:border-gray-700"
-                                x-data="customerPicker('{{ route('customers.search') }}', @js(['id' => old('sender_customer_id', $shipment->sender_customer_id), 'name' => old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name), 'phone' => old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone)]))">
-
-                                <div
-                                    class="flex gap-2 items-center mb-2 text-sm font-black tracking-widest text-gray-400 uppercase dark:text-gray-500">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>بيانات المرسل
-                                </div>
-
-                                <div class="relative">
-                                    <input type="text" x-model="query" @input.debounce.350ms="search()"
-                                        @focus="open = true" @keydown.escape="open = false"
-                                        placeholder="بحث عن عميل مسجل..."
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                    <div x-show="open" x-transition
-                                        class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-gray-800 dark:border-gray-700">
-                                        <template x-if="loading">
-                                            <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                        </template>
-                                        <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                            <div class="p-3 text-sm text-gray-500">لا توجد نتائج. سيتم التسجيل كعميل جديد.
-                                            </div>
-                                        </template>
-                                        <template x-for="c in results" :key="c.id">
-                                            <button type="button" @click="select(c)"
-                                                class="px-4 py-3 w-full text-right transition-colors hover:bg-primary/5 dark:hover:bg-gray-700">
-                                                <div class="text-sm font-bold text-gray-800 dark:text-white"
-                                                    x-text="c.name"></div>
-                                                <div class="text-xs text-right text-gray-500 dir-ltr" x-text="c.phone">
-                                                </div>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <input type="hidden" name="sender_customer_id" x-model="selectedId">
-
-                                <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">اسم
-                                        المرسل</label>
-                                    <input type="text" name="sender_name" x-model="selectedName"
-                                        @input="selectedId=''"
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                </div>
-
-                                <div class="relative">
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">رقم
-                                        الهاتف</label>
-                                    <input type="hidden" name="sender_phone" :value="selectedPhone">
-                                    <div
-                                        class="flex overflow-hidden items-center h-11 bg-white rounded-xl border border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-600">
-                                        <button type="button" @click.stop="openCountry = !openCountry"
-                                            class="flex gap-2 items-center px-3 h-full bg-gray-50 border-l border-gray-200 shrink-0 dark:bg-gray-800 dark:border-gray-700">
-                                            <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
-                                                class="w-5 h-auto rounded-[2px]">
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                dir="ltr" x-text="countryCode"></span>
-                                        </button>
-                                        <input type="tel" x-model="localNumber" @input="updatePhone()"
-                                            placeholder="7XXXXXXXX"
-                                            class="px-3 w-full h-full text-sm tracking-wider text-left bg-transparent border-none outline-none focus:ring-0 dark:text-white"
-                                            dir="ltr">
-                                    </div>
-                                    <div x-show="openCountry" @click.outside="openCountry = false" x-transition
-                                        class="overflow-y-auto absolute z-50 mt-2 w-full max-h-48 bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-gray-800 dark:border-gray-700 custom-scrollbar">
-                                        <template x-for="country in countries" :key="country.code">
-                                            <button type="button" @click="setCountry(country.code)"
-                                                class="flex justify-between items-center px-4 py-2 w-full text-sm text-left transition-colors hover:bg-primary/5 dark:hover:bg-gray-700">
-                                                <div class="flex gap-2 items-center">
-                                                    <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
-                                                        class="w-5 h-auto rounded-[2px]">
-                                                    <span class="text-gray-700 dark:text-gray-300"
-                                                        x-text="country.code"></span>
-                                                </div>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3 pt-2">
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">عدد
-                                            القروف</label>
-                                        <input type="number" name="no_honey_jars"
-                                            value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}"
-                                            class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">عدد
-                                            الجوالين</label>
-                                        <input type="number" name="no_gallons_honey"
-                                            value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}"
-                                            class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- بيانات المستلم --}}
-                            <div class="p-5 space-y-4 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800/30 dark:border-gray-700"
-                                x-data="customerPicker('{{ route('customers.search') }}', @js(['id' => old('receiver_customer_id', $shipment->receiver_customer_id), 'name' => old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name), 'phone' => old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone)]))">
-
-                                <div
-                                    class="flex gap-2 items-center mb-2 text-sm font-black tracking-widest text-gray-400 uppercase dark:text-gray-500">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>بيانات المستلم
-                                </div>
-
-                                <div class="relative">
-                                    <input type="text" x-model="query" @input.debounce.350ms="search()"
-                                        @focus="open = true" @keydown.escape="open = false"
-                                        placeholder="بحث عن عميل مسجل..."
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                    <div x-show="open" x-transition
-                                        class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-gray-800 dark:border-gray-700">
-                                        <template x-if="loading">
-                                            <div class="p-3 text-sm text-gray-500">جاري البحث...</div>
-                                        </template>
-                                        <template x-if="!loading && results.length === 0 && query.trim().length >= 2">
-                                            <div class="p-3 text-sm text-gray-500">لا توجد نتائج. سيتم التسجيل كعميل جديد.
-                                            </div>
-                                        </template>
-                                        <template x-for="c in results" :key="c.id">
-                                            <button type="button" @click="select(c)"
-                                                class="px-4 py-3 w-full text-right transition-colors hover:bg-primary/5 dark:hover:bg-gray-700">
-                                                <div class="text-sm font-bold text-gray-800 dark:text-white"
-                                                    x-text="c.name"></div>
-                                                <div class="text-xs text-right text-gray-500 dir-ltr" x-text="c.phone">
-                                                </div>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-
-                                <input type="hidden" name="receiver_customer_id" x-model="selectedId">
-
-                                <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">
-                                        الجهة إلى (فرع الاستلام)
-                                    </label>
-
-                                    <select name="receiver_branch_id" required
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-
-                                        <option value="" disabled
-                                            {{ old('receiver_branch_id', $shipment->receiver_branch_id) ? '' : 'selected' }}>
-                                            اختر فرع الاستلام
-                                        </option>
-
-                                        @foreach ($branches as $branch)
-                                            @continue((int) $branch->id === (int) auth()->user()->branch_id)
-
-                                            <option value="{{ $branch->id }}" @selected((int) old('receiver_branch_id', $shipment->receiver_branch_id) === (int) $branch->id)>
-                                                {{ $branch->name }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-
-                                    @error('receiver_branch_id')
-                                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">اسم
-                                        المستلم</label>
-                                    <input type="text" name="receiver_name" x-model="selectedName"
-                                        @input="selectedId=''"
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                </div>
-
-                                <div class="relative">
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">رقم
-                                        الهاتف</label>
-                                    <input type="hidden" name="receiver_phone" :value="selectedPhone">
-                                    <div
-                                        class="flex overflow-hidden items-center h-11 bg-white rounded-xl border border-gray-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-600">
-                                        <button type="button" @click.stop="openCountry = !openCountry"
-                                            class="flex gap-2 items-center px-3 h-full bg-gray-50 border-l border-gray-200 shrink-0 dark:bg-gray-800 dark:border-gray-700">
-                                            <img :src="`https://flagcdn.com/w20/${countryFlag}.png`"
-                                                class="w-5 h-auto rounded-[2px]">
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                dir="ltr" x-text="countryCode"></span>
-                                        </button>
-                                        <input type="tel" x-model="localNumber" @input="updatePhone()"
-                                            placeholder="7XXXXXXXX"
-                                            class="px-3 w-full h-full text-sm tracking-wider text-left bg-transparent border-none outline-none focus:ring-0 dark:text-white"
-                                            dir="ltr">
-                                    </div>
-                                    <div x-show="openCountry" @click.outside="openCountry = false" x-transition
-                                        class="overflow-y-auto absolute z-50 mt-2 w-full max-h-48 bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-gray-800 dark:border-gray-700 custom-scrollbar">
-                                        <template x-for="country in countries" :key="country.code">
-                                            <button type="button" @click="setCountry(country.code)"
-                                                class="flex justify-between items-center px-4 py-2 w-full text-sm text-left transition-colors hover:bg-primary/5 dark:hover:bg-gray-700">
-                                                <div class="flex gap-2 items-center">
-                                                    <img :src="`https://flagcdn.com/w20/${country.flag}.png`"
-                                                        class="w-5 h-auto rounded-[2px]">
-                                                    <span class="text-gray-700 dark:text-gray-300"
-                                                        x-text="country.code"></span>
-                                                </div>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex flex-row-reverse gap-3 justify-start items-center pt-6 mt-8 border-t border-gray-100 dark:border-gray-800">
-                            <button type="submit" :disabled="isSubmitting"
-                                class="flex items-center gap-2 px-8 py-2.5 text-sm font-bold text-white rounded-xl bg-primary hover:bg-primary-hover active:scale-95 disabled:opacity-70 min-w-[140px] justify-center">
-                                <span x-show="!isSubmitting">حفظ التعديلات</span>
-                                <span x-show="isSubmitting" class="flex gap-2 items-center">
-                                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                </span>
-                            </button>
-                            <button type="button" @click="isSenderReceiverModalOpen = false"
-                                class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">إلغاء</button>
-                        </div>
-                    </form>
-                </div>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-        </template>
+        @endif
+        {{-- ================= محتوى النموذج (Grid Layout) ================= --}}
+        <div class="p-4 mx-auto mt-4 max-w-7xl md:p-6">
 
-        {{-- 2. مودال تفاصيل الطرد --}}
-        <template x-teleport="body">
-            <div x-show="isDetailsModalOpen" x-cloak
-                class="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6"
-                @keydown.escape.window="isDetailsModalOpen = false">
-                <div x-show="isDetailsModalOpen" x-transition.opacity
-                    class="fixed inset-0 backdrop-blur-sm bg-gray-900/60" @click="isDetailsModalOpen = false"></div>
-                <div x-show="isDetailsModalOpen" x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                    class="relative w-full max-w-2xl bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark p-6 sm:p-8"
-                    dir="rtl">
+            <form id="shipmentForm" action="{{ route('shipment.outgoing.update', $shipment->id) }}" method="POST"
+                @submit="if(!isSubmitting) { isSubmitting = true; return true; } else { $event.preventDefault(); return false; }"
+                class="grid grid-cols-1 gap-6 items-start lg:grid-cols-12">
+                @csrf
+                @method('PUT')
 
-                    <div class="flex justify-between items-center pb-5 mb-6 border-b border-gray-100 dark:border-gray-800">
-                        <button type="button" @click="isDetailsModalOpen = false"
-                            class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"><span
-                                class="material-symbols-outlined text-[24px]">close</span></button>
-                        <div class="flex gap-3 items-center">
-                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل تفاصيل الطرد</h2>
-                            <div
-                                class="flex justify-center items-center w-10 h-10 rounded-xl bg-warning-50 text-warning-500 dark:bg-warning-500/10">
-                                <span class="material-symbols-outlined text-[22px]">inventory_2</span>
+                {{-- الجانب الأيمن: بيانات الوجهة والعملاء (8 أعمدة) --}}
+                <div class="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
+
+                    {{-- 1. بيانات الفروع (الوجهة) --}}
+                    <div x-data='destinationLogic(@json($offices), @json(old('receiver_branch_id', $shipment->receiver_branch_id ?? $shipment->receiver_office_branch_id)), @json(old('office_id', $initialOfficeId ?? '')))'
+                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
+                        </div>
+
+                        <div class="relative z-10">
+                            <div class="flex gap-3 items-center mb-6">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 text-gray-500 rounded-xl shadow-sm transition-all shrink-0 bg-surface dark:bg-boxdark-2 dark:text-bodydark group-hover/card:bg-primary group-hover/card:text-white">
+                                    <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد
+                                    </h3>
+                                    <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">اختر المكتب والفرع
+                                        المستلم</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                                {{-- اختيار المكتب --}}
+                                <div>
+
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">المكتب
+                                        <span class="text-error">*</span></label>
+                                    <div class="relative">
+                                        <select name="office_id" x-model="selectedOfficeId" @change="updateBranches"
+                                            required
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                            <option value="" disabled selected>اختر المكتب...</option>
+                                            <template x-for="office in offices" :key="office.id">
+                                                <option :value="office.id" x-text="office.name"></option>
+                                            </template>
+                                        </select>
+                                        <span
+                                            class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- اختيار الفرع --}}
+                                <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">الفرع <span
+                                            class="text-error">*</span></label>
+                                    <div class="relative">
+                                        <select name="receiver_branch_id" x-model="selectedBranchId" required
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
+                                            <option value="" disabled>اختر الفرع...</option>
+                                            <template x-for="branch in availableBranches" :key="branch.id">
+                                                <option :value="branch.id" x-text="branch.name"
+                                                    :selected="branch.id == selectedBranchId"></option>
+                                            </template>
+                                        </select>
+                                        <span
+                                            class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }"
-                        @submit="isSubmitting = true">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="section" value="details">
+                    {{-- 2. بيانات العملاء --}}
+                    <div
+                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm">
+                        <h3
+                            class="flex gap-2 items-center mb-6 text-lg font-black text-on-surface dark:text-white font-headline">
+                            <div
+                                class="flex justify-center items-center w-10 h-10 text-green-500 bg-green-50 rounded-lg dark:bg-green-500/10 shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">group</span>
+                            </div>
+                            بيانات العملاء
+                        </h3>
 
-                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div class="space-y-8">
+                            {{-- المرسل --}}
+                            <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), @js([
+    'id' => old('sender_customer_id', $shipment->sender_customer_id),
+    'name' => old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name),
+    'phone' => old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone),
+]))" class="relative z-50">
+                                <h4
+                                    class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
+                                    بيانات المرسل</h4>
+
+                                <div class="grid relative grid-cols-1 gap-4 md:grid-cols-2">
+                                    <input type="hidden" name="sender_customer_id" x-model="selectedCustomerId">
+                                    <input type="hidden" name="sender_phone" :value="fullPhoneNumber">
+
+                                    {{-- رقم الهاتف --}}
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
+                                            الهاتف <span class="text-error">*</span></label>
+                                        <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary"
+                                            :class="selectedCustomerId ?
+                                                'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
+                                            style="direction: ltr;">
+
+                                            <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                                <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                                    class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                                    <template x-if="selectedCountry?.svg">
+                                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                                            x-html="selectedCountry.svg"></div>
+                                                    </template>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
+                                                        x-text="selectedCountry?.dial_code"></span>
+                                                </button>
+
+                                                {{-- Country Dropdown --}}
+                                                <div x-show="openCountryDropdown" x-cloak x-transition
+                                                    class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
+                                                    <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                                        <input type="text" x-model="searchCountryQuery"
+                                                            placeholder="بحث..."
+                                                            class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
+                                                            dir="rtl">
+                                                    </div>
+                                                    <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                                        <template x-for="country in filteredCountries"
+                                                            :key="country.code">
+                                                            <button type="button"
+                                                                @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
+                                                                class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
+                                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                                    x-html="country.svg"></div>
+                                                                <span
+                                                                    class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
+                                                                    x-text="country.name"></span>
+                                                                <span
+                                                                    class="text-[10px] font-mono text-gray-400 dark:text-gray-500"
+                                                                    x-text="country.dial_code"></span>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
+                                                @focus="showCustomerDropdown = true"
+                                                @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
+                                                required inputmode="numeric" autocomplete="off"
+                                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
+                                                :class="selectedCustomerId ? 'font-bold text-primary' : ''">
+
+                                            <button type="button" x-show="selectedCustomerId" @click="resetSelection"
+                                                class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
+                                                <span class="material-symbols-outlined text-[16px]">close</span>
+                                            </button>
+                                        </div>
+
+                                        {{-- Customer Search Dropdown --}}
+                                        <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
+                                            x-transition x-cloak
+                                            class="absolute top-[4.5rem] right-0 w-full md:w-[calc(50%-0.5rem)] bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                            <template x-for="customer in filteredCustomers" :key="customer.id">
+                                                <button type="button" @click="selectCustomer(customer)"
+                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
+                                                    <div class="flex flex-col gap-0.5">
+                                                        <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                            x-text="customer.name"></span>
+                                                        <span
+                                                            class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
+                                                            x-text="customer.phone"></span>
+                                                    </div>
+                                                    <span
+                                                        class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                                </button>
+                                            </template>
+                                            <div x-show="filteredCustomers.length === 0"
+                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مرسل جديد،
+                                                    سيتم حفظه تلقائياً.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- الاسم --}}
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
+                                            المرسل (اختياري)</label>
+                                        <input type="text" name="sender_name" x-model="nameInput"
+                                            :readonly="selectedCustomerId !== null" placeholder="الاسم..."
+                                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
+                                            :class="selectedCustomerId ?
+                                                'bg-surface border-transparent text-gray-500 cursor-not-allowed opacity-80' :
+                                                'bg-white border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20'">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- المستلم --}}
+                            <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), @js([
+    'id' => old('receiver_customer_id', $shipment->receiver_customer_id),
+    'name' => old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name),
+    'phone' => old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone),
+]))" class="relative z-40">
+                                <h4
+                                    class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
+                                    بيانات المستلم</h4>
+
+                                <div class="grid relative grid-cols-1 gap-4 md:grid-cols-2">
+                                    <input type="hidden" name="receiver_customer_id" x-model="selectedCustomerId">
+                                    <input type="hidden" name="receiver_phone" :value="fullPhoneNumber">
+
+                                    {{-- رقم الهاتف --}}
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
+                                            الهاتف <span class="text-error">*</span></label>
+                                        <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-green-500/40 focus-within:border-green-500"
+                                            :class="selectedCustomerId ?
+                                                'bg-green-50/30 dark:bg-green-500/10 ring-green-400 dark:ring-green-500/50' :
+                                                ''"
+                                            style="direction: ltr;">
+
+                                            <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                                <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                                    class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                                    <template x-if="selectedCountry?.svg">
+                                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                                            x-html="selectedCountry.svg"></div>
+                                                    </template>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
+                                                        x-text="selectedCountry?.dial_code"></span>
+                                                </button>
+
+                                                {{-- Country Dropdown --}}
+                                                <div x-show="openCountryDropdown" x-cloak x-transition
+                                                    class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
+                                                    <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                                        <input type="text" x-model="searchCountryQuery"
+                                                            placeholder="بحث..."
+                                                            class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-green-500/30 text-on-surface dark:text-white"
+                                                            dir="rtl">
+                                                    </div>
+                                                    <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                                        <template x-for="country in filteredCountries"
+                                                            :key="country.code">
+                                                            <button type="button"
+                                                                @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
+                                                                class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
+                                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                                    x-html="country.svg"></div>
+                                                                <span
+                                                                    class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
+                                                                    x-text="country.name"></span>
+                                                                <span
+                                                                    class="text-[10px] font-mono text-gray-400 dark:text-gray-500"
+                                                                    x-text="country.dial_code"></span>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
+                                                @focus="showCustomerDropdown = true"
+                                                @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
+                                                required inputmode="numeric" autocomplete="off"
+                                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
+                                                :class="selectedCustomerId ? 'font-bold text-green-600 dark:text-green-400' : ''">
+
+                                            <button type="button" x-show="selectedCustomerId" @click="resetSelection"
+                                                class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
+                                                <span class="material-symbols-outlined text-[16px]">close</span>
+                                            </button>
+                                        </div>
+
+                                        {{-- Customer Search Dropdown --}}
+                                        <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
+                                            x-transition x-cloak
+                                            class="absolute top-[4.5rem] right-0 w-full md:w-[calc(50%-0.5rem)] bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                            <template x-for="customer in filteredCustomers" :key="customer.id">
+                                                <button type="button" @click="selectCustomer(customer)"
+                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
+                                                    <div class="flex flex-col gap-0.5">
+                                                        <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                            x-text="customer.name"></span>
+                                                        <span
+                                                            class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
+                                                            x-text="customer.phone"></span>
+                                                    </div>
+                                                    <span
+                                                        class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                                </button>
+                                            </template>
+                                            <div x-show="filteredCustomers.length === 0"
+                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مستلم
+                                                    جديد، سيتم حفظه تلقائياً.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- الاسم --}}
+                                    <div>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
+                                            المستلم <span class="text-error">*</span></label>
+                                        <input type="text" name="receiver_name" required x-model="nameInput"
+                                            :readonly="selectedCustomerId !== null" placeholder="الاسم..."
+                                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
+                                            :class="selectedCustomerId ?
+                                                'bg-surface border-transparent text-gray-500 cursor-not-allowed opacity-80' :
+                                                'bg-white border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                {{-- الجانب الأيسر: محتويات الطرد والدفع (4 أعمدة) --}}
+                <div class="flex flex-col gap-6 lg:col-span-5 xl:col-span-4">
+
+                    {{-- 3. محتويات الطرد --}}
+                    <div
+                        class="bg-white dark:bg-boxdark p-6 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm">
+                        <h3
+                            class="flex gap-2 items-center mb-6 text-lg font-black text-on-surface dark:text-white font-headline">
+                            <div
+                                class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-lg dark:bg-blue-500/10 shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+                            </div>
+                            محتويات الطرد
+                        </h3>
+                        {{-- 
+                        <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">الرمز
-                                    الخاص</label>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الرمز الخاص</label>
                                 <input type="text" name="code" value="{{ old('code', $shipment->code) }}"
-                                    class="px-4 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                    class="px-4 w-full h-12 font-mono text-sm text-left rounded-xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white"
+                                    dir="ltr">
                             </div>
-
                             <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">رقم
-                                    السند</label>
-                                <input type="text" value="{{ $shipment->bond_number }}"
-                                    class="px-4 w-full h-11 text-sm text-gray-400 bg-gray-100 rounded-xl border border-gray-200 cursor-not-allowed dark:bg-gray-800 dark:border-gray-700"
-                                    disabled>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">نوع
-                                    الطرد</label>
-                                <input type="text" name="package_type"
-                                    value="{{ old('package_type', $shipment->package_type) }}"
-                                    placeholder="مثال: كرتون / أكياس..."
-                                    class="px-4 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                            </div>
-
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">إجمالي
-                                    المبلغ (ر.ي)</label>
-                                <input type="number" name="total_amount"
-                                    value="{{ old('total_amount', $shipment->total_amount) }}" step="0.01"
-                                    min="0"
-                                    class="px-4 w-full h-11 font-mono text-sm bg-gray-50 rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                            </div>
-
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">حالة الطلب
-                                    الأساسية</label>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الحالة</label>
                                 <select name="status"
-                                    class="px-4 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                    class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
                                     <option value="pending" @selected(old('status', $shipment->status) == 'pending')>قيد الانتظار</option>
                                     <option value="in_transit" @selected(old('status', $shipment->status) == 'in_transit')>في الطريق</option>
                                     <option value="delivered" @selected(old('status', $shipment->status) == 'delivered')>تم التسليم</option>
+                                    <option value="cancelled" @selected(old('status', $shipment->status) == 'cancelled')>ملغي</option>
+                                    <option value="returned" @selected(old('status', $shipment->status) == 'returned')>مرتجع</option>
                                 </select>
                             </div>
+                        </div> --}}
 
-                            <div class="md:col-span-2">
+                        <div class="mb-4">
+                            <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">رقم
+                                السند</label>
+                            <input type="text" value="{{ $shipment->bond_number }}" disabled
+                                class="px-4 w-full h-12 font-mono text-sm text-left text-gray-500 bg-gray-100 rounded-xl border border-gray-200 transition-all cursor-not-allowed outline-none dark:bg-gray-800 dark:border-boxdark"
+                                dir="ltr">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
                                 <label
-                                    class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">الملاحظات</label>
-                                <textarea name="notes" rows="3"
-                                    class="p-4 w-full text-sm bg-gray-50 rounded-xl border border-gray-200 resize-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">{{ old('notes', $shipment->notes) }}</textarea>
+                                    class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">النوع</label>
+                                <select name="package_type"
+                                    class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                    <option value="carton" @selected(old('package_type', $shipment->package_type) == 'carton')>كرتون</option>
+                                    <option value="bag" @selected(old('package_type', $shipment->package_type) == 'bag')>كيس</option>
+                                    <option value="envelope" @selected(old('package_type', $shipment->package_type) == 'envelope')>مغلف</option>
+                                    <option value="other" @selected(old('package_type', $shipment->package_type) == 'other')>أخرى</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الوزن
+                                    (كجم)</label>
+                                <input type="number" step="0.1" name="weight"
+                                    value="{{ old('weight', $shipment->weight) }}" placeholder="مثال: 2.5"
+                                    class="px-4 w-full h-12 text-sm text-left rounded-xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white"
+                                    dir="ltr">
                             </div>
                         </div>
 
                         <div
-                            class="flex flex-row-reverse gap-3 justify-start items-center pt-6 mt-8 border-t border-gray-100 dark:border-gray-800">
-                            <button type="submit" :disabled="isSubmitting"
-                                class="flex items-center gap-2 px-8 py-2.5 text-sm font-bold text-white rounded-xl bg-primary hover:bg-primary-hover active:scale-95 disabled:opacity-70 min-w-[140px] justify-center">
-                                <span x-show="!isSubmitting">حفظ التعديلات</span>
-                                <span x-show="isSubmitting" class="flex gap-2 items-center">
-                                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                </span>
-                            </button>
-                            <button type="button" @click="isDetailsModalOpen = false"
-                                class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">إلغاء</button>
+                            class="grid grid-cols-2 gap-4 p-4 mt-5 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">دباب
+                                    العسل</label>
+                                <input type="number" name="no_gallons_honey"
+                                    value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}" placeholder="العدد"
+                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">قروف
+                                    العسل</label>
+                                <input type="number" name="no_honey_jars"
+                                    value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}" placeholder="العدد"
+                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                            </div>
                         </div>
-                    </form>
-                </div>
-            </div>
-        </template>
 
-        {{-- 3. مودال طريقة الدفع --}}
-        <template x-teleport="body">
-            <div x-show="isPaymentModalOpen" x-cloak
-                class="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6"
-                @keydown.escape.window="isPaymentModalOpen = false">
-                <div x-show="isPaymentModalOpen" x-transition.opacity
-                    class="fixed inset-0 backdrop-blur-sm bg-gray-900/60" @click="isPaymentModalOpen = false"></div>
-                <div x-show="isPaymentModalOpen" x-transition:enter="transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                    class="relative w-full max-w-3xl bg-white shadow-2xl rounded-[2rem] dark:bg-boxdark p-6 sm:p-8"
-                    dir="rtl">
+                        <div class="mt-5">
+                            <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">ملاحظات
+                                إضافية</label>
+                            <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
+                                class="p-4 w-full text-sm rounded-2xl border border-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">{{ old('notes', $shipment->notes) }}</textarea>
+                        </div>
+                    </div>
 
-                    <div class="flex justify-between items-center pb-5 mb-6 border-b border-gray-100 dark:border-gray-800">
-                        <button type="button" @click="isPaymentModalOpen = false"
-                            class="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"><span
-                                class="material-symbols-outlined text-[24px]">close</span></button>
-                        <div class="flex gap-3 items-center">
-                            <h2 class="text-lg font-bold text-gray-900 dark:text-white">تعديل طريقة الدفع</h2>
+                    {{-- 4. المالية والدفع --}}
+                    <div
+                        class="bg-white dark:bg-boxdark p-6 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm">
+                        <h3
+                            class="flex gap-2 items-center mb-6 text-lg font-black text-on-surface dark:text-white font-headline">
                             <div
-                                class="flex justify-center items-center w-10 h-10 rounded-xl bg-success-50 text-success-500 dark:bg-success-500/10">
-                                <span class="material-symbols-outlined text-[22px]">payments</span>
+                                class="flex justify-center items-center w-10 h-10 text-rose-500 bg-rose-50 rounded-lg dark:bg-rose-500/10 shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">payments</span>
+                            </div>
+                            المالية والدفع
+                        </h3>
+
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">طريقة الدفع
+                                    <span class="text-error">*</span></label>
+                                <select name="payment_method" x-model="paymentMethod"
+                                    class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                    <option value="prepaid">مدفوع مقدماً</option>
+                                    <option value="cod">الدفع عند الاستلام (على المستلم)</option>
+                                    <option value="partial_payment">دفع جزئي</option>
+                                    <option value="customer_credit">آجل (على حساب المرسل)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ
+                                    الإجمالي (ريال) <span class="text-error">*</span></label>
+                                <input type="number" required name="total_amount"
+                                    value="{{ old('total_amount', $shipment->total_amount) }}" placeholder="0.00"
+                                    class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-primary dark:text-primary"
+                                    dir="ltr">
+                            </div>
+
+                            <div x-show="paymentMethod === 'partial_payment'" x-collapse>
+                                <label class="block text-[11px] font-bold text-rose-500 dark:text-rose-400 mb-1.5">المبلغ
+                                    المدفوع حالياً (ريال)</label>
+                                <input type="number" name="partial_amount"
+                                    value="{{ old('partial_amount', $shipment->partial_amount) }}" placeholder="0.00"
+                                    class="px-4 w-full h-14 text-xl font-black text-left text-rose-600 rounded-2xl border border-rose-200 transition-all outline-none bg-rose-50/50 dark:bg-rose-500/5 dark:border-rose-500/20 focus:border-rose-400 dark:text-rose-400"
+                                    dir="ltr">
                             </div>
                         </div>
                     </div>
 
-                    <form action="{{ route('shipment.update', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }"
-                        @submit="isSubmitting = true">
-                        @csrf @method('PUT')
-                        <input type="hidden" name="section" value="payment">
-
-                        <div class="space-y-6">
-                            {{-- أنواع الدفع ككروت --}}
-                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                {{-- Prepaid --}}
-                                <label
-                                    class="flex relative flex-col justify-center items-center p-4 rounded-2xl border-2 transition-all cursor-pointer group"
-                                    :class="payment_method === 'prepaid' ? 'border-primary bg-primary/5 dark:bg-primary/10' :
-                                        'border-gray-100 bg-white dark:bg-gray-900 dark:border-gray-700 hover:border-primary/50'">
-                                    <input type="radio" name="payment_method" value="prepaid" x-model="payment_method"
-                                        class="sr-only">
-                                    <span class="material-symbols-outlined text-[28px] mb-2"
-                                        :class="payment_method === 'prepaid' ? 'text-primary' :
-                                            'text-gray-400 group-hover:text-primary'">account_balance</span>
-                                    <span class="text-sm font-bold"
-                                        :class="payment_method === 'prepaid' ? 'text-primary' :
-                                            'text-gray-600 dark:text-gray-300'">دفع
-                                        مقدم</span>
-                                </label>
-
-                                {{-- COD --}}
-                                <label
-                                    class="flex relative flex-col justify-center items-center p-4 rounded-2xl border-2 transition-all cursor-pointer group"
-                                    :class="payment_method === 'cod' ? 'border-primary bg-primary/5 dark:bg-primary/10' :
-                                        'border-gray-100 bg-white dark:bg-gray-900 dark:border-gray-700 hover:border-primary/50'">
-                                    <input type="radio" name="payment_method" value="cod" x-model="payment_method"
-                                        class="sr-only">
-                                    <span class="material-symbols-outlined text-[28px] mb-2"
-                                        :class="payment_method === 'cod' ? 'text-primary' :
-                                            'text-gray-400 group-hover:text-primary'">local_shipping</span>
-                                    <span class="text-sm font-bold"
-                                        :class="payment_method === 'cod' ? 'text-primary' :
-                                            'text-gray-600 dark:text-gray-300'">عند
-                                        التسليم (COD)</span>
-                                </label>
-
-                                {{-- Partial --}}
-                                <label
-                                    class="flex relative flex-col justify-center items-center p-4 rounded-2xl border-2 transition-all cursor-pointer group"
-                                    :class="payment_method === 'partial_payment' ?
-                                        'border-primary bg-primary/5 dark:bg-primary/10' :
-                                        'border-gray-100 bg-white dark:bg-gray-900 dark:border-gray-700 hover:border-primary/50'">
-                                    <input type="radio" name="payment_method" value="partial_payment"
-                                        x-model="payment_method" class="sr-only">
-                                    <span class="material-symbols-outlined text-[28px] mb-2"
-                                        :class="payment_method === 'partial_payment' ? 'text-primary' :
-                                            'text-gray-400 group-hover:text-primary'">donut_large</span>
-                                    <span class="text-sm font-bold"
-                                        :class="payment_method === 'partial_payment' ? 'text-primary' :
-                                            'text-gray-600 dark:text-gray-300'">دفع
-                                        جزئي</span>
-                                </label>
-
-                                {{-- Credit --}}
-                                <label
-                                    class="flex relative flex-col justify-center items-center p-4 rounded-2xl border-2 transition-all cursor-pointer group"
-                                    :class="payment_method === 'customer_credit' ?
-                                        'border-primary bg-primary/5 dark:bg-primary/10' :
-                                        'border-gray-100 bg-white dark:bg-gray-900 dark:border-gray-700 hover:border-primary/50'">
-                                    <input type="radio" name="payment_method" value="customer_credit"
-                                        x-model="payment_method" class="sr-only">
-                                    <span class="material-symbols-outlined text-[28px] mb-2"
-                                        :class="payment_method === 'customer_credit' ? 'text-primary' :
-                                            'text-gray-400 group-hover:text-primary'">assignment_ind</span>
-                                    <span class="text-sm font-bold text-center"
-                                        :class="payment_method === 'customer_credit' ? 'text-primary' :
-                                            'text-gray-600 dark:text-gray-300'">آجل
-                                        (على الحساب)</span>
-                                </label>
-                            </div>
-
-                            {{-- إعدادات إضافية بناءً على الاختيار --}}
-                            <div class="p-5 mt-4 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-gray-800/50 dark:border-gray-700"
-                                x-show="['prepaid', 'partial_payment'].includes(payment_method)" x-transition>
-
-                                <div x-show="payment_method === 'partial_payment'" class="mb-5">
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">المبلغ
-                                        المدفوع مقدمًا <span class="text-error-500">*</span></label>
-                                    <input type="number"
-                                        :name="payment_method === 'partial_payment' ? 'partial_amount' : null"
-                                        :disabled="payment_method !== 'partial_payment'"
-                                        value="{{ old('partial_amount') }}" step="0.01"
-                                        class="px-4 w-full h-11 font-mono text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                </div>
-
-                                <div>
-                                    <label class="block mb-3 text-xs font-bold text-gray-700 dark:text-gray-400">طريقة
-                                        تحصيل الدفعة المقدمة</label>
-                                    <div class="flex gap-4">
-                                        <label class="flex gap-2 items-center cursor-pointer">
-                                            <input type="radio"
-                                                :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
-                                                    'prepaid_payment_method' : null)"
-                                                value="cash" x-model="prepaid_method"
-                                                class="w-4 h-4 text-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600">
-                                            <span class="text-sm font-bold text-gray-800 dark:text-white">كاش (نقدي)</span>
-                                        </label>
-                                        <label class="flex gap-2 items-center cursor-pointer">
-                                            <input type="radio"
-                                                :name="(['prepaid', 'partial_payment'].includes(payment_method) ?
-                                                    'prepaid_payment_method' : null)"
-                                                value="bank_transfer" x-model="prepaid_method"
-                                                class="w-4 h-4 text-primary focus:ring-primary dark:bg-gray-800 dark:border-gray-600">
-                                            <span class="text-sm font-bold text-gray-800 dark:text-white">تحويل بنكي /
-                                                محفظة</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4" x-show="prepaid_method === 'bank_transfer'" x-transition>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">رقم
-                                        الإيداع / السند <span class="text-error-500">*</span></label>
-                                    <input type="text"
-                                        :name="prepaid_method === 'bank_transfer' ? 'prepaid_reference' : null"
-                                        value="{{ old('prepaid_reference') }}"
-                                        class="px-4 w-full h-11 text-sm bg-white rounded-xl border border-gray-200 focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex flex-row-reverse gap-3 justify-start items-center pt-6 mt-8 border-t border-gray-100 dark:border-gray-800">
-                            <button type="submit" :disabled="isSubmitting"
-                                class="flex items-center gap-2 px-8 py-2.5 text-sm font-bold text-white rounded-xl bg-primary hover:bg-primary-hover active:scale-95 disabled:opacity-70 min-w-[140px] justify-center">
-                                <span x-show="!isSubmitting">حفظ الدفع</span>
-                                <span x-show="isSubmitting" class="flex gap-2 items-center">
-                                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10"
-                                            stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                </span>
-                            </button>
-                            <button type="button" @click="isPaymentModalOpen = false"
-                                class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">إلغاء</button>
-                        </div>
-                    </form>
+                    {{-- زر الحفظ للموبايل --}}
+                    <div class="mt-2 md:hidden">
+                        <button type="submit" :disabled="isSubmitting"
+                            class="flex gap-2 justify-center items-center w-full h-14 text-sm font-bold rounded-2xl shadow-lg transition-all duration-200"
+                            :class="isSubmitting ? 'bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed shadow-none' :
+                                'bg-primary text-white hover:bg-primary-hover shadow-primary/30 active:scale-95'">
+                            <span x-show="!isSubmitting" class="material-symbols-outlined text-[22px]">save</span>
+                            <span x-show="isSubmitting"
+                                class="animate-spin material-symbols-outlined text-[22px]">progress_activity</span>
+                            <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'"></span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </template>
-
+            </form>
+        </div>
     </div>
 
 @endsection
@@ -816,122 +530,123 @@
 @section('script')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('customerPicker', (url, initial = null) => ({
-                query: '',
-                open: false,
-                loading: false,
-                results: [],
-                selectedId: '',
-                selectedName: '',
-                selectedPhone: '',
-                countryCode: '+967',
-                countryFlag: 'ye',
-                localNumber: '',
-                openCountry: false,
-                countries: [{
-                        code: '+967',
-                        flag: 'ye'
-                    }, {
-                        code: '+966',
-                        flag: 'sa'
-                    },
-                    {
-                        code: '+971',
-                        flag: 'ae'
-                    }, {
-                        code: '+965',
-                        flag: 'kw'
-                    },
-                    {
-                        code: '+974',
-                        flag: 'qa'
-                    }, {
-                        code: '+968',
-                        flag: 'om'
-                    },
-                ],
+            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
+                offices: officesList || [],
+                selectedOfficeId: initialOfficeId || '',
+                selectedBranchId: initialBranchId || '',
+                availableBranches: [],
+                init() {
+                    if (this.selectedOfficeId) {
+                        const office = this.offices.find(o => o.id == this.selectedOfficeId);
+                        if (office) {
+                            this.availableBranches = office.branches;
+                            // التأكد أن الفرع المختار موجود ضمن فروع المكتب، وإلا أفرغه
+                            if (this.selectedBranchId && !this.availableBranches.some(b => b.id == this.selectedBranchId)) {
+                                this.selectedBranchId = '';
+                            }
+                        }
+                    } else if (this.selectedBranchId) {
+                        const office = this.offices.find(o => o.branches.some(b => b.id == this
+                            .selectedBranchId));
+                        if (office) {
+                            this.selectedOfficeId = office.id;
+                            this.availableBranches = office.branches;
+                        }
+                    }
+                    if (!this.selectedOfficeId) {
+                        const internalOffice = this.offices.find(o => String(o.id).startsWith(
+                            'internal_'));
+                        if (internalOffice) {
+                            this.selectedOfficeId = internalOffice.id;
+                            this.availableBranches = internalOffice.branches;
+                        }
+                    }
+                },
+                updateBranches() {
+                    const office = this.offices.find(o => o.id == this.selectedOfficeId);
+                    this.availableBranches = office ? office.branches : [];
+                    if (!this.availableBranches.some(b => b.id == this.selectedBranchId)) {
+                        this.selectedBranchId = '';
+                    }
+                }
+            }));
+
+            Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
+                customers: customersList || [],
+                countries: countriesList || [],
+                filteredCustomers: [],
+                localPhoneNumber: '',
+                nameInput: '',
+                selectedCustomerId: null,
+                selectedCountry: null,
+                openCountryDropdown: false,
+                searchCountryQuery: '',
+                showCustomerDropdown: false,
 
                 init() {
-                    if (initial && typeof initial === 'object') {
-                        this.selectedId = initial.id ?? '';
-                        this.selectedName = initial.name ?? '';
-                        this.parsePhone(initial.phone ?? '');
-                        this.query = this.selectedName;
-                    }
-                },
-                parsePhone(phone) {
-                    if (!phone) {
-                        this.setCountry('+967');
-                        this.localNumber = '';
-                        this.selectedPhone = '';
-                        return;
-                    }
-                    
-                    let normalizedPhone = phone;
-                    // إذا كان الرقم يبدأ برقم (بدون +)، نضيف + لتسهيل استخراج مفتاح الدولة
-                    if (/^\d/.test(phone)) {
-                        normalizedPhone = '+' + phone;
-                    }
+                    if (initialData && initialData.phone) {
+                        let phone = initialData.phone;
+                        if (/^\d/.test(phone)) phone = '+' + phone;
 
-                    const found = this.countries.find(c => normalizedPhone.startsWith(c.code));
-                    if (found) {
-                        this.countryCode = found.code;
-                        this.countryFlag = found.flag;
-                        this.localNumber = normalizedPhone.substring(found.code.length);
+                        this.selectedCountry = this.countries.find(c => phone.startsWith(c
+                            .dial_code)) || this.countries.find(c => c.code === 'YE') || this.countries[
+                                0];
+                        if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code
+                                .length);
+                        } else {
+                            this.localPhoneNumber = initialData.phone;
+                        }
+                        this.selectedCustomerId = initialData.id;
+                        this.nameInput = initialData.name || '';
                     } else {
-                        this.setCountry('+967');
-                        this.localNumber = phone;
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this
+                            .countries[0];
                     }
-                    this.updateHidden();
                 },
-                setCountry(code) {
-                    const country = this.countries.find(c => c.code === code);
-                    if (country) {
-                        this.countryCode = country.code;
-                        this.countryFlag = country.flag;
-                    }
-                    this.updatePhone();
-                    this.openCountry = false;
+                get filteredCountries() {
+                    if (this.searchCountryQuery === '') return this.countries;
+                    const query = this.searchCountryQuery.toLowerCase();
+                    return this.countries.filter(c => c.name.toLowerCase().includes(query) || c
+                        .dial_code.includes(query));
                 },
-                updatePhone() {
-                    this.updateHidden();
-                    this.selectedId = '';
+                get fullPhoneNumber() {
+                    if (!this.localPhoneNumber) return '';
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace(
+                        '+', '') : '';
+                    return dialCode + this.localPhoneNumber;
                 },
-                updateHidden() {
-                    this.selectedPhone = (this.localNumber || '').trim() ? this.countryCode + this
-                        .localNumber.trim() : '';
-                },
-                async search() {
-                    const q = (this.query || '').trim();
-                    this.open = true;
-                    if (q.length < 2) {
-                        this.results = [];
-                        this.loading = false;
+                searchCustomer() {
+                    this.selectedCustomerId = null;
+                    let query = this.fullPhoneNumber.trim();
+                    if (this.localPhoneNumber.trim() === '') {
+                        this.filteredCustomers = [];
+                        this.showCustomerDropdown = false;
                         return;
                     }
-                    this.loading = true;
-                    try {
-                        const res = await fetch(`${url}?q=${encodeURIComponent(q)}`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        });
-                        if (!res.ok) throw new Error('Search failed');
-                        this.results = await res.json();
-                    } catch (e) {
-                        this.results = [];
-                    } finally {
-                        this.loading = false;
+                    this.filteredCustomers = this.customers.filter(c => {
+                        return c.phone && String(c.phone).includes(query);
+                    });
+                    this.showCustomerDropdown = true;
+                },
+                selectCustomer(customer) {
+                    this.selectedCustomerId = customer.id;
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
+                        '') : '';
+                    if (customer.phone && customer.phone.startsWith(dialCode)) {
+                        this.localPhoneNumber = customer.phone.substring(dialCode.length);
+                    } else {
+                        this.localPhoneNumber = customer.phone;
                     }
+                    this.nameInput = customer.name;
+                    this.showCustomerDropdown = false;
                 },
-                select(c) {
-                    this.selectedId = c.id;
-                    this.selectedName = c.name ?? '';
-                    this.parsePhone(c.phone ?? '');
-                    this.query = this.selectedName;
-                    this.open = false;
-                    this.results = [];
-                },
+                resetSelection() {
+                    this.selectedCustomerId = null;
+                    this.localPhoneNumber = '';
+                    this.nameInput = '';
+                    this.showCustomerDropdown = false;
+                }
             }));
         });
     </script>

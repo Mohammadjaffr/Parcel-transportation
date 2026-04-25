@@ -212,9 +212,56 @@ class ShipmentController extends Controller
 
         $branches = Branch::where('app_id', auth()->user()->app_id)->get();
 
-        $offices = Office::with('branches')
-            ->where('app_id', auth()->user()->app_id)
+        $currentApp = auth()->user()->app;
+
+        // --- 1. جلب المكاتب الموثوقة (Apps المتصلة) ---
+        $connectedAppIds = collect();
+        $sentAccepted = $currentApp->sentConnections()->where('status', 'accepted')->pluck('receiver_app_id');
+        $receivedAccepted = $currentApp->receivedConnections()->where('status', 'accepted')->pluck('sender_app_id');
+        $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
+
+        $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
+            $query->withoutGlobalScope('app_id');
+        }])->get();
+
+        // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
+        $untrustedOffices = Office::where('app_id', $currentApp->id)->with('branches')->get();
+
+        // --- 3. تجهيز مصفوفة الوجهات الشاملة ---
+        $offices = collect();
+
+        // أ- إضافة فروعنا الداخلية
+        $myBranches = Branch::where('app_id', $currentApp->id)
+            ->where('id', '!=', auth()->user()->branch_id)
             ->get();
+        if ($myBranches->isNotEmpty()) {
+            $offices->push([
+                'id' => 'internal_' . $currentApp->id,
+                'name' => '🏠 مكتبنا الحالي',
+                'branches' => $myBranches
+            ]);
+        }
+        // ب- إضافة المكاتب الموثوقة (Apps)
+        foreach ($trustedApps as $tApp) {
+            if ($tApp->branches->isNotEmpty()) {
+                $offices->push([
+                    'id' => 'trusted_' . $tApp->id,
+                    'name' => $tApp->name,
+                    'branches' => $tApp->branches
+                ]);
+            }
+        }
+
+        // ج- إضافة المكاتب غير الموثوقة (External Offices)
+        foreach ($untrustedOffices as $uOffice) {
+            if ($uOffice->branches->isNotEmpty()) {
+                $offices->push([
+                    'id' => 'untrusted_' . $uOffice->id,
+                    'name' => $uOffice->name,
+                    'branches' => $uOffice->branches
+                ]);
+            }
+        }
 
         if ($request->isMobile) {
             return view('mobile.pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices', 'branches'));
@@ -225,7 +272,7 @@ class ShipmentController extends Controller
     public function outgoingUpdate(Request $request, $id)
     {
         $shipment = Shipment::findOrFail($id);
-       
+
         if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
             return back()->with('error', 'لا تملك صلاحية تعديل هذا الطرد.');
         }
@@ -337,6 +384,8 @@ class ShipmentController extends Controller
                     : 0,
                 'notes'                     => $data['notes'] ?? null,
 
+           
+
                 'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
                     ? ($shipment->customer_debt_status ?? 'pending')
                     : null,
@@ -344,7 +393,7 @@ class ShipmentController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'تم تعديل بيانات الطرد بنجاح.');
+            return redirect()->route('shipment.outgoing.index')->with('success', 'تم تعديل بيانات الطرد بنجاح.');
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -572,7 +621,7 @@ class ShipmentController extends Controller
         $shipment->sender_whatsapp_link = WhatsAppLinkService::generate($shipment, 'sender');
         $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
 
-    
+
         // التحقق من نوع الجهاز لإرجاع العرض (View) المناسب
         if ($request->isMobile) {
             return view('mobile.pages.shipment.outgoing.show', compact('shipment'));
@@ -650,7 +699,7 @@ class ShipmentController extends Controller
             }
 
             $data = $validator->validated();
-$user = auth()->user();
+            $user = auth()->user();
             // إنشاء / تحديث العميل المرسل
             if (empty($data['sender_customer_id'])) {
                 $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
@@ -688,7 +737,6 @@ $user = auth()->user();
                         'app_id'     => $user->app_id,
                         'created_by' => $user->id,
                     ]);
-
                 }
 
                 $data['receiver_customer_id'] = $receiverCustomer->id;

@@ -232,13 +232,14 @@
                                         </button>
                                     @endif
                                 </div>
-
-                                {{-- زر التعديل (Primary) --}}
-                                <a href="{{ route('shipment.edit', $shipment->id) }}"
-                                    class="flex gap-2 items-center px-4 h-10 text-sm font-bold text-white rounded-xl shadow-sm transition-all bg-primary hover:bg-primary-hover hover:shadow-md active:scale-95">
-                                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                    تعديل
-                                </a>
+                                @if (!in_array($shipment->status, ['returned', 'cancelled']))
+                                    {{-- زر التعديل (Primary) --}}
+                                    <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
+                                        class="flex gap-2 items-center px-4 h-10 text-sm font-bold text-white rounded-xl shadow-sm transition-all bg-primary hover:bg-primary-hover hover:shadow-md active:scale-95">
+                                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                                        تعديل
+                                    </a>
+                                @endif
                             @endif
                         </div>
                     </div>
@@ -295,8 +296,18 @@
                         <div
                             class="flex justify-between items-center pt-4 text-sm border-t border-gray-100 dark:border-gray-700">
                             <span class="font-bold text-gray-400 dark:text-gray-500">فرع الإرسال:</span>
-                            <span
-                                class="font-bold text-gray-900 dark:text-white">{{ $shipment->senderBranch->name ?? 'غير محدد' }}</span>
+                            @if ($shipment->senderOfficeBranch)
+                                {{-- إذا المستلم فرع مكتب خارجي --}}
+                                <span class="font-bold text-gray-900 dark:text-white">
+                                    {{ $shipment->senderOfficeBranch->name }}
+                                    ({{ $shipment->senderOfficeBranch->office->name }})
+                                </span>
+                            @else
+                                {{-- إذا المستلم فرع داخلي أو غير محدد --}}
+                                <span class="font-bold text-gray-900 dark:text-white">
+                                    {{ $shipment->senderBranch->name ?? 'غير محدد' }}
+                                </span>
+                            @endif
                         </div>
                     </div>
 
@@ -342,8 +353,21 @@
                         <div
                             class="flex justify-between items-center pt-4 text-sm border-t border-gray-100 dark:border-gray-700">
                             <span class="font-bold text-gray-400 dark:text-gray-500">فرع الاستلام:</span>
-                            <span
-                                class="font-bold text-gray-900 dark:text-white">{{ $shipment->receiverBranch->name ?? 'غير محدد' }}</span>
+                            {{-- <span
+                                class="font-bold text-gray-900 dark:text-white">{{ $shipment->receiverBranch->name ?? ($shipment->receiverOfficeBranch->name ?? 'غير محدد') }}</span> --}}
+                            @if ($shipment->receiverOfficeBranch)
+                                {{-- إذا المستلم فرع مكتب خارجي --}}
+                                <span class="font-bold text-gray-900 dark:text-white">
+                                    {{ $shipment->receiverOfficeBranch->name }}
+                                    ({{ $shipment->receiverOfficeBranch->office->name }})
+                                </span>
+                            @else
+                                {{-- إذا المستلم فرع داخلي أو غير محدد --}}
+                                <span class="font-bold text-gray-900 dark:text-white">
+                                    {{ $shipment->receiverBranch->name ?? 'غير محدد' }}
+                                </span>
+                            @endif
+
                         </div>
                     </div>
                 </div>
