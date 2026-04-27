@@ -199,209 +199,275 @@ class ShipmentController extends Controller
 
         return view('pages.shipment.outgoing.index', compact('shipments'));
     }
-    public function outgoingEdit(Request $request, $id)
-    {
-        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'receiverBranch'])->findOrFail($id);
+   public function outgoingEdit(Request $request, $id)
+{
+    $shipment = Shipment::with([
+        'senderCustomer',
+        'receiverCustomer',
+        'receiverBranch'
+    ])->findOrFail($id);
 
-        if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
-            return back()->with('error', 'لا يمكن تعديل هذا الطرد لأن حالته الحالية لا تسمح بذلك.');
-        }
+    if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
+        return back()->with('error', 'لا يمكن تعديل هذا الطرد لأن حالته الحالية لا تسمح بذلك.');
+    }
 
-        $customers = Customer::where('app_id', auth()->user()->app_id)
-            ->get(['id', 'name', 'phone']);
+    $user = auth()->user();
 
-        $branches = Branch::where('app_id', auth()->user()->app_id)->get();
+    $customers = Customer::where('app_id', $user->app_id)
+        ->get(['id', 'name', 'phone']);
 
-        $currentApp = auth()->user()->app;
+    $branches = Branch::where('app_id', $user->app_id)->get();
 
-        // --- 1. جلب المكاتب الموثوقة (Apps المتصلة) ---
-        $connectedAppIds = collect();
-        $sentAccepted = $currentApp->sentConnections()->where('status', 'accepted')->pluck('receiver_app_id');
-        $receivedAccepted = $currentApp->receivedConnections()->where('status', 'accepted')->pluck('sender_app_id');
-        $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
+    $currentApp = $user->app;
 
-        $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
+    $sentAccepted = $currentApp->sentConnections()
+        ->where('status', 'accepted')
+        ->pluck('receiver_app_id');
+
+    $receivedAccepted = $currentApp->receivedConnections()
+        ->where('status', 'accepted')
+        ->pluck('sender_app_id');
+
+    $connectedAppIds = collect()
+        ->merge($sentAccepted)
+        ->merge($receivedAccepted)
+        ->unique();
+
+    $trustedApps = App::whereIn('id', $connectedAppIds)
+        ->with(['branches' => function ($query) {
             $query->withoutGlobalScope('app_id');
-        }])->get();
+        }])
+        ->get();
 
-        // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
-        $untrustedOffices = Office::where('app_id', $currentApp->id)->with('branches')->get();
+    $untrustedOffices = Office::where('app_id', $currentApp->id)
+        ->with('branches')
+        ->get();
 
-        // --- 3. تجهيز مصفوفة الوجهات الشاملة ---
-        $offices = collect();
+    $offices = collect();
 
-        // أ- إضافة فروعنا الداخلية
-        $myBranches = Branch::where('app_id', $currentApp->id)
-            ->where('id', '!=', auth()->user()->branch_id)
-            ->get();
-        if ($myBranches->isNotEmpty()) {
+    $myBranches = Branch::where('app_id', $currentApp->id)
+        ->where('id', '!=', $user->branch_id)
+        ->get();
+
+    if ($myBranches->isNotEmpty()) {
+        $offices->push([
+            'id'       => 'internal_' . $currentApp->id,
+            'name'     => '🏠 مكتبنا الحالي',
+            'branches' => $myBranches,
+        ]);
+    }
+
+    foreach ($trustedApps as $tApp) {
+        if ($tApp->branches->isNotEmpty()) {
             $offices->push([
-                'id' => 'internal_' . $currentApp->id,
-                'name' => '🏠 مكتبنا الحالي',
-                'branches' => $myBranches
+                'id'       => 'trusted_' . $tApp->id,
+                'name'     => $tApp->name,
+                'branches' => $tApp->branches,
             ]);
         }
-        // ب- إضافة المكاتب الموثوقة (Apps)
-        foreach ($trustedApps as $tApp) {
-            if ($tApp->branches->isNotEmpty()) {
-                $offices->push([
-                    'id' => 'trusted_' . $tApp->id,
-                    'name' => $tApp->name,
-                    'branches' => $tApp->branches
-                ]);
-            }
-        }
-
-        // ج- إضافة المكاتب غير الموثوقة (External Offices)
-        foreach ($untrustedOffices as $uOffice) {
-            if ($uOffice->branches->isNotEmpty()) {
-                $offices->push([
-                    'id' => 'untrusted_' . $uOffice->id,
-                    'name' => $uOffice->name,
-                    'branches' => $uOffice->branches
-                ]);
-            }
-        }
-
-        if ($request->isMobile) {
-            return view('mobile.pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices', 'branches'));
-        }
-
-        return view('pages.shipment.outgoing.edit', compact('shipment', 'customers', 'offices', 'branches'));
     }
-    public function outgoingUpdate(Request $request, $id)
-    {
-        $shipment = Shipment::findOrFail($id);
 
-        if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
-            return back()->with('error', 'لا تملك صلاحية تعديل هذا الطرد.');
-        }
-
-        $rules = [
-            'receiver_branch_id'   => 'required|integer|exists:branches,id',
-
-            'sender_customer_id'   => 'nullable|exists:customers,id',
-            'sender_name'          => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone'         => 'required_without:sender_customer_id|string|max:50',
-
-            'receiver_customer_id' => 'nullable|exists:customers,id',
-            'receiver_name'        => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone'       => 'required_without:receiver_customer_id|string|max:50',
-
-            'package_type'         => 'required|string',
-            'weight'               => 'nullable|numeric|min:0',
-            'no_gallons_honey'     => 'nullable|numeric|min:0',
-            'no_honey_jars'        => 'nullable|numeric|min:0',
-
-            'payment_method'       => 'required|in:prepaid,cod,partial_payment,customer_credit',
-            'total_amount'         => 'required|numeric|min:0',
-            'partial_amount'       => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
-            'notes'                => 'nullable|string',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        $validator->after(function ($validator) use ($request) {
-            if ($request->payment_method === 'partial_payment') {
-                $total = (float) $request->total_amount;
-                $partial = (float) $request->partial_amount;
-
-                if ($partial >= $total) {
-                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
-                }
-            }
-
-            if ((int) $request->receiver_branch_id === (int) auth()->user()->branch_id) {
-                $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
-            }
-        });
-
-        if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $data = $validator->validated();
-            $user = auth()->user();
-
-            $senderCustomerId = $data['sender_customer_id'] ?? null;
-            if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
-                $senderCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
-                    [
-                        'name'       => $data['sender_name'],
-                        'branch_id'  => $user->branch_id,
-                        'created_by' => $user->id,
-                    ]
-                );
-
-                if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
-                    $senderCustomer->update(['name' => $data['sender_name']]);
-                }
-
-                $senderCustomerId = $senderCustomer->id;
-            }
-
-            $receiverCustomerId = $data['receiver_customer_id'] ?? null;
-            if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
-                $receiverCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
-                    [
-                        'name'       => $data['receiver_name'],
-                        'branch_id'  => $user->branch_id,
-                        'created_by' => $user->id,
-                    ]
-                );
-
-                if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
-                    $receiverCustomer->update(['name' => $data['receiver_name']]);
-                }
-
-                $receiverCustomerId = $receiverCustomer->id;
-            }
-
-            $shipment->update([
-                'receiver_branch_id'        => $data['receiver_branch_id'],
-                'receiver_office_branch_id' => null,
-
-                'sender_customer_id'        => $senderCustomerId,
-                'receiver_customer_id'      => $receiverCustomerId,
-
-                'package_type'              => $data['package_type'],
-                'weight'                    => $data['weight'] ?? 0,
-                'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
-                'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
-
-                'payment_method'            => $data['payment_method'],
-                'total_amount'              => $data['total_amount'],
-                'partial_amount'            => $data['payment_method'] === 'partial_payment'
-                    ? ($data['partial_amount'] ?? 0)
-                    : 0,
-                'notes'                     => $data['notes'] ?? null,
-
-           
-
-                'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
-                    ? ($shipment->customer_debt_status ?? 'pending')
-                    : null,
+    foreach ($untrustedOffices as $uOffice) {
+        if ($uOffice->branches->isNotEmpty()) {
+            $offices->push([
+                'id'       => 'untrusted_' . $uOffice->id,
+                'name'     => $uOffice->name,
+                'branches' => $uOffice->branches,
             ]);
-
-            DB::commit();
-
-            return redirect()->route('shipment.outgoing.index')->with('success', 'تم تعديل بيانات الطرد بنجاح.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return back()
-                ->withInput()
-                ->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
         }
     }
+
+    // مهم: إذا الشحنة خارجية نعتمد receiver_office_branch_id أولاً
+    $initialBranchId = old(
+        'receiver_branch_id',
+        $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id
+    );
+
+    $initialOfficeId = old('office_id', '');
+
+    if (!$initialOfficeId && $initialBranchId) {
+        foreach ($offices as $office) {
+            $officeId = (string) $office['id'];
+
+            if ($shipment->receiver_office_branch_id && !str_starts_with($officeId, 'untrusted_')) {
+                continue;
+            }
+
+            if (!$shipment->receiver_office_branch_id && str_starts_with($officeId, 'untrusted_')) {
+                continue;
+            }
+
+            foreach ($office['branches'] as $branch) {
+                if ((int) $branch->id === (int) $initialBranchId) {
+                    $initialOfficeId = $office['id'];
+                    break 2;
+                }
+            }
+        }
+    }
+
+    if ($request->isMobile) {
+        return view('mobile.pages.shipment.outgoing.edit', compact(
+            'shipment',
+            'customers',
+            'offices',
+            'branches',
+            'initialOfficeId'
+        ));
+    }
+
+    return view('pages.shipment.outgoing.edit', compact(
+        'shipment',
+        'customers',
+        'offices',
+        'branches',
+        'initialOfficeId'
+    ));
+}
+ public function outgoingUpdate(Request $request, $id)
+{
+    $shipment = Shipment::findOrFail($id);
+
+    if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
+        return back()->with('error', 'لا تملك صلاحية تعديل هذا الطرد.');
+    }
+
+    $rules = [
+        'office_id'             => 'required|string',
+        'receiver_branch_id'    => 'required|integer|exists:branches,id',
+
+        'sender_customer_id'    => 'nullable|exists:customers,id',
+        'sender_name'           => 'required_without:sender_customer_id|string|max:255',
+        'sender_phone'          => 'required_without:sender_customer_id|string|max:50',
+
+        'receiver_customer_id'  => 'nullable|exists:customers,id',
+        'receiver_name'         => 'required_without:receiver_customer_id|string|max:255',
+        'receiver_phone'        => 'required_without:receiver_customer_id|string|max:50',
+
+        'package_type'          => 'required|string',
+        'weight'                => 'nullable|numeric|min:0',
+        'no_gallons_honey'      => 'nullable|numeric|min:0',
+        'no_honey_jars'         => 'nullable|numeric|min:0',
+
+        'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
+        'total_amount'          => 'required|numeric|min:0',
+        'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+        'notes'                 => 'nullable|string',
+    ];
+
+    $validator = Validator::make($request->all(), $rules);
+
+    $validator->after(function ($validator) use ($request) {
+        if ($request->payment_method === 'partial_payment') {
+            $total = (float) $request->total_amount;
+            $partial = (float) $request->partial_amount;
+
+            if ($partial >= $total) {
+                $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
+            }
+        }
+
+        if (
+            !str_starts_with((string) $request->office_id, 'untrusted_') &&
+            (int) $request->receiver_branch_id === (int) auth()->user()->branch_id
+        ) {
+            $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+        }
+    });
+
+    if ($validator->fails()) {
+        return back()
+            ->withErrors($validator)
+            ->withInput()
+            ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
+    }
+
+    try {
+        DB::beginTransaction();
+
+        $data = $validator->validated();
+        $user = auth()->user();
+
+        $senderCustomerId = $data['sender_customer_id'] ?? null;
+
+        if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
+            $senderCustomer = Customer::firstOrCreate(
+                ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
+                [
+                    'name'       => $data['sender_name'],
+                    'branch_id'  => $user->branch_id,
+                    'created_by' => $user->id,
+                ]
+            );
+
+            if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                $senderCustomer->update(['name' => $data['sender_name']]);
+            }
+
+            $senderCustomerId = $senderCustomer->id;
+        }
+
+        $receiverCustomerId = $data['receiver_customer_id'] ?? null;
+
+        if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
+            $receiverCustomer = Customer::firstOrCreate(
+                ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
+                [
+                    'name'       => $data['receiver_name'],
+                    'branch_id'  => $user->branch_id,
+                    'created_by' => $user->id,
+                ]
+            );
+
+            if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                $receiverCustomer->update(['name' => $data['receiver_name']]);
+            }
+
+            $receiverCustomerId = $receiverCustomer->id;
+        }
+
+        $officeId = (string) $request->office_id;
+
+        $isUntrusted = str_starts_with($officeId, 'untrusted_');
+
+        $shipment->update([
+            'receiver_branch_id'        => $isUntrusted ? null : $data['receiver_branch_id'],
+            'receiver_office_branch_id' => $isUntrusted ? $data['receiver_branch_id'] : null,
+
+            'sender_customer_id'        => $senderCustomerId,
+            'receiver_customer_id'      => $receiverCustomerId,
+
+            'package_type'              => $data['package_type'],
+            'weight'                    => $data['weight'] ?? 0,
+            'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
+            'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
+
+            'payment_method'            => $data['payment_method'],
+            'total_amount'              => $data['total_amount'],
+            'partial_amount'            => $data['payment_method'] === 'partial_payment'
+                ? ($data['partial_amount'] ?? 0)
+                : 0,
+
+            'notes'                     => $data['notes'] ?? null,
+
+            'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
+                ? ($shipment->customer_debt_status ?? 'pending')
+                : null,
+        ]);
+
+        DB::commit();
+
+        return redirect()
+            ->route('shipment.outgoing.index')
+            ->with('success', 'تم تعديل بيانات الطرد بنجاح.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return back()
+            ->withInput()
+            ->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
+    }
+}
     public function incoming(Request $request)
     {
         /** @var \App\Models\User $user */

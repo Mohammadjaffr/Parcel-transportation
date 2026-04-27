@@ -112,6 +112,12 @@
                                             العملاء
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('passengers.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('passengers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            ركاب
+                                        </a>
+                                    </li>
                                 </ul>
                             </div>
                         </div>

@@ -80,7 +80,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ?? 'الوجهة غير محددة';
 
         $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
-            ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
+            ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
             : null;
         
 
@@ -116,7 +116,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
             'receiver_branch'   => $receiverDestination,
-            'receiver_office'   => $app->name ?? 'الفرع الرئيسي',
+            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app->name ?? 'الفرع الرئيسي',
 
             // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? 'طرد عادي',

@@ -27,6 +27,7 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\PassengersController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -283,6 +284,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
     Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
     
+    Route::resource('passengers',PassengersController::class);
     
     });
 });

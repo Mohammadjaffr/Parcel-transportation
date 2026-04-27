@@ -54,70 +54,83 @@
                 <div class="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
 
                     {{-- 1. بيانات الفروع (الوجهة) --}}
-                    <div x-data='destinationLogic(@json($offices), @json(old('receiver_branch_id', $shipment->receiver_branch_id ?? $shipment->receiver_office_branch_id)), @json(old('office_id', $initialOfficeId ?? '')))'
-                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
-                        <div
-                            class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
-                        </div>
+                   {{-- 1. بيانات الفروع (الوجهة) --}}
+{{-- 1. بيانات الفروع (الوجهة) --}}
+<div x-data='destinationLogic(
+        @json($offices),
+        @json(old("receiver_branch_id", $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id)),
+        @json(old("office_id", $initialOfficeId ?? ""))
+    )'
+    class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
 
-                        <div class="relative z-10">
-                            <div class="flex gap-3 items-center mb-6">
-                                <div
-                                    class="flex justify-center items-center w-12 h-12 text-gray-500 rounded-xl shadow-sm transition-all shrink-0 bg-surface dark:bg-boxdark-2 dark:text-bodydark group-hover/card:bg-primary group-hover/card:text-white">
-                                    <span class="material-symbols-outlined text-[24px]">local_shipping</span>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد
-                                    </h3>
-                                    <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">اختر المكتب والفرع
-                                        المستلم</p>
-                                </div>
-                            </div>
+    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none"></div>
 
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                                {{-- اختيار المكتب --}}
-                                <div>
+    <div class="relative z-10">
+        <div class="flex gap-3 items-center mb-6">
+            <div
+                class="flex justify-center items-center w-12 h-12 text-gray-500 rounded-xl shadow-sm transition-all shrink-0 bg-surface dark:bg-boxdark-2 dark:text-bodydark group-hover/card:bg-primary group-hover/card:text-white">
+                <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد</h3>
+                <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">
+                    اختر المكتب والفرع المستلم
+                </p>
+            </div>
+        </div>
 
-                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">المكتب
-                                        <span class="text-error">*</span></label>
-                                    <div class="relative">
-                                        <select name="office_id" x-model="selectedOfficeId" @change="updateBranches"
-                                            required
-                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
-                                            <option value="" disabled selected>اختر المكتب...</option>
-                                            <template x-for="office in offices" :key="office.id">
-                                                <option :value="office.id" x-text="office.name"></option>
-                                            </template>
-                                        </select>
-                                        <span
-                                            class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
-                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                                        </span>
-                                    </div>
-                                </div>
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+            <div>
+                <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                    المكتب <span class="text-error">*</span>
+                </label>
 
-                                {{-- اختيار الفرع --}}
-                                <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
-                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">الفرع <span
-                                            class="text-error">*</span></label>
-                                    <div class="relative">
-                                        <select name="receiver_branch_id" x-model="selectedBranchId" required
-                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
-                                            <option value="" disabled>اختر الفرع...</option>
-                                            <template x-for="branch in availableBranches" :key="branch.id">
-                                                <option :value="branch.id" x-text="branch.name"
-                                                    :selected="branch.id == selectedBranchId"></option>
-                                            </template>
-                                        </select>
-                                        <span
-                                            class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
-                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="relative">
+                    <select name="office_id"
+                        x-model="selectedOfficeId"
+                        @change="selectedBranchId = ''; updateBranches()"
+                        required
+                        class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
+
+                        <option value="" disabled>اختر المكتب...</option>
+
+                        <template x-for="office in offices" :key="office.id">
+                            <option :value="office.id" x-text="office.name"></option>
+                        </template>
+                    </select>
+
+                    <span class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
+                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                    </span>
+                </div>
+            </div>
+
+            <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
+                <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                    الفرع <span class="text-error">*</span>
+                </label>
+
+                <div class="relative">
+                    <select name="receiver_branch_id"
+                        x-model="selectedBranchId"
+                        required
+                        class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
+
+                        <option value="" disabled>اختر الفرع...</option>
+
+                        <template x-for="branch in availableBranches" :key="branch.id">
+                            <option :value="branch.id" x-text="branch.name"></option>
+                        </template>
+                    </select>
+
+                    <span class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
+                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                     {{-- 2. بيانات العملاء --}}
                     <div
@@ -530,47 +543,74 @@
 @section('script')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
-                offices: officesList || [],
-                selectedOfficeId: initialOfficeId || '',
-                selectedBranchId: initialBranchId || '',
-                availableBranches: [],
-                init() {
-                    if (this.selectedOfficeId) {
-                        const office = this.offices.find(o => o.id == this.selectedOfficeId);
-                        if (office) {
-                            this.availableBranches = office.branches;
-                            // التأكد أن الفرع المختار موجود ضمن فروع المكتب، وإلا أفرغه
-                            if (this.selectedBranchId && !this.availableBranches.some(b => b.id == this.selectedBranchId)) {
-                                this.selectedBranchId = '';
-                            }
-                        }
-                    } else if (this.selectedBranchId) {
-                        const office = this.offices.find(o => o.branches.some(b => b.id == this
-                            .selectedBranchId));
-                        if (office) {
-                            this.selectedOfficeId = office.id;
-                            this.availableBranches = office.branches;
-                        }
-                    }
-                    if (!this.selectedOfficeId) {
-                        const internalOffice = this.offices.find(o => String(o.id).startsWith(
-                            'internal_'));
-                        if (internalOffice) {
-                            this.selectedOfficeId = internalOffice.id;
-                            this.availableBranches = internalOffice.branches;
-                        }
-                    }
-                },
-                updateBranches() {
-                    const office = this.offices.find(o => o.id == this.selectedOfficeId);
-                    this.availableBranches = office ? office.branches : [];
-                    if (!this.availableBranches.some(b => b.id == this.selectedBranchId)) {
-                        this.selectedBranchId = '';
-                    }
-                }
-            }));
+          Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
+    offices: officesList || [],
 
+    selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
+    selectedBranchId: initialBranchId ? String(initialBranchId) : '',
+    availableBranches: [],
+
+    init() {
+        if (this.selectedOfficeId) {
+            const office = this.offices.find(
+                o => String(o.id) === String(this.selectedOfficeId)
+            );
+
+            if (office) {
+                this.availableBranches = office.branches || [];
+
+                const branchExists = this.availableBranches.some(
+                    b => String(b.id) === String(this.selectedBranchId)
+                );
+
+                if (this.selectedBranchId && !branchExists) {
+                    this.selectedBranchId = '';
+                }
+            }
+
+            return;
+        }
+
+        if (this.selectedBranchId) {
+            const foundOffice = this.offices.find(office => {
+                return (office.branches || []).some(
+                    branch => String(branch.id) === String(this.selectedBranchId)
+                );
+            });
+
+            if (foundOffice) {
+                this.selectedOfficeId = String(foundOffice.id);
+                this.availableBranches = foundOffice.branches || [];
+                return;
+            }
+        }
+
+        const internalOffice = this.offices.find(
+            o => String(o.id).startsWith('internal_')
+        );
+
+        if (internalOffice) {
+            this.selectedOfficeId = String(internalOffice.id);
+            this.availableBranches = internalOffice.branches || [];
+        }
+    },
+
+    updateBranches() {
+        const office = this.offices.find(
+            o => String(o.id) === String(this.selectedOfficeId)
+        );
+
+        this.availableBranches = office ? (office.branches || []) : [];
+
+        const branchExists = this.availableBranches.some(
+            b => String(b.id) === String(this.selectedBranchId)
+        );
+
+        if (!branchExists) {
+            this.selectedBranchId = '';
+        }
+    }
+}));
             Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
                 customers: customersList || [],
                 countries: countriesList || [],

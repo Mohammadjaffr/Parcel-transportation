@@ -3,8 +3,7 @@
 @section('title', 'إرسال طرد جديد')
 
 @section('content')
-    <div x-data="{ paymentMethod: 'prepaid' }"
-        class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
+    <div x-data="{ paymentMethod: 'prepaid' }" class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
 
         {{-- <div class="flex gap-4 items-center mb-2">
             <a href="{{ url()->previous() }}"
@@ -95,8 +94,7 @@
                 <div class="space-y-6">
 
                     {{-- ================= المرسل ================= --}}
-                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
+                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))" class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                         <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span
                                 class="text-red-500">*</span></span>
 
@@ -111,8 +109,8 @@
                                     <button type="button" @click="openCountryDropdown = !openCountryDropdown"
                                         class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 shrink-0 hover:bg-slate-100">
                                         <template x-if="selectedCountry?.svg">
-                                            <svg class="w-5 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24" fill="none"
-                                                x-html="selectedCountry.svg"></svg>
+                                            <svg class="w-5 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24"
+                                                fill="none" x-html="selectedCountry.svg"></svg>
                                         </template>
                                         <span class="text-xs font-bold text-slate-600"
                                             x-text="selectedCountry?.dial_code"></span>
@@ -121,7 +119,8 @@
                                     <div x-show="openCountryDropdown" x-cloak x-transition
                                         class="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
                                         <div class="p-2 border-b border-slate-50">
-                                            <input type="text" x-model="searchCountryQuery" placeholder="Search country..."
+                                            <input type="text" x-model="searchCountryQuery"
+                                                placeholder="Search country..."
                                                 class="px-3 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 focus:ring-1 ring-primary/30"
                                                 dir="ltr">
                                         </div>
@@ -134,7 +133,8 @@
                                                         x-html="country.svg"></svg>
                                                     <span class="flex-1 text-xs font-bold text-slate-700"
                                                         x-text="country.name"></span>
-                                                    <span class="text-xs text-slate-400" x-text="country.dial_code"></span>
+                                                    <span class="text-xs text-slate-400"
+                                                        x-text="country.dial_code"></span>
                                                 </button>
                                             </template>
                                         </div>
@@ -178,13 +178,14 @@
                             <input type="text" name="sender_name" x-model="nameInput"
                                 :readonly="selectedCustomerId !== null" placeholder="اسم المرسل (اختياري)..."
                                 class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
-                                :class="selectedCustomerId ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
+                                :class="selectedCustomerId ?
+                                    'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' :
+                                    'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
                         </div>
                     </div>
 
                     {{-- ================= المستلم ================= --}}
-                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
-                        class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
+                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))" class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                         <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
                             <span class="text-red-500">*</span></span>
 
@@ -200,8 +201,8 @@
                                     <button type="button" @click="openCountryDropdown = !openCountryDropdown"
                                         class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 shrink-0 hover:bg-slate-100">
                                         <template x-if="selectedCountry?.svg">
-                                            <svg class="w-5 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24" fill="none"
-                                                x-html="selectedCountry.svg"></svg>
+                                            <svg class="w-5 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24"
+                                                fill="none" x-html="selectedCountry.svg"></svg>
                                         </template>
                                         <span class="text-xs font-bold text-slate-600"
                                             x-text="selectedCountry?.dial_code"></span>
@@ -210,7 +211,8 @@
                                     <div x-show="openCountryDropdown" x-cloak x-transition
                                         class="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
                                         <div class="p-2 border-b border-slate-50">
-                                            <input type="text" x-model="searchCountryQuery" placeholder="Search country..."
+                                            <input type="text" x-model="searchCountryQuery"
+                                                placeholder="Search country..."
                                                 class="px-3 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 focus:ring-1 ring-primary/30"
                                                 dir="ltr">
                                         </div>
@@ -219,11 +221,12 @@
                                                 <button type="button"
                                                     @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
                                                     class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-slate-50">
-                                                    <svg class="w-5 h-auto rounded-[2px]" viewBox="0 0 36 24" fill="none"
-                                                        x-html="country.svg"></svg>
+                                                    <svg class="w-5 h-auto rounded-[2px]" viewBox="0 0 36 24"
+                                                        fill="none" x-html="country.svg"></svg>
                                                     <span class="flex-1 text-xs font-bold text-slate-700"
                                                         x-text="country.name"></span>
-                                                    <span class="text-xs text-slate-400" x-text="country.dial_code"></span>
+                                                    <span class="text-xs text-slate-400"
+                                                        x-text="country.dial_code"></span>
                                                 </button>
                                             </template>
                                         </div>
@@ -267,7 +270,9 @@
                             <input type="text" name="receiver_name" required x-model="nameInput"
                                 :readonly="selectedCustomerId !== null" placeholder="اسم المستلم..."
                                 class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
-                                :class="selectedCustomerId ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 text-slate-700'">
+                                :class="selectedCustomerId ?
+                                    'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' :
+                                    'bg-white border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 text-slate-700'">
                         </div>
                     </div>
 
@@ -285,17 +290,18 @@
 
                     {{-- حقل النوع (Combobox - اختيار أو كتابة حرة) --}}
                     <div class="flex flex-col gap-2" x-data="{
-                isOpen: false,
-                options: ['كرتون', 'كيس', 'مغلف'],
-                packageType: 'كرتون' {{-- القيمة الافتراضية --}}
-            }">
+                        isOpen: false,
+                        options: ['كرتون', 'كيس', 'مغلف'],
+                        packageType: 'كرتون'
+                        {{-- القيمة الافتراضية --}}
+                    }">
                         <label class="text-[11px] font-bold text-slate-400">النوع</label>
 
                         <div class="relative">
                             {{-- حقل الإدخال النصي --}}
                             <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true"
                                 @click.away="isOpen = false" placeholder="اختر أو اكتب النوع..." autocomplete="off"
-                                class="px-3 w-full h-12 text-sm rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700 transition-all">
+                                class="px-3 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
 
                             {{-- أيقونة السهم الجمالية (لتبدو كقائمة منسدلة) --}}
                             <div class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
@@ -308,7 +314,7 @@
                                 class="absolute z-[60] top-full mt-1.5 right-0 w-full bg-white rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden">
                                 <template x-for="option in options">
                                     <button type="button" @click="packageType = option; isOpen = false"
-                                        class="w-full text-right px-4 py-3 text-sm font-bold text-slate-700 hover:bg-primary/5 hover:text-primary transition-colors border-b border-slate-50 last:border-none flex items-center justify-between">
+                                        class="flex justify-between items-center px-4 py-3 w-full text-sm font-bold text-right border-b transition-colors text-slate-700 hover:bg-primary/5 hover:text-primary border-slate-50 last:border-none">
                                         <span x-text="option"></span>
                                         <span x-show="packageType === option"
                                             class="material-symbols-outlined text-[18px] text-primary">check</span>
@@ -389,7 +395,8 @@
             <div class="pt-2 pb-4">
                 <button type="submit" :disabled="isSubmitting"
                     class="flex items-center justify-center gap-2 w-full h-14 rounded-2xl font-bold text-sm shadow-[0_8px_20px_rgba(36,56,156,0.25)] transition-all duration-200"
-                    :class="isSubmitting ? 'bg-slate-400 text-slate-100 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90 active:scale-95'">
+                    :class="isSubmitting ? 'bg-slate-400 text-slate-100 cursor-not-allowed' :
+                        'bg-primary text-white hover:bg-primary/90 active:scale-95'">
 
                     {{-- الحالة العادية --}}
                     <span x-show="!isSubmitting" class="flex gap-2 items-center">
@@ -401,7 +408,8 @@
                     <span x-show="isSubmitting" x-cloak class="flex gap-2 items-center">
                         <svg class="w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                stroke-width="4">
                             </circle>
                             <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
@@ -466,7 +474,8 @@
 
                 init() {
                     // تعيين اليمن كدولة افتراضية عند التحميل
-                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[
+                        0];
                 },
 
                 /* --- خصائص محسوبة (Getters) --- */
@@ -487,7 +496,8 @@
                     if (!this.localPhoneNumber) return '';
 
                     // إزالة علامة + من المفتاح للبحث في قاعدة البيانات
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace(
+                        '+', '') : '';
                     return dialCode + this.localPhoneNumber;
                 },
 
@@ -495,7 +505,8 @@
 
                 // البحث عن العميل أثناء الكتابة
                 searchCustomer() {
-                    this.selectedCustomerId = null; // إعادة تعيين الاختيار إذا قام المستخدم بتعديل الرقم
+                    this.selectedCustomerId =
+                    null; // إعادة تعيين الاختيار إذا قام المستخدم بتعديل الرقم
 
                     let query = this.fullPhoneNumber.trim();
 
@@ -519,7 +530,8 @@
                     this.selectedCustomerId = customer.id;
 
                     // محاولة استخراج الرقم المحلي فقط وعرضه في الحقل
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
+                        '') : '';
 
                     if (customer.phone && customer.phone.startsWith(dialCode)) {
                         this.localPhoneNumber = customer.phone.substring(dialCode.length);

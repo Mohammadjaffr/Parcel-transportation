@@ -120,7 +120,7 @@
                 @endif
                 <span class="text-xl font-bold text-brand"
                     style="background-color: {{ $design['bg_color'] ?? '#fffaf5' }}; padding: 4px 12px; border-radius: 4px; border: 1px solid #ffedd5;">سند
-                    استلام شحنة</span>
+                    ارسل طرد</span>
             </td>
 
             <td width="35%" align="center" valign="top" style="line-height: 1.6;">
@@ -158,7 +158,7 @@
         style="border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9;">
         <tr>
             <td width="33%" align="center" valign="middle">
-                <span class="label">رقم الشحنة</span><br>
+                <span class="label">رقم الطرد</span><br>
                 <span class="text-lg value-ltr"
                     style="letter-spacing: 1px; color: #0f172a;">{{ $bond_number ?? '---' }}</span>
             </td>
@@ -255,7 +255,7 @@
 
     <br><br>
 
-    <div class="text-base font-bold text-slate-900" style="margin-bottom: 8px;">تفاصيل ومحتويات الشحنة</div>
+    <div class="text-base font-bold text-slate-900" style="margin-bottom: 8px;">تفاصيل ومحتويات الطرد</div>
 
     <table width="100%" cellpadding="10" cellspacing="0" border="0">
         <tr>
