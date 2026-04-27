@@ -4,7 +4,7 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
-
+use Carbon\Carbon;
 class DriverDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -34,7 +34,7 @@ class DriverDetection implements ReceiptStrategyInterface
 
         // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
-        
+
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
@@ -45,7 +45,7 @@ class DriverDetection implements ReceiptStrategyInterface
 
         $otherPhonesList = [];
         $headquartersData = null;
-        
+
         if ($app) {
             if ($app->phone) {
                 $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
@@ -58,7 +58,7 @@ class DriverDetection implements ReceiptStrategyInterface
             }
 
             $allBranches = $app->branches()->get();
-            foreach($allBranches as $b) {
+            foreach ($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
                     continue;
                 }
@@ -79,13 +79,13 @@ class DriverDetection implements ReceiptStrategyInterface
         // 4. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
-        foreach($package->shipments as $shipment) {
+        foreach ($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
                 ?? $shipment->receiverOfficeBranch?->name
                 ?? 'الوجهة غير محددة';
 
             $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
-                ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
+                ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
             $shipmentsData[] = [
@@ -123,14 +123,14 @@ class DriverDetection implements ReceiptStrategyInterface
                 'name'        => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo'        => $logoPath,
                 'main_branch' => $mainBranchData,
-                'headquarters'=> $headquartersData,
-                'other_phones'=> $otherPhonesStr,
+                'headquarters' => $headquartersData,
+                'other_phones' => $otherPhonesStr,
             ],
 
             'title'             => 'كشف حمولة الرسائل',
             'package_number'    => $package->tracking_number ?? 'غير متوفر',
             'date'              => $package->created_at ? $package->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
-            
+
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
@@ -139,7 +139,10 @@ class DriverDetection implements ReceiptStrategyInterface
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => now()->format('Y-m-d H:i'),
+            'print_date' => Carbon::now()
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i'),
+                
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

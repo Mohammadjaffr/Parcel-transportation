@@ -4,7 +4,7 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
-
+use Carbon\Carbon;
 class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -106,7 +106,10 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'title'             => 'سند استلام طرد',
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
             'tracking_code'     => $shipment->code ?? 'بدون تتبع',
-            'date'              => $shipment->created_at ? $shipment->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
+            'date'              => Carbon::now()
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i')
+            ,
 
             // --- بيانات المرسل والمستلم ---
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',

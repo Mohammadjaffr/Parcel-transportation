@@ -5,7 +5,7 @@ namespace App\Services\Receipts\Types;
 use App\Models\Customer;
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
-
+use Carbon\Carbon;
 class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -177,7 +177,9 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
             ],
 
             'creator_name' => $user->name ?? 'مسؤول النظام',
-            'print_date'   => now()->format('Y-m-d H:i'),
+            'print_date'   => Carbon::now()
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i'),
 
             'design' => [
                 'primary_color'   => $theme['primary'],

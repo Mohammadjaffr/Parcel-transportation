@@ -5,7 +5,7 @@ namespace App\Services\Receipts\Types;
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
 use Illuminate\Support\Facades\Auth;
-
+use Carbon\Carbon;
 class ShipmentDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -140,7 +140,9 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => now()->format('Y-m-d H:i'),
+            'print_date' => Carbon::now()
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i'),
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],
