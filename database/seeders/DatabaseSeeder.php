@@ -21,15 +21,8 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
         $this->call([
-            // VehicleSeeder::class,
             PackageSeeder::class,
-            // AppSeeder::class,
-            // OfficeSeeder::class,
-            // BranchSeeder::class,
-            // UserSeeder::class,
-            // AppSettingsSeeder::class,
-            // TransactionCategorySeeder::class,
-            // VehiclePricingSeeder::class,
+            ServiceSeeder::class
         ]);
     }
 }

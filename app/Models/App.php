@@ -3,9 +3,11 @@
     // معتمد
     namespace App\Models;
 
-    use App\Models\OfficeConnection;
-    use Illuminate\Database\Eloquent\Factories\HasFactory;
-    use Illuminate\Database\Eloquent\Model;
+use App\Models\OfficeConnection;
+use App\Models\Service;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
     class App extends Model
     {
@@ -43,6 +45,23 @@
         public function users()
         {
             return $this->hasMany(User::class);
+        }
+        public function services()
+        {
+            return $this->belongsToMany(Service::class)->withPivot('is_active')->withTimestamps();
+        }
+
+        public function hasService($serviceSlug)
+        {
+            $activeServices = Cache::remember('app_services_' . $this->id, 86400, function () {
+                return $this->services()
+                            ->where('services.is_global_active', true) 
+                            ->wherePivot('is_active', true) 
+                            ->pluck('services.slug')
+                            ->toArray();
+            });
+
+        return in_array($serviceSlug, $activeServices);
         }
 
         public function branches()
