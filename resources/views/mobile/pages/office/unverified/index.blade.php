@@ -3,8 +3,6 @@
 @section('title', 'المكاتب غير الموثوقة')
 
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
 
     <div x-data="{
                     showDeleteModal: false,

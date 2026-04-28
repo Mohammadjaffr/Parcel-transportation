@@ -301,11 +301,20 @@ class ShipmentPackagesController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch_id;
-        $packages = ShipmentPackage::with(['senderBranch', 'driver', 'creator'])
+
+        $packages = ShipmentPackage::with(['senderBranch', 'senderOfficeBranch', 'driver', 'creator'])
             ->withCount('shipments') 
             ->whereHas('shipments', function ($query) use ($branchId) {
                 $query->where('receiver_branch_id', $branchId);
-            })->where('sender_branch_id', '!=', $branchId)->latest()->paginate(15);
+            })
+            
+            ->where(function ($query) use ($branchId) {
+                $query->where('sender_branch_id', '!=', $branchId)
+                      ->orWhereNull('sender_branch_id'); // السماح للشحنات القادمة من المكاتب الخارجية بالظهور
+            })
+            ->latest()
+            ->paginate(15);
+
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.incoming.index', compact('packages'));
         }
@@ -331,7 +340,6 @@ class ShipmentPackagesController extends Controller
     }
     public function incomingStore(Request $request)
     {
-    // 1. التحقق من صحة البيانات (Validation)
     $request->validate([
         'tracking_number' => 'required|string|unique:shipment_packages,tracking_number',
         'sender_office_branch_id' => 'required', 
@@ -374,7 +382,7 @@ class ShipmentPackagesController extends Controller
             'app_id' => $user->app_id,
             'driver_id' => $driverId,
             'created_by' => $user->id,
-            'sender_branch_id' => $request->sender_office_branch_id, 
+            'sender_office_branch_id' => $request->sender_office_branch_id, 
             'status' => 'pending',
             'notes' => $request->notes,
         ]);
@@ -422,7 +430,7 @@ class ShipmentPackagesController extends Controller
                 'code' => $item['bond_number'],
                 
                 // الفروع
-                'sender_branch_id' => $request->sender_office_branch_id, 
+                'sender_office_branch_id' => $request->sender_office_branch_id, 
                 'receiver_branch_id' => $user->branch_id,
                 
                 // العملاء

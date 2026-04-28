@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('app_id')->constrained('apps')->onDelete('cascade');
             $table->foreignId('driver_id')->nullable()->constrained('drivers')->onDelete('set null');
             $table->foreignId('created_by')->constrained('users');
-            $table->foreignId('sender_branch_id')->constrained('branches');
+            $table->foreignId('sender_branch_id')->nullable()->constrained('branches');
+            $table->foreignId('sender_office_branch_id')->nullable()->constrained('office_branches')->cascadeOnDelete();
             $table->enum('status', ['pending', 'in_transit', 'delivered', 'returned'])->default('pending');
             $table->text('notes')->nullable();
             $table->unique(['tracking_number', 'app_id']);

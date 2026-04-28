@@ -92,6 +92,14 @@ class Shipment extends Model
     {
         return $this->belongsTo(Branch::class, 'sender_branch_id')->withoutGlobalScopes();
     }
+    public function getSenderAttribute()
+    {
+        return $this->senderBranch ?? $this->senderOfficeBranch;
+    }
+    public function getReceiverAttribute()
+    {
+        return $this->receiverBranch ?? $this->receiverOfficeBranch;
+    }
 
     public function receiverBranch()
     {

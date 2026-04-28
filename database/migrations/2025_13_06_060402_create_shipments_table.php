@@ -16,7 +16,8 @@ return new class extends Migration
             $table->uuid('uuid')->unique();
             
             // 1. فروع الإرسال والاستقبال (باستخدام ID الفرع)
-            $table->foreignId('sender_branch_id')->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('sender_branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
+            $table->foreignId('sender_office_branch_id')->nullable()->constrained('office_branches')->cascadeOnDelete();
             $table->foreignId('receiver_branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
             $table->foreignId('receiver_office_branch_id')->nullable()->constrained('office_branches')->cascadeOnDelete();
 

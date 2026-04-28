@@ -11,7 +11,7 @@ class ShipmentPackage extends Model
     use HasFactory,BelongsToApp;
     protected $fillable = [
         'uuid','tracking_number', 'app_id', 'driver_id', 'created_by', 
-        'sender_branch_id', 'status', 'notes'
+        'sender_branch_id', 'status', 'notes', 'sender_office_branch_id'
     ];
 
     // ==========================================
@@ -22,33 +22,40 @@ class ShipmentPackage extends Model
         parent::boot();
 
         static::creating(function ($package) {
-             if (empty($package->uuid)) {
+            if (empty($package->uuid)) {
                 $package->uuid = (string) Str::uuid();
             }
-            // جلب الفرع المُرسل لاستخدام الكود الخاص به
-            $branch = Branch::find($package->sender_branch_id);
-            
-            // إذا كان للفرع كود نستخدمه، وإلا نستخدم الحرف B مع رقم الفرع
-            $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $package->sender_branch_id;
 
-            // التنسيق: سنة، شهر، يوم (مثال: 260413)
-            $date = now()->format('ymd'); 
+            // 💡 التعديل هنا: التوليد التلقائي يتم فقط إذا كان رقم التتبع فارغاً
+            if (empty($package->tracking_number)) {
+                
+                // 1. تحديد هوية المرسل (فرع داخلي أم مكتب خارجي) بناءً على التحديثات الأخيرة
+                if ($package->sender_branch_id) {
+                    $branch = \App\Models\Branch::find($package->sender_branch_id);
+                    $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $package->sender_branch_id;
+                    $query = static::where('sender_branch_id', $package->sender_branch_id);
+                } else {
+                    // في حال كان مكتباً خارجياً، نستخدم اختصار OF مع رقمه
+                    $branchIdentifier = 'OF' . $package->sender_office_branch_id;
+                    $query = static::where('sender_office_branch_id', $package->sender_office_branch_id);
+                }
 
-            // البحث عن آخر "إرسالية مجمعة" لنفس الفرع في نفس اليوم
-            // استخدمنا static بدلاً من اسم الموديل ليكون الكود مرناً
-            $lastPackage = static::where('sender_branch_id', $package->sender_branch_id)
-                ->whereDate('created_at', today())
-                ->latest('id')
-                ->first();
+                // 2. التنسيق: سنة، شهر، يوم
+                $date = now()->format('ymd'); 
 
-            // توليد التسلسل الجديد (001, 002, 003...)
-            $newSeq = $lastPackage && $lastPackage->tracking_number
-                ? str_pad((int) substr($lastPackage->tracking_number, -3) + 1, 3, '0', STR_PAD_LEFT)
-                : '001';
+                // 3. البحث عن آخر "إرسالية مجمعة" لنفس المصدر في نفس اليوم
+                $lastPackage = $query->whereDate('created_at', today())
+                    ->latest('id')
+                    ->first();
 
-            // 💡 شكل رقم التتبع للإرسالية سيكون مثلاً: PKG-SAN-260413001
-            // أضفنا PKG لتمييز الإرسالية المجمعة عن الطرد الفردي
-            $package->tracking_number = "PKG-{$branchIdentifier}-{$date}{$newSeq}";
+                // 4. توليد التسلسل الجديد
+                $newSeq = $lastPackage && $lastPackage->tracking_number
+                    ? str_pad((int) substr($lastPackage->tracking_number, -3) + 1, 3, '0', STR_PAD_LEFT)
+                    : '001';
+
+                // إسناد الرقم المولد
+                $package->tracking_number = "PKG-{$branchIdentifier}-{$date}{$newSeq}";
+            }
         });
     }
 
@@ -74,6 +81,14 @@ class ShipmentPackage extends Model
     public function senderBranch()
     {
         return $this->belongsTo(Branch::class, 'sender_branch_id');
+    }
+    public function senderOfficeBranch()
+    {
+        return $this->belongsTo(OfficeBranch::class, 'sender_office_branch_id');
+    }
+    public function getSenderEntityAttribute()
+    {
+        return $this->senderBranch ?? $this->senderOfficeBranch;
     }
 
     // العلاقة مع الطرود الموجودة داخل هذه الشحنة (بفرض وجود جدول parcels)
