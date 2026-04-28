@@ -64,6 +64,12 @@ class ServiceSeeder extends Seeder
                 'description' => 'إدارة الشحنات المستلمة',
                 'is_global_active' => true,
             ],
+            [
+                'name' => 'الاشعارات',
+                'slug' => 'Notifications',
+                'description' => 'ادارة الاشعارات',
+                'is_global_active' => true,
+            ],
         ];
 
         foreach ($services as $service) {

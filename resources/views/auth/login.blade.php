@@ -302,12 +302,30 @@
                         </label>
                     </div>
 
-                    <div class="pt-4">
-                        <button type="submit"
+                    <div class="pt-4" x-data="{ isSubmitting: false }">
+                        <button type="submit"  @click.prevent="
+            if($el.closest('form').checkValidity()) { 
+                isSubmitting = true; 
+                $el.closest('form').submit(); 
+            } else { 
+                $el.closest('form').reportValidity(); 
+            }
+        " :disabled="isSubmitting"
+                            :class="{ 'opacity-75 cursor-not-allowed active:scale-100 hover:shadow-none': isSubmitting }"
                             class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
-                            <span class="text-lg">تسجيل الدخول</span>
-                            <span
-                                class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+
+                            
+                            <div x-show="!isSubmitting" class="flex items-center gap-3">
+                                <span class="text-lg">تسجيل الدخول</span>
+                                <span
+                                    class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                            </div>
+
+                            <div x-show="isSubmitting" x-cloak class="flex items-center gap-3">
+                                <span class="text-lg">جاري الدخول...</span>
+                                <span class="material-symbols-outlined animate-spin">autorenew</span>
+                            </div>
+
                         </button>
                     </div>
                 </form>

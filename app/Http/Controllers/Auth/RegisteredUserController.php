@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -67,6 +68,11 @@ class RegisteredUserController extends Controller
                 'is_main' => true, 
                 'city' => $request->branch_city, 
             ]);
+
+            $serviceIds = Service::pluck('id');
+            if ($serviceIds->isNotEmpty()) {
+                $app->services()->syncWithPivotValues($serviceIds, ['is_active' => true]);
+            }
 
             $user = User::create([
                 'name' => $request->name,

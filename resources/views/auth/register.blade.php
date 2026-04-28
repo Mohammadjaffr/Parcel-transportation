@@ -126,11 +126,12 @@
             class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
             <div class="relative z-20 space-y-6">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg">
-                        <span class="material-symbols-outlined text-primary text-3xl"
-                            style="font-variation-settings: 'FILL' 1;">package_2</span>
+                    <div
+                        class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
+                        <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Mursal Logo"
+                            class="w-10 h-10 object-contain">
                     </div>
-                    <span class="text-2xl font-black tracking-tighter uppercase font-headline">Mursal</span>
+                    <span class="text-2xl font-black tracking-tighter uppercase font-headline">مُرسَل</span>
                 </div>
                 <h1 class="text-5xl font-extrabold leading-[1.1] font-headline tracking-tight">
                     مستقبل <span class="text-secondary-fixed-dim">الخدمات</span> اللوجستية يبدأ من هنا.
@@ -507,12 +508,29 @@
                         </div>
                     </div>
 
-                    <div class="pt-6">
-                        <button type="submit"
+                    <div class="pt-6" x-data="{ isSubmitting: false }">
+                        <button type="submit"  @click.prevent="
+            if($el.closest('form').checkValidity()) { 
+                isSubmitting = true; 
+                $el.closest('form').submit(); 
+            } else { 
+                $el.closest('form').reportValidity(); 
+            }
+        " :disabled="isSubmitting"
+                            :class="{ 'opacity-75 cursor-not-allowed active:scale-100 hover:shadow-none': isSubmitting }"
                             class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
-                            <span class="text-lg">إنشاء الحساب والشركة</span>
-                            <span
-                                class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+
+                            <div x-show="!isSubmitting" class="flex items-center gap-3">
+                                <span class="text-lg">إنشاء الحساب والشركة</span>
+                                <span
+                                    class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                            </div>
+
+                            <div x-show="isSubmitting" x-cloak class="flex items-center gap-3">
+                                <span class="text-lg">جاري الإنشاء...</span>
+                                <span class="material-symbols-outlined animate-spin">autorenew</span>
+                            </div>
+
                         </button>
                     </div>
                 </form>
