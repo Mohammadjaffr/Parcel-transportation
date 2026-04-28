@@ -460,7 +460,30 @@ class ShipmentPackagesController extends Controller
     }
     }
     public function incomingShow(Request $request,$id){
+        $user = auth()->user();
+        
+        $package = ShipmentPackage::with([
+            'senderBranch', 
+            'senderOfficeBranch', 
+            'driver', 
+            'creator',
+            // 💡 جلب الطرود المرتبطة بهذه الإرسالية مع بيانات عملائها
+            'shipments' => function($query) {
+                $query->with([
+                    'senderCustomer', 
+                    'receiverCustomer', 
+                    'receiverBranch', 
+                    'receiverOfficeBranch'
+                ]);
+            }
+        ])
+        ->findOrFail($id);
 
+        if ($request->isMobile) {
+            return view('mobile.pages.shipmentpackage.incoming.show', compact('package'));
+        }
+
+        return view('pages.shipmentpackage.incoming.show', compact('package'));
     }
 
 
