@@ -38,7 +38,7 @@ class AdminShipmentStatusUpdated extends Notification
         return [
             'type'       => 'admin_status_updated',
             'message'    => "🔄 تحديث طرد: قام الموظف [{$this->updaterName}] بتحديث حالة الطرد رقم ({$this->bondNumber}) إلى: {$this->statusName}.",
-            'action_url' => route('shipment.show', $this->shipmentId), // تأكد من اسم راوت التفاصيل لديك
+            'action_url' => route('shipment.outgoing.show', $this->shipmentId), // تأكد من اسم راوت التفاصيل لديك
             'icon'       => $icon // حفظنا الأيقونة لنستخدمها في واجهة الإشعارات لاحقاً
         ];
     }

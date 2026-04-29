@@ -5,12 +5,12 @@
 @section('content')
     {{-- إضافة x-data رئيسي للتحكم بالمودال في مستوى الصفحة بالكامل --}}
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
-                            isAddModalOpen: false, 
-                            searchShipment: '',
-                            showDeleteModal: false,
-                            isSubmitting: false,
-                            deleteShipmentData: { bond_number: '', url: '' }
-                        }">
+                                isAddModalOpen: false, 
+                                searchShipment: '',
+                                showDeleteModal: false,
+                                isSubmitting: false,
+                                deleteShipmentData: { bond_number: '', url: '' }
+                            }">
 
         {{-- ================= الهيدر السريع ================= --}}
         <div class="flex justify-between items-center">
@@ -344,8 +344,8 @@
                                 x-transition:leave-end="opacity-0 scale-95 translate-y-2"
                                 class="absolute left-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[50]">
 
-                                {{-- خيار عرض التفاصيل --}}
-                                <a href="{{ route('shipment.show', $shipment->id) }}"
+                                {{-- خيار عرض التفاصيل الذكي --}}
+                                <a href="{{ $shipment->receiver_branch_id == auth()->user()->branch_id ? route('shipment.incoming.show', $shipment->id) : route('shipment.outgoing.show', $shipment->id) }}"
                                     class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors mb-1 active:scale-[0.98]">
                                     <div
                                         class="flex justify-center items-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500">
@@ -357,13 +357,13 @@
                                 {{-- خيار فك الارتباط (يظهر فقط إذا لم تكن الرحلة منتهية) --}}
                                 @if(!in_array($package->status, ['delivered', 'returned']))
                                     <button type="button" @click="
-                                                                    deleteShipmentData = { 
-                                                                        bond_number: '{{ $shipment->bond_number }}', 
-                                                                        url: '{{ route('shipmentpackage.removeShipment', ['package' => $package->id, 'shipment' => $shipment->id]) }}' 
-                                                                    }; 
-                                                                    showDeleteModal = true; 
-                                                                    menuOpen = false;
-                                                                "
+                                                                                deleteShipmentData = { 
+                                                                                    bond_number: '{{ $shipment->bond_number }}', 
+                                                                                    url: '{{ route('shipmentpackage.removeShipment', ['package' => $package->id, 'shipment' => $shipment->id]) }}' 
+                                                                                }; 
+                                                                                showDeleteModal = true; 
+                                                                                menuOpen = false;
+                                                                            "
                                         class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-rose-50 text-rose-600 transition-colors text-right active:scale-[0.98]">
                                         <div
                                             class="flex justify-center items-center w-7 h-7 text-rose-500 rounded-lg bg-rose-100/50">
@@ -393,7 +393,7 @@
                 @endforelse
 
                 {{-- ================= زر إضافة طرد جديد يظهر فقط إذا الإرسالية غير مغلقة ================= --}}
-                @if(!in_array($package->status, ['delivered']))
+                @if(!in_array($package->status, ['delivered','returned','received_at_branch']))
                     <button type="button" @click="isAddModalOpen = true"
                         class="flex gap-2 justify-center items-center mt-3 w-full h-12 text-xs font-bold rounded-2xl border-2 border-dashed transition-all border-slate-200 text-slate-400 hover:border-primary hover:text-primary hover:bg-primary/5 active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">add_box</span>

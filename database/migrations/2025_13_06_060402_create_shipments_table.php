@@ -37,7 +37,7 @@ return new class extends Migration
             $table->string('no_honey_jars')->nullable();
             
             // 5. حالات الشحنة والدفع
-            $table->enum('status', ['pending', 'in_transit', 'delivered', 'cancelled', 'returned'])->default('pending');
+            $table->enum('status', ['pending','in_transit','received_at_branch','delivered','cancelled','returned'])->default('pending');
             $table->enum('customer_debt_status', ['pending', 'partially_paid', 'fully_paid', 'overdue'])->nullable()->default('pending');
             
             // 6. المبالغ وطرق الدفع

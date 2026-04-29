@@ -353,7 +353,7 @@ class ShipmentPackagesController extends Controller
         'items.*.amount' => 'required_if:items.*.payment_status,unpaid|numeric|min:0',
         'items.*.package_type' => 'required|string',
     ]);
-
+    
     try {
         // بدء المعاملة لضمان حفظ كل البيانات أو التراجع عنها
         DB::beginTransaction();
@@ -442,7 +442,7 @@ class ShipmentPackagesController extends Controller
                 'payment_method' => $paymentMethod,
                 'total_amount' => $totalAmount,
                 'notes' => $item['item_notes'],
-                'status' => 'pending',
+                'status' => 'received_at_branch',
                 'created_by' => $user->id,
             ]);
         }

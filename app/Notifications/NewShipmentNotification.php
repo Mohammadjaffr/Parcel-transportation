@@ -44,7 +44,7 @@ class NewShipmentNotification extends Notification
         return [
             'type'       => 'new_shipment',
             'message'    => $message,
-            'action_url' => route('shipment.show', $this->shipmentId),
+            'action_url' => route('shipment.outgoing.show', $this->shipmentId),
         ];
     }
 }

@@ -13,6 +13,7 @@ class Shipment extends Model
     protected $fillable = [
         'uuid',
         'sender_branch_id',
+        'sender_office_branch_id',
         'receiver_branch_id',
         'receiver_office_branch_id',
         'sender_customer_id',
@@ -104,6 +105,10 @@ class Shipment extends Model
     public function receiverBranch()
     {
         return $this->belongsTo(Branch::class, 'receiver_branch_id')->withoutGlobalScopes();
+    }
+    public function senderOfficeBranch()
+    {
+        return $this->belongsTo(OfficeBranch::class, 'sender_office_branch_id');
     }
 
     public function receiverOfficeBranch()

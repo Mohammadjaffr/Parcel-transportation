@@ -20,7 +20,7 @@ return new class extends Migration
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('sender_branch_id')->nullable()->constrained('branches');
             $table->foreignId('sender_office_branch_id')->nullable()->constrained('office_branches')->cascadeOnDelete();
-            $table->enum('status', ['pending', 'in_transit', 'delivered', 'returned'])->default('pending');
+            $table->enum('status', ['pending','in_transit','received_at_branch','out_for_delivery','delivered','cancelled','returned'])->default('pending');
             $table->text('notes')->nullable();
             $table->unique(['tracking_number', 'app_id']);
             $table->timestamps();

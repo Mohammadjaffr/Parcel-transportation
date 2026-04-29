@@ -93,7 +93,7 @@
     <x-modals.error-modal />
     <x-modals.success-modal />
     @include('mobile.layouts.sidebar')
-    <a href="{{ route('shipment.create') }}"
+    <a href="{{ route('shipment.outgoing.create') }}"
         class="flex fixed left-6 bottom-28 z-50 justify-center items-center w-14 h-14 text-white rounded-2xl border shadow-xl backdrop-blur-md transition-all duration-200 bg-primary/80 shadow-primary/20 hover:scale-105 active:scale-95 group border-white/20">
         <span class="text-3xl material-symbols-outlined"
             style="font-variation-settings: 'FILL' 1, 'wght' 500;">add_box</span>

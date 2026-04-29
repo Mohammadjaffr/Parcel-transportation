@@ -32,7 +32,7 @@ class AdminShipmentCreated extends Notification
         return [
             'type'       => 'admin_new_shipment',
             'message'    => "➕ طرد جديد: قام [{$this->creatorName}] في فرع [{$this->branchName}] بإنشاء الطرد رقم ({$this->bondNumber}).",
-            'action_url' => route('shipments.show', $this->shipmentId),
+            'action_url' => route('shipment.outgoing.show', $this->shipmentId),
         ];
     }
 }

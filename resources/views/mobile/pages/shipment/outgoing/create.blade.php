@@ -291,7 +291,7 @@
                     {{-- حقل النوع (Combobox - اختيار أو كتابة حرة) --}}
                     <div class="flex flex-col gap-2" x-data="{
                         isOpen: false,
-                        options: ['كرتون', 'كيس', 'مغلف'],
+                        options: ['كرتون', 'كيس'],
                         packageType: 'كرتون'
                         {{-- القيمة الافتراضية --}}
                     }">

@@ -44,7 +44,7 @@
             </p>
         </div>
 
-        <a href="{{ route('shipment.create') }}"
+        <a href="{{ route('shipment.outgoing.create') }}"
             class="flex justify-center items-center p-2 h-12 text-white rounded-2xl shadow-lg transition-transform w-50 shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90">
             <span class="text-[26px] material-symbols-outlined">add_box</span>
             <span class="text-sm font-bold text-white">إضافة طرد</span>
@@ -104,7 +104,7 @@
                             <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
                                  class="overflow-hidden absolute left-0 top-full z-50 py-1.5 mt-1.5 w-44 rounded-2xl border shadow-lg backdrop-blur-md bg-white/90 border-gray-100/50 dark:bg-boxdark-2/95 dark:border-boxdark dark:shadow-black/40">
                                 
-                                <a href="{{ route('shipment.show', $shipment->id) }}" class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
+                                <a href="{{ route('shipment.outgoing.show', $shipment->id) }}" class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-surface hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark">
                                     <span class="text-[18px] material-symbols-outlined">visibility</span>
                                     التفاصيل
                                 </a>

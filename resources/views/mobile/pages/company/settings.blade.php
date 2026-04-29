@@ -3,8 +3,6 @@
 @section('title', 'إعدادات الشركة')
 
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
 
     <div x-data="{
                                 showAddBranchModal: false,

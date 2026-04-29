@@ -9,7 +9,7 @@
         {{-- ================= الهيدر السريع ================= --}}
         <div class="flex justify-between items-center">
             <div class="flex gap-3 items-center">
-                <a href="{{ route('shipment.index') }}"
+                <a href="{{ route('shipment.outgoing.index') }}"
                     class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
@@ -24,21 +24,33 @@
                 $statusColors = [
                     'pending' => 'bg-amber-50 text-amber-600 border-amber-200',
                     'in_transit' => 'bg-blue-50 text-blue-600 border-blue-200',
+                    'received_at_branch' => 'bg-purple-50 text-purple-600 border-purple-200',
+                    'out_for_delivery' => 'bg-teal-50 text-teal-600 border-teal-200',
                     'delivered' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
+                    'cancelled' => 'bg-slate-50 text-slate-600 border-slate-200',
                     'returned' => 'bg-rose-50 text-rose-600 border-rose-200',
                 ];
+
                 $statusIcons = [
                     'pending' => 'schedule',
                     'in_transit' => 'local_shipping',
+                    'received_at_branch' => 'storefront', 
+                    'out_for_delivery' => 'two_wheeler',
                     'delivered' => 'check_circle',
+                    'cancelled' => 'cancel',
                     'returned' => 'assignment_return',
                 ];
+
                 $statusNames = [
                     'pending' => 'قيد الانتظار',
                     'in_transit' => 'في الطريق',
+                    'received_at_branch' => 'بالمستودع',
+                    'out_for_delivery' => 'خرج للتوصيل',
                     'delivered' => 'تم التسليم',
+                    'cancelled' => 'ملغي',
                     'returned' => 'مرتجع',
                 ];
+
                 $colorClass = $statusColors[$shipment->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
                 $icon = $statusIcons[$shipment->status] ?? 'info';
                 $name = $statusNames[$shipment->status] ?? $shipment->status;
@@ -296,9 +308,11 @@
                                 <p class="text-[9px] font-black text-slate-400 mb-0.5 uppercase tracking-wider">السائق المسؤول
                                 </p>
                                 <p class="text-xs font-black text-slate-800">
-                                    {{ $shipment->package->driver->name ?? 'غير محدد' }}</p>
+                                    {{ $shipment->package->driver->name ?? 'غير محدد' }}
+                                </p>
                                 <p class="text-[10px] font-bold text-slate-500 dir-ltr text-right mt-0.5">
-                                    {{ $shipment->package->driver->phone ?? '---' }}</p>
+                                    {{ $shipment->package->driver->phone ?? '---' }}
+                                </p>
                             </div>
                         </div>
 
@@ -365,7 +379,7 @@
                 @if($shipment->weight > 0)
                     <div class="flex flex-col gap-1.5 p-4 rounded-2xl border bg-slate-50/80 border-slate-100">
                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">الوزن الفعلي</span>
-                            <span class="text-sm font-black text-slate-800">{{ $shipment->weight }} <span
+                        <span class="text-sm font-black text-slate-800">{{ $shipment->weight }} <span
                                 class="text-xs font-bold text-slate-500">كجم
                             </span> ⚖️
                         </span>

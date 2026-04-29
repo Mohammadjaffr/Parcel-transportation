@@ -68,12 +68,19 @@ Route::middleware('auth')->group(function () {
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
-    Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoing'])->name('shipment.outgoing.index');
-    Route::get('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
-    Route::put('shipments/outgoing/{shipment}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
-    Route::get('/shipment/incoming', [ShipmentController::class, 'incoming'])->name('shipment.incoming.index');
-    Route::post('/shipment/outgoing',[ShipmentController::class,'store'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
-    Route::resource('shipment', ShipmentController::class);
+    //======================================================================================
+    // معتمد
+    Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoingIndex'])->name('shipment.outgoing.index');
+    Route::get('/shipment/outgoing/create', [ShipmentController::class,'outgoingCreate'])->name('shipment.outgoing.create');
+    Route::post('/shipment/outgoing/store',[ShipmentController::class,'outgoingStore'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
+    Route::get('/shipment/outgoing/show/{id}', [ShipmentController::class,'outgoingShow'])->name('shipment.outgoing.show');
+    Route::get('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
+    Route::put('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
+
+    Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
+    Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
+    //======================================================================================
+    // Route::resource('shipment', ShipmentController::class);
     Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
     Route::patch('/shipment/{id}/return', [ShipmentController::class, 'returnShipment'])
@@ -201,13 +208,16 @@ Route::middleware('auth')->group(function () {
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
     //======================================================================================
     // معتمد
+    //outgoing
     Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
     Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('shipmentpackage.outgoing.create');
     Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
     Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
+
     Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
     Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
-        Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
+    Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
+    //incoming
     Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
     Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
     Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
