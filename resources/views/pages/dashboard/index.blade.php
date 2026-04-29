@@ -114,7 +114,7 @@
                             الطرود خلال <span class="text-primary">24</span> ساعة
                         </h3>
                     </div>
-                    <a href="{{ route('shipment.index') }}"
+                    <a href="{{ route('shipment.outgoing.index') }}"
                         class="flex gap-1 items-center text-sm font-bold text-gray-500 transition-colors group hover:text-primary dark:text-gray-400">
                         عرض الكل
                         <span class="material-symbols-outlined text-[16px] transition-transform group-hover:-translate-x-1 rtl:rotate-180">arrow_forward</span>
