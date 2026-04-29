@@ -30,9 +30,11 @@ class User extends Authenticatable
         'type',
         'is_banned',
         'app_id',
-        'branch_id'
+        'branch_id',
+        'otp_code',           
+        'is_phone_verified'
     ];
-    
+
 
 
     /**
@@ -60,44 +62,44 @@ class User extends Authenticatable
     }
 
     public function getCachedAppLogoAttribute()
-{
-    
-    if (!$this->app_id) {
-        return asset('assets/image/icon_4K.png');
-    }
+    {
 
-    return Cache::remember('app_logo_' . $this->app_id, 86400, function () {
-        $app = $this->app;
-        return $app && $app->logo 
-            ? asset('storage/' . $app->logo) 
-            : asset('assets/image/icon_4K.png');
-    });
-}
-public function getCachedAppNameAttribute()
-{
-    
-    if (!$this->app_id) {
-        return 'اسم الشركة';
-    }
+        if (!$this->app_id) {
+            return asset('assets/image/icon_4K.png');
+        }
 
-    return Cache::remember('app_name_' . $this->app_id, 86400, function () {
-        $app = $this->app;
-        return $app && $app->name ? $app->name : 'اسم الشركة';
-    });
-}
-public function getCachedAppTermsAttribute()
-{
-    if (!$this->app_id) {
-        return [];
+        return Cache::remember('app_logo_' . $this->app_id, 86400, function () {
+            $app = $this->app;
+            return $app && $app->logo
+                ? asset('storage/' . $app->logo)
+                : asset('assets/image/icon_4K.png');
+        });
     }
+    public function getCachedAppNameAttribute()
+    {
 
-    return Cache::remember('app_terms_' . $this->app_id, 86400, function () {
-        $app = $this->app;
-        return $app && $app->terms_and_conditions 
-            ? array_filter($app->terms_and_conditions) 
-            : [];
-    });
-}
+        if (!$this->app_id) {
+            return 'اسم الشركة';
+        }
+
+        return Cache::remember('app_name_' . $this->app_id, 86400, function () {
+            $app = $this->app;
+            return $app && $app->name ? $app->name : 'اسم الشركة';
+        });
+    }
+    public function getCachedAppTermsAttribute()
+    {
+        if (!$this->app_id) {
+            return [];
+        }
+
+        return Cache::remember('app_terms_' . $this->app_id, 86400, function () {
+            $app = $this->app;
+            return $app && $app->terms_and_conditions
+                ? array_filter($app->terms_and_conditions)
+                : [];
+        });
+    }
 
 
     public function isAdmin()

@@ -1,125 +1,104 @@
 <x-guest-layout>
-    {{-- يمكنك تمرير العنوان للـ layout إذا كان يدعم ذلك --}}
-    <x-slot name="title">
-        التحقق من رقم الهاتف
-    </x-slot>
+    <x-slot name="title">التحقق من رقم الهاتف</x-slot>
 
-    <div class="flex flex-col justify-center items-center px-4 min-h-screen bg-slate-50">
+    @php
+        $currentPhone = $phone ?? session('verify_phone');
         
-        {{-- البطاقة الرئيسية --}}
-        <div class="w-full max-w-md bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-8">
+        $lockoutKey = 'verify-otp:' . $currentPhone;
+        $resendKey = 'resend-otp:' . $currentPhone;
+        
+        $lockSeconds = \Illuminate\Support\Facades\RateLimiter::availableIn($lockoutKey);
+        $resendSeconds = \Illuminate\Support\Facades\RateLimiter::availableIn($resendKey);
+        
+        $isLocked = \Illuminate\Support\Facades\RateLimiter::tooManyAttempts($lockoutKey, 3);
+        
+        // 💡 الاعتماد الكلي على السيرفر (بدون أرقام افتراضية)
+        $initialSeconds = max($lockSeconds, $resendSeconds);
+    @endphp
+
+    <div class="flex flex-col justify-center items-center px-4 min-h-screen bg-slate-50 font-body" dir="rtl">
+        
+        <div class="w-full max-w-md bg-white rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-slate-100 p-6 sm:p-8 relative overflow-hidden">
             
-            {{-- الأيقونة والعنوان --}}
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span class="material-symbols-outlined text-[32px]">mark_email_read</span>
+            <div class="absolute -top-12 -right-12 w-32 h-32 rounded-full blur-3xl pointer-events-none {{ $isLocked ? 'bg-rose-500/10' : 'bg-primary/5' }}"></div>
+
+            <div class="relative z-10 mb-8 text-center">
+                <div class="flex justify-center items-center mx-auto mb-5 w-16 h-16 rounded-2xl shadow-sm {{ $isLocked ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-500' }}">
+                    <span class="material-symbols-outlined text-[32px]">{{ $isLocked ? 'lock' : 'phonelink_ring' }}</span>
                 </div>
-                <h1 class="text-2xl font-black text-slate-800 font-headline mb-2">التحقق من رقم الهاتف</h1>
-                <p class="text-sm font-bold text-slate-500">
-                    لقد أرسلنا كود التحقق المكون من 6 أرقام إلى الواتساب الخاص بالرقم:
+                <h1 class="mb-3 text-2xl font-black text-slate-800 font-headline">كود التحقق</h1>
+                <p class="text-sm font-bold leading-relaxed text-slate-500">
+                    أدخل الكود المكون من 6 أرقام المرسل إلى الواتساب الخاص بالرقم
                     <br>
-                    <span class="inline-block mt-2 font-mono text-primary bg-primary/5 px-3 py-1 rounded-lg dir-ltr">
-                        {{ session('verify_phone') }}
+                    <span class="inline-flex gap-1.5 items-center px-3 py-1.5 mt-2 font-mono rounded-lg text-primary bg-primary/5 dir-ltr">
+                        <span class="material-symbols-outlined text-[16px]">chat</span>
+                        {{ $currentPhone }}
                     </span>
                 </p>
             </div>
 
-            {{-- عرض الأخطاء إن وجدت --}}
-            @if($errors->has('otp') || $errors->has('phone'))
-                <div class="mb-6 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-3">
-                    <span class="material-symbols-outlined text-rose-500">error</span>
-                    <div class="flex flex-col mt-0.5">
-                        @if($errors->has('otp')) <p class="text-xs font-bold text-rose-600">{{ $errors->first('otp') }}</p> @endif
-                        @if($errors->has('phone')) <p class="text-xs font-bold text-rose-600">{{ $errors->first('phone') }}</p> @endif
-                    </div>
+            @if($errors->any() || session('error'))
+                <div class="flex gap-3 items-start p-4 mb-6 bg-rose-50 rounded-2xl border border-rose-100">
+                    <span class="text-rose-500 material-symbols-outlined">error</span>
+                    <p class="mt-0.5 text-sm font-bold text-rose-600">{{ session('error') ?? $errors->first() }}</p>
                 </div>
             @endif
 
-            {{-- رسائل النجاح (مثل إعادة الإرسال) --}}
             @if(session('success'))
-                <div class="mb-6 p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
-                    <span class="material-symbols-outlined text-emerald-500">check_circle</span>
-                    <p class="text-xs font-bold text-emerald-600 mt-0.5">{{ session('success') }}</p>
+                <div class="flex gap-3 items-start p-4 mb-6 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <span class="text-emerald-500 material-symbols-outlined">check_circle</span>
+                    <p class="mt-0.5 text-sm font-bold text-emerald-600">{{ session('success') }}</p>
                 </div>
             @endif
 
-            {{-- ================= فورمة إدخال الـ OTP الأساسية ================= --}}
-            <form action="{{ route('otp.verify') }}" method="POST" id="otp-form">
+            <form action="{{ route('otp.verify') }}" method="POST" id="otp-form" class="relative z-10">
                 @csrf
-                <input type="hidden" name="phone" value="{{ session('verify_phone') }}">
-                
-                {{-- حقل إدخال مخفي يجمع الأرقام الستة --}}
+                <input type="hidden" name="phone" value="{{ $currentPhone }}">
                 <input type="hidden" name="otp" id="final-otp">
 
-                {{-- مربعات الإدخال التفاعلية باستخدام Alpine.js --}}
-                <div x-data="otpInput()" class="flex justify-between gap-2 mb-8 dir-ltr">
-                    <template x-for="(i, index) in length" :key="index">
-                        <input type="text" maxlength="1"
-                            x-ref="`field_${index}`"
-                            @input="handleInput($event, index)"
-                            @keydown.backspace="handleBackspace($event, index)"
-                            @paste="handlePaste($event)"
-                            class="w-12 h-14 text-center text-xl font-black font-mono text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                        >
-                    </template>
-                </div>
+                <div x-data="otpComponent({{ $isLocked ? 'true' : 'false' }})" class="mb-8">
+                    <div class="flex gap-1.5 justify-center sm:gap-2 md:gap-3 dir-ltr" :class="isLocked ? 'opacity-50' : ''">
+                        <template x-for="(digit, index) in length" :key="index">
+                            <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1"
+                                :id="`otp-input-${index}`"
+                                :value="values[index]"
+                                :disabled="isLocked"
+                                @input="handleInput($event, index)"
+                                @keydown="handleKeydown($event, index)"
+                                @paste="handlePaste($event)"
+                                @focus="$event.target.select()"
+                                class="w-10 h-12 font-mono text-xl font-black text-center rounded-xl border shadow-sm transition-all outline-none sm:w-12 sm:h-14 md:w-14 md:h-16 sm:text-2xl sm:rounded-2xl text-slate-800 bg-slate-50 border-slate-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                            >
+                        </template>
+                    </div>
 
-                <button type="button" onclick="submitOtp()"
-                    class="w-full h-14 bg-primary text-white rounded-2xl font-black shadow-[0_8px_20px_rgba(var(--color-primary),0.2)] hover:bg-primary/90 active:scale-[0.98] transition-all">
-                    تأكيد الكود
-                </button>
+                    <div x-show="isSubmitting && !isLocked" x-cloak class="flex gap-2 justify-center items-center mt-6 text-primary">
+                        <span class="material-symbols-outlined animate-spin text-[24px]">progress_activity</span>
+                        <span class="text-sm font-bold">جاري التحقق...</span>
+                    </div>
+                </div>
             </form>
 
-            {{-- فاصل --}}
-            <div class="flex items-center gap-4 my-8">
-                <div class="h-px bg-slate-100 flex-1"></div>
-                <span class="text-[10px] font-black text-slate-300 uppercase tracking-wider">أو</span>
-                <div class="h-px bg-slate-100 flex-1"></div>
-            </div>
-
-            {{-- ================= قسم إعادة الإرسال ================= --}}
-            @php
-                $throttleKey = 'resend-otp:' . session('verify_phone');
-                $secondsRemaining = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
-            @endphp
-
-            <div x-data="{ 
-                    seconds: {{ $secondsRemaining > 0 ? $secondsRemaining : 0 }},
-                    get formattedTime() {
-                        let m = Math.floor(this.seconds / 60);
-                        let s = this.seconds % 60;
-                        return m + ':' + (s < 10 ? '0' : '') + s;
-                    },
-                    init() {
-                        if (this.seconds > 0) {
-                            let interval = setInterval(() => {
-                                this.seconds--;
-                                if (this.seconds <= 0) {
-                                    clearInterval(interval);
-                                }
-                            }, 1000);
-                        }
-                    }
-                }" 
-                class="text-center flex flex-col items-center gap-3">
+            <div x-data="timerComponent({{ $initialSeconds }}, {{ $isLocked ? 'true' : 'false' }})" class="relative z-10 pt-6 mt-6 text-center border-t border-slate-100">
                 
-                <p class="text-xs font-bold text-slate-500">لم يصلك الكود؟</p>
+                <p class="mb-3 text-xs font-bold text-slate-500">لم يصلك الكود؟</p>
 
-                <form action="" method="POST">
+                <form action="{{ route('otp.resend') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="phone" value="{{ $currentPhone }}">
                     
-                    {{-- الزر يظهر فقط إذا انتهى الوقت --}}
-                    <button type="submit" x-show="seconds === 0" x-cloak
-                        class="text-sm font-black text-primary hover:text-primary/80 transition-colors underline underline-offset-4 active:scale-95">
-                        إعادة إرسال الكود الآن
+                    <button type="submit" x-show="seconds === 0 && !isLockedUser" x-cloak
+                        class="text-sm font-black underline transition-colors text-primary hover:text-primary-hover underline-offset-4 active:scale-95">
+                        إعادة إرسال الكود
                     </button>
 
-                    {{-- رسالة الانتظار تظهر والوقت يعمل --}}
-                    <div x-show="seconds > 0" x-cloak
-                        class="flex items-center gap-2 px-4 py-2.5 bg-slate-50 rounded-xl border border-slate-100">
-                        <span class="material-symbols-outlined text-[16px] text-primary animate-pulse">hourglass_empty</span>
-                        <span class="text-xs font-bold text-slate-500">
-                            طلب كود جديد متاح بعد <span x-text="formattedTime" class="font-mono text-primary font-black dir-ltr inline-block w-10 text-center"></span>
+                    <div x-show="seconds > 0 || isLockedUser" x-cloak class="inline-flex gap-2 items-center px-4 py-2 rounded-xl border bg-slate-50 border-slate-100" :class="isLockedUser ? 'border-rose-100 bg-rose-50 text-rose-500' : 'text-slate-500'">
+                        <span class="material-symbols-outlined text-[18px] animate-pulse" :class="isLockedUser ? 'text-rose-500' : 'text-slate-400'">
+                            <span x-text="isLockedUser ? 'lock_clock' : 'schedule'"></span>
+                        </span>
+                        <span class="text-xs font-bold">
+                            <span x-text="isLockedUser ? 'مقفول! يرجى الانتظار' : 'يمكنك طلب كود جديد بعد'"></span>
+                            <span x-text="formattedTime" class="inline-block mx-1 w-10 font-mono font-black text-center dir-ltr" :class="isLockedUser ? 'text-rose-600' : 'text-primary'"></span>
                         </span>
                     </div>
                 </form>
@@ -128,52 +107,125 @@
         </div>
     </div>
 
-    {{-- سكريبت لتشغيل مربعات الـ OTP --}}
     <script>
-        function otpInput() {
-            return {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('otpComponent', (isLockedInitial) => ({
                 length: 6,
+                values: ['', '', '', '', '', ''],
+                isSubmitting: false,
+                isLocked: isLockedInitial,
+
+                focusField(index) {
+                    if(this.isLocked) return;
+                    const field = document.getElementById(`otp-input-${index}`);
+                    if (field) field.focus();
+                },
+
+                init() {
+                    if(!this.isLocked) {
+                        setTimeout(() => { this.focusField(0); }, 300);
+                    }
+                },
+
                 handleInput(e, index) {
-                    let value = e.target.value;
-                    if (!/^[0-9]+$/.test(value)) {
-                        e.target.value = '';
+                    if(this.isLocked) return;
+                    let val = e.target.value.replace(/\D/g, ''); 
+                    
+                    if (val === '') {
+                        this.values[index] = '';
                         return;
                     }
-                    if (value.length === 1 && index < this.length - 1) {
-                        this.$refs[`field_${index + 1}`].focus();
+
+                    val = val.substring(val.length - 1);
+                    this.values[index] = val;
+                    e.target.value = val;
+
+                    if (index < this.length - 1) {
+                        this.focusField(index + 1);
+                    } else {
+                        this.checkAndSubmit();
                     }
                 },
-                handleBackspace(e, index) {
-                    if (e.target.value === '' && index > 0) {
-                        this.$refs[`field_${index - 1}`].focus();
+
+                handleKeydown(e, index) {
+                    if(this.isLocked) return;
+                    if (e.key === 'Backspace') {
+                        if (this.values[index] === '' && index > 0) {
+                            this.values[index - 1] = '';
+                            const prevField = document.getElementById(`otp-input-${index - 1}`);
+                            if(prevField) {
+                                prevField.value = '';
+                                prevField.focus();
+                            }
+                        } else {
+                            this.values[index] = '';
+                        }
+                    } 
+                    else if (e.key === 'ArrowLeft' && index > 0) {
+                        this.focusField(index - 1);
+                    } 
+                    else if (e.key === 'ArrowRight' && index < this.length - 1) {
+                        this.focusField(index + 1);
                     }
                 },
+
                 handlePaste(e) {
+                    if(this.isLocked) return;
                     e.preventDefault();
                     let pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, this.length);
+                    
                     if (pastedData) {
                         for (let i = 0; i < pastedData.length; i++) {
-                            this.$refs[`field_${i}`].value = pastedData[i];
+                            this.values[i] = pastedData[i];
+                            const field = document.getElementById(`otp-input-${i}`);
+                            if(field) field.value = pastedData[i];
                         }
-                        if (pastedData.length < this.length) {
-                            this.$refs[`field_${pastedData.length}`].focus();
+                        
+                        if (pastedData.length === this.length) {
+                            this.checkAndSubmit();
                         } else {
-                            this.$refs[`field_${this.length - 1}`].focus();
+                            this.focusField(pastedData.length);
                         }
                     }
-                }
-            }
-        }
+                },
 
-        function submitOtp() {
-            let otpString = '';
-            const inputs = document.querySelectorAll('input[x-ref^="field_"]');
-            inputs.forEach(input => {
-                otpString += input.value;
-            });
-            
-            document.getElementById('final-otp').value = otpString;
-            document.getElementById('otp-form').submit();
-        }
+                checkAndSubmit() {
+                    if(this.isLocked) return;
+                    const otpString = this.values.join('');
+                    if (otpString.length === this.length) {
+                        this.isSubmitting = true;
+                        document.getElementById('final-otp').value = otpString;
+                        setTimeout(() => {
+                            document.getElementById('otp-form').submit();
+                        }, 400); 
+                    }
+                }
+            }));
+
+            Alpine.data('timerComponent', (initialSeconds, isLockedUser) => ({
+                seconds: initialSeconds,
+                interval: null,
+                isLockedUser: isLockedUser,
+
+                get formattedTime() {
+                    let m = Math.floor(this.seconds / 60);
+                    let s = this.seconds % 60;
+                    return m + ':' + (s < 10 ? '0' : '') + s;
+                },
+
+                init() {
+                    if (this.seconds > 0) {
+                        this.interval = setInterval(() => {
+                            this.seconds--;
+                            if (this.seconds <= 0) {
+                                clearInterval(this.interval);
+                                // إعادة التحميل لإظهار الزر أو فك القفل
+                                window.location.reload();
+                            }
+                        }, 1000);
+                    }
+                }
+            }));
+        });
     </script>
 </x-guest-layout>

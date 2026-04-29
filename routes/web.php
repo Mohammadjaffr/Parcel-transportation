@@ -36,8 +36,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingPageController::class,'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
-Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify.form');
-Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
+Route::middleware('guest')->group(function () {
+    
+    // صفحة عرض إدخال الكود
+    Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify.form');
+    
+    // إرسال الكود للتحقق منه
+    Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
+    
+    // مسار إعادة إرسال الكود (الذي كان يسبب المشكلة)
+    Route::post('/verify-otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
+    
+});
 
 Route::middleware('auth')->group(function () {
     Route::post('/subscription/request', [SubscriptionController::class, 'requestSubscription'])->name('subscription.request');
@@ -47,7 +57,7 @@ Route::middleware('auth')->group(function () {
             return redirect()->route('dashboard.index')
                              ->with('info', 'تم تفعيل حسابك بنجاح! أهلاً بك.');
         }
-        $adminPhone = "967781152674";
+        $adminPhone = "967780261952";
         return view('auth.pending', compact('adminPhone'));
     })->name('account.pending');
     // ===================================================)}|===========

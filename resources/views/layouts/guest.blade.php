@@ -1,67 +1,72 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-        
-        <!-- خط عربي إضافي -->
-        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>{{ config('app.name', 'نظام مرسل') }} @if (isset($title))
+            | {{ $title }}
+        @endif
+    </title>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
 
-        <style>
-            /* تحسينات للغة العربية */
+    <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
+    <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#f79009",
+                        "primary-hover": "#dc6803",
+                        "primary-container": "#fffaeb",
+                    },
+                    fontFamily: {
+                        "headline": ["IBM Plex Sans Arabic", "sans-serif"],
+                        "body": ["IBM Plex Sans Arabic", "sans-serif"],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+            [x-cloak] {
+                display: none !important;
+            }
+
             body {
-                font-family: 'Tajawal', 'Figtree', sans-serif;
-            }
-            
-            /* تحسينات للاتجاه RTL */
-            .rtl-support {
-                text-align: right;
-            }
-            
-            /* تحسينات للعناصر النصية */
-            .text-right {
-                text-align: right;
-            }
-            
-            .text-left {
-                text-align: left;
+                @apply font-body bg-slate-50 text-slate-800 antialiased;
             }
 
-            .orange-focus:focus {
-                border-color: #f79009 !important;
-                box-shadow: 0 0 0 2px #f79009 !important;
-                outline: none !important;
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             }
 
-            .orange-checkbox {
-                border-color: #f79009 !important;
-                color: #f79009 !important;
+            .dir-ltr {
+                direction: ltr;
             }
+        }
+    </style>
 
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-        </style>
-    </head>
-    <body class="font-sans text-gray-900 antialiased rtl-support" style="background-color: #fffaeb;">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
+<body class="antialiased font-body text-slate-800 bg-slate-50">
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg text-right">
-                {{ $slot }}
-            </div>
-        </div>
-    </body>
+    {{-- المحتوى بالكامل (بدون غلاف افتراضي، لكي تأخذ صفحات الـ OTP وتسجيل الدخول راحتها في التصميم بكامل الشاشة) --}}
+    {{ $slot }}
+
+</body>
+
 </html>
