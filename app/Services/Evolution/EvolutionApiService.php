@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Evolution;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -26,9 +26,6 @@ class EvolutionApiService
         ];
     }
 
-    /**
-     * 1. فحص حالة اتصال البوابة
-     */
     public function checkConnectionState(?string $instanceName = null): array
     {
         $instance = $instanceName ?? $this->defaultInstance;
@@ -39,9 +36,7 @@ class EvolutionApiService
         return $response->json();
     }
 
-    /**
-     * 2. إرسال رسالة نصية (OTP أو إشعارات الطرود)
-     */
+    
     public function sendText(string $number, string $text, ?string $instanceName = null): array|bool
     {
         $instance = $instanceName ?? $this->defaultInstance;
@@ -66,9 +61,7 @@ class EvolutionApiService
         }
     }
 
-    /**
-     * 4. فحص ما إذا كان الرقم يمتلك واتساب (يُستخدم بحذر)
-     */
+    
     public function checkNumberExists(string $number, ?string $instanceName = null): bool
     {
         $instance = $instanceName ?? $this->defaultInstance;

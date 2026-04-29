@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppController;
+use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PassengersController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptHeaderController;
@@ -27,7 +29,6 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
-use App\Http\Controllers\PassengersController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -35,6 +36,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingPageController::class,'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
+Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify.form');
+Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
 
 Route::middleware('auth')->group(function () {
     Route::post('/subscription/request', [SubscriptionController::class, 'requestSubscription'])->name('subscription.request');

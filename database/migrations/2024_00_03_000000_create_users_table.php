@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
             $table->string('name');
             $table->string('phone');
+            $table->string('otp_code')->nullable();
+            $table->boolean('is_phone_verified')->default(true);
             $table->timestamp('phone_verified_at')->nullable();
             // $table->string('email')->unique();
             $table->string('whatsapp_number')->nullable();

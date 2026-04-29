@@ -10,14 +10,19 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Services\Evolution\OTPService;
 use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\RateLimiter;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(private OTPService $oTPService)
+    {
+    }
     /**
      * Display the registration view.
      */
@@ -45,8 +50,27 @@ class RegisteredUserController extends Controller
             'branch_phone' => ['required', 'string', 'max:20'],
             'branch_city' => ['required', 'string', 'max:255'],
         ]);
-
-        $user = DB::transaction(function () use ($request) {
+        
+        $throttleKey = 'check-whatsapp-ip:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($throttleKey, 4)) {
+        $seconds = RateLimiter::availableIn($throttleKey);
+        return back()
+            ->withInput()
+            ->withErrors([
+                'phone' => "لقد قمت بمحاولات كثيرة. يرجى الانتظار {$seconds} ثانية قبل المحاولة مرة أخرى."
+            ]);
+        }
+        
+        if (!$this->oTPService->hasWhatsApp($request->phone)) {
+            return back()
+                ->withInput() 
+                ->withErrors([
+                    'phone' => 'هذا الرقم غير مسجل في الواتساب. يرجى إدخال رقم واتساب فعال لاستلام كود التحقق.'
+                ]);
+        }
+        RateLimiter::clear($throttleKey);
+        $otpCode = (string) random_int(100000, 999999);
+        $user = DB::transaction(function () use ($request,$otpCode) {
             
             $app = App::create([
                 'name' =>  $request->office_name, 
@@ -73,7 +97,7 @@ class RegisteredUserController extends Controller
             if ($serviceIds->isNotEmpty()) {
                 $app->services()->syncWithPivotValues($serviceIds, ['is_active' => true]);
             }
-
+           
             $user = User::create([
                 'name' => $request->name,
                 'phone' => $request->phone,
@@ -81,14 +105,17 @@ class RegisteredUserController extends Controller
                 'app_id' => $app->id,
                 'branch_id' => $branch->id,
                 'type' => 'admin',
+                'otp_code' => $otpCode,
+                'is_phone_verified' => false, 
             ]);
             return $user;
         });
-
+        $this->oTPService->sendOtp($user->phone, $otpCode);
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(route('dashboard.index', absolute: false));
+        // Auth::login($user);
+        session(['verify_phone' => $user->phone]);
+        return redirect()->route('otp.verify.form');
+        // return redirect(route('dashboard.index', absolute: false));
     }
 }
