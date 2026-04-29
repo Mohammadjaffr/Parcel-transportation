@@ -1,13 +1,13 @@
 <header x-data="{ menuToggle: false, notifOpen: false }"
     class="flex sticky top-0 z-[99] w-full bg-white border-b transition-colors duration-300 dark:border-gray-800 dark:bg-boxdark">
 
-    <div class="flex flex-col justify-between items-center grow lg:flex-row lg:px-6">
+    <div class="flex flex-col justify-between items-center py-4 grow lg:flex-row lg:px-6">
 
         <div
-            class="flex justify-between items-center px-3 py-3 w-full border-b border-gray-200 lg:w-auto lg:border-b-0 lg:px-0 lg:py-4 dark:border-gray-800">
+            class="flex justify-between items-center px-3 py-3 my-2 border-b border-gray-200 lg:border-b-0 w-5full lg:w-auto lg:px-0 lg:py-4 dark:border-gray-800">
 
-            <div class="flex gap-2 items-center sm:gap-4">
-                <button @click.stop="sidebarToggle = !sidebarToggle"
+            <div class="flex gap-2 items-center m-auto sm:gap-4">
+                {{-- <button @click.stop="sidebarToggle = !sidebarToggle"
                     class="z-[99999] flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition-all hover:bg-gray-100 lg:h-11 lg:w-11 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
                     :class="sidebarToggle ? 'bg-gray-100 dark:bg-gray-800' : ''">
 
@@ -25,11 +25,10 @@
                         <path
                             d="M6.22 7.28c-.29-.29-.29-.76 0-1.06.29-.29.77-.29 1.06 0L12 10.94l4.72-4.72c.29-.29.77-.29 1.06 0 .29.29.29.77 0 1.06L13.06 12l4.72 4.72c.29.29.29.77 0 1.06-.29.29-.77.29-1.06 0L12 13.06l-4.72 4.72c-.29.29-.77.29-1.06 0-.29-.29-.29-.77 0-1.06L10.94 12 6.22 7.28z" />
                     </svg>
-                </button>
+                </button> --}}
 
                 <a href="{{ url('/') }}" class="block lg:hidden">
-                    <img src="{{ asset('tailadmin/build/src/images/user/Busat.png') }}" alt="Logo"
-                        class="w-auto h-10">
+                    <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Logo" class="w-auto h-10">
                 </a>
             </div>
 
