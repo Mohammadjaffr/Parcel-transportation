@@ -241,7 +241,7 @@
                             
                             <div class="flex gap-2 items-center pr-4 border-r border-gray-100 dark:border-boxdark shrink-0">
                                 {{-- عرض التفاصيل --}}
-                                <a href="{{ route('shipment.show', $shipment->id) }}" class="flex justify-center items-center w-11 h-11 text-gray-400 bg-gray-50 rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark hover:text-primary hover:bg-primary/5 dark:border-boxdark" title="عرض التفاصيل">
+                                <a href="{{ route('shipment.outgoing.show', $shipment->id) }}" class="flex justify-center items-center w-11 h-11 text-gray-400 bg-gray-50 rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark hover:text-primary hover:bg-primary/5 dark:border-boxdark" title="عرض التفاصيل">
                                     <span class="material-symbols-outlined text-[20px]">visibility</span>
                                 </a>
                                 
