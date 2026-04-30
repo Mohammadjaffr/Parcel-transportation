@@ -11,13 +11,14 @@ use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use App\Models\User;
 use App\Notifications\AdminManifestCreated;
+use App\Notifications\IncomingPackageNotification;
 use App\Services\ShipmentPaymentService;
+use App\Services\WhatsApp\WhatsAppLinkService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
-use App\Services\WhatsApp\WhatsAppLinkService;
 
 class ShipmentPackagesController extends Controller
 {
@@ -182,52 +183,93 @@ class ShipmentPackagesController extends Controller
         return view('pages.shipmentpackage.outgoing.show', compact('package', 'statusMap', 'availableShipments'));
     }
     //معتمد
-    public function updateStatus(Request $request, $id)
-    {
-        $request->validate(['status' => 'required|string']);
+   public function updateStatus(Request $request, $id)
+{
+    $request->validate(['status' => 'required|string']);
+    
+    $package = ShipmentPackage::findOrFail($id);
+    $newStatus = $request->status;
+
+    // ========================================================
+    // 🛡️ الحماية 1: منع انطلاق رحلة شحن فارغة
+    // ========================================================
+    if ($newStatus === 'in_transit') {
+        $shipmentsCount = Shipment::where('shipment_package_id', $package->id)->count();
         
-        $package = ShipmentPackage::findOrFail($id);
-        $newStatus = $request->status;
-
-        // ========================================================
-        // 🛡️ الحماية البرمجية: منع انطلاق رحلة شحن فارغة
-        // ========================================================
-        if ($newStatus === 'in_transit') {
-            $shipmentsCount = \App\Models\Shipment::where('shipment_package_id', $package->id)->count();
-            
-            if ($shipmentsCount === 0) {
-                return back()->with('error', 'لا يمكن تحويل الإرسالية إلى "في الطريق" وهي فارغة. يرجى إضافة طرود إليها أولاً.');
-            }
-        }
-
-        try {
-            DB::beginTransaction();
-            
-            $package->update(['status' => $newStatus]);
-
-            if ($newStatus === 'returned') {
-                \App\Models\Shipment::where('shipment_package_id', $package->id)->update([
-                    'status'              => 'pending',
-                    'shipment_package_id' => null 
-                ]);
-            
-                $message = 'تم إغلاق الرحلة كمرتجعة، وتم إعادة جميع الطرود إلى المستودع (قيد الانتظار).';
-            } else {
-                \App\Models\Shipment::where('shipment_package_id', $package->id)->update([
-                    'status' => $newStatus
-                ]);
-            
-                $message = 'تم تحديث حالة الإرسالية وجميع الطرود التابعة لها بنجاح.';
-            }
-
-            DB::commit();
-            return back()->with('success',  $message);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'فشل التحديث: ' . $e->getMessage());
+        if ($shipmentsCount === 0) {
+            return back()->with('error', 'لا يمكن تحويل الإرسالية إلى "في الطريق" وهي فارغة. يرجى إضافة طرود إليها أولاً.');
         }
     }
+
+    // ========================================================
+    // 🛡️ الحماية 2: منع الإغلاق اليدوي إذا كانت هناك طرود لم تصل لفروعها
+    // ========================================================
+    if ($newStatus === 'delivered' || $newStatus === 'received_at_branch') {
+        $unreceivedShipments = Shipment::where('shipment_package_id', $package->id)
+            ->whereNotIn('status', ['received_at_branch', 'delivered', 'returned'])
+            ->count();
+
+        if ($unreceivedShipments > 0) {
+            return back()->with('error', "لا يمكن إغلاق الإرسالية يدوياً. يوجد ({$unreceivedShipments}) طرود بداخلها لم تقم الفروع الوجهة باستلامها بعد!");
+        }
+    }
+
+    try {
+        DB::beginTransaction();
+        
+        $package->update(['status' => $newStatus]);
+
+        if ($newStatus === 'returned') {
+            Shipment::where('shipment_package_id', $package->id)->update([
+                'status'              => 'pending',
+                'shipment_package_id' => null 
+            ]);
+        
+            $message = 'تم إغلاق الرحلة كمرتجعة، وتم إعادة جميع الطرود إلى المستودع (قيد الانتظار).';
+        } else {
+            // تحديث حالة الطرود فقط إذا كانت الإرسالية "في الطريق"
+            // (لأننا لا نريد تغيير حالة الطرود يدوياً إذا كانت الإرسالية delivered، بل نتركها لحالتها الفعلية)
+            if($newStatus === 'in_transit'){
+                 Shipment::where('shipment_package_id', $package->id)->update([
+                    'status' => $newStatus
+                ]);
+            }
+        
+            $message = 'تم تحديث حالة الإرسالية بنجاح.';
+        }
+
+        // ========================================================
+        // 🔔 إشعارات الفروع (عند انطلاق الرحلة)
+        // ========================================================
+        if ($newStatus === 'in_transit') {
+            $shipmentsGroupedByBranch = Shipment::select('receiver_branch_id', DB::raw('count(*) as total'))
+                ->where('shipment_package_id', $package->id)
+                ->groupBy('receiver_branch_id')
+                ->get();
+
+            foreach ($shipmentsGroupedByBranch as $group) {
+                $branchUsers = User::where('branch_id', $group->receiver_branch_id)->get();
+
+                if ($branchUsers->isNotEmpty()) {
+                    Notification::send(
+                        $branchUsers, 
+                        new IncomingPackageNotification(
+                            $package->tracking_number, 
+                            $group->total
+                        )
+                    );
+                }
+            }
+        }
+
+        DB::commit();
+        return back()->with('success',  $message);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'فشل التحديث: ' . $e->getMessage());
+    }
+}
     // معتمد
     public function removeShipment(Request $request, $packageId, $shipmentId)
     {

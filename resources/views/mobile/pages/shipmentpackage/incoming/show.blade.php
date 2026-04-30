@@ -192,7 +192,7 @@
                     </div>
                     <div
                         class="bg-primary/[0.02] p-3.5 rounded-2xl border border-primary/10 hover:bg-primary/5 transition-colors">
-                        <span class="text-[10px] font-black text-primary/60 mb-1 block">الناقل الحالي</span>
+                        <span class="text-[10px] font-black text-primary/60 mb-1 block">السائق </span>
                         <div class="flex justify-between items-center">
                             <div>
                                 <span
@@ -243,75 +243,108 @@
         </div>
 
         {{-- ================= بطاقة الطرود المضمنة ================= --}}
-        <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex justify-between items-center mb-5">
-                <div class="flex gap-3 items-center">
-                    <div
-                        class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-slate-100 to-slate-50 text-slate-600">
-                        <span class="material-symbols-outlined text-[20px]">inventory_2</span>
-                    </div>
-                    <h3 class="text-sm font-black text-slate-800 font-headline">الطرود القادمة</h3>
-                </div>
-                <div class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[10px] font-black shadow-sm">
-                    العدد: {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}
-                </div>
+<div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
+    <div class="flex justify-between items-center mb-5">
+        <div class="flex gap-3 items-center">
+            <div
+                class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-slate-100 to-slate-50 text-slate-600">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
             </div>
-
-            <div class="flex flex-col gap-3">
-                @forelse($package->shipments as $shipment)
-                    <div
-                        class="flex gap-4 items-center p-4 rounded-2xl border transition-all duration-300 bg-slate-50/50 border-slate-100 group hover:bg-white hover:shadow-md hover:border-emerald-500/30">
-                        <div
-                            class="w-12 h-12 bg-white rounded-[14px] flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 shadow-sm group-hover:text-emerald-600 transition-colors">
-                            <span class="material-symbols-outlined text-[22px]">package_2</span>
-                        </div>
-
-                        <div class="flex-1 min-w-0">
-                            <div class="flex justify-between items-center mb-1">
-                                <span
-                                    class="font-mono text-sm font-black tracking-tight text-slate-800">{{ $shipment->code }}</span>
-                                <span
-                                    class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md flex items-center gap-1 border border-emerald-100">
-                                    <span class="material-symbols-outlined text-[10px]">payments</span>
-                                    {{ $shipment->payment_method == 'prepaid' ? 'خالص' : 'آجل: ' . $shipment->total_amount }}
-                                </span>
-                            </div>
-                            <div class="flex gap-1 items-center mt-1">
-                                <span class="material-symbols-outlined text-[12px] text-slate-400">person</span>
-                                <span class="text-[10px] font-bold text-slate-500 truncate">المستلم:
-                                    {{ $shipment->receiverCustomer->name ?? 'غير مسجل' }}</span>
-                            </div>
-                        </div>
-
-                        <div class="relative shrink-0" x-data="{ menuOpen: false }">
-                            <button type="button" @click="menuOpen = !menuOpen" @click.outside="menuOpen = false"
-                                class="flex justify-center items-center w-8 h-8 bg-white rounded-full border shadow-sm transition-all text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 border-slate-100 active:scale-90">
-                                <span class="material-symbols-outlined text-[18px]">more_vert</span>
-                            </button>
-
-                            <div x-show="menuOpen" x-cloak x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                                class="absolute left-0 top-full mt-2 w-40 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[50]">
-
-                                <a href="{{ route('shipment.incoming.show', $shipment->id) }}"
-                                    class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors active:scale-[0.98]">
-                                    <div
-                                        class="flex justify-center items-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500">
-                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                    </div>
-                                    <span class="text-xs font-black">تفاصيل الطرد</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="py-8 text-center">
-                        <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inbox</span>
-                        <p class="text-xs font-bold text-slate-400">لا توجد طرود مسجلة في هذه الشحنة.</p>
-                    </div>
-                @endforelse
-            </div>
+            <h3 class="text-sm font-black text-slate-800 font-headline">الطرود القادمة</h3>
         </div>
+        <div class="px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[10px] font-black shadow-sm">
+            العدد: {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-3">
+        @forelse($package->shipments as $shipment)
+            <div
+                class="flex gap-4 items-center p-4 rounded-2xl border transition-all duration-300 bg-slate-50/50 border-slate-100 group hover:bg-white hover:shadow-md hover:border-emerald-500/30">
+                
+                {{-- أيقونة الطرد --}}
+                <div
+                    class="w-12 h-12 bg-white rounded-[14px] flex items-center justify-center text-slate-400 shrink-0 border border-slate-100 shadow-sm group-hover:text-emerald-600 transition-colors">
+                    <span class="material-symbols-outlined text-[22px]">package_2</span>
+                </div>
+
+                {{-- التفاصيل المختصرة --}}
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="font-mono text-sm font-black tracking-tight text-slate-800">{{ $shipment->code }}</span>
+                        {{-- نوع الطرد --}}
+                        <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50/50 px-1.5 py-0.5 rounded border border-indigo-100/50">
+                            {{ $shipment->package_type ?? 'طرد عادي' }}
+                        </span>
+                    </div>
+                    <div class="flex gap-1 items-center mt-1">
+                        <span class="material-symbols-outlined text-[12px] text-slate-400">person</span>
+                        <span class="text-[10px] font-bold text-slate-500 truncate">المستلم:
+                            {{ $shipment->receiverCustomer->name ?? 'غير مسجل' }}</span>
+                    </div>
+                </div>
+
+                {{-- منطقة الأزرار --}}
+                <div class="flex items-center gap-2 shrink-0">
+                    
+                    {{-- الاستلام السريع --}}
+                    @if($shipment->status === 'in_transit')
+                        <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                            @csrf
+                            <input type="hidden" name="status" value="received_at_branch">
+                            <button type="submit" :disabled="isSubmitting" title="تأكيد الوصول للمستودع"
+                                class="flex items-center justify-center w-8 h-8 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white rounded-full transition-all active:scale-95 border border-blue-100 hover:border-blue-500 shadow-sm">
+                                <span class="material-symbols-outlined text-[16px]">inventory_2</span>
+                            </button>
+                        </form>
+                    
+                    {{-- بادج "بالمستودع" --}}
+                    @elseif(in_array($shipment->status, ['received_at_branch', 'out_for_delivery', 'delivered']))
+                        <div class="flex items-center justify-center w-8 h-8 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100" title="تم الاستلام بالمستودع">
+                            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                        </div>
+                    @endif
+
+                    {{-- القائمة المنسدلة للخيارات --}}
+                    <div class="relative" x-data="{ menuOpen: false }">
+                        <button type="button" @click="menuOpen = !menuOpen" @click.outside="menuOpen = false"
+                            class="flex justify-center items-center w-8 h-8 bg-white rounded-full border shadow-sm transition-all text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 border-slate-100 active:scale-90">
+                            <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                        </button>
+
+                        <div x-show="menuOpen" x-cloak x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                            class="absolute left-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[50]">
+
+                            {{-- 💡 نقلنا حالة الدفع إلى هنا (كمعلومة فقط وليست رابط) --}}
+                            <div class="px-3 py-2.5 mb-1 bg-slate-50/80 rounded-xl border border-slate-100/50">
+                                <div class="text-[9px] font-bold text-slate-400 mb-1">حالة الدفع:</div>
+                                <div class="flex items-center gap-1.5 text-xs font-black {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-600' : 'text-rose-600' }}">
+                                    <span class="material-symbols-outlined text-[14px]">payments</span>
+                                    <span>{{ $shipment->payment_method == 'prepaid' ? 'خالص (مدفوع)' : 'آجل: ' . $shipment->total_amount }}</span>
+                                </div>
+                            </div>
+
+                            <a href="{{ route('shipment.incoming.show', $shipment->id) }}"
+                                class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl hover:bg-slate-50 text-slate-700 transition-colors active:scale-[0.98]">
+                                <div
+                                    class="flex justify-center items-center w-7 h-7 rounded-lg bg-slate-100 text-slate-500">
+                                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                </div>
+                                <span class="text-xs font-black">تفاصيل الطرد</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="py-8 text-center">
+                <span class="material-symbols-outlined text-[40px] text-slate-200 mb-2">inbox</span>
+                <p class="text-xs font-bold text-slate-400">لا توجد طرود مسجلة في هذه الشحنة.</p>
+            </div>
+        @endforelse
+    </div>
+</div>
     </div>
 @endsection

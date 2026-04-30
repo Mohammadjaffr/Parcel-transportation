@@ -408,8 +408,15 @@
 
                         <div
                             class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
-                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                            <input type="tel" 
+    x-model="localPhone" 
+    placeholder="7XXXXXXXX" 
+    inputmode="numeric"
+    {{-- 💡 تغيير الحد الأقصى ديناميكياً: 9 لليمن، و 15 كحد أقصى لباقي الدول --}}
+    :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
+    {{-- 💡 منع إدخال أي شيء غير الأرقام فوراً --}}
+    @input="localPhone = localPhone.replace(/\D/g, '')"
+    class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">

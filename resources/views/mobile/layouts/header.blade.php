@@ -68,8 +68,7 @@
                 @if (Auth::user()->type === 'admin')
                     <a href="{{ route('app.settings') }}"
                         class="flex gap-3 items-center p-3 text-sm font-bold rounded-2xl transition-colors hover:bg-slate-50 text-slate-600 hover:text-primary font-headline active:scale-95">
-                        <span
-                            class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">settings</span>
+                        <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">settings</span>
                         إعدادات الشركة
                     </a>
                 @endif
@@ -96,7 +95,6 @@
                 class="flex relative z-10 justify-center items-center w-10 h-10 bg-transparent rounded-full transition-colors duration-200 hover:bg-slate-50 active:scale-90 text-slate-500 hover:text-primary">
                 <span class="material-symbols-outlined" data-icon="notifications">notifications</span>
 
-                {{-- تحديث هنا: عرض الرقم بدلاً من النقطة --}}
                 @if (auth()->user()->unreadNotifications->count() > 0)
                     <span
                         class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce shadow-sm z-10 pointer-events-none">
@@ -132,22 +130,14 @@
 
                 <div class="max-h-[340px] overflow-y-auto overscroll-contain flex flex-col scrollbar-hide">
                     @php
-                        // 1. جلب أحدث 15 إشعار للتعامل معها
                         $allNotifications = auth()->user()->notifications()->take(15)->get();
-
-                        // 2. فصل الإشعارات غير المقروءة والمقروءة
                         $unreadNotifications = $allNotifications->whereNull('read_at');
                         $readNotifications = $allNotifications->whereNotNull('read_at');
 
-                        // 3. اللوجيك الذكي للعدد:
                         if ($unreadNotifications->count() >= 3) {
-                            // إذا كان هناك 3 أو أكثر غير مقروءة، نعرضها جميعاً
                             $displayNotifications = $unreadNotifications;
                         } else {
-                            // إذا كان غير المقروء أقل من 3 (مثلاً 1)، نحسب كم نحتاج لنصل إلى 3 (نحتاج 2)
                             $neededReadCount = 3 - $unreadNotifications->count();
-
-                            // ندمج غير المقروء مع العدد المطلوب من المقروء
                             $displayNotifications = $unreadNotifications->concat(
                                 $readNotifications->take($neededReadCount),
                             );
@@ -159,6 +149,7 @@
                             $type = $notification->data['type'] ?? '';
                             $isUnread = $notification->unread();
 
+                            // استخدام الرابط الجديد 'url' مع الاحتفاظ بالتوافقية مع 'action_url' القديم
                             $actionUrl = $notification->data['action_url'] ?? '#';
                             if ($actionUrl !== '#') {
                                 $actionUrl .=
@@ -176,19 +167,21 @@
                             @endif
 
                             <div class="flex gap-4 items-start p-4">
-                                {{-- تحديد ألوان وخلفية الأيقونة حسب نوع الإشعار --}}
-                                <div
-                                    class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
-                @if ($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
-                @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
-                @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
-                @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
-                @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100
-                @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
-                @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
-                @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
-                @else bg-slate-100 text-slate-500 border-slate-200 @endif">
+                                {{-- 💡 تم إضافة النوع package_received هنا للألوان --}}
+                                <div class="w-11 h-11 shrink-0 rounded-2xl flex items-center justify-center shadow-sm border transition-transform group-hover:scale-105
+                                    @if ($type == 'connection_request') bg-blue-50 text-blue-500 border-blue-100
+                                    @elseif($type == 'connection_accepted') bg-emerald-50 text-emerald-500 border-emerald-100
+                                    @elseif($type == 'connection_rejected') bg-rose-50 text-rose-500 border-rose-100
+                                    @elseif($type == 'shipment_dispatched') bg-amber-50 text-amber-500 border-amber-100
+                                    @elseif($type == 'admin_new_shipment') bg-purple-50 text-purple-600 border-purple-100
+                                    @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
+                                    @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
+                                    @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
+                                    @elseif($type == 'incoming_package') bg-orange-50 text-orange-600 border-orange-100
+                                    @elseif($type == 'package_received') bg-emerald-50 text-emerald-600 border-emerald-100
+                                    @else bg-slate-100 text-slate-500 border-slate-200 @endif">
 
+                                    {{-- 💡 تم إضافة الأيقونة الخاصة بـ package_received --}}
                                     <span class="material-symbols-outlined text-[22px]">
                                         @if ($type == 'connection_request')
                                             person_add
@@ -205,7 +198,11 @@
                                         @elseif($type == 'new_shipment')
                                             unarchive
                                         @elseif($type == 'admin_status_updated')
-                                            {{ $notification->data['icon'] ?? 'update' }}
+                                            update
+                                        @elseif($type == 'incoming_package')
+                                            local_shipping
+                                        @elseif($type == 'package_received')
+                                            inventory_2
                                         @else
                                             notifications
                                         @endif
@@ -215,6 +212,7 @@
                                 <div class="flex relative flex-col gap-1 w-full text-right">
                                     <a href="{{ $actionUrl }}" class="flex flex-col w-full">
                                         <div class="flex gap-2 justify-between items-start w-full">
+                                            {{-- 💡 تم إضافة العنوان الخاص بـ package_received --}}
                                             <p
                                                 class="text-sm font-headline font-bold {{ $isUnread ? 'text-slate-800' : 'text-slate-600' }}">
                                                 @if ($type == 'connection_request')
@@ -233,6 +231,10 @@
                                                     طرد وارد 📦
                                                 @elseif($type == 'admin_status_updated')
                                                     تحديث حالة 🔄
+                                                @elseif($type == 'incoming_package')
+                                                    إرسالية في الطريق
+                                                @elseif($type == 'package_received')
+                                                    تم الاستلام بالمستودع ✅
                                                 @else
                                                     إشعار
                                                 @endif
