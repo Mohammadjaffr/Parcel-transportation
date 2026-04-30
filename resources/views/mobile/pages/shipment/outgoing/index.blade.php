@@ -32,49 +32,49 @@
             {{-- الكل --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => null, 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ !request('status') ? 'bg-slate-800 text-white border-slate-800 shadow-[0_4px_12px_rgba(30,41,59,0.2)]' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' }}">
+                    {{ !request('status') ? 'bg-slate-800 text-white border-slate-800 shadow-[0_4px_12px_rgba(30,41,59,0.2)]' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' }}">
                 الكل
             </a>
 
             {{-- 1. قيد الانتظار (في فرعنا) --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'pending', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50' }}">
+                    {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50' }}">
                 قيد الانتظار
             </a>
 
             {{-- 2. في الطريق --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'in_transit', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50' }}">
+                    {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50' }}">
                 في الطريق
             </a>
 
             {{-- 3. وصل فرع الوجهة (تحديث مهم للمُرسل ليعرف أن الطرد وصل) --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'received_at_branch', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'received_at_branch' ? 'bg-purple-500 text-white border-purple-500 shadow-[0_4px_12px_rgba(168,85,247,0.2)]' : 'bg-white text-purple-600 border-purple-100 hover:bg-purple-50' }}">
+                    {{ request('status') == 'received_at_branch' ? 'bg-purple-500 text-white border-purple-500 shadow-[0_4px_12px_rgba(168,85,247,0.2)]' : 'bg-white text-purple-600 border-purple-100 hover:bg-purple-50' }}">
                 وصل فرع الوجهة
             </a>
 
             {{-- 5. تم التسليم للعميل --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'delivered', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.2)]' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50' }}">
+                    {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.2)]' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50' }}">
                 تم التسليم
             </a>
 
             {{-- 6. مرتجع --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'returned', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-[0_4px_12px_rgba(244,63,94,0.2)]' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50' }}">
+                    {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-[0_4px_12px_rgba(244,63,94,0.2)]' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50' }}">
                 مرتجع
             </a>
 
             {{-- 7. ملغي (قبل الانطلاق) --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'cancelled', 'page' => null]) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'cancelled' ? 'bg-slate-500 text-white border-slate-500 shadow-[0_4px_12px_rgba(100,116,139,0.2)]' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50' }}">
+                    {{ request('status') == 'cancelled' ? 'bg-slate-500 text-white border-slate-500 shadow-[0_4px_12px_rgba(100,116,139,0.2)]' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50' }}">
                 ملغي
             </a>
         </div>
@@ -110,31 +110,45 @@
 
                         <div class="flex gap-2 items-center">
                             {{-- شارة الحالة (Pill Badge) بتصميم FinTech --}}
-                            @if($shipment->status == 'pending')
+
+                            {{-- 💡 التعديل هنا: حالة المرتجع الذي لا يزال قيد الانتظار للعودة --}}
+                            @if($shipment->is_returned && $shipment->status == 'pending')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/20 ring-inset whitespace-nowrap flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">keyboard_return</span>
+                                    مرتجع (لم يُسلم للتاجر)
+                                </span>
+
+                            @elseif($shipment->status == 'pending')
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 ring-1 ring-amber-500/20 ring-inset whitespace-nowrap">
                                     قيد التجهيز
                                 </span>
+
                             @elseif($shipment->status == 'in_transit')
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 ring-1 ring-blue-500/20 ring-inset whitespace-nowrap">
                                     في الطريق
                                 </span>
+
                             @elseif($shipment->status == 'received_at_branch')
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-50 text-purple-600 ring-1 ring-purple-500/20 ring-inset whitespace-nowrap">
                                     بالمستودع
                                 </span>
+
                             @elseif($shipment->status == 'delivered')
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset whitespace-nowrap">
                                     تم التسليم
                                 </span>
+
                             @elseif($shipment->status == 'returned')
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/20 ring-inset whitespace-nowrap">
                                     مرتجع
                                 </span>
+
                             @else {{-- cancelled --}}
                                 <span
                                     class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-50 text-slate-500 ring-1 ring-slate-500/20 ring-inset whitespace-nowrap">

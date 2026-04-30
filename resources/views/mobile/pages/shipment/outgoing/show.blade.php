@@ -7,151 +7,171 @@
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50">
 
         {{-- ================= الهيدر السريع ================= --}}
-        <div class="flex justify-between items-center">
-            <div class="flex gap-3 items-center">
-                <a href="{{ route('shipment.outgoing.index') }}"
-                    class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
-                    <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
-                </a>
-                <div>
-                    <h1 class="text-lg font-black font-headline text-slate-800">رقم الطرد</h1>
-                    <p class="text-sm font-bold tracking-wider text-primary">{{ $shipment->bond_number }}</p>
-                </div>
-            </div>
-
-            {{-- حالة الطرد --}}
-            @php
-                $statusColors = [
-                    'pending' => 'bg-amber-50 text-amber-600 border-amber-200',
-                    'in_transit' => 'bg-blue-50 text-blue-600 border-blue-200',
-                    'received_at_branch' => 'bg-purple-50 text-purple-600 border-purple-200',
-                    'out_for_delivery' => 'bg-teal-50 text-teal-600 border-teal-200',
-                    'delivered' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
-                    'cancelled' => 'bg-slate-50 text-slate-600 border-slate-200',
-                    'returned' => 'bg-rose-50 text-rose-600 border-rose-200',
-                ];
-
-                $statusIcons = [
-                    'pending' => 'schedule',
-                    'in_transit' => 'local_shipping',
-                    'received_at_branch' => 'storefront', 
-                    'out_for_delivery' => 'two_wheeler',
-                    'delivered' => 'check_circle',
-                    'cancelled' => 'cancel',
-                    'returned' => 'assignment_return',
-                ];
-
-                $statusNames = [
-                    'pending' => 'قيد الانتظار',
-                    'in_transit' => 'في الطريق',
-                    'received_at_branch' => 'بالمستودع',
-                    'out_for_delivery' => 'خرج للتوصيل',
-                    'delivered' => 'تم التسليم',
-                    'cancelled' => 'ملغي',
-                    'returned' => 'مرتجع',
-                ];
-
-                $colorClass = $statusColors[$shipment->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
-                $icon = $statusIcons[$shipment->status] ?? 'info';
-                $name = $statusNames[$shipment->status] ?? $shipment->status;
-            @endphp
-            <div
-                class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs shadow-sm {{ $colorClass }}">
-                <span class="material-symbols-outlined text-[16px]">{{ $icon }}</span>
-                {{ $name }}
-            </div>
+       <div class="flex justify-between items-center">
+    <div class="flex gap-3 items-center">
+        <a href="{{ route('shipment.outgoing.index') }}"
+            class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
+            <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
+        </a>
+        <div>
+            <h1 class="text-lg font-black font-headline text-slate-800">رقم الطرد</h1>
+            <p class="text-sm font-bold tracking-wider text-primary">{{ $shipment->bond_number }}</p>
         </div>
+    </div>
 
-        {{-- ================= أزرار الإجراءات الراقية (Premium Actions) ================= --}}
-        <div class="flex gap-3 items-center mt-1">
+    {{-- ================= حالة الطرد الذكية ================= --}}
+    @php
+        $statusColors = [
+            'pending' => 'bg-amber-50 text-amber-600 border-amber-200',
+            'in_transit' => 'bg-blue-50 text-blue-600 border-blue-200',
+            'received_at_branch' => 'bg-purple-50 text-purple-600 border-purple-200',
+            'out_for_delivery' => 'bg-teal-50 text-teal-600 border-teal-200',
+            'delivered' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
+            'cancelled' => 'bg-slate-50 text-slate-600 border-slate-200',
+            'returned' => 'bg-rose-50 text-rose-600 border-rose-200',
+        ];
 
-            @php
-                $currentStatus = $shipment->status;
-                $availableStatuses = [];
+        $statusIcons = [
+            'pending' => 'schedule',
+            'in_transit' => 'local_shipping',
+            'received_at_branch' => 'storefront', 
+            'out_for_delivery' => 'two_wheeler',
+            'delivered' => 'check_circle',
+            'cancelled' => 'cancel',
+            'returned' => 'assignment_return',
+        ];
 
-                if ($currentStatus === 'pending') {
-                    // إذا كان قيد الانتظار: يمكنه الشحن أو الإرجاع (الإلغاء)
-                    $availableStatuses = [
-                        'returned' => [
-                            'label' => 'إلغاء الطرد (مرتجع)',
-                            'icon' => 'cancel',
-                            'bg_color' => 'bg-rose-50',
-                            'text_color' => 'text-rose-600'
-                        ],
-                    ];
-                } elseif ($currentStatus === 'in_transit') {
-                    // إذا كان في الطريق: يمكنه التسليم أو الإرجاع (فشل التسليم)
-                    $availableStatuses = [
-                        'delivered' => [
-                            'label' => 'تم التسليم بنجاح',
-                            'icon' => 'check_circle',
-                            'bg_color' => 'bg-emerald-50',
-                            'text_color' => 'text-emerald-600'
-                        ],
-                        'returned' => [
-                            'label' => 'فشل التسليم (مرتجع)',
-                            'icon' => 'assignment_return',
-                            'bg_color' => 'bg-rose-50',
-                            'text_color' => 'text-rose-600'
-                        ],
-                    ];
-                }
-            @endphp
+        $statusNames = [
+            'pending' => 'قيد الانتظار',
+            'in_transit' => 'في الطريق',
+            'received_at_branch' => 'بالمستودع',
+            'out_for_delivery' => 'خرج للتوصيل',
+            'delivered' => 'تم التسليم',
+            'cancelled' => 'ملغي',
+            'returned' => 'مرتجع',
+        ];
 
-            @if(!empty($availableStatuses))
-                <div class="flex-[2] relative" x-data="{ openStatusMenu: false }">
-                    <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" x-ref="statusForm">
-                        @csrf
-                        <input type="hidden" name="status" x-ref="statusInput">
+        // 💡 اللوجيك الذكي لشارة المرتجع
+        if ($shipment->is_returned) {
+            $colorClass = 'bg-rose-50 text-rose-600 border-rose-200';
+            $icon = 'keyboard_return';
+            if ($shipment->status === 'returned') {
+                $name = 'مرتجع (سُلم للتاجر)';
+            } else {
+                $currentName = $statusNames[$shipment->status] ?? $shipment->status;
+                $name = "مرتجع ($currentName)";
+            }
+        } else {
+            $colorClass = $statusColors[$shipment->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
+            $icon = $statusIcons[$shipment->status] ?? 'info';
+            $name = $statusNames[$shipment->status] ?? $shipment->status;
+        }
+    @endphp
+    <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs shadow-sm {{ $colorClass }}">
+        <span class="material-symbols-outlined text-[16px]">{{ $icon }}</span>
+        {{ $name }}
+    </div>
+</div>
 
-                        {{-- الزر الرئيسي --}}
-                        <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
-                            class="w-full flex items-center justify-between px-4 h-12 bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(30,41,59,0.2)] hover:bg-slate-700 active:scale-95 transition-all">
-                            <div class="flex gap-2 items-center">
-                                <span class="material-symbols-outlined text-[18px]">update</span>
-                                <span>تحديث حالة الطرد</span>
+{{-- ================= أزرار الإجراءات الراقية (Premium Actions) ================= --}}
+<div class="flex gap-3 items-center mt-1">
+
+    @php
+        $currentStatus = $shipment->status;
+        $availableStatuses = [];
+
+        // 💡 التعديل هنا: فصل إجراءات المرتجع عن الطرد العادي
+        if ($shipment->is_returned && $currentStatus !== 'returned') {
+            // خيار واحد فقط للمُرسل: تسليم المرتجع للتاجر لإنهاء الدورة
+            $availableStatuses = [
+                'returned' => [
+                    'label' => 'تأكيد استلام التاجر للمرتجع',
+                    'icon' => 'inventory_2',
+                    'bg_color' => 'bg-emerald-50',
+                    'text_color' => 'text-emerald-600'
+                ],
+            ];
+        } elseif (!$shipment->is_returned) {
+            if ($currentStatus === 'pending') {
+                $availableStatuses = [
+                    'returned' => [
+                        'label' => 'إلغاء الطرد (مرتجع)',
+                        'icon' => 'cancel',
+                        'bg_color' => 'bg-rose-50',
+                        'text_color' => 'text-rose-600'
+                    ],
+                ];
+            } elseif ($currentStatus === 'in_transit') {
+                $availableStatuses = [
+                    'delivered' => [
+                        'label' => 'تم التسليم بنجاح',
+                        'icon' => 'check_circle',
+                        'bg_color' => 'bg-emerald-50',
+                        'text_color' => 'text-emerald-600'
+                    ],
+                    'returned' => [
+                        'label' => 'فشل التسليم (مرتجع)',
+                        'icon' => 'assignment_return',
+                        'bg_color' => 'bg-rose-50',
+                        'text_color' => 'text-rose-600'
+                    ],
+                ];
+            }
+        }
+    @endphp
+
+    @if(!empty($availableStatuses))
+        <div class="flex-[2] relative" x-data="{ openStatusMenu: false }">
+            <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" x-ref="statusForm">
+                @csrf
+                <input type="hidden" name="status" x-ref="statusInput">
+
+                {{-- الزر الرئيسي (يتغير لونه للأحمر إذا كان مرتجعاً) --}}
+                <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
+                    class="w-full flex items-center justify-between px-4 h-12 {{ $shipment->is_returned ? 'bg-rose-500 hover:bg-rose-600 shadow-[0_8px_20px_rgba(244,63,94,0.2)]' : 'bg-slate-800 hover:bg-slate-700 shadow-[0_8px_20px_rgba(30,41,59,0.2)]' }} text-white rounded-2xl font-bold text-xs active:scale-95 transition-all">
+                    <div class="flex gap-2 items-center">
+                        <span class="material-symbols-outlined text-[18px]">{{ $shipment->is_returned ? 'assignment_returned' : 'update' }}</span>
+                        <span>{{ $shipment->is_returned ? 'إجراءات الطرد المرتجع' : 'تحديث حالة الطرد' }}</span>
+                    </div>
+                    <span class="material-symbols-outlined text-[18px] transition-transform duration-300"
+                        :class="openStatusMenu ? 'rotate-180' : ''">expand_more</span>
+                </button>
+
+                {{-- القائمة المنسدلة الذكية --}}
+                <div x-show="openStatusMenu" x-cloak x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    class="absolute top-full right-0 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
+
+                    @foreach($availableStatuses as $value => $data)
+                        <button type="button" @click="$refs.statusInput.value = '{{ $value }}'; $refs.statusForm.submit()"
+                            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all text-right group active:scale-[0.98]">
+
+                            <div
+                                class="w-8 h-8 rounded-lg {{ $data['bg_color'] }} {{ $data['text_color'] }} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                <span class="material-symbols-outlined text-[18px]">{{ $data['icon'] }}</span>
                             </div>
-                            <span class="material-symbols-outlined text-[18px] transition-transform duration-300"
-                                :class="openStatusMenu ? 'rotate-180' : ''">expand_more</span>
+                            <span class="text-xs font-black text-slate-700">{{ $data['label'] }}</span>
                         </button>
-
-                        {{-- القائمة المنسدلة الذكية --}}
-                        <div x-show="openStatusMenu" x-cloak x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                            class="absolute top-full right-0 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
-
-                            @foreach($availableStatuses as $value => $data)
-                                <button type="button" @click="$refs.statusInput.value = '{{ $value }}'; $refs.statusForm.submit()"
-                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all text-right group active:scale-[0.98]">
-
-                                    <div
-                                        class="w-8 h-8 rounded-lg {{ $data['bg_color'] }} {{ $data['text_color'] }} flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                                        <span class="material-symbols-outlined text-[18px]">{{ $data['icon'] }}</span>
-                                    </div>
-                                    <span class="text-xs font-black text-slate-700">{{ $data['label'] }}</span>
-                                </button>
-                            @endforeach
-                        </div>
-                    </form>
+                    @endforeach
                 </div>
-            @else
-                {{-- الحالة النهائية (مغلق) --}}
-                <div
-                    class="flex-[2] flex items-center justify-center gap-2 h-12 bg-slate-50 text-slate-400 rounded-2xl font-bold text-[10px] border border-slate-100">
-                    <span class="material-symbols-outlined text-[16px]">lock</span>
-                    تم إغلاق دورة حياة الطرد
-                </div>
-            @endif
-
-            {{-- زر الطباعة --}}
-            <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}"
-                class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
-                <span class="material-symbols-outlined text-[18px]">print</span>
-                طباعة
-            </a>
+            </form>
         </div>
+    @else
+        {{-- الحالة النهائية (مغلق) --}}
+        <div class="flex-[2] flex items-center justify-center gap-2 h-12 bg-slate-50 text-slate-400 rounded-2xl font-bold text-[10px] border border-slate-100">
+            <span class="material-symbols-outlined text-[16px]">{{ $shipment->status === 'returned' ? 'done_all' : 'lock' }}</span>
+            {{ $shipment->status === 'returned' ? 'تم تسليم المرتجع وإغلاق الطرد' : 'تم إغلاق دورة حياة الطرد' }}
+        </div>
+    @endif
 
+    {{-- زر الطباعة --}}
+    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}"
+        class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
+        <span class="material-symbols-outlined text-[18px]">print</span>
+        طباعة
+    </a>
+</div>
         {{-- ================= بطاقة المسار (من -> إلى) ================= --}}
         <div
             class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] relative overflow-hidden">

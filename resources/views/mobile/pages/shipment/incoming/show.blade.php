@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
-                        isSubmitting: false 
-                    }">
+                                    isSubmitting: false 
+                                }">
 
         {{-- ================= الهيدر السريع ================= --}}
         <div class="flex justify-between items-center">
@@ -52,10 +52,27 @@
                     'returned' => 'مرتجع',
                 ];
 
-                $colorClass = $statusColors[$shipment->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
-                $icon = $statusIcons[$shipment->status] ?? 'info';
-                $name = $statusNames[$shipment->status] ?? $shipment->status;
+                // ================= اللوجيك الذكي لحالة المرتجع =================
+                if ($shipment->is_returned) {
+                    $colorClass = 'bg-rose-50 text-rose-600 border-rose-200';
+                    $icon = 'keyboard_return';
+
+                    // إذا تم تسليمه للتاجر وانتهت دورته
+                    if ($shipment->status === 'returned') {
+                        $name = 'مرتجع (تم التسليم للتاجر)';
+                    }
+                    // إذا كان لا يزال يتنقل أو في المستودع ولم يسلم للتاجر بعد
+                    else {
+                        $name = 'مرتجع بالمصدر (لم يُسلم للتاجر)';
+                    }
+                } else {
+                    // الطرود العادية
+                    $colorClass = $statusColors[$shipment->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
+                    $icon = $statusIcons[$shipment->status] ?? 'info';
+                    $name = $statusNames[$shipment->status] ?? $shipment->status;
+                }
             @endphp
+
             <div
                 class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs shadow-sm {{ $colorClass }}">
                 <span class="material-symbols-outlined text-[16px]">{{ $icon }}</span>
@@ -64,141 +81,162 @@
         </div>
 
         {{-- ================= أزرار الإجراءات ================= --}}
-<div class="flex gap-3 items-center mt-1">
+        <div class="flex gap-3 items-center mt-1">
 
-    @if(in_array($shipment->status, ['delivered', 'returned', 'cancelled']))
-        {{-- 1. حالة الإغلاق (مقفلة) --}}
-        <div class="flex-[2] flex items-center justify-center gap-2 h-12 bg-slate-50 text-slate-400 rounded-2xl font-bold text-[10px] border border-slate-100">
-            <span class="material-symbols-outlined text-[16px]">lock</span>
-            تم إغلاق هذا الطرد
-        </div>
-
-    @elseif($shipment->status === 'pending')
-        {{-- 2. حالة قيد التجهيز --}}
-        <div class="flex-[2] flex items-center justify-center gap-2 h-12 bg-amber-50 text-amber-500 rounded-2xl font-bold text-[10px] border border-amber-100">
-            <span class="material-symbols-outlined text-[16px]">schedule</span>
-            الطرد لا يزال قيد التجهيز
-        </div>
-
-    @elseif($shipment->status === 'in_transit')
-        {{-- 3. حالة في الطريق (يجب استلامه في الفرع أولاً) 🚚 --}}
-        <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" class="flex-[2]" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
-            @csrf
-            {{-- نرسل القيمة المطلوبة للتحويل إلى المستودع --}}
-            <input type="hidden" name="status" value="received_at_branch">
-            <button type="submit" :disabled="isSubmitting"
-                class="w-full flex items-center justify-center gap-2 px-4 h-12 bg-blue-500 text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(59,130,246,0.3)] hover:bg-blue-600 active:scale-95 transition-all">
-                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                تأكيد وصول الطرد للفرع
-            </button>
-        </form>
-
-    @else
-        {{-- 4. حالة وصل المستودع (received_at_branch) أو مع المندوب 📦 -> تظهر أزرار التسليم للعميل --}}
-        <div class="flex-[2] relative" x-data="{ openStatusMenu: false, showPaymentModal: false }">
-            <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" x-ref="statusForm"
-                @submit="isSubmitting = true">
-                @csrf
-                <input type="hidden" name="status" x-ref="statusInput">
-
-                <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
-                    class="w-full flex items-center justify-between px-4 h-12 bg-primary text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(var(--color-primary),0.2)] hover:bg-primary/90 active:scale-95 transition-all">
-                    <div class="flex gap-2 items-center">
-                        <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
-                        <span>إجراءات تسليم العميل</span>
-                    </div>
-                    <span class="material-symbols-outlined text-[18px] transition-transform duration-300"
-                        :class="openStatusMenu ? 'rotate-180' : ''">expand_more</span>
-                </button>
-
-                <div x-show="openStatusMenu" x-cloak x-transition:enter="transition ease-out duration-200"
-                    x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                    class="absolute bottom-full mb-2 right-0 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
-
-                    {{-- زر التأكيد الذكي (يفحص نوع الدفع أولاً) --}}
-                    <button type="button" @click="
-                            @if($shipment->payment_method !== 'prepaid')
-                                showPaymentModal = true; 
-                                openStatusMenu = false;
-                            @else
-                                $refs.statusInput.value = 'delivered'; 
-                                $refs.statusForm.submit();
-                            @endif
-                        " :disabled="isSubmitting"
-                        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition-all text-right group active:scale-[0.98]">
-                        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                            <span class="material-symbols-outlined text-[18px]">task_alt</span>
-                        </div>
-                        <span class="text-xs font-black text-slate-700">تأكيد تسليم الطرد للعميل</span>
-                    </button>
-
-                    {{-- زر المرتجع --}}
-                    <button type="button" @click="$refs.statusInput.value = 'returned'; $refs.statusForm.submit()"
-                        :disabled="isSubmitting"
-                        class="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl hover:bg-rose-50 transition-all text-right group active:scale-[0.98]">
-                        <div class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                            <span class="material-symbols-outlined text-[18px]">assignment_return</span>
-                        </div>
-                        <span class="text-xs font-black text-slate-700">رفض الاستلام (إرجاع الطرد)</span>
-                    </button>
+            @if(in_array($shipment->status, ['delivered', 'returned', 'cancelled']))
+                {{-- 1. حالة الإغلاق (مقفلة) --}}
+                <div
+                    class="flex-[2] flex items-center justify-center gap-2 h-12 bg-slate-50 text-slate-400 rounded-2xl font-bold text-[10px] border border-slate-100">
+                    <span class="material-symbols-outlined text-[16px]">lock</span>
+                    تم إغلاق هذا الطرد
                 </div>
 
-                {{-- ================= Modal: نافذة التنبيه المالي بوب أب ================= --}}
-                @if($shipment->payment_method !== 'prepaid')
-                    <div x-show="showPaymentModal" x-cloak
-                        class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <div x-show="showPaymentModal" x-transition.opacity duration.300ms @click="showPaymentModal = false"
-                            class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+            @elseif($shipment->status === 'pending')
+                {{-- 2. حالة قيد التجهيز --}}
+                <div
+                    class="flex-[2] flex items-center justify-center gap-2 h-12 bg-amber-50 text-amber-500 rounded-2xl font-bold text-[10px] border border-amber-100">
+                    <span class="material-symbols-outlined text-[16px]">schedule</span>
+                    الطرد لا يزال قيد التجهيز
+                </div>
 
-                        <div x-show="showPaymentModal" x-transition:enter="transition ease-out duration-300"
-                            x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+            @elseif($shipment->status === 'in_transit')
+                {{-- 3. حالة في الطريق (يجب استلامه في الفرع أولاً) 🚚 --}}
+                <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" class="flex-[2]"
+                    x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+                    @csrf
+                    {{-- نرسل القيمة المطلوبة للتحويل إلى المستودع --}}
+                    <input type="hidden" name="status" value="received_at_branch">
+                    <button type="submit" :disabled="isSubmitting"
+                        class="w-full flex items-center justify-center gap-2 px-4 h-12 bg-blue-500 text-white rounded-2xl font-bold text-xs shadow-[0_8px_20px_rgba(59,130,246,0.3)] hover:bg-blue-600 active:scale-95 transition-all">
+                        <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                        تأكيد وصول الطرد للفرع
+                    </button>
+                </form>
+
+            @else
+                {{-- 4. حالة وصل المستودع (received_at_branch) أو مع المندوب 📦 -> تظهر أزرار التسليم --}}
+                <div class="flex-[2] relative" x-data="{ openStatusMenu: false, showPaymentModal: false, isSubmitting: false }">
+                    <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST" x-ref="statusForm"
+                        @submit="isSubmitting = true">
+                        @csrf
+                        <input type="hidden" name="status" x-ref="statusInput">
+
+                        <button type="button" @click="openStatusMenu = !openStatusMenu" @click.outside="openStatusMenu = false"
+                            class="w-full flex items-center justify-between px-4 h-12 {{ $shipment->is_returned ? 'bg-rose-500 hover:bg-rose-600 shadow-[0_8px_20px_rgba(244,63,94,0.2)]' : 'bg-primary hover:bg-primary/90 shadow-[0_8px_20px_rgba(var(--color-primary),0.2)]' }} text-white rounded-2xl font-bold text-xs active:scale-95 transition-all">
+                            <div class="flex gap-2 items-center">
+                                <span
+                                    class="material-symbols-outlined text-[18px]">{{ $shipment->is_returned ? 'assignment_returned' : 'how_to_reg' }}</span>
+                                <span>{{ $shipment->is_returned ? 'إجراءات تسليم المرتجع' : 'إجراءات تسليم العميل' }}</span>
+                            </div>
+                            <span class="material-symbols-outlined text-[18px] transition-transform duration-300"
+                                :class="openStatusMenu ? 'rotate-180' : ''">expand_more</span>
+                        </button>
+
+                        <div x-show="openStatusMenu" x-cloak x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                            class="relative bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-6 text-center border border-slate-100">
+                            class="absolute bottom-full mb-2 right-0 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_-15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
 
-                            <div class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                                <span class="material-symbols-outlined text-[40px]">payments</span>
-                            </div>
-
-                            <h3 class="text-lg font-black text-slate-800 font-headline mb-2">تنبيه تحصيل مالي!</h3>
-                            <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
-                                هذا الطرد غير مدفوع مسبقاً. الرجاء استلام المبلغ التالي من العميل قبل تأكيد عملية التسليم.
-                            </p>
-
-                            <div class="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
-                                <p class="text-[10px] font-bold text-rose-600/70 mb-1">المبلغ المطلوب تحصيله</p>
-                                <p class="text-3xl font-black font-mono text-rose-700 dir-ltr">
-                                    {{ number_format($shipment->total_amount, 2) }}</p>
-                            </div>
-
-                            <div class="flex gap-2">
-                                <button type="button" @click="showPaymentModal = false"
-                                    class="flex-1 h-12 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl font-bold text-xs transition-colors">
-                                    تراجع
+                            @if($shipment->is_returned)
+                                {{-- 🔴 أزرار المرتجع (الوجهة النهائية للتاجر) --}}
+                                <button type="button" @click="$refs.statusInput.value = 'delivered'; $refs.statusForm.submit()"
+                                    :disabled="isSubmitting"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-50 transition-all text-right group active:scale-[0.98]">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                                    </div>
+                                    <span class="text-xs font-black text-slate-700">تأكيد تسليم المرتجع للتاجر</span>
                                 </button>
-                                <button type="button"
-                                    @click="$refs.statusInput.value = 'delivered'; $refs.statusForm.submit()"
-                                    class="flex-[2] h-12 bg-emerald-500 text-white hover:bg-emerald-600 rounded-xl font-bold text-xs shadow-[0_8px_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2">
-                                    <span class="material-symbols-outlined text-[18px]">verified</span>
-                                    تم استلام المبلغ
+                            @else
+                                {{-- 🟢 الأزرار العادية (تسليم العميل) --}}
+                                <button type="button" @click="
+                                                                    @if($shipment->payment_method !== 'prepaid')
+                                                                        showPaymentModal = true; 
+                                                                        openStatusMenu = false;
+                                                                    @else
+                                                                        $refs.statusInput.value = 'delivered'; 
+                                                                        $refs.statusForm.submit();
+                                                                    @endif
+                                                                " :disabled="isSubmitting"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition-all text-right group active:scale-[0.98]">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        <span class="material-symbols-outlined text-[18px]">task_alt</span>
+                                    </div>
+                                    <span class="text-xs font-black text-slate-700">تأكيد تسليم الطرد للعميل</span>
                                 </button>
-                            </div>
+
+                                {{-- زر المرتجع --}}
+                                <button type="button" @click="$refs.statusInput.value = 'returned'; $refs.statusForm.submit()"
+                                    :disabled="isSubmitting"
+                                    class="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl hover:bg-rose-50 transition-all text-right group active:scale-[0.98]">
+                                    <div
+                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        <span class="material-symbols-outlined text-[18px]">assignment_return</span>
+                                    </div>
+                                    <span class="text-xs font-black text-slate-700">رفض الاستلام (إرجاع الطرد)</span>
+                                </button>
+                            @endif
                         </div>
-                    </div>
-                @endif
-                {{-- ================= نهاية الـ Modal ================= --}}
 
-            </form>
+                        {{-- ================= Modal: نافذة التنبيه المالي (لا تظهر للمرتجعات) ================= --}}
+                        @if(!$shipment->is_returned && $shipment->payment_method !== 'prepaid')
+                            <div x-show="showPaymentModal" x-cloak
+                                class="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                                <div x-show="showPaymentModal" x-transition.opacity duration.300ms @click="showPaymentModal = false"
+                                    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+
+                                <div x-show="showPaymentModal" x-transition:enter="transition ease-out duration-300"
+                                    x-transition:enter-start="opacity-0 scale-90 translate-y-8"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                    class="relative bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-6 text-center border border-slate-100">
+
+                                    <div
+                                        class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                                        <span class="material-symbols-outlined text-[40px]">payments</span>
+                                    </div>
+
+                                    <h3 class="text-lg font-black text-slate-800 font-headline mb-2">تنبيه تحصيل مالي!</h3>
+                                    <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
+                                        هذا الطرد غير مدفوع مسبقاً. الرجاء استلام المبلغ التالي من العميل قبل تأكيد عملية التسليم.
+                                    </p>
+
+                                    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
+                                        <p class="text-[10px] font-bold text-rose-600/70 mb-1">المبلغ المطلوب تحصيله</p>
+                                        <p class="text-3xl font-black font-mono text-rose-700 dir-ltr">
+                                            {{ number_format($shipment->total_amount, 2) }}
+                                        </p>
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <button type="button" @click="showPaymentModal = false"
+                                            class="flex-1 h-12 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl font-bold text-xs transition-colors">
+                                            تراجع
+                                        </button>
+                                        <button type="button"
+                                            @click="$refs.statusInput.value = 'delivered'; $refs.statusForm.submit()"
+                                            class="flex-[2] h-12 bg-emerald-500 text-white hover:bg-emerald-600 rounded-xl font-bold text-xs shadow-[0_8px_20px_rgba(16,185,129,0.3)] transition-all active:scale-95 flex items-center justify-center gap-2">
+                                            <span class="material-symbols-outlined text-[18px]">verified</span>
+                                            تم استلام المبلغ
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                        {{-- ================= نهاية الـ Modal ================= --}}
+
+                    </form>
+                </div>
+            @endif
+
+            {{-- طباعة --}}
+            <a href="{{ route('receipt.generate', ['type' => 'Shipment', 'id' => $shipment->id]) }}" target="_blank"
+                class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
+                <span class="material-symbols-outlined text-[18px]">print</span>
+                طباعة
+            </a>
         </div>
-    @endif
-
-    {{-- طباعة --}}
-    <a href="{{ route('receipt.generate', ['type' => 'Shipment', 'id' => $shipment->id]) }}" target="_blank"
-        class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
-        <span class="material-symbols-outlined text-[18px]">print</span>
-        طباعة
-    </a>
-</div>
 
         {{-- ================= بطاقة المالية (الأهم في الوارد) ================= --}}
         <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">

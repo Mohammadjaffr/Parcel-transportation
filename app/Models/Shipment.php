@@ -31,7 +31,11 @@ class Shipment extends Model
         'no_gallons_honey',
         'bond_number',
         'shipment_package_id',
+        'is_returned',
         'created_by',
+    ];
+    protected $casts = [
+        'is_returned' => 'boolean',
     ];
 
     public function logs()

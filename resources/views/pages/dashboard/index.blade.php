@@ -150,7 +150,7 @@
                                 </div>
                                 
                                 @if ($shipment->status !== 'cancelled')
-                                    <a href="{{ route('shipment.show', $shipment->id) }}"
+                                    <a href="{{ route('shipment.outgoing.show', $shipment->id) }}"
                                         class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-gray-900 dark:border-gray-800 dark:hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                                     </a>
@@ -274,7 +274,7 @@
                                     {{-- Actions --}}
                                     <td class="px-4 py-4 text-right">
                                         @if ($shipment->status !== 'cancelled')
-                                            <a href="{{ route('shipment.show', $shipment->id) }}" title="عرض التفاصيل"
+                                            <a href="{{ route('shipment.outgoing.show', $shipment->id) }}" title="عرض التفاصيل"
                                                 class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-primary hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-primary">
                                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                                             </a>

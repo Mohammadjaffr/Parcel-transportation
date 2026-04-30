@@ -47,6 +47,7 @@ return new class extends Migration
             
             // 7. ملاحظات
             $table->text('notes')->nullable();
+            $table->boolean('is_returned')->default(false);
 
             $table->foreignId('created_by')->constrained('users');
             

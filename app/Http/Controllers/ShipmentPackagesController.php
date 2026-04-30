@@ -501,32 +501,36 @@ class ShipmentPackagesController extends Controller
         return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
     }
     }
-    public function incomingShow(Request $request,$id){
-        $user = auth()->user();
-        
-        $package = ShipmentPackage::with([
-            'senderBranch', 
-            'senderOfficeBranch', 
-            'driver', 
-            'creator',
-            // 💡 جلب الطرود المرتبطة بهذه الإرسالية مع بيانات عملائها
-            'shipments' => function($query) {
-                $query->with([
-                    'senderCustomer', 
-                    'receiverCustomer', 
-                    'receiverBranch', 
-                    'receiverOfficeBranch'
-                ]);
-            }
-        ])
-        ->findOrFail($id);
-
-        if ($request->isMobile) {
-            return view('mobile.pages.shipmentpackage.incoming.show', compact('package'));
+    public function incomingShow(Request $request, $id)
+{
+    $user = auth()->user();
+    
+    $package = ShipmentPackage::with([
+        'senderBranch', 
+        'senderOfficeBranch', 
+        'driver', 
+        'creator',
+        // 💡 تمرير متغير $user للداخل باستخدام (use)
+        'shipments' => function($query) use ($user) { 
+            
+            // 💡 فلترة الطرود لتجلب فقط ما يخص فرع الموظف الحالي
+            $query->where('receiver_branch_id', $user->branch_id)
+                  ->with([
+                      'senderCustomer', 
+                      'receiverCustomer', 
+                      'receiverBranch', 
+                      'receiverOfficeBranch'
+                  ]);
         }
+    ])
+    ->findOrFail($id);
 
-        return view('pages.shipmentpackage.incoming.show', compact('package'));
+    if ($request->isMobile) {
+        return view('mobile.pages.shipmentpackage.incoming.show', compact('package'));
     }
+
+    return view('pages.shipmentpackage.incoming.show', compact('package'));
+}
 
 
     public function index()
