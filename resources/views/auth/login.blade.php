@@ -11,7 +11,7 @@
         rel="stylesheet" />
 
     <script src="{{ asset('assets/js/cdn.min.js') }}"></script>
-    <script src="{{asset('assets/js/cdn.tailwindcss.js')}}"></script>
+    <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
 
     <script id="tailwind-config">
         tailwind.config = {
@@ -72,7 +72,12 @@
                         "body": ["Almarai", "Manrope"],
                         "label": ["Almarai", "Manrope"]
                     },
-                    borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
                 },
             },
         }
@@ -111,9 +116,9 @@
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center overflow-x-hidden">
+<body class="flex overflow-x-hidden flex-col justify-center items-center min-h-screen">
 
-    <div class="fixed inset-0 z-0 opacity-10 pointer-events-none overflow-hidden">
+    <div class="overflow-hidden fixed inset-0 z-0 opacity-10 pointer-events-none">
         <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary-container blur-[120px]">
         </div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary blur-[120px]"></div>
@@ -123,53 +128,53 @@
         class="relative z-10 w-full max-w-6xl flex flex-col md:flex-row-reverse items-stretch min-h-[750px] m-4 md:m-8 overflow-hidden rounded-xl shadow-[0_20px_60px_rgba(11,29,45,0.08)] bg-surface-container-lowest">
 
         <section
-            class="hidden md:flex md:w-5/12 kinetic-gradient relative overflow-hidden p-12 flex-col justify-between items-start text-white">
+            class="hidden overflow-hidden relative flex-col justify-between items-start p-12 text-white md:flex md:w-5/12 kinetic-gradient">
             <div class="relative z-20 space-y-6">
-                <div class="flex items-center gap-3">
+                <div class="flex gap-3 items-center">
                     <div
-                        class="w-12 h-12 bg-secondary-container flex items-center justify-center rounded-lg shadow-lg overflow-hidden">
+                        class="flex overflow-hidden justify-center items-center w-12 h-12 rounded-lg shadow-lg bg-secondary-container">
                         <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Mursal Logo"
-                            class="w-10 h-10 object-contain">
+                            class="object-contain w-10 h-10">
                     </div>
                     <span class="text-2xl font-black tracking-tighter uppercase font-headline">مُرسَل</span>
                 </div>
                 <h1 class="text-5xl font-extrabold leading-[1.1] font-headline tracking-tight">
                     مستقبل <span class="text-secondary-fixed-dim">الخدمات</span> اللوجستية يبدأ من هنا.
                 </h1>
-                <p class="text-on-primary-container text-lg leading-relaxed max-w-xs opacity-75">
+                <p class="max-w-xs text-lg leading-relaxed opacity-75 text-on-primary-container">
                     انضم إلى شبكة مرسل العالمية وأدر شحناتك بدقة معمارية وتقنية متطورة.
                 </p>
             </div>
 
             <div class="relative z-20 mt-auto">
-                <div class="flex gap-2 items-center text-sm font-medium text-on-primary-container/80 mb-4">
+                <div class="flex gap-2 items-center mb-4 text-sm font-medium text-on-primary-container/80">
                     <span class="w-8 h-[2px] bg-secondary-container"></span>
                     <span>موثوق به من قبل أكثر من 20 مكتب في اليمن</span>
                 </div>
             </div>
 
             <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-10">
-                <img class="w-full h-full object-cover mix-blend-overlay"
+                <img class="object-cover w-full h-full mix-blend-overlay"
                     src="{{ asset('assets/image/abstract-bg.png') }}" alt="Background Pattern" />
             </div>
         </section>
 
-        <section class="flex-1 p-8 md:p-16 flex flex-col justify-center bg-white">
-            <div class="max-w-md mx-auto w-full">
+        <section class="flex flex-col flex-1 justify-center p-8 bg-white md:p-16">
+            <div class="mx-auto w-full max-w-md">
 
-                <div class="md:hidden flex justify-center mb-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-primary flex items-center justify-center rounded">
+                <div class="flex justify-center mb-10 md:hidden">
+                    <div class="flex gap-3 items-center">
+                        <div class="flex justify-center items-center w-10 h-10 rounded bg-primary">
                             <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Mursal Logo"
-                                class="w-10 h-10 object-contain">
+                                class="object-contain w-10 h-10">
                         </div>
                         <span class="text-2xl font-black tracking-tighter uppercase font-headline">مُرسَل</span>
                     </div>
                 </div>
 
                 <div class="mb-10 text-right">
-                    <h2 class="text-3xl font-bold text-on-background font-headline mb-2">تسجيل الدخول إلى حسابك</h2>
-                    <p class="text-slate-500 text-base font-body">أدخل رقم الجوال وكلمة المرور للمتابعة</p>
+                    <h2 class="mb-2 text-3xl font-bold text-on-background font-headline">تسجيل الدخول إلى حسابك</h2>
+                    <p class="text-base text-slate-500 font-body">أدخل رقم الجوال وكلمة المرور للمتابعة</p>
                 </div>
 
                 <x-auth-session-status class="mb-4" :status="session('status')" />
@@ -186,18 +191,18 @@
                         fullPhone: '',
                         init() {
                             this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || { name: 'Yemen', code: 'YE', dial_code: '+967', svg: '' };
-                            
+                    
                             // استرجاع القيمة القديمة في حالة الفشل
                             let oldVal = '{{ old('phone') }}';
-                            if(oldVal) {
+                            if (oldVal) {
                                 let dCode = this.selectedCountry?.dial_code.replace('+', '') || '967';
-                                if(oldVal.startsWith(dCode)) {
+                                if (oldVal.startsWith(dCode)) {
                                     this.localPhoneNumber = oldVal.substring(dCode.length);
                                 } else {
                                     this.localPhoneNumber = oldVal;
                                 }
                             }
-                            
+                    
                             this.updateFullPhone();
                             this.$watch('localPhoneNumber', () => this.updateFullPhone());
                             this.$watch('selectedCountry', () => this.updateFullPhone());
@@ -210,28 +215,28 @@
                             return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
                         }
                     }">
-                        <label for="phone_display" class="block text-sm font-bold text-on-background/80 pr-1">رقم
+                        <label for="phone_display" class="block pr-1 text-sm font-bold text-on-background/80">رقم
                             الجوال</label>
 
                         <input type="hidden" name="phone" :value="fullPhone">
 
                         <div class="relative">
                             <div
-                                class="relative group flex items-center bg-surface-container-low rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-secondary-container transition-all">
+                                class="flex overflow-hidden relative items-center rounded-lg transition-all group bg-surface-container-low focus-within:ring-2 focus-within:ring-secondary-container">
 
                                 <input id="phone_display" type="tel" x-model="localPhoneNumber" required autofocus
                                     inputmode="numeric" {{-- 💡 التقييد الذكي: 9 أرقام لليمن، و 15 كحد أقصى للبقية --}}
                                     :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    class="flex-1 bg-transparent border-0 px-4 py-3.5 pr-11 text-on-background placeholder:text-outline/60 focus:ring-0 font-headline dir-ltr text-left"
+                                    class="flex-1 min-w-0 w-full px-4 py-3.5 pr-11 text-left bg-transparent border-0 text-on-background placeholder:text-outline/60 focus:ring-0 font-headline dir-ltr"
                                     placeholder="7XXXXXXXX" />
 
                                 <div
-                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary pointer-events-none">
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-outline group-focus-within:text-secondary">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
                                 <button type="button" @click="open = !open"
-                                    class="flex items-center gap-2 px-3 h-[52px] bg-slate-100 border-r border-slate-200 hover:bg-slate-200 transition-colors">
+                                    class="flex shrink-0 items-center gap-2 px-3 h-[52px] bg-slate-100 border-r border-slate-200 hover:bg-slate-200 transition-colors">
                                     <span
                                         class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                                     <span class="text-sm font-bold text-on-surface font-headline dir-ltr"
@@ -247,7 +252,7 @@
                                 class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden">
                                 <div class="p-2 border-b border-slate-50">
                                     <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                        class="px-4 py-2.5 w-full text-sm outline-none bg-slate-50 hover:bg-slate-100 focus:bg-slate-100 rounded-xl transition-colors font-headline">
+                                        class="px-4 py-2.5 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 hover:bg-slate-100 focus:bg-slate-100 font-headline">
                                 </div>
                                 <div class="overflow-y-auto max-h-48 custom-scrollbar">
                                     <template x-for="country in filteredCountries" :key="country.code">
@@ -257,14 +262,14 @@
                                                 fill="none" xmlns="http://www.w3.org/2000/svg"
                                                 x-html="country.svg"></svg>
                                             <span
-                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
                                                 x-text="country.name"></span>
                                             <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
                                                 x-text="country.dial_code"></span>
                                         </div>
                                     </template>
                                     <div x-show="filteredCountries.length === 0"
-                                        class="p-4 text-center text-sm font-medium text-slate-500">
+                                        class="p-4 text-sm font-medium text-center text-slate-500">
                                         لا توجد نتائج مطابقة
                                     </div>
                                 </div>
@@ -274,19 +279,19 @@
                     </div>
 
                     <div class="space-y-1.5" x-data="{ showPassword: false }">
-                        <label for="password" class="block text-sm font-bold text-on-background/80 pr-1">كلمة
+                        <label for="password" class="block pr-1 text-sm font-bold text-on-background/80">كلمة
                             المرور</label>
                         <div class="relative group">
                             <input id="password" :type="showPassword ? 'text' : 'password'" name="password" required
                                 autocomplete="current-password"
-                                class="w-full bg-surface-container-low border-0 rounded-lg px-4 py-3.5 pr-11 text-on-background placeholder:text-outline/60 focus:ring-2 focus:ring-secondary-container transition-all font-headline"
+                                class="px-4 py-3.5 pr-11 w-full rounded-lg border-0 transition-all bg-surface-container-low text-on-background placeholder:text-outline/60 focus:ring-2 focus:ring-secondary-container font-headline"
                                 placeholder="••••••••" />
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-secondary">
                                 <span class="material-symbols-outlined">lock</span>
                             </div>
                             <button type="button" @click="showPassword = !showPassword"
-                                class="absolute left-3.5 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
+                                class="absolute left-3.5 top-1/2 transition-colors -translate-y-1/2 text-outline hover:text-primary">
                                 <span class="material-symbols-outlined"
                                     x-text="showPassword ? 'visibility_off' : 'visibility'">visibility</span>
                             </button>
@@ -294,46 +299,48 @@
                         <x-input-error :messages="$errors->get('password')" class="mt-1" />
                     </div>
 
-                    <div class="flex items-center justify-between mt-4">
+                    <div class="flex justify-between items-center mt-4">
                         <label for="remember_me" class="inline-flex items-center cursor-pointer">
                             <input id="remember_me" type="checkbox" name="remember"
-                                class="rounded border-slate-300 text-secondary shadow-sm focus:ring-secondary-container">
-                            <span class="ms-2 text-sm text-on-background/70 font-body">{{ __('تذكرني') }}</span>
+                                class="rounded shadow-sm border-slate-300 text-secondary focus:ring-secondary-container">
+                            <span class="text-sm ms-2 text-on-background/70 font-body">{{ __('تذكرني') }}</span>
                         </label>
                     </div>
 
                     <div class="pt-4" x-data="{ isSubmitting: false }">
-                        <button type="submit"  @click.prevent="
+                        <button type="submit"
+                            @click.prevent="
             if($el.closest('form').checkValidity()) { 
                 isSubmitting = true; 
                 $el.closest('form').submit(); 
             } else { 
                 $el.closest('form').reportValidity(); 
             }
-        " :disabled="isSubmitting"
+        "
+                            :disabled="isSubmitting"
                             :class="{ 'opacity-75 cursor-not-allowed active:scale-100 hover:shadow-none': isSubmitting }"
                             class="w-full bg-secondary-container text-on-secondary-container font-extrabold py-4 rounded-lg shadow-[0_8px_20px_rgba(254,157,32,0.3)] hover:shadow-[0_12px_25px_rgba(254,157,32,0.4)] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3 group">
 
-                            
-                            <div x-show="!isSubmitting" class="flex items-center gap-3">
+
+                            <div x-show="!isSubmitting" class="flex gap-3 items-center">
                                 <span class="text-lg">تسجيل الدخول</span>
                                 <span
-                                    class="material-symbols-outlined transform group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                                    class="transition-transform transform material-symbols-outlined group-hover:-translate-x-1">arrow_back</span>
                             </div>
 
-                            <div x-show="isSubmitting" x-cloak class="flex items-center gap-3">
+                            <div x-show="isSubmitting" x-cloak class="flex gap-3 items-center">
                                 <span class="text-lg">جاري الدخول...</span>
-                                <span class="material-symbols-outlined animate-spin">autorenew</span>
+                                <span class="animate-spin material-symbols-outlined">autorenew</span>
                             </div>
 
                         </button>
                     </div>
                 </form>
 
-                <div class="mt-10 text-center border-t border-slate-100 pt-6">
+                <div class="pt-6 mt-10 text-center border-t border-slate-100">
                     <p class="text-slate-600 font-body">
                         ليس لديك حساب؟
-                        <a class="text-secondary font-bold hover:underline underline-offset-4 mr-1"
+                        <a class="mr-1 font-bold text-secondary hover:underline underline-offset-4"
                             href="{{ route('register') }}">إنشاء حساب جديد</a>
                     </p>
                 </div>
@@ -342,12 +349,12 @@
     </main>
 
     <footer
-        class="mt-4 mb-8 text-slate-400 text-xs font-medium space-x-reverse space-x-6 flex items-center justify-center">
-        <span class="font-headline tracking-widest">MURSAL LOGISTICS</span>
+        class="flex flex-col md:flex-row justify-center items-center gap-4 mt-4 mb-8 text-xs font-medium text-slate-400 text-center">
+        <span class="tracking-widest font-headline">MURSAL LOGISTICS</span>
         <span>© 2026 جميع الحقوق محفوظة</span>
         <div class="flex gap-4">
-            <a class="hover:text-primary transition-colors" href="#">سياسة الخصوصية</a>
-            <a class="hover:text-primary transition-colors" href="#">الشروط والأحكام</a>
+            <a class="transition-colors hover:text-primary" href="#">سياسة الخصوصية</a>
+            <a class="transition-colors hover:text-primary" href="#">الشروط والأحكام</a>
         </div>
     </footer>
 </body>

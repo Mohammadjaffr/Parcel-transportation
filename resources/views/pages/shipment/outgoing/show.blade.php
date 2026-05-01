@@ -80,28 +80,67 @@
                                     {{-- شارة حالة الطرد (تم نقلها هنا لأفضلية القراءة البصرية) --}}
                                     @php
                                         $statusColors = [
-                                            'pending' => 'bg-amber-50 text-amber-600 border-amber-200',
-                                            'in_transit' => 'bg-blue-50 text-blue-600 border-blue-200',
-                                            'delivered' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
-                                            'returned' => 'bg-rose-50 text-rose-600 border-rose-200',
+                                            'pending' =>
+                                                'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400',
+                                            'in_transit' =>
+                                                'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400',
+                                            'received_at_branch' =>
+                                                'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400',
+                                            'out_for_delivery' =>
+                                                'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400',
+                                            'delivered' =>
+                                                'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400',
+                                            'cancelled' =>
+                                                'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400',
+                                            'returned' =>
+                                                'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400',
                                         ];
+
                                         $statusIcons = [
                                             'pending' => 'schedule',
                                             'in_transit' => 'local_shipping',
-                                            'delivered' => 'check_circle',
+                                            'received_at_branch' => 'inventory_2',
+                                            'out_for_delivery' => 'two_wheeler',
+                                            'delivered' => 'task_alt',
+                                            'cancelled' => 'block',
                                             'returned' => 'assignment_return',
                                         ];
+
                                         $statusNames = [
-                                            'pending' => 'قيد الانتظار',
-                                            'in_transit' => 'في الطريق',
+                                            'pending' => 'قيد التجهيز بالمصدر',
+                                            'in_transit' => 'في الطريق إلينا',
+                                            'received_at_branch' => 'بالمستودع (جاهز للتسليم)',
+                                            'out_for_delivery' => 'خرج للتوصيل للعميل',
                                             'delivered' => 'تم التسليم',
+                                            'cancelled' => 'ملغي',
                                             'returned' => 'مرتجع',
                                         ];
-                                        $colorClass =
-                                            $statusColors[$shipment->status] ??
-                                            'bg-slate-50 text-slate-600 border-slate-200';
-                                        $icon = $statusIcons[$shipment->status] ?? 'info';
-                                        $name = $statusNames[$shipment->status] ?? $shipment->status;
+
+                                        // المنطق الذكي للحالات (معالجة المرتجعات ديناميكياً)
+                                        if (
+                                            $shipment->is_returned &&
+                                            !in_array($shipment->status, ['delivered', 'cancelled'])
+                                        ) {
+                                            $colorClass =
+                                                'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400';
+                                            $icon = 'keyboard_return';
+
+                                            if ($shipment->status === 'pending') {
+                                                $name = 'مرتجع (بالمستودع)';
+                                            } elseif ($shipment->status === 'in_transit') {
+                                                $name = 'مرتجع (في الطريق)';
+                                            } elseif ($shipment->status === 'received_at_branch') {
+                                                $name = 'مرتجع (وصل المصدر)';
+                                            } else {
+                                                $name = 'مرتجع';
+                                            }
+                                        } else {
+                                            $colorClass =
+                                                $statusColors[$shipment->status] ??
+                                                'bg-slate-50 text-slate-500 border-slate-200 dark:bg-boxdark-2 dark:text-slate-400 dark:border-boxdark';
+                                            $icon = $statusIcons[$shipment->status] ?? 'info';
+                                            $name = $statusNames[$shipment->status] ?? $shipment->status;
+                                        }
                                     @endphp
                                     <div
                                         class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold text-xs shadow-sm {{ $colorClass }}">
@@ -487,7 +526,7 @@
                     </div>
 
                     {{-- تحديث الحالة السريع (يظهر فقط إذا كان بالطريق) --}}
-                    @if ($shipment->status === 'in_transit')
+                    {{-- @if ($shipment->status === 'in_transit')
                         <div class="pt-6 mt-6 border-t border-gray-100 dark:border-gray-800" x-data="{
                             status: '{{ $shipment->status }}',
                             updating: false,
@@ -513,8 +552,8 @@
                             }
                         }">
 
-                            <h3 class="mb-3 text-sm font-bold text-gray-700 dark:text-gray-300">تحديث الحالة السريع</h3>
-                            <div class="relative group">
+                            {{-- <h3 class="mb-3 text-sm font-bold text-gray-700 dark:text-gray-300">تحديث الحالة السريع</h3> --}}
+                    {{-- <div class="relative group">
                                 <select x-model="status" @change="updateStatus()" :disabled="updating"
                                     class="pr-10 pl-4 w-full h-12 text-sm font-bold text-gray-900 bg-gray-50 rounded-xl border border-gray-200 transition-all appearance-none cursor-pointer outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:bg-gray-900 dark:border-gray-700 dark:text-white disabled:opacity-50">
                                     <option value="in_transit">في الطريق</option>
@@ -524,23 +563,23 @@
                                     class="flex absolute inset-y-0 right-0 items-center pr-3 text-gray-400 transition-colors pointer-events-none group-focus-within:text-primary">
                                     <span class="material-symbols-outlined text-[20px]">keyboard_arrow_down</span>
                                 </div>
-                            </div>
+                            </div> --}}
 
-                            <div x-show="updating" class="flex gap-1.5 items-center mt-2 text-xs font-bold text-primary">
-                                <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
-                                جاري التحديث...
-                            </div>
-                        </div>
-                    @endif
+                    <div x-show="updating" class="flex gap-1.5 items-center mt-2 text-xs font-bold text-primary">
+                        <span class="material-symbols-outlined animate-spin text-[16px]">progress_activity</span>
+                        جاري التحديث...
+                    </div>
                 </div>
-
+                {{-- @endif --}}
             </div>
 
         </div>
 
-        {{-- Modals Includes --}}
-        @include('pages.shipment.modals.cancel-shipment-modal', ['shipment' => $shipment])
-        @include('pages.shipmentpackage.modals.unlink-modal')
+    </div>
+
+    {{-- Modals Includes --}}
+    @include('pages.shipment.modals.cancel-shipment-modal', ['shipment' => $shipment])
+    @include('pages.shipmentpackage.modals.unlink-modal')
     </div>
 @endsection
 

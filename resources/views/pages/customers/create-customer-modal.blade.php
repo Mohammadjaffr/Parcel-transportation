@@ -91,7 +91,7 @@
                             </label>
                             
                             {{-- الحقل المخفي الذي يذهب للسيرفر --}}
-                            <input type="hidden" name="phone" :value="(selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber">
+                            <input type="hidden" name="phone" :value="(selectedCountry?.dial_code || '967').replace('+', '') + localPhoneNumber" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15">
                             
                             <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
                                 <button type="button" @click="phoneOpen = !phoneOpen"
@@ -106,14 +106,17 @@
                                     </template>
                                 </button>
                                 <input type="tel" x-ref="customer_phone" x-model="localPhoneNumber" placeholder="771234567" autocomplete="off" required
-                                       class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr">
+                                       class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0" dir="ltr"
+                                       :maxlength="selectedCountry?.code === 'YE' ? 9 : 15">
                             </div>
 
                             {{-- Dropdown الدول --}}
                             <div x-cloak x-show="phoneOpen" @click.outside="phoneOpen = false" 
                                  x-transition class="overflow-hidden absolute z-50 mt-2 w-full bg-white rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-gray-700">
                                 <div class="p-2 border-b border-gray-100 dark:border-gray-700">
-                                    <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white">
+                                    <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..." class="px-3 py-2 w-full text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:border-primary dark:bg-gray-900 dark:border-gray-600 dark:text-white"
+                                    
+                                    >
                                 </div>
                                 <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                     <template x-for="c in filteredCountries" :key="c.code">

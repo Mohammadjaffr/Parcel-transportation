@@ -3,13 +3,13 @@
 @section('title', 'ملف العميل | ' . $customer->name)
 
 @section('content')
-    <div class="flex flex-col gap-6 px-4 pb-24 pt-4 min-h-screen bg-slate-50/50">
+    <div class="flex flex-col gap-6 px-4 pt-4 pb-24 min-h-screen bg-slate-50/50">
 
         {{-- ================= الهيدر السريع ================= --}}
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div class="flex justify-between items-center">
+            <div class="flex gap-3 items-center">
                 <a href="{{ route('customers.index') }}"
-                    class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-slate-100 text-slate-500 hover:text-primary active:scale-90 transition-all">
+                    class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 hover:text-primary active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
                 </a>
                 <h1 class="text-xl font-black font-headline text-slate-800">ملف العميل</h1>
@@ -17,15 +17,19 @@
             
             {{-- زر مراسلة العميل واتساب --}}
             <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
-                class="flex items-center gap-2 h-10 px-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs transition-transform active:scale-95 border border-emerald-100">
+                class="flex gap-2 items-center px-4 h-10 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform active:scale-95">
                 <svg class="w-4 h-4 fill-emerald-500" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                 مراسلة
+            </a>
+            <a href="{{ route('receipt.generate', ['type' => 'CustomerAccountStatementReceipt', 'id' => $customer->id]) }}" target="_blank"  class="flex gap-2 items-center px-4 h-10 text-xs font-bold rounded-xl border transition-transform border-pri-100 bg-emeprald-50 text-p-600 active:scale-95">
+                <span class="material-symbols-outlined text-[18px] text-primary">receipt_long</span>
+                كشف الحساب
             </a>
         </div>
 
         {{-- ================= بطاقة الهوية ================= --}}
         <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] flex items-center gap-4 relative overflow-hidden">
-            <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-black shadow-inner border border-primary/20 shrink-0">
+            <div class="flex justify-center items-center w-16 h-16 text-2xl font-black rounded-2xl border shadow-inner bg-primary/10 text-primary border-primary/20 shrink-0">
                 @php
                     $words = explode(' ', $customer->name);
                     echo mb_substr($words[0] ?? '', 0, 1, 'utf-8') . (isset($words[1]) ? mb_substr($words[1], 0, 1, 'utf-8') : '');
@@ -33,16 +37,16 @@
             </div>
             <div>
                 <h2 class="text-lg font-black text-slate-800 font-headline">{{ $customer->name }}</h2>
-                <div class="flex items-center gap-2 text-slate-500 mt-1.5">
+                <div class="flex gap-2 items-center mt-1.5 text-slate-500">
                     <span class="material-symbols-outlined text-[14px]">phone_iphone</span>
-                    <p class="text-xs font-mono font-bold tracking-wider">{{ $customer->phone }}</p>
+                    <p class="font-mono text-xs font-bold tracking-wider">{{ $customer->phone }}</p>
                 </div>
             </div>
         </div>
 
         {{-- ================= الداشبورد المالي للعميل ================= --}}
         <div>
-            <h3 class="font-black text-sm text-slate-800 flex items-center gap-2 mb-3">
+            <h3 class="flex gap-2 items-center mb-3 text-sm font-black text-slate-800">
                 <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
                 الرصيد والمديونية (للشحنات الآجلة)
             </h3>
@@ -84,8 +88,8 @@
 
         {{-- ================= سجل الشحنات مع الفلترة ================= --}}
         <div class="mt-2">
-            <div class="flex items-end justify-between mb-3">
-                <h3 class="font-black text-sm text-slate-800 flex items-center gap-2">
+            <div class="flex justify-between items-end mb-3">
+                <h3 class="flex gap-2 items-center text-sm font-black text-slate-800">
                     <span class="material-symbols-outlined text-primary text-[20px]">history</span>
                     سجل الشحنات
                 </h3>
@@ -118,7 +122,7 @@
                     <div class="bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative">
                         
                         {{-- تحديد بصري: هل هو مرسل أم مستقبل في هذه الشحنة؟ --}}
-                        <div class="px-4 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <div class="flex justify-between items-center px-4 py-2 border-b border-slate-100 bg-slate-50/50">
                             @if($shipment->sender_customer_id == $customer->id)
                                 <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
                                     <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
@@ -134,12 +138,12 @@
                             <span class="text-[10px] font-bold text-slate-400">{{ $shipment->created_at->format('Y-m-d') }}</span>
                         </div>
 
-                        <div class="p-4 flex justify-between items-center">
+                        <div class="flex justify-between items-center p-4">
                             <div>
-                                <h3 class="text-sm font-black text-slate-800 font-mono tracking-tight">{{ $shipment->bond_number }}</h3>
+                                <h3 class="font-mono text-sm font-black tracking-tight text-slate-800">{{ $shipment->bond_number }}</h3>
                                 <p class="text-[10px] font-bold text-slate-500 mt-1">
                                     @if($shipment->payment_method == 'customer_credit')
-                                        <span class="text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded">آجل</span>
+                                        <span class="px-1.5 py-0.5 text-rose-500 bg-rose-50 rounded">آجل</span>
                                     @elseif($shipment->payment_method == 'prepaid')
                                         مدفوع مقدماً
                                     @elseif($shipment->payment_method == 'cod')
@@ -148,18 +152,18 @@
                                         دفع جزئي
                                     @endif
                                     •
-                                    <span class="text-slate-800 font-black">{{ number_format($shipment->total_amount, 0) }} ريال</span>
+                                    <span class="font-black text-slate-800">{{ number_format($shipment->total_amount, 0) }} ريال</span>
                                 </p>
                             </div>
 
-                            <a href="{{ route('shipment.show', $shipment->id) }}" class="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-colors border border-slate-100">
+                            <a href="{{ route('shipment.show', $shipment->id) }}" class="flex justify-center items-center w-10 h-10 rounded-full border transition-colors bg-slate-50 text-slate-400 hover:bg-primary hover:text-white border-slate-100">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </a>
                         </div>
                     </div>
                 @empty
                     <div class="py-12 flex flex-col items-center justify-center bg-white rounded-[2rem] border-2 border-dashed border-slate-100 text-center">
-                        <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">package_2</span>
+                        <span class="mb-2 text-4xl material-symbols-outlined text-slate-300">package_2</span>
                         <p class="text-sm font-bold text-slate-500">لا توجد شحنات مطابقة للفلتر</p>
                     </div>
                 @endforelse

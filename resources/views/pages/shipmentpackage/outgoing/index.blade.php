@@ -68,34 +68,60 @@
 
             {{-- شريط الفلترة حسب الحالة --}}
             <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar snap-x snap-mandatory lg:pb-0">
+                {{-- الكل --}}
                 <a href="{{ route('shipmentpackage.outgoing.index') }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ !request('status') ? 'bg-boxdark text-gray-500 border-boxdark shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-white text-gray-500 border-gray-100 hover:bg-surface dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
+    {{ !request('status') ? 'bg-boxdark text-white border-boxdark shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-white text-gray-500 border-gray-100 hover:bg-surface dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
                     الكل
                 </a>
 
+                {{-- قيد التجهيز --}}
                 <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'pending']) }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20 dark:bg-amber-600 dark:border-amber-600' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50 dark:bg-boxdark-2 dark:text-amber-500 dark:border-boxdark dark:hover:bg-amber-500/10' }}">
+    {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20 dark:bg-amber-600 dark:border-amber-600' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50 dark:bg-boxdark-2 dark:text-amber-500 dark:border-boxdark dark:hover:bg-amber-500/10' }}">
                     قيد التجهيز
                 </a>
 
+                {{-- في الطريق --}}
                 <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'in_transit']) }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20 dark:bg-blue-600 dark:border-blue-600' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 dark:bg-boxdark-2 dark:text-blue-500 dark:border-boxdark dark:hover:bg-blue-500/10' }}">
+    {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20 dark:bg-blue-600 dark:border-blue-600' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 dark:bg-boxdark-2 dark:text-blue-500 dark:border-boxdark dark:hover:bg-blue-500/10' }}">
                     في الطريق
                 </a>
 
+                {{-- بالمستودع --}}
+                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'received_at_branch']) }}"
+                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+    {{ request('status') == 'received_at_branch' ? 'bg-purple-500 text-white border-purple-500 shadow-md shadow-purple-500/20 dark:bg-purple-600 dark:border-purple-600' : 'bg-white text-purple-600 border-purple-100 hover:bg-purple-50 dark:bg-boxdark-2 dark:text-purple-500 dark:border-boxdark dark:hover:bg-purple-500/10' }}">
+                    بالمستودع
+                </a>
+
+                {{-- خرج للتوصيل --}}
+                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'out_for_delivery']) }}"
+                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+    {{ request('status') == 'out_for_delivery' ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20 dark:bg-indigo-600 dark:border-indigo-600' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50 dark:bg-boxdark-2 dark:text-indigo-500 dark:border-boxdark dark:hover:bg-indigo-500/10' }}">
+                    خرج للتوصيل
+                </a>
+
+                {{-- مكتملة (تم التسليم) --}}
                 <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'delivered']) }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20 dark:bg-emerald-600 dark:border-emerald-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50 dark:bg-boxdark-2 dark:text-emerald-500 dark:border-boxdark dark:hover:bg-emerald-500/10' }}">
+    {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20 dark:bg-emerald-600 dark:border-emerald-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50 dark:bg-boxdark-2 dark:text-emerald-500 dark:border-boxdark dark:hover:bg-emerald-500/10' }}">
                     مكتملة
                 </a>
 
+                {{-- مرتجعة --}}
                 <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'returned']) }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20 dark:bg-rose-600 dark:border-rose-600' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50 dark:bg-boxdark-2 dark:text-rose-500 dark:border-boxdark dark:hover:bg-rose-500/10' }}">
+    {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20 dark:bg-rose-600 dark:border-rose-600' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50 dark:bg-boxdark-2 dark:text-rose-500 dark:border-boxdark dark:hover:bg-rose-500/10' }}">
                     مرتجعة
+                </a>
+
+                {{-- ملغاة --}}
+                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'cancelled']) }}"
+                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
+    {{ request('status') == 'cancelled' ? 'bg-slate-500 text-white border-slate-500 shadow-md shadow-slate-500/20 dark:bg-slate-600 dark:border-slate-600' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50 dark:bg-boxdark-2 dark:text-slate-500 dark:border-boxdark dark:hover:bg-slate-500/10' }}">
+                    ملغاة
                 </a>
             </div>
         </div>

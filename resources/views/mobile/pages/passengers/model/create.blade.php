@@ -46,6 +46,29 @@
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">pin</span>
                     <input type="text" name="passenger_number" required placeholder="أدخل رقم الراكب"
                         class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline">
+                           <button type="button" x-show="selectedDriverId" @click="resetSelection"
+                            class="absolute left-3 top-1/2 z-10 p-0.5 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-red-500">
+                            <span class="material-symbols-outlined text-[16px]">close</span>
+                        </button>
+
+                        <!-- Country Dropdown -->
+                        <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak
+                            class="absolute top-[calc(100%+4px)] right-0 z-50 w-full max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
+                            <div class="p-2 border-b border-slate-50">
+                                <input type="text" x-model="searchCountry" placeholder="ابحث عن الدولة..."
+                                    class="px-4 py-2 w-full text-sm rounded-xl outline-none bg-slate-50 font-headline">
+                            </div>
+                            <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                <template x-for="country in countries.filter(c => c.name.includes(searchCountry) || c.dial_code.includes(searchCountry))" :key="country.code">
+                                    <div @click="selectCountry(country)"
+                                        class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                        <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                        <span class="flex-grow text-sm font-medium truncate text-slate-700 font-headline" x-text="country.name"></span>
+                                        <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                 </div>
             </div>
 
@@ -85,7 +108,7 @@
             </div>
 
             <!-- السائق بمكون السائق المتقدم -->
-            <div class="pt-4 border-t border-slate-100 relative">
+            <div class="relative pt-4 border-t border-slate-100">
                 <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">السائق <span class="text-rose-500">*</span></label>
                 
                 <div x-data="driverSelect({ 
@@ -94,7 +117,7 @@
                         initialId: null,
                         initialName: '',
                         initialPhone: ''
-                    })" class="space-y-4 relative">
+                    })" class="relative space-y-4">
                     
                     <input type="hidden" name="driver_id" :value="selectedDriverId">
                     <input type="hidden" name="driver_phone" :value="fullPhone">
@@ -115,10 +138,12 @@
                         
                         <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDriverDropdown = true" placeholder="رقم الهاتف" required
                             class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent rounded-l-2xl border-none outline-none font-headline dir-ltr"
-                            :class="selectedDriverId ? 'font-bold text-primary' : ''">
+                            :class="selectedDriverId ? 'font-bold text-primary' : ''"
+                            :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                            >
                         
                         <button type="button" x-show="selectedDriverId" @click="resetSelection"
-                            class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-0.5 bg-white rounded-full text-slate-400 hover:text-red-500">
+                            class="absolute left-3 top-1/2 z-10 p-0.5 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-red-500">
                             <span class="material-symbols-outlined text-[16px]">close</span>
                         </button>
 
@@ -172,7 +197,7 @@
                     </div>
 
                     <div x-show="driverName && !isExistingDriver && phone" style="display: none;"
-                        class="flex gap-2 items-center p-3 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl font-headline border border-emerald-100/50">
+                        class="flex gap-2 items-center p-3 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border font-headline border-emerald-100/50">
                         <span class="material-symbols-outlined text-[18px]">check_circle</span>
                         <span>سائق جديد، سيتم حفظه تلقائياً.</span>
                     </div>
@@ -182,7 +207,7 @@
             <div>
                 <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">ملاحظات</label>
                 <textarea name="note" rows="3" placeholder="ملاحظات إضافية..."
-                    class="p-4 w-full text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline resize-none"></textarea>
+                    class="p-4 w-full text-sm rounded-2xl border-none ring-1 transition-all outline-none resize-none bg-slate-50 focus:bg-white ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline"></textarea>
             </div>
 
             <button type="submit" 

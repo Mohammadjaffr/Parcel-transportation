@@ -72,7 +72,7 @@
                         </label>
                         
                         {{-- الحقل المخفي الذي يذهب للسيرفر --}}
-                        <input type="hidden" name="phone" :value="(editCustomer.phone_country?.dial_code || '967').replace('+', '') + editCustomer.phone_local">
+                        <input type="hidden" name="phone" >
 
                         <div class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
                             <button type="button" @click="phoneOpen = !phoneOpen"

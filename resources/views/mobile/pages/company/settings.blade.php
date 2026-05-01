@@ -5,26 +5,26 @@
 @section('content')
 
     <div x-data="{
-                                showAddBranchModal: false,
-                                showEditCompanyModal: false,
-                                showEditBranchModal: false,
-                                editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
-                                editBranchAction: '',
-
-                                openEditBranchModal(branch) {
-                                    this.editBranchForm = {
-                                        name: branch.name,
-                                        code: branch.code,
-                                        city: branch.city,
-                                        address: branch.address || '',
-                                        map_link: branch.map_link || '',
-                                        is_main: branch.is_main == 1
-                                    };
-                                    this.editBranchAction = '/branch/' + branch.id;
-                                    this.showEditBranchModal = true;
-                                    this.$dispatch('load-edit-phone', { phone: branch.phone });
-                                }
-                            }" class="flex flex-col gap-6 pb-24 min-h-screen">
+        showAddBranchModal: false,
+        showEditCompanyModal: false,
+        showEditBranchModal: false,
+        editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
+        editBranchAction: '',
+    
+        openEditBranchModal(branch) {
+            this.editBranchForm = {
+                name: branch.name,
+                code: branch.code,
+                city: branch.city,
+                address: branch.address || '',
+                map_link: branch.map_link || '',
+                is_main: branch.is_main == 1
+            };
+            this.editBranchAction = '/branch/' + branch.id;
+            this.showEditBranchModal = true;
+            this.$dispatch('load-edit-phone', { phone: branch.phone });
+        }
+    }" class="flex flex-col gap-6 pb-24 min-h-screen">
 
         {{-- <div class="flex gap-4 items-center px-4 pt-4">
             <button onclick="history.back()"
@@ -45,15 +45,16 @@
                     <span class="material-symbols-outlined text-[18px]">edit_square</span>
                 </button>
 
-                <div class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
-    <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
-        
-        {{-- 💡 التعديل هنا: استدعاء الكاش مباشرة، وهو سيتكفل بالرابط والصورة الافتراضية --}}
-        <img src="{{ auth()->user()->cached_app_logo }}"
-            alt="شعار الشركة" class="object-cover w-full h-full">
-            
-    </div>
-</div>
+                <div
+                    class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
+                    <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
+
+                        {{-- 💡 التعديل هنا: استدعاء الكاش مباشرة، وهو سيتكفل بالرابط والصورة الافتراضية --}}
+                        <img src="{{ auth()->user()->cached_app_logo }}" alt="شعار الشركة"
+                            class="object-cover w-full h-full">
+
+                    </div>
+                </div>
 
                 <h2 class="flex gap-2 justify-center items-center mb-2 text-2xl font-black font-headline text-slate-800">
                     {{ $company->name ?? 'اسم الشركة غير محدد' }}
@@ -92,89 +93,92 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-@if(isset($subscription))
-    @php
-        // 1. الفروع
-        $branchLimit = $subscription->allowed_branches ?? 0;
-        $branchPercent = ($branchLimit > 0) ? ($company->branches_count / $branchLimit) * 100 : 0;
+        @if (isset($subscription))
+            @php
+                // 1. الفروع
+                $branchLimit = $subscription->allowed_branches ?? 0;
+                $branchPercent = $branchLimit > 0 ? ($company->branches_count / $branchLimit) * 100 : 0;
 
-        // 2. السائقين 💡 (الجديد)
-        $driverLimit = $subscription->allowed_drivers ?? 0;
-        $driverPercent = ($driverLimit > 0) ? ($company->drivers_count / $driverLimit) * 100 : 0;
+                // 2. السائقين 💡 (الجديد)
+                $driverLimit = $subscription->allowed_drivers ?? 0;
+                $driverPercent = $driverLimit > 0 ? ($company->drivers_count / $driverLimit) * 100 : 0;
 
-        // 3. الشحنات
-        $shipmentLimit = $subscription->allowed_shipments ?? 0;
-        $shipmentPercent = ($shipmentLimit > 0) ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
+                // 3. الشحنات
+                $shipmentLimit = $subscription->allowed_shipments ?? 0;
+                $shipmentPercent = $shipmentLimit > 0 ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
 
-        // 4. الرحلات المجمعة 💡 (الجديد)
-        $packageLimit = $subscription->allowed_packages ?? 0;
-        $packagePercent = ($packageLimit > 0) ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
-    @endphp
+                // 4. الرحلات المجمعة 💡 (الجديد)
+                $packageLimit = $subscription->allowed_packages ?? 0;
+                $packagePercent = $packageLimit > 0 ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
+            @endphp
 
-    <div class="px-4 space-y-4 mt-6">
-        <div class="flex justify-between items-center">
-            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                تفاصيل الباقة
-            </h3>
-            <a href="{{ route('pricing.page') }}" class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
-            </a>
-        </div>
+            <div class="px-4 mt-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                        تفاصيل الباقة
+                    </h3>
+                    <a href="{{ route('pricing.page') }}"
+                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                        ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
+                    </a>
+                </div>
 
-        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-            {{-- حالة الاشتراك --}}
-            <div class="mb-5 relative z-10">
-                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
-                </p>
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+                    {{-- حالة الاشتراك --}}
+                    <div class="relative z-10 mb-5">
+                        <p
+                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                            <span
+                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
+                        </p>
+                    </div>
+
+                    <div class="relative z-10 space-y-5">
+                        {{-- 1. الفروع --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الفروع',
+                            'icon' => 'domain',
+                            'current' => $company->branches_count,
+                            'limit' => $branchLimit,
+                            'percent' => $branchPercent,
+                            'color' => 'bg-amber-500',
+                        ])
+
+                        {{-- 2. السائقين (الجديد) --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد السائقين',
+                            'icon' => 'person_pin_circle',
+                            'current' => $company->drivers_count,
+                            'limit' => $driverLimit,
+                            'percent' => $driverPercent,
+                            'color' => 'bg-blue-500',
+                        ])
+
+                        {{-- 3. الطرود --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الطرود',
+                            'icon' => 'inventory_2',
+                            'current' => $shipmentsCount,
+                            'limit' => $shipmentLimit,
+                            'percent' => $shipmentPercent,
+                            'color' => 'bg-primary',
+                        ])
+
+                        {{-- 4. الرحلات المجمعة (الجديد) --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الشحنات',
+                            'icon' => 'local_shipping',
+                            'current' => $packagesCount,
+                            'limit' => $packageLimit,
+                            'percent' => $packagePercent,
+                            'color' => 'bg-indigo-500',
+                        ])
+                    </div>
+                </div>
             </div>
-
-            <div class="space-y-5 relative z-10">
-                {{-- 1. الفروع --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الفروع',
-                    'icon' => 'domain',
-                    'current' => $company->branches_count,
-                    'limit' => $branchLimit,
-                    'percent' => $branchPercent,
-                    'color' => 'bg-amber-500'
-                ])
-
-                {{-- 2. السائقين (الجديد) --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد السائقين',
-                    'icon' => 'person_pin_circle',
-                    'current' => $company->drivers_count,
-                    'limit' => $driverLimit,
-                    'percent' => $driverPercent,
-                    'color' => 'bg-blue-500'
-                ])
-
-                {{-- 3. الطرود --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الطرود',
-                    'icon' => 'inventory_2',
-                    'current' => $shipmentsCount,
-                    'limit' => $shipmentLimit,
-                    'percent' => $shipmentPercent,
-                    'color' => 'bg-primary'
-                ])
-
-                {{-- 4. الرحلات المجمعة (الجديد) --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الشحنات',
-                    'icon' => 'local_shipping',
-                    'current' => $packagesCount,
-                    'limit' => $packageLimit,
-                    'percent' => $packagePercent,
-                    'color' => 'bg-indigo-500'
-                ])
-            </div>
-        </div>
-    </div>
-@endif
+        @endif
 
         <div class="px-4 space-y-4">
             <div class="flex justify-between items-center">
@@ -199,7 +203,8 @@
                                 <div class="absolute top-0 right-0 bottom-0 w-1.5 bg-primary"></div>
                             @endif
 
-                            <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
+                            <div
+                                class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
                                 <span class="text-2xl material-symbols-outlined">store</span>
                             </div>
 
@@ -271,13 +276,11 @@
                     جميع الفواتير المصدرة للعملاء.
                 </p>
             </div>
-                @php
-                    $cachedTerms = auth()->user()->cached_app_terms;
-                @endphp
-            @if (
-                    count($cachedTerms) > 0
-                )
-               
+            @php
+                $cachedTerms = auth()->user()->cached_app_terms;
+            @endphp
+            @if (count($cachedTerms) > 0)
+
                 <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
                     {{-- زخرفة خلفية توحي بالرسمية --}}
                     <div class="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-[3rem] -z-0"></div>
@@ -286,10 +289,11 @@
 
                     <div class="relative z-10">
                         <ul class="space-y-3">
-                            
+
                             @foreach ($cachedTerms as $index => $term)
                                 <li class="flex gap-3 items-start group">
-                                    <div class="mt-0.5 w-5 h-5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
+                                    <div
+                                        class="mt-0.5 w-5 h-5 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-colors shrink-0">
                                         {{ $index + 1 }}
                                     </div>
                                     <p class="pt-0.5 text-xs font-bold leading-relaxed text-slate-600">
@@ -317,23 +321,23 @@
         </div>
 
         <div x-data="{
-                                    isSubmitting: false,
-                                    allCountries: @js(array_values(config('countries', []))),
-                                    selectedCountry: null,
-                                    localPhone: '',
-                                    fullPhone: '',
-                                    openCountry: false,
-                                    search: '',
-                                    init() {
-                                        this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
-                                        this.$watch('localPhone', () => this.updatePhone());
-                                        this.$watch('selectedCountry', () => this.updatePhone());
-                                    },
-                                    updatePhone() {
-                                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                                    }
-                                }" x-show="showAddBranchModal" x-cloak
+            isSubmitting: false,
+            allCountries: @js(array_values(config('countries', []))),
+            selectedCountry: null,
+            localPhone: '',
+            fullPhone: '',
+            openCountry: false,
+            search: '',
+            init() {
+                this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+                this.$watch('localPhone', () => this.updatePhone());
+                this.$watch('selectedCountry', () => this.updatePhone());
+            },
+            updatePhone() {
+                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+            }
+        }" x-show="showAddBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
@@ -408,15 +412,10 @@
 
                         <div
                             class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" 
-    x-model="localPhone" 
-    placeholder="7XXXXXXXX" 
-    inputmode="numeric"
-    {{-- 💡 تغيير الحد الأقصى ديناميكياً: 9 لليمن، و 15 كحد أقصى لباقي الدول --}}
-    :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
-    {{-- 💡 منع إدخال أي شيء غير الأرقام فوراً --}}
-    @input="localPhone = localPhone.replace(/\D/g, '')"
-    class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                            <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
+                                {{-- 💡 تغيير الحد الأقصى ديناميكياً: 9 لليمن، و 15 كحد أقصى لباقي الدول --}} :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
+                                {{-- 💡 منع إدخال أي شيء غير الأرقام فوراً --}} @input="localPhone = localPhone.replace(/\D/g, '')"
+                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
@@ -468,7 +467,8 @@
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
                             (Google Maps)</label>
                         <div class="relative">
-                            <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..." dir="ltr"
+                            <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..."
+                                dir="ltr"
                                 class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                 <span class="text-lg material-symbols-outlined">map</span>
@@ -490,9 +490,9 @@
         </div>
 
         <div x-data="{
-                                    isSubmittingCompany: false,
-                                    terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
-                                }" x-show="showEditCompanyModal" x-cloak
+            isSubmittingCompany: false,
+            terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+        }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -552,8 +552,8 @@
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">البريد
                                 الإلكتروني</label>
-                            <input type="email" name="email" value="{{ $company->email }}" placeholder="info@company.com"
-                                dir="ltr"
+                            <input type="email" name="email" value="{{ $company->email }}"
+                                placeholder="info@company.com" dir="ltr"
                                 class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
                     </div>
@@ -606,8 +606,9 @@
 
                             {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
                             <div class="flex-1 px-3">
-                                <input type="text" x-model="editBranchForm.color" placeholder="#000000" dir="ltr"
-                                    class="w-full text-sm font-mono text-left bg-transparent border-none outline-none text-slate-600 uppercase focus:ring-0 placeholder:text-slate-400">
+                                <input type="text" x-model="editBranchForm.color" placeholder="#000000"
+                                    dir="ltr"
+                                    class="w-full font-mono text-sm text-left uppercase bg-transparent border-none outline-none text-slate-600 focus:ring-0 placeholder:text-slate-400">
                             </div>
 
                             {{-- أيقونة جمالية --}}
@@ -617,7 +618,7 @@
                         </div>
 
                         {{-- 💡 الرسالة التوضيحية الأنيقة --}}
-                        <div class="flex gap-1.5 items-start mt-2 px-1 text-slate-500">
+                        <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
                             <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
                             <p class="text-[10px] leading-relaxed font-medium">
                                 سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
@@ -641,22 +642,23 @@
         </div>
 
         <div x-data="{
-                                    isSubmittingEdit: false,
-                                    allCountries: @js(array_values(config('countries', []))),
-                                    selectedCountry: null,
-                                    localPhone: '',
-                                    fullPhone: '',
-                                    openCountry: false,
-                                    search: '',
-                                    init() {
-                                        this.$watch('localPhone', () => this.updatePhone());
-                                        this.$watch('selectedCountry', () => this.updatePhone());
-                                    },
-                                    updatePhone() {
-                                        let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                                        this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                                    }
-                                }" @load-edit-phone.window="
+            isSubmittingEdit: false,
+            allCountries: @js(array_values(config('countries', []))),
+            selectedCountry: null,
+            localPhone: '',
+            fullPhone: '',
+            openCountry: false,
+            search: '',
+            init() {
+                this.$watch('localPhone', () => this.updatePhone());
+                this.$watch('selectedCountry', () => this.updatePhone());
+            },
+            updatePhone() {
+                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+            }
+        }"
+            @load-edit-phone.window="
                                                     let phone = $event.detail.phone || '';
                                                     if(!phone) {
                                                         selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
@@ -672,7 +674,8 @@
                                                         }
                                                     }
                                                     updatePhone();
-                                                 " x-show="showEditBranchModal" x-cloak
+                                                 "
+            x-show="showEditBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms
@@ -723,7 +726,8 @@
                     <div>
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
                                 class="text-rose-500">*</span></label>
-                        <input type="text" name="name" x-model="editBranchForm.name" required placeholder="مثال: فرع الرياض"
+                        <input type="text" name="name" x-model="editBranchForm.name" required
+                            placeholder="مثال: فرع الرياض"
                             class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                     </div>
 

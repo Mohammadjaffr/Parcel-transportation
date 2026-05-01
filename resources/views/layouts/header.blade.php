@@ -327,6 +327,8 @@
                 @elseif($type == 'admin_new_manifest') bg-teal-50 text-teal-600 border-teal-100
                 @elseif($type == 'new_shipment') bg-indigo-50 text-indigo-500 border-indigo-100
                 @elseif($type == 'admin_status_updated') bg-cyan-50 text-cyan-600 border-cyan-100
+                @elseif($type == 'incoming_package') bg-orange-50 text-orange-600 border-orange-100
+                @elseif($type == 'package_received') bg-emerald-50 text-emerald-600 border-emerald-100
                 @else bg-slate-100 text-slate-500 border-slate-200 @endif">
 
                                                 <span class="material-symbols-outlined text-[22px]">
@@ -346,6 +348,10 @@
                                                         unarchive
                                                     @elseif($type == 'admin_status_updated')
                                                         {{ $notification->data['icon'] ?? 'update' }}
+                                                    @elseif($type == 'incoming_package')
+                                                        local_shipping
+                                                    @elseif($type == 'package_received')
+                                                        inventory_2
                                                     @else
                                                         notifications
                                                     @endif
@@ -373,6 +379,10 @@
                                                                 طرد وارد 📦
                                                             @elseif($type == 'admin_status_updated')
                                                                 تحديث حالة 🔄
+                                                            @elseif($type == 'incoming_package')
+                                                                إرسالية في الطريق
+                                                            @elseif($type == 'package_received')
+                                                                تم الاستلام بالمستودع ✅
                                                             @else
                                                                 إشعار
                                                             @endif

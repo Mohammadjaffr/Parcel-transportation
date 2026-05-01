@@ -209,7 +209,7 @@
                                             <span class="material-symbols-outlined text-[18px]"
                                                 style="font-variation-settings: 'FILL' 1;">call</span>
                                         </a>
-                                     <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
+                                        <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
                                             title="واتساب"
                                             class="flex justify-center items-center w-10 h-10 text-emerald-500 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]"
@@ -332,7 +332,7 @@
 
                                 {{-- Phone Input --}}
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric"
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
 
                                 {{-- Dropdown panel --}}
@@ -481,6 +481,7 @@
                                 {{-- Phone Input --}}
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
                                     inputmode="numeric"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
 
                                 {{-- Dropdown panel --}}

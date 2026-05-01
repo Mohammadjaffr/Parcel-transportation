@@ -339,7 +339,8 @@ class ShipmentPackagesController extends Controller
         }
     }
 
-    public function incomingIndex(Request $request)
+ 
+       public function incomingIndex(Request $request)
     {
         $user = auth()->user();
         $branchId = $user->branch_id;
@@ -349,19 +350,24 @@ class ShipmentPackagesController extends Controller
             ->whereHas('shipments', function ($query) use ($branchId) {
                 $query->where('receiver_branch_id', $branchId);
             })
-            
             ->where(function ($query) use ($branchId) {
                 $query->where('sender_branch_id', '!=', $branchId)
                       ->orWhereNull('sender_branch_id'); // السماح للشحنات القادمة من المكاتب الخارجية بالظهور
             })
+            // 💡 هذا هو السطر الذي كان ناقصاً لتفعيل الفلترة!
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString(); // 💡 هذا السطر للاحتفاظ بالفلتر عند الانتقال للصفحة 2 و 3
 
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.incoming.index', compact('packages'));
         }
 
         return view('pages.shipmentpackage.incoming.index', compact('packages'));
+    
     }
     public function incomingCreate(Request $request)
     {
