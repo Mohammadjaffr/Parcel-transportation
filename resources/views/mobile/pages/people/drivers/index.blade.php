@@ -205,6 +205,7 @@
                         
                         {{-- Phone Input --}}
                         <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required inputmode="numeric"
+                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                             class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
                         
                         {{-- Phone Icon --}}
@@ -333,7 +334,9 @@
                     }">
                         <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span class="text-rose-500">*</span></label>
                         <div class="relative">
-                            <input type="hidden" name="phone" :value="editDriverData.phone">
+                            <input type="hidden" name="phone" :value="editDriverData.phone"
+                            
+                            >
                             
                             <div class="flex relative rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
                                 

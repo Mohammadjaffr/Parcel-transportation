@@ -205,7 +205,7 @@
                                 {{-- الإدخال (على اليمين) --}}
                                 <input type="tel" x-model="localPhoneNumber" @input="onPhoneInput()"
                                     @focus="driverOpen = true" @click.outside="driverOpen = false" placeholder="7XXXXXXXX"
-                                    dir="ltr" autocomplete="off"
+                                    dir="ltr" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-grow px-3 min-w-0 h-full text-sm font-bold tracking-wider text-left bg-transparent border-none outline-none sm:px-4 focus:ring-0 text-slate-700">
 
                                 {{-- علامة صح --}}
@@ -452,6 +452,7 @@
                                                 <input type="tel" x-model="sdLocal" @input="onPhoneInput()"
                                                     @focus="sdOpen = true" @click.outside="sdOpen = false"
                                                     placeholder="7XXXXXXXX" dir="ltr" autocomplete="off"
+                                                    :maxlength="sdSelected?.code === 'YE' ? 9 : 15"
                                                     class="flex-grow px-3 w-full min-w-0 h-full text-xs font-bold tracking-wider text-left bg-transparent border-none outline-none focus:ring-0 text-slate-700">
 
                                                 {{-- زر الدولة (على اليسار) --}}
@@ -569,6 +570,7 @@
                                                 <input type="tel" x-model="rcLocal" @input="onPhoneInput()"
                                                     @focus="rcOpen = true" @click.outside="rcOpen = false"
                                                     placeholder="7XXXXXXXX" dir="ltr" autocomplete="off" required
+                                                    :maxlength="rcSelected?.code === 'YE' ? 9 : 15"
                                                     class="flex-grow px-3 w-full min-w-0 h-full text-xs font-bold tracking-wider text-left bg-transparent border-none outline-none focus:ring-0 text-slate-700">
 
                                                 {{-- زر الدولة (على اليسار) --}}

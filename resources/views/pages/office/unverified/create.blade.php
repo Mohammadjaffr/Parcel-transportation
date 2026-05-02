@@ -161,53 +161,94 @@
 
                                     {{-- هاتف الفرع --}}
                                     <div>
-                                        <label
-                                            class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">رقم
-                                            هاتف الفرع</label>
-                                        <div x-data="phoneComponent(branch.phone)" class="relative">
-                                            <input type="hidden" :name="`branches[${index}][phone]`"
-                                                :value="localPhoneNumber ? selectedCountry?.dial_code.replace('+', '') + localPhoneNumber : ''"
-                                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                                @input="branch.phone = $event.target.value">
-                                            <div
-                                                class="flex overflow-hidden w-full h-12 rounded-xl border border-gray-300 transition-all bg-surface focus-within:bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:border-boxdark dark:bg-boxdark-2 dark:focus-within:bg-boxdark-2 dark:focus-within:border-primary">
-                                                <button type="button" @click="open = !open"
-                                                    class="flex gap-2 items-center px-4 border-l border-gray-200 transition-colors dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
-                                                    <template x-if="selectedCountry"><svg
-                                                            class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24"
-                                                            fill="none" x-html="selectedCountry.svg"></svg></template>
-                                                    <span
-                                                        class="text-sm font-bold text-gray-600 dir-ltr dark:text-gray-300"
-                                                        x-text="selectedCountry?.dial_code"></span>
-                                                </button>
-                                                <input type="tel" x-model="localPhoneNumber" placeholder="780236551"
-                                                    class="px-4 w-full text-sm text-left text-gray-800 bg-transparent border-none focus:ring-0 dir-ltr dark:text-white">
-                                            </div>
+    <label class="block mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">رقم هاتف الفرع</label>
+    
+    {{-- لقد قمت بتبديل phoneComponent ليستخدم خصائص x-data مباشرة لسهولة التحكم إذا أردت، 
+         أو يمكنك الاستمرار بـ phoneComponent ولكن يجب أن يحتوي على هذه المتغيرات --}}
+    <div x-data="{
+        open: false,
+        search: '',
+        localPhoneNumber: '{{ old('phone') ? preg_replace('/^967/', '', old('phone')) : '' }}',
+        selectedCountry: null,
+        countries: @js(array_values(config('countries', []))),
+        get filteredCountries() {
+            if (this.search === '') return this.countries;
+            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+        }
+    }" 
+    x-init="
+        selectedCountry = countries.find(c => c.code === 'YE') || countries[0];
+        // إذا كان هناك رقم قديم لفرع، نقوم بتحليله
+        if (branch.phone) {
+            let p = branch.phone;
+            const codes = countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
+            for (const code of codes) {
+                let regex = new RegExp('^(\\+|00)?' + code);
+                if (regex.test(p)) {
+                    selectedCountry = countries.find(c => c.dial_code.replace('+', '') === code);
+                    p = p.replace(regex, '');
+                    break;
+                }
+            }
+            localPhoneNumber = p;
+        }
+    "
+    x-effect="branch.phone = (selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber"
+    class="relative">
+        
+        {{-- الحقل المخفي الذي سيُرسل للسيرفر --}}
+        <input type="hidden" :name="`branches[${index}][phone]`" :value="branch.phone">
+        
+        <div dir="ltr" class="flex overflow-visible w-full h-12 rounded-xl border border-gray-300 transition-all bg-surface focus-within:bg-white focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 dark:border-boxdark dark:bg-boxdark-2 dark:focus-within:bg-boxdark-2 dark:focus-within:border-primary">
+            
+            {{-- Country Btn (يعرض العلم فقط مع السهم) --}}
+            <button type="button" @click="open = !open"
+                class="flex gap-2 items-center px-3 h-full rounded-l-xl border-r border-gray-200 transition-colors outline-none shrink-0 hover:bg-gray-100 dark:border-boxdark dark:hover:bg-boxdark">
+                <template x-if="selectedCountry">
+                    <div class="w-6 h-4 rounded-[2px] shadow-sm overflow-hidden flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
+                        x-html="selectedCountry.svg"></div>
+                </template>
+                <span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
+            </button>
 
-                                            {{-- Dropdown الخاصة باختيار الدولة للفرع --}}
-                                            <div x-show="open" @click.outside="open = false" x-transition
-                                                class="overflow-hidden absolute left-0 z-50 mt-1 w-full max-h-60 bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-boxdark dark:border-boxdark-2"
-                                                style="display: none;">
-                                                <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
-                                                    class="px-4 py-3 w-full text-sm border-b focus:outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white">
-                                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
-                                                    <template x-for="country in filteredCountries" :key="country.code">
-                                                        <div @click="selectedCountry = country; open = false; search = ''"
-                                                            class="flex gap-3 items-center p-2 px-4 transition-colors cursor-pointer hover:bg-primary-container dark:hover:bg-boxdark-2">
-                                                            <svg class="w-5 h-auto rounded-sm" viewBox="0 0 36 24"
-                                                                fill="none" x-html="country.svg"></svg>
-                                                            <span
-                                                                class="flex-grow text-sm font-medium text-on-surface dark:text-gray-100"
-                                                                x-text="country.name"></span>
-                                                            <span
-                                                                class="font-mono text-xs text-gray-500 dir-ltr dark:text-bodydark"
-                                                                x-text="country.dial_code"></span>
-                                                        </div>
-                                                    </template>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+            {{-- Input المرئي --}}
+            <input type="tel" x-model="localPhoneNumber" 
+                @input="
+                    localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, ''); 
+                    if(selectedCountry?.code === 'YE' && localPhoneNumber.length > 9) {
+                        localPhoneNumber = localPhoneNumber.substring(0, 9);
+                    } else if (localPhoneNumber.length > 15) {
+                        localPhoneNumber = localPhoneNumber.substring(0, 15);
+                    }
+                "
+                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                @focus="open = true" @click.outside="open = false"
+                placeholder="7XXXXXXXX" autocomplete="off"
+                class="flex-1 px-4 w-full h-full font-mono text-sm font-bold tracking-widest text-left text-gray-800 bg-transparent border-none outline-none focus:ring-0 dark:text-white">
+        </div>
+
+        {{-- Dropdown الخاصة باختيار الدولة للفرع --}}
+        <div x-show="open" @click.outside="open = false" x-transition x-cloak dir="rtl"
+            class="overflow-hidden absolute left-0 z-50 mt-1 w-[200px] max-h-60 bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-boxdark dark:border-boxdark-2">
+            <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                <input type="text" x-model="search" placeholder="ابحث عن الدولة..."
+                    class="px-3 py-2 w-full text-xs font-bold rounded-lg border border-gray-200 outline-none bg-surface dark:bg-boxdark dark:border-boxdark-2 focus:border-emerald-500 text-on-surface dark:text-white dir-rtl">
+            </div>
+            <div class="overflow-y-auto p-1 max-h-40 custom-scrollbar">
+                <template x-for="country in filteredCountries" :key="country.code">
+                    <button type="button" @click="selectedCountry = country; open = false; search = ''; localPhoneNumber = '';"
+                        class="flex justify-between items-center px-3 py-2.5 w-full text-sm text-left rounded-lg transition-colors hover:bg-surface dark:hover:bg-boxdark">
+                        <div class="flex gap-3 items-center">
+                            <div class="w-6 h-4 flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden [&>svg]:w-full [&>svg]:h-full" x-html="country.svg"></div>
+                            <span class="text-xs font-bold text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
+                        </div>
+                        <span class="font-mono text-[10px] font-bold text-gray-400 dir-ltr" x-text="country.dial_code"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
 
                                     {{-- عنوان الفرع --}}
                                     <div>

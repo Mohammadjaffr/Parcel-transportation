@@ -138,20 +138,20 @@
                         </div>
 
                         {{-- بيانات العميل --}}
-                        <div class="flex-1 min-w-0 pt-0.5">
+                        <div class="flex-1 pt-0.5 min-w-0">
                             <h3 class="mb-1 text-sm font-black leading-none truncate font-headline text-slate-800">
                                 {{ $customer->name }}
                             </h3>
-                            <div class="flex gap-1.5 items-center text-slate-500 mt-1.5">
+                            <div class="flex gap-1.5 items-center mt-1.5 text-slate-500">
                                 <span class="material-symbols-outlined text-[14px] text-primary/60">phone_iphone</span>
                                 <span class="font-mono text-[11px] font-bold tracking-wider">{{ $customer->phone }}</span>
                             </div>
                         </div>
 
                         {{-- 💡 القائمة المنسدلة للإجراءات (Kebab Menu) --}}
-                        <div class="relative shrink-0 z-50">
+                        <div class="relative z-50 shrink-0">
                             <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                class="w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors focus:outline-none">
+                                class="flex justify-center items-center -mr-2 w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none">
                                 <span class="material-symbols-outlined text-[22px]">more_vert</span>
                             </button>
 
@@ -160,14 +160,14 @@
 
                                 {{-- ملف العميل (التفاصيل) --}}
                                 <a href="{{ route('customers.show', $customer->id) }}"
-                                    class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-primary/5 hover:text-primary transition-colors">
+                                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-primary/5 hover:text-primary">
                                     <span class="material-symbols-outlined text-[18px]">visibility</span>
                                     ملف العميل
                                 </a>
 
                                 {{-- مراسلة واتساب --}}
                                 <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
-                                    class="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-600">
 
                                     {{-- أيقونة واتساب الرسمية باللون الأخضر --}}
                                     <svg class="w-[18px] h-[18px] fill-[#25D366]" viewBox="0 0 24 24"
@@ -179,12 +179,12 @@
                                     مراسلة (واتساب)
                                 </a>
 
-                                <div class="h-px bg-slate-100/80 my-1 mx-3"></div>
+                                <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
 
                                 {{-- تعديل البيانات --}}
                                 <button type="button"
                                     @click="openMenu = false; openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }})"
-                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-amber-50 hover:text-amber-600 transition-colors text-right">
+                                    class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right transition-colors text-slate-600 hover:bg-amber-50 hover:text-amber-600">
                                     <span class="material-symbols-outlined text-[18px]">edit_square</span>
                                     تعديل البيانات
                                 </button>
@@ -192,7 +192,7 @@
                                 {{-- حذف العميل --}}
                                 {{-- <button type="button"
                                     @click="openMenu = false; openDeleteModal({{ $customer->id }}, {{ json_encode($customer->name) }})"
-                                    class="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-colors text-right">
+                                    class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right text-rose-500 transition-colors hover:bg-rose-50">
                                     <span class="material-symbols-outlined text-[18px]">delete_outline</span>
                                     حذف العميل
                                 </button> --}}
@@ -307,20 +307,21 @@
                                 class="text-rose-500">*</span></label>
 
                         <div class="relative">
-                            <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
+                            <div class="flex overflow-hidden relative items-center rounded-2xl ring-1 transition-all group bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"
                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
                                     inputmode="numeric"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+                                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
                                 <button type="button" @click="open = !open"
-                                    class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
+                                    class="flex gap-2 items-center px-3 h-14 border-r transition-colors bg-slate-100 border-slate-200 shrink-0 hover:bg-slate-200">
                                     <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                                     <span class="text-sm font-bold text-slate-600 dir-ltr"
                                         x-text="selectedCountry?.dial_code"></span>
@@ -335,7 +336,7 @@
                                 class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
                                 <div class="p-2 border-b border-slate-50">
                                     <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                        class="px-4 py-2 w-full text-sm outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 rounded-xl transition-colors font-headline">
+                                        class="px-4 py-2 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 font-headline">
                                 </div>
                                 <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                     <template x-for="country in filteredCountries" :key="country.code">
@@ -344,7 +345,7 @@
                                             <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
                                                 fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
                                             <span
-                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
                                                 x-text="country.name"></span>
                                             <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
                                                 x-text="country.dial_code"></span>
@@ -447,7 +448,7 @@
                                 class="text-rose-500">*</span></label>
 
                         <div class="relative">
-                            <div class="relative group flex items-center rounded-2xl ring-1 transition-all bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20 overflow-hidden"
+                            <div class="flex overflow-hidden relative items-center rounded-2xl ring-1 transition-all group bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"
                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
@@ -455,12 +456,12 @@
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
-                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none group-focus-within:text-primary transition-colors">
+                                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
                                     <span class="material-symbols-outlined">call</span>
                                 </div>
 
                                 <button type="button" @click="open = !open"
-                                    class="flex items-center gap-2 px-3 h-14 bg-slate-100 border-r border-slate-200 shrink-0 hover:bg-slate-200 transition-colors">
+                                    class="flex gap-2 items-center px-3 h-14 border-r transition-colors bg-slate-100 border-slate-200 shrink-0 hover:bg-slate-200">
                                     <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                                     <span class="text-sm font-bold text-slate-600 dir-ltr"
                                         x-text="selectedCountry?.dial_code"></span>
@@ -475,7 +476,7 @@
                                 class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
                                 <div class="p-2 border-b border-slate-50">
                                     <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                        class="px-4 py-2 w-full text-sm outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 rounded-xl transition-colors font-headline">
+                                        class="px-4 py-2 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 font-headline">
                                 </div>
                                 <div class="overflow-y-auto max-h-40 custom-scrollbar">
                                     <template x-for="country in filteredCountries" :key="country.code">
@@ -484,7 +485,7 @@
                                             <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
                                                 fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
                                             <span
-                                                class="flex-grow text-sm font-medium text-slate-700 font-headline truncate"
+                                                class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
                                                 x-text="country.name"></span>
                                             <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
                                                 x-text="country.dial_code"></span>

@@ -160,7 +160,8 @@
                                                 <template x-if="selectedCountry"><svg class="w-5 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none" x-html="selectedCountry.svg"></svg></template>
                                                 <span class="text-sm font-bold text-gray-600 dir-ltr dark:text-gray-300" x-text="selectedCountry?.dial_code"></span>
                                             </button>
-                                            <input type="tel" x-model="localPhoneNumber" placeholder="780236551" class="px-4 w-full text-sm text-left text-gray-800 bg-transparent border-none dir-ltr focus:ring-0 dark:text-white">
+                                            <input type="tel" x-model="localPhoneNumber" placeholder="780236551" class="px-4 w-full text-sm text-left text-gray-800 bg-transparent border-none dir-ltr focus:ring-0 dark:text-white" 
+                                            >   
                                         </div>
                                         {{-- Dropdown --}}
                                         <div x-show="open" @click.outside="open = false" x-transition class="overflow-hidden absolute left-0 z-50 mt-1 w-full max-h-60 bg-white rounded-xl border border-gray-200 shadow-lg dark:bg-boxdark dark:border-boxdark-2" style="display: none;">

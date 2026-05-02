@@ -181,7 +181,7 @@
                     </div>
 
                     {{-- ملخص الإحصائيات (Desktop Only) --}}
-                    <div class="bg-white rounded-[2rem] p-6 shadow-sm dark:bg-black/30 dark:border dark:border-boxdark-2 hidden lg:flex flex-col gap-4 relative overflow-hidden">
+                    {{-- <div class="bg-white rounded-[2rem] p-6 shadow-sm dark:bg-black/30 dark:border dark:border-boxdark-2 hidden lg:flex flex-col gap-4 relative overflow-hidden">
                         <div class="absolute -bottom-6 -left-6 pointer-events-none text-white/5">
                             <span class="material-symbols-outlined text-[120px]">analytics</span>
                         </div>
@@ -193,7 +193,7 @@
                             <span class="text-xs font-bold text-gray-400">إجمالي الطرود المحددة</span>
                             <span class="text-2xl font-black text-primary font-headline" x-text="selectedParcels.length"></span>
                         </div>
-                    </div>
+                    </div> --}}
 
                 </div>
 

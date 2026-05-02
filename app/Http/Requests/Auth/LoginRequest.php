@@ -48,6 +48,16 @@ class LoginRequest extends FormRequest
                 'phone' => 'البيانات المدخلة غير صحيحة',
             ]);
         }
+
+        if (Auth::user()->is_banned) {
+            Auth::logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'phone' => 'عذراً، هذا الحساب محظور حالياً. يرجى مراجعة الإدارة.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

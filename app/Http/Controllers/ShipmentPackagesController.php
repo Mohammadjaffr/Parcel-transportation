@@ -119,10 +119,10 @@ class ShipmentPackagesController extends Controller
             $message = "تم إنشاء الإرسالية ( {$package->tracking_number} ) بنجاح، وربط " . count($request->parcel_ids) . " طرود بها.";
 
             if ($request->isMobile) {
-                return redirect()->route('shipmentpackage.outgoing.index')->with('success', $message);
+                return redirect()->route('shipmentpackage.outgoing.show',$package->id)->with('success', $message);
             }
             // السعدي غير المسار الى الصفحه تبع الدسك توب 
-            return redirect()->route('shipmentpackage.outgoing.index')->with('success', $message);
+            return redirect()->route('shipmentpackage.outgoing.show',$package->id)->with('success', $message);
 
         } catch (Exception $e) {
             DB::rollBack();

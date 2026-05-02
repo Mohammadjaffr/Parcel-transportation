@@ -101,8 +101,11 @@ class ShipmentController extends Controller
         // جلب الطرود المرسلة من فرع المستخدم
         $shipments = Shipment::with(['receiverBranch.app', 'receiverOfficeBranch.office', 'receiverCustomer', 'senderCustomer'])
             ->where('sender_branch_id', $user->branch_id)
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
             ->latest()
-            ->paginate(6);
+            ->paginate(5);
         $shipments->getCollection()->transform(function ($shipment) {
 
             // إذا أردت رابط المرسل دائماً (مثلاً في صفحة الصادر)

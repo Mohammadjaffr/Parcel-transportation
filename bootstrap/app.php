@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\CheckDevice::class);
         $middleware->web(append: [
             \App\Http\Middleware\MarkNotificationAsRead::class,
+            \App\Http\Middleware\CheckUserBanned::class,
         ]); 
         $middleware->alias([
             "user"=>  UserMiddleware::class,

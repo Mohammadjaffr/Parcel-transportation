@@ -20,6 +20,13 @@ class SanctumApiAuthMiddleware
                 'message' => 'Unauthorized - API token required'
             ], 401);
         }
+
+        if (auth('sanctum')->user()->is_banned) {
+            return response()->json([
+                'message' => 'عذراً، هذا الحساب محظور حالياً.'
+            ], 403);
+        }
+
         return $next($request);
     }
 }
