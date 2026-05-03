@@ -197,8 +197,10 @@
                                     <div class="flex gap-2 items-center text-gray-600 dark:text-gray-300">
                                         <span
                                             class="material-symbols-outlined text-[18px] text-gray-400 dark:text-gray-500">phone_iphone</span>
-                                        <span
-                                            class="font-mono text-sm font-bold tracking-wider dir-ltr">{{ $driver->phone }}</span>
+
+                                        <x-phone-number :value="$driver->phone"
+                                            class="font-mono text-sm font-bold tracking-wider" />
+
                                     </div>
                                 </td>
 
@@ -480,8 +482,7 @@
 
                                 {{-- Phone Input --}}
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric"
-                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
 
                                 {{-- Dropdown panel --}}

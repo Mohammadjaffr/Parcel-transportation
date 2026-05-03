@@ -109,9 +109,9 @@
                                 {{-- 2. المصدر --}}
                                 <td class="px-6 py-4">
                                     <div class="font-bold text-slate-800 truncate max-w-[150px]">
-                                        {{ $shipment->sender->name ?? 'مصدر غير محدد' }}
+                                        {{ $shipment->senderCustomer?->name ?? 'مصدر غير محدد' }}
                                     </div>
-                                    <div class="text-[11px] font-bold text-slate-400 mt-0.5">وارد من التاجر</div>
+                                    <x-phone-number :value="$shipment->senderCustomer?->phone ?? '---'" class="text-[15px] font-bold text-gray-500 dark:text-bodydark" />
                                 </td>
 
                                 {{-- 3. المستلم --}}
@@ -120,15 +120,17 @@
                                         {{ $shipment->receiverCustomer?->name ?? 'غير مسجل' }}
                                     </div>
                                     <div class="text-[11px] font-bold text-slate-400 mt-0.5 dir-ltr text-right">
-                                        {{ $shipment->receiverCustomer?->phone ?? '---' }}
+                                       <x-phone-number :value="$shipment->receiverCustomer?->phone ?? '---'" class="text-[15px] font-bold text-gray-500 dark:text-bodydark" />
+
                                     </div>
                                 </td>
 
                                 {{-- 4. المحتوى --}}
-                                <td class="px-6 py-4">
+                                 <td class="px-6 py-4">
                                     <div class="flex flex-col gap-1.5">
                                         <span class="inline-flex w-fit text-[11px] font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                                            {{ $shipment->package_type }}
+                                            @if($shipment->package_type == 'carton') كرتون @elseif($shipment->package_type == 'bag') كيس @elseif($shipment->package_type == 'envelope') مغلف @else أخرى @endif
+                                            @if($shipment->weight > 0) <span class="mr-1 text-slate-500">({{ $shipment->weight }} كجم)</span> @endif
                                         </span>
                                         @if($shipment->no_gallons_honey > 0 || $shipment->no_honey_jars > 0)
                                             <div class="text-[11px] font-bold text-amber-600 flex items-center gap-1">

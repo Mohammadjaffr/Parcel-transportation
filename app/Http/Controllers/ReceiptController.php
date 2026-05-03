@@ -43,7 +43,7 @@ class ReceiptController extends Controller
                     ->header('Content-Type', 'application/pdf');
 
         } catch (\Exception $e) {
-            return abort(404, "حدث خطأ: " . $e->getMessage());
+            return (404, "حدث خطأ: " . $e->getMessage());
         }
     }
 }

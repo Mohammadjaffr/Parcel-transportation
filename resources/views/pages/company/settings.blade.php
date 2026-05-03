@@ -5,27 +5,27 @@
 
 
 @section('content')
-    <div x-data="{ 
-            showAddBranchModal: false, 
-            showEditCompanyModal: false,
-            showEditBranchModal: false,
-            editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
-            editBranchAction: '',
-
-            openEditBranchModal(branch) {
-                this.editBranchForm = {
-                    name: branch.name,
-                    code: branch.code,
-                    city: branch.city,
-                    address: branch.address || '',
-                    map_link: branch.map_link || '',
-                    is_main: branch.is_main == 1
-                };
-                this.editBranchAction = '/branch/' + branch.id;
-                this.showEditBranchModal = true;
-                this.$dispatch('load-edit-phone', { phone: branch.phone });
-            }
-        }" class="flex flex-col gap-6">
+    <div x-data="{
+        showAddBranchModal: false,
+        showEditCompanyModal: false,
+        showEditBranchModal: false,
+        editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
+        editBranchAction: '',
+    
+        openEditBranchModal(branch) {
+            this.editBranchForm = {
+                name: branch.name,
+                code: branch.code,
+                city: branch.city,
+                address: branch.address || '',
+                map_link: branch.map_link || '',
+                is_main: branch.is_main == 1
+            };
+            this.editBranchAction = '/branch/' + branch.id;
+            this.showEditBranchModal = true;
+            this.$dispatch('load-edit-phone', { phone: branch.phone });
+        }
+    }" class="flex flex-col gap-6">
 
         {{-- <div class="flex gap-4 items-center px-4 pt-4">
             <button onclick="history.back()"
@@ -49,8 +49,8 @@
                 <div
                     class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
                     <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-slate-50">
-                        <img src="{{ auth()->user()->cached_app_logo }}"
-                            alt="شعار الشركة" class="object-cover w-full h-full">
+                        <img src="{{ auth()->user()->cached_app_logo }}" alt="شعار الشركة"
+                            class="object-cover w-full h-full">
                     </div>
                 </div>
 
@@ -89,91 +89,94 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-@if(isset($subscription))
-    @php
-        // 1. الفروع
-        $branchLimit = $subscription->allowed_branches ?? 0;
-        $branchPercent = ($branchLimit > 0) ? ($company->branches_count / $branchLimit) * 100 : 0;
+        @if (isset($subscription))
+            @php
+                // 1. الفروع
+                $branchLimit = $subscription->allowed_branches ?? 0;
+                $branchPercent = $branchLimit > 0 ? ($company->branches_count / $branchLimit) * 100 : 0;
 
-        // 2. السائقين 💡 (الجديد)
-        $driverLimit = $subscription->allowed_drivers ?? 0;
-        $driverPercent = ($driverLimit > 0) ? ($company->drivers_count / $driverLimit) * 100 : 0;
+                // 2. السائقين 💡 (الجديد)
+                $driverLimit = $subscription->allowed_drivers ?? 0;
+                $driverPercent = $driverLimit > 0 ? ($company->drivers_count / $driverLimit) * 100 : 0;
 
-        // 3. الشحنات
-        $shipmentLimit = $subscription->allowed_shipments ?? 0;
-        $shipmentPercent = ($shipmentLimit > 0) ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
+                // 3. الشحنات
+                $shipmentLimit = $subscription->allowed_shipments ?? 0;
+                $shipmentPercent = $shipmentLimit > 0 ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
 
-        // 4. الرحلات المجمعة 💡 (الجديد)
-        $packageLimit = $subscription->allowed_packages ?? 0;
-        $packagePercent = ($packageLimit > 0) ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
-    @endphp
+                // 4. الرحلات المجمعة 💡 (الجديد)
+                $packageLimit = $subscription->allowed_packages ?? 0;
+                $packagePercent = $packageLimit > 0 ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
+            @endphp
 
-    <div class="px-4 space-y-4 mt-6">
-        <div class="flex justify-between items-center">
-            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                تفاصيل الباقة
-            </h3>
-            <a href="{{ route('pricing.page') }}" class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
-            </a>
-        </div>
+            <div class="px-4 mt-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                        تفاصيل الباقة
+                    </h3>
+                    <a href="{{ route('pricing.page') }}"
+                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                        ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
+                    </a>
+                </div>
 
-        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-            {{-- حالة الاشتراك --}}
-            <div class="mb-5 relative z-10">
-                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
-                </p>
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+                    {{-- حالة الاشتراك --}}
+                    <div class="relative z-10 mb-5">
+                        <p
+                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                            <span
+                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
+                        </p>
+                    </div>
+
+                    <div class="grid relative z-10 grid-cols-1 gap-5 md:grid-cols-2">
+                        {{-- 1. الفروع --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الفروع',
+                            'icon' => 'domain',
+                            'current' => $company->branches_count,
+                            'limit' => $branchLimit,
+                            'percent' => $branchPercent,
+                            'color' => 'bg-amber-500',
+                        ])
+
+                        {{-- 2. السائقين (الجديد) --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد السائقين',
+                            'icon' => 'person_pin_circle',
+                            'current' => $company->drivers_count,
+                            'limit' => $driverLimit,
+                            'percent' => $driverPercent,
+                            'color' => 'bg-blue-500',
+                        ])
+
+                        {{-- 3. الطرود --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الطرود',
+                            'icon' => 'inventory_2',
+                            'current' => $shipmentsCount,
+                            'limit' => $shipmentLimit,
+                            'percent' => $shipmentPercent,
+                            'color' => 'bg-primary',
+                        ])
+
+                        {{-- 4. الرحلات المجمعة (الجديد) --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الشحنات',
+                            'icon' => 'local_shipping',
+                            'current' => $packagesCount,
+                            'limit' => $packageLimit,
+                            'percent' => $packagePercent,
+                            'color' => 'bg-indigo-500',
+                        ])
+                    </div>
+                </div>
             </div>
+        @endif
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
-                {{-- 1. الفروع --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الفروع',
-                    'icon' => 'domain',
-                    'current' => $company->branches_count,
-                    'limit' => $branchLimit,
-                    'percent' => $branchPercent,
-                    'color' => 'bg-amber-500'
-                ])
-
-                {{-- 2. السائقين (الجديد) --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد السائقين',
-                    'icon' => 'person_pin_circle',
-                    'current' => $company->drivers_count,
-                    'limit' => $driverLimit,
-                    'percent' => $driverPercent,
-                    'color' => 'bg-blue-500'
-                ])
-
-                {{-- 3. الطرود --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الطرود',
-                    'icon' => 'inventory_2',
-                    'current' => $shipmentsCount,
-                    'limit' => $shipmentLimit,
-                    'percent' => $shipmentPercent,
-                    'color' => 'bg-primary'
-                ])
-
-                {{-- 4. الرحلات المجمعة (الجديد) --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الشحنات',
-                    'icon' => 'local_shipping',
-                    'current' => $packagesCount,
-                    'limit' => $packageLimit,
-                    'percent' => $packagePercent,
-                    'color' => 'bg-indigo-500'
-                ])
-            </div>
-        </div>
-    </div>
-@endif
-
-        <div class="px-4 space-y-4 mt-6">
+        <div class="px-4 mt-6 space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
                     <span class="material-symbols-outlined text-primary">account_tree</span>
@@ -187,23 +190,25 @@
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                @if(isset($company))
+                @if (isset($company))
                     @forelse($company->branches as $branch)
                         <div
                             class="flex items-center gap-4 p-4 bg-white rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
 
-                            @if($branch->is_main)
+                            @if ($branch->is_main)
                                 <div class="absolute top-0 right-0 bottom-0 w-1.5 bg-primary"></div>
                             @endif
 
-                            <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
+                            <div
+                                class="flex justify-center items-center w-12 h-12 rounded-xl bg-slate-50 text-slate-400 shrink-0">
                                 <span class="text-2xl material-symbols-outlined">store</span>
                             </div>
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex gap-2 items-center">
-                                    <h4 class="text-sm font-bold truncate text-slate-800 font-headline">{{ $branch->name }}</h4>
-                                    @if($branch->is_main)
+                                    <h4 class="text-sm font-bold truncate text-slate-800 font-headline">{{ $branch->name }}
+                                    </h4>
+                                    @if ($branch->is_main)
                                         <span
                                             class="bg-primary/10 text-primary text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0">رئيسي</span>
                                     @endif
@@ -217,7 +222,7 @@
                             </div>
 
                             <div class="flex gap-1 items-center shrink-0">
-                                @if($branch->map_link)
+                                @if ($branch->map_link)
                                     <a href="{{ $branch->map_link }}" target="_blank"
                                         class="flex justify-center items-center w-9 h-9 text-emerald-500 rounded-full transition-colors hover:bg-emerald-50 active:scale-90">
                                         <span class="material-symbols-outlined text-[20px]">map</span>
@@ -261,14 +266,16 @@
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {{-- 💡 التنبيه الذكي للمستخدم --}}
                 <div class="lg:col-span-1">
-                    <div class="flex gap-4 items-start p-5 h-full rounded-2xl border shadow-sm bg-blue-50/70 border-blue-100/80">
+                    <div
+                        class="flex gap-4 items-start p-5 h-full rounded-2xl border shadow-sm bg-blue-50/70 border-blue-100/80">
                         <div class="p-2 text-blue-500 rounded-xl bg-blue-100/50 shrink-0">
                             <span class="material-symbols-outlined text-[24px]">receipt_long</span>
                         </div>
                         <div>
                             <p class="text-sm font-bold leading-relaxed text-blue-800">
-                                <span class="block mb-1 font-black text-blue-600">ملاحظة هامة:</span> 
-                                سيتم طباعة هذه الشروط والأحكام تلقائياً في أسفل جميع الفواتير المصدرة للعملاء من خلال النظام.
+                                <span class="block mb-1 font-black text-blue-600">ملاحظة هامة:</span>
+                                سيتم طباعة هذه الشروط والأحكام تلقائياً في أسفل جميع الفواتير المصدرة للعملاء من خلال
+                                النظام.
                             </p>
                         </div>
                     </div>
@@ -279,10 +286,12 @@
                         $cachedTerms = auth()->user()->cached_app_terms ?? [];
                     @endphp
                     @if (count($cachedTerms) > 0)
-                        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full">
+                        <div
+                            class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full">
                             {{-- زخرفة خلفية توحي بالرسمية --}}
                             <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] -z-0"></div>
-                            <span class="material-symbols-outlined absolute top-6 right-6 text-[60px] text-primary/10 -z-0 -rotate-12"
+                            <span
+                                class="material-symbols-outlined absolute top-6 right-6 text-[60px] text-primary/10 -z-0 -rotate-12"
                                 style="font-variation-settings: 'FILL' 1;">policy</span>
 
                             <div class="relative z-10">
@@ -303,8 +312,10 @@
                         </div>
                     @else
                         {{-- حالة عدم وجود شروط مسجلة --}}
-                        <div class="py-12 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 h-full">
-                            <div class="flex justify-center items-center mb-4 w-16 h-16 rounded-full bg-slate-50 text-slate-300">
+                        <div
+                            class="py-12 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 h-full">
+                            <div
+                                class="flex justify-center items-center mb-4 w-16 h-16 rounded-full bg-slate-50 text-slate-300">
                                 <span class="material-symbols-outlined text-[32px]">description</span>
                             </div>
                             <p class="text-base font-bold text-slate-500">لم يتم إضافة شروط وأحكام للشركة</p>
@@ -318,24 +329,24 @@
             </div>
         </div>
 
-        <div x-data="{ 
-                isSubmitting: false,
-                allCountries: @js(array_values(config('countries', []))),
-                selectedCountry: null,
-                localPhone: '',
-                fullPhone: '',
-                openCountry: false,
-                search: '',
-                init() {
-                    this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
-                    this.$watch('localPhone', () => this.updatePhone());
-                    this.$watch('selectedCountry', () => this.updatePhone());
-                },
-                updatePhone() {
-                    let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                    this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                }
-             }" x-show="showAddBranchModal" x-cloak
+        <div x-data="{
+            isSubmitting: false,
+            allCountries: @js(array_values(config('countries', []))),
+            selectedCountry: null,
+            localPhone: '',
+            fullPhone: '',
+            openCountry: false,
+            search: '',
+            init() {
+                this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+                this.$watch('localPhone', () => this.updatePhone());
+                this.$watch('selectedCountry', () => this.updatePhone());
+            },
+            updatePhone() {
+                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+            }
+        }" x-show="showAddBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
@@ -343,12 +354,15 @@
                 @click="showAddBranchModal = false"></div>
 
             <div x-show="showAddBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showAddBranchModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
+                <button @click="showAddBranchModal = false"
+                    class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -364,112 +378,117 @@
                 </div>
 
                 <form action="{{ route('branch.store') }}" method="POST" @submit="isSubmitting = true"
-                    class="flex flex-col min-h-0 flex-1">
+                    class="flex flex-col flex-1 min-h-0">
                     @csrf
 
-                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
-                    <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
-                        <div>
-                            <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
-                            <p class="text-[10px] text-slate-500 mt-0.5">تعيين هذا الفرع كمركز رئيسي للشركة</p>
-                        </div>
-                        <label class="inline-flex relative items-center cursor-pointer">
-                            <input type="checkbox" name="is_main" value="1" class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                    <div class="overflow-y-auto flex-1 pr-2 pb-2 space-y-4 min-h-0 custom-scrollbar">
+                        <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
+                            <div>
+                                <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
+                                <p class="text-[10px] text-slate-500 mt-0.5">تعيين هذا الفرع كمركز رئيسي للشركة</p>
                             </div>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
-                                class="text-rose-500">*</span></label>
-                        <input type="text" name="name" required placeholder="مثال: فرع الرياض الرئيسي"
-                            class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع (مميز)
-                                <span class="text-rose-500">*</span></label>
-                            <input type="text" name="code" required placeholder="مثال: RUH-01" dir="ltr"
-                                class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            <label class="inline-flex relative items-center cursor-pointer">
+                                <input type="checkbox" name="is_main" value="1" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                </div>
+                            </label>
                         </div>
+
                         <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة <span
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
                                     class="text-rose-500">*</span></label>
-                            <input type="text" name="city" required placeholder="مثال: الرياض"
+                            <input type="text" name="name" required placeholder="مثال: فرع الرياض الرئيسي"
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
-                    </div>
 
-                    <div class="relative z-40">
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
-                            الفرع</label>
-                        <input type="hidden" name="phone" x-model="fullPhone">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
+                                    (مميز)
+                                    <span class="text-rose-500">*</span></label>
+                                <input type="text" name="code" required placeholder="مثال: RUH-01" dir="ltr"
+                                    class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
+                                    <span class="text-rose-500">*</span></label>
+                                <input type="text" name="city" required placeholder="مثال: الرياض"
+                                    class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+                        </div>
 
-                        <div
-                            class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
-                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                        <div class="relative z-40">
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
+                                الفرع</label>
+                            <input type="hidden" name="phone" x-model="fullPhone">
 
                             <div
-                                class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
-                                <span class="text-lg material-symbols-outlined">call</span>
+                                class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+                                <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
+                                    maxlength="9"
+                                    class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+
+                                <div
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
+                                    <span class="text-lg material-symbols-outlined">call</span>
+                                </div>
+
+                                <button type="button" @click="openCountry = !openCountry"
+                                    class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+                                    <span class="text-xs font-bold text-slate-700 dir-ltr"
+                                        x-text="selectedCountry?.dial_code"></span>
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg">
+                                        </div>
+                                    </template>
+                                </button>
                             </div>
 
-                            <button type="button" @click="openCountry = !openCountry"
-                                class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
-                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                <span class="text-xs font-bold text-slate-700 dir-ltr"
-                                    x-text="selectedCountry?.dial_code"></span>
-                                <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg"></div>
-                                </template>
-                            </button>
-                        </div>
-
-                        <div x-show="openCountry" @click.outside="openCountry = false" x-transition x-cloak
-                            class="absolute top-[calc(100%+6px)] left-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
-                            <div class="p-2 border-b border-slate-50">
-                                <input type="text" x-model="search" placeholder="بحث عن دولة..."
-                                    class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
-                            </div>
-                            <div class="overflow-y-auto max-h-40 custom-scrollbar">
-                                <template
-                                    x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.dial_code.includes(search))"
-                                    :key="country.code">
-                                    <div @click="selectedCountry = country; openCountry = false; search = ''"
-                                        class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
-                                        <span class="flex-grow text-xs font-medium truncate text-slate-700"
-                                            x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
-                                            x-text="country.dial_code"></span>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
-                            التفصيلي</label>
-                        <input type="text" name="address" placeholder="الشارع، الحي، المبنى..."
-                            class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
-                            (Google Maps)</label>
-                        <div class="relative">
-                            <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..." dir="ltr"
-                                class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <span class="text-lg material-symbols-outlined">map</span>
+                            <div x-show="openCountry" @click.outside="openCountry = false" x-transition x-cloak
+                                class="absolute top-[calc(100%+6px)] left-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
+                                <div class="p-2 border-b border-slate-50">
+                                    <input type="text" x-model="search" placeholder="بحث عن دولة..."
+                                        class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
+                                </div>
+                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                    <template
+                                        x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.dial_code.includes(search))"
+                                        :key="country.code">
+                                        <div @click="selectedCountry = country; openCountry = false; search = ''"
+                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                            <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
+                                            <span class="flex-grow text-xs font-medium truncate text-slate-700"
+                                                x-text="country.name"></span>
+                                            <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
+                                                x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
-                    </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
+                                التفصيلي</label>
+                            <input type="text" name="address" placeholder="الشارع، الحي، المبنى..."
+                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
+                                (Google Maps)</label>
+                            <div class="relative">
+                                <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..."
+                                    dir="ltr"
+                                    class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                                <div
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <span class="text-lg material-symbols-outlined">map</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
@@ -485,11 +504,11 @@
             </div>
         </div>
 
-        <div x-data="{ 
-                isSubmittingCompany: false,
-                terms: {{ json_encode($company->terms_and_conditions ?? ['']) }},
-                companyColor: '{{ $company->color ?? '#f97316' }}'
-            }" x-show="showEditCompanyModal" x-cloak
+        <div x-data="{
+            isSubmittingCompany: false,
+            terms: {{ json_encode($company->terms_and_conditions ?? ['']) }},
+            companyColor: '{{ $company->color ?? '#f97316' }}'
+        }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
@@ -497,12 +516,15 @@
                 @click="showEditCompanyModal = false"></div>
 
             <div x-show="showEditCompanyModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showEditCompanyModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
+                <button @click="showEditCompanyModal = false"
+                    class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -518,113 +540,140 @@
                 </div>
 
                 <form action="{{ route('app.update') }}" method="POST" enctype="multipart/form-data"
-                    @submit="isSubmittingCompany = true" class="flex flex-col min-h-0 flex-1">
+                    @submit="isSubmittingCompany = true" class="flex flex-col flex-1 min-h-0">
                     @csrf
                     @method('PUT')
 
-                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">شعار الشركة
-                            (اختياري)</label>
-                        <input type="file" name="logo" accept="image/*"
-                            class="px-4 py-3 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all cursor-pointer outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20">
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الشركة <span
-                                class="text-rose-500">*</span></label>
-                        <input type="text" name="name" required value="{{ $company->name }}"
-                            placeholder="مثال: شركة النقل السريع"
-                            class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
-                                الشركة</label>
-                            <input type="tel" name="phone" value="{{ $company->phone }}"
-                                placeholder="الرقم الموحد أو المحمول" dir="ltr"
-                                class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                        </div>
-
-                        <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">البريد
-                                الإلكتروني</label>
-                            <input type="email" name="email" value="{{ $company->email }}" placeholder="info@company.com"
-                                dir="ltr"
-                                class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب (التمييز البصري)</label>
-
-                        <div class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-
-                            {{-- حقل اختيار اللون --}}
-                            <input type="color" name="color" x-model="companyColor"
-                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
-
-                            {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
-                            <div class="flex-1 px-3">
-                                <input type="text" x-model="companyColor" placeholder="#000000" dir="ltr"
-                                    class="w-full text-sm font-mono text-left bg-transparent border-none outline-none text-slate-600 uppercase focus:ring-0 placeholder:text-slate-400">
-                            </div>
-
-                            {{-- أيقونة جمالية --}}
-                            <div class="pr-2 pointer-events-none text-slate-400">
-                                <span class="text-lg material-symbols-outlined">palette</span>
-                            </div>
-                        </div>
-
-                        {{-- 💡 الرسالة التوضيحية الأنيقة --}}
-                        <div class="flex gap-1.5 items-start mt-2 px-1 text-slate-500">
-                            <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
-                            <p class="text-[10px] leading-relaxed font-medium">
-                                سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا المكتب.
-                            </p>
-                        </div>
-                    </div>
-
-                    {{-- ================= الشروط والأحكام الديناميكية ================= --}}
-                    <div class="pt-4 mt-2 border-t border-slate-100">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <label class="block px-1 text-sm font-bold text-slate-700 font-headline">الشروط والأحكام للشركة</label>
-                                <p class="text-[10px] text-slate-400 px-1 mt-0.5">ستظهر هذه الشروط في أسفل الفواتير</p>
-                            </div>
-                            {{-- زر إضافة شرط جديد --}}
-                            <button type="button" @click="terms.push('')"
-                                class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary/20 active:scale-95">
-                                <span class="material-symbols-outlined text-[18px]">add</span>
-                                إضافة شرط
-                            </button>
-                        </div>
-
-                        <div class="overflow-y-auto pr-1 space-y-3 max-h-60 custom-scrollbar">
-                            <template x-for="(term, index) in terms" :key="index">
-                                <div class="flex gap-3 items-center group">
-                                    <div class="relative flex-1">
-                                        <input type="text" x-model="terms[index]" name="terms_and_conditions[]"
-                                            placeholder="اكتب الشرط هنا (مثال: البضاعة لا ترد ولا تستبدل)..."
-                                            class="px-4 w-full h-11 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                    <div class="overflow-y-auto flex-1 pr-2 pb-2 space-y-4 min-h-0 custom-scrollbar">
+                        <div x-data="{ fileName: '' }">
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">شعار الشركة
+                                (اختياري)</label>
+                            <div class="relative group cursor-pointer">
+                                <input type="file" name="logo" accept="image/*"
+                                    @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
+                                    class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer">
+                                <div
+                                    class="flex gap-4 items-center p-3 w-full transition-all rounded-2xl border-2 border-dashed bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
+                                    <div
+                                        class="flex justify-center items-center w-12 h-12 transition-all rounded-xl bg-white shadow-sm text-slate-400 border border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
+                                        <span class="material-symbols-outlined" x-show="!fileName">add_photo_alternate</span>
+                                        <span class="material-symbols-outlined text-emerald-500" x-show="fileName" x-cloak>check_circle</span>
                                     </div>
-                                    {{-- زر الحذف --}}
-                                    <button type="button" @click="terms.splice(index, 1)"
-                                        class="flex justify-center items-center w-11 h-11 text-rose-500 bg-rose-50 rounded-xl transition-all hover:bg-rose-100 hover:text-rose-600 shrink-0 active:scale-90">
-                                        <span class="material-symbols-outlined text-[20px]">delete</span>
-                                    </button>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold truncate transition-colors text-slate-700 font-headline group-hover:text-primary"
+                                            x-show="!fileName">انقر لرفع الشعار الجديد</p>
+                                        <p class="text-sm font-bold truncate text-emerald-600 font-headline"
+                                            x-show="fileName" x-text="fileName" x-cloak></p>
+                                        <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP</p>
+                                    </div>
+                                    <div class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                        <span class="text-[18px] material-symbols-outlined">upload</span>
+                                    </div>
                                 </div>
-                            </template>
-
-                            {{-- رسالة إذا كانت القائمة فارغة --}}
-                            <div x-show="terms.length === 0"
-                                class="py-6 text-center rounded-2xl border-2 border-dashed bg-slate-50 border-slate-200">
-                                <span class="material-symbols-outlined text-slate-300 text-[32px] mb-1">list_alt</span>
-                                <p class="text-xs font-bold text-slate-400">لا توجد شروط مسجلة. اضغط "إضافة شرط" للبدء.</p>
                             </div>
                         </div>
-                    </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الشركة
+                                <span class="text-rose-500">*</span></label>
+                            <input type="text" name="name" required value="{{ $company->name }}"
+                                placeholder="مثال: شركة النقل السريع"
+                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
+                                    الشركة</label>
+                                <input type="tel" name="phone" value="{{ $company->phone }}"
+                                    placeholder="الرقم الموحد أو المحمول" dir="ltr"
+                                    class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">البريد
+                                    الإلكتروني</label>
+                                <input type="email" name="email" value="{{ $company->email }}"
+                                    placeholder="info@company.com" dir="ltr"
+                                    class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب
+                                (التمييز البصري)</label>
+
+                            <div
+                                class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+
+                                {{-- حقل اختيار اللون --}}
+                                <input type="color" name="color" x-model="companyColor"
+                                    class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
+
+                                {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
+                                <div class="flex-1 px-3">
+                                    <input type="text" x-model="companyColor" placeholder="#000000" dir="ltr"
+                                        class="w-full font-mono text-sm text-left uppercase bg-transparent border-none outline-none text-slate-600 focus:ring-0 placeholder:text-slate-400">
+                                </div>
+
+                                {{-- أيقونة جمالية --}}
+                                <div class="pr-2 pointer-events-none text-slate-400">
+                                    <span class="text-lg material-symbols-outlined">palette</span>
+                                </div>
+                            </div>
+
+                            {{-- 💡 الرسالة التوضيحية الأنيقة --}}
+                            <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
+                                <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
+                                <p class="text-[10px] leading-relaxed font-medium">
+                                    سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
+                                        class="font-bold text-slate-700">الفواتير وسندات الطباعة</span> الخاصة بعملاء هذا
+                                    المكتب.
+                                </p>
+                            </div>
+                        </div>
+
+                        {{-- ================= الشروط والأحكام الديناميكية ================= --}}
+                        <div class="pt-4 mt-2 border-t border-slate-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <label class="block px-1 text-sm font-bold text-slate-700 font-headline">الشروط
+                                        والأحكام للشركة</label>
+                                    <p class="text-[10px] text-slate-400 px-1 mt-0.5">ستظهر هذه الشروط في أسفل الفواتير</p>
+                                </div>
+                                {{-- زر إضافة شرط جديد --}}
+                                <button type="button" @click="terms.push('')"
+                                    class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary/20 active:scale-95">
+                                    <span class="material-symbols-outlined text-[18px]">add</span>
+                                    إضافة شرط
+                                </button>
+                            </div>
+
+                            <div class="overflow-y-auto pr-1 space-y-3 max-h-60 custom-scrollbar">
+                                <template x-for="(term, index) in terms" :key="index">
+                                    <div class="flex gap-3 items-center group">
+                                        <div class="relative flex-1">
+                                            <input type="text" x-model="terms[index]" name="terms_and_conditions[]"
+                                                placeholder="اكتب الشرط هنا (مثال: البضاعة لا ترد ولا تستبدل)..."
+                                                class="px-4 w-full h-11 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                                        </div>
+                                        {{-- زر الحذف --}}
+                                        <button type="button" @click="terms.splice(index, 1)"
+                                            class="flex justify-center items-center w-11 h-11 text-rose-500 bg-rose-50 rounded-xl transition-all hover:bg-rose-100 hover:text-rose-600 shrink-0 active:scale-90">
+                                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        </button>
+                                    </div>
+                                </template>
+
+                                {{-- رسالة إذا كانت القائمة فارغة --}}
+                                <div x-show="terms.length === 0"
+                                    class="py-6 text-center rounded-2xl border-2 border-dashed bg-slate-50 border-slate-200">
+                                    <span class="material-symbols-outlined text-slate-300 text-[32px] mb-1">list_alt</span>
+                                    <p class="text-xs font-bold text-slate-400">لا توجد شروط مسجلة. اضغط "إضافة شرط" للبدء.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
@@ -640,23 +689,24 @@
             </div>
         </div>
 
-        <div x-data="{ 
-                isSubmittingEdit: false,
-                allCountries: @js(array_values(config('countries', []))),
-                selectedCountry: null,
-                localPhone: '',
-                fullPhone: '',
-                openCountry: false,
-                search: '',
-                init() {
-                    this.$watch('localPhone', () => this.updatePhone());
-                    this.$watch('selectedCountry', () => this.updatePhone());
-                },
-                updatePhone() {
-                    let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                    this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
-                }
-             }" @load-edit-phone.window="
+        <div x-data="{
+            isSubmittingEdit: false,
+            allCountries: @js(array_values(config('countries', []))),
+            selectedCountry: null,
+            localPhone: '',
+            fullPhone: '',
+            openCountry: false,
+            search: '',
+            init() {
+                this.$watch('localPhone', () => this.updatePhone());
+                this.$watch('selectedCountry', () => this.updatePhone());
+            },
+            updatePhone() {
+                let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
+            }
+        }"
+            @load-edit-phone.window="
                 let phone = $event.detail.phone || '';
                 if(!phone) {
                     selectedCountry = allCountries.find(c => c.code === 'YE') || allCountries[0];
@@ -672,7 +722,8 @@
                     }
                 }
                 updatePhone();
-             " x-show="showEditBranchModal" x-cloak
+             "
+            x-show="showEditBranchModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms
@@ -680,12 +731,15 @@
                 @click="showEditBranchModal = false"></div>
 
             <div x-show="showEditBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-8 scale-95" x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                x-transition:enter-start="opacity-0 translate-y-8 scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
                 class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
-                <button @click="showEditBranchModal = false" class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
+                <button @click="showEditBranchModal = false"
+                    class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
@@ -701,117 +755,122 @@
                 </div>
 
                 <form :action="editBranchAction" method="POST" @submit="isSubmittingEdit = true"
-                    class="flex flex-col min-h-0 flex-1">
+                    class="flex flex-col flex-1 min-h-0">
                     @csrf
                     @method('PUT')
 
-                    <div class="overflow-y-auto pr-2 space-y-4 custom-scrollbar min-h-0 flex-1 pb-2">
-                    <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
-                        <div>
-                            <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
-                            <p class="text-[10px] text-slate-500 mt-0.5">تعيين هذا الفرع كمركز رئيسي للشركة</p>
-                        </div>
-                        <label class="inline-flex relative items-center cursor-pointer">
-                            <input type="hidden" name="is_main" value="0">
-                            <input type="checkbox" name="is_main" value="1" x-model="editBranchForm.is_main"
-                                class="sr-only peer">
-                            <div
-                                class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                    <div class="overflow-y-auto flex-1 pr-2 pb-2 space-y-4 min-h-0 custom-scrollbar">
+                        <div class="flex justify-between items-center p-3 rounded-xl ring-1 bg-slate-50 ring-slate-100">
+                            <div>
+                                <label class="text-sm font-bold text-slate-700 font-headline">الفرع الرئيسي</label>
+                                <p class="text-[10px] text-slate-500 mt-0.5">تعيين هذا الفرع كمركز رئيسي للشركة</p>
                             </div>
-                        </label>
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
-                                class="text-rose-500">*</span></label>
-                        <input type="text" name="name" x-model="editBranchForm.name" required placeholder="مثال: فرع الرياض"
-                            class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع (مميز)
-                                <span class="text-rose-500">*</span></label>
-                            <input type="text" name="code" x-model="editBranchForm.code" required dir="ltr"
-                                class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            <label class="inline-flex relative items-center cursor-pointer">
+                                <input type="hidden" name="is_main" value="0">
+                                <input type="checkbox" name="is_main" value="1" x-model="editBranchForm.is_main"
+                                    class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                </div>
+                            </label>
                         </div>
+
                         <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة <span
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
                                     class="text-rose-500">*</span></label>
-                            <input type="text" name="city" x-model="editBranchForm.city" required
+                            <input type="text" name="name" x-model="editBranchForm.name" required
+                                placeholder="مثال: فرع الرياض"
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
-                    </div>
 
-                    <div class="relative z-40">
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
-                            الفرع</label>
-                        <input type="hidden" name="phone" x-model="fullPhone">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
+                                    (مميز)
+                                    <span class="text-rose-500">*</span></label>
+                                <input type="text" name="code" x-model="editBranchForm.code" required
+                                    dir="ltr"
+                                    class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+                            <div>
+                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
+                                    <span class="text-rose-500">*</span></label>
+                                <input type="text" name="city" x-model="editBranchForm.city" required
+                                    class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            </div>
+                        </div>
 
-                        <div
-                            class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
-                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                        <div class="relative z-40">
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
+                                الفرع</label>
+                            <input type="hidden" name="phone" x-model="fullPhone">
 
                             <div
-                                class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
-                                <span class="text-lg material-symbols-outlined">call</span>
+                                class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+                                <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
+                                    class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+
+                                <div
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
+                                    <span class="text-lg material-symbols-outlined">call</span>
+                                </div>
+
+                                <button type="button" @click="openCountry = !openCountry"
+                                    class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
+                                    <span class="text-xs font-bold text-slate-700 dir-ltr"
+                                        x-text="selectedCountry?.dial_code"></span>
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg">
+                                        </div>
+                                    </template>
+                                </button>
                             </div>
 
-                            <button type="button" @click="openCountry = !openCountry"
-                                class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
-                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                <span class="text-xs font-bold text-slate-700 dir-ltr"
-                                    x-text="selectedCountry?.dial_code"></span>
-                                <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg"></div>
-                                </template>
-                            </button>
-                        </div>
-
-                        <div x-show="openCountry" @click.outside="openCountry = false" x-transition x-cloak
-                            class="absolute top-[calc(100%+6px)] left-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
-                            <div class="p-2 border-b border-slate-50">
-                                <input type="text" x-model="search" placeholder="بحث عن دولة..."
-                                    class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
-                            </div>
-                            <div class="overflow-y-auto max-h-40 custom-scrollbar">
-                                <template
-                                    x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.dial_code.includes(search))"
-                                    :key="country.code">
-                                    <div @click="selectedCountry = country; openCountry = false; search = ''"
-                                        class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
-                                        <span class="flex-grow text-xs font-medium truncate text-slate-700"
-                                            x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
-                                            x-text="country.dial_code"></span>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
-                            التفصيلي</label>
-                        <input type="text" name="address" x-model="editBranchForm.address"
-                            placeholder="الشارع، الحي، المبنى..."
-                            class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                    </div>
-
-                    <div>
-                        <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
-                            (Google Maps)</label>
-                        <div class="relative">
-                            <input type="url" name="map_link" x-model="editBranchForm.map_link"
-                                placeholder="http://googleusercontent.com..." dir="ltr"
-                                class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <span class="text-lg material-symbols-outlined">map</span>
+                            <div x-show="openCountry" @click.outside="openCountry = false" x-transition x-cloak
+                                class="absolute top-[calc(100%+6px)] left-0 w-full bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
+                                <div class="p-2 border-b border-slate-50">
+                                    <input type="text" x-model="search" placeholder="بحث عن دولة..."
+                                        class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
+                                </div>
+                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                    <template
+                                        x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.dial_code.includes(search))"
+                                        :key="country.code">
+                                        <div @click="selectedCountry = country; openCountry = false; search = ''"
+                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                            <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
+                                            <span class="flex-grow text-xs font-medium truncate text-slate-700"
+                                                x-text="country.name"></span>
+                                            <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
+                                                x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
-                    </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
+                                التفصيلي</label>
+                            <input type="text" name="address" x-model="editBranchForm.address"
+                                placeholder="الشارع، الحي، المبنى..."
+                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
+                                (Google Maps)</label>
+                            <div class="relative">
+                                <input type="url" name="map_link" x-model="editBranchForm.map_link"
+                                    placeholder="http://googleusercontent.com..." dir="ltr"
+                                    class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                                <div
+                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                    <span class="text-lg material-symbols-outlined">map</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">

@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
 use Carbon\Carbon;
+
 class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -17,13 +18,21 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
+
         $branchId = $user->branch_id;
         $branchCode = $user->branch_code;
 
         // العميل
         $customer = Customer::with('branch')
-            ->where('branch_id', $branchId)
-            ->findOrFail($referenceId);
+            ->where('app_id', $user->app_id)
+            ->where(function ($query) use ($referenceId) {
+                $query->where('uuid', $referenceId);
+
+                if (is_numeric($referenceId)) {
+                    $query->orWhere('id', $referenceId);
+                }
+            })
+            ->firstOrFail();
         $appName = $user->cached_app_name;
         $app = $user->app;
 
@@ -58,17 +67,19 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
         // الشحنات المرسلة (مفلترة من قاعدة البيانات مباشرة)
         $sentShipments = Shipment::with(['receiverBranch', 'payments'])
             ->where('sender_customer_id', $customer->id)
-            ->where('sender_branch_code', $branchCode)
+            ->whereHas('senderBranch', function ($query) use ($user) {
+                $query->where('app_id', $user->app_id);
+            })
             ->whereIn('payment_method', $targetPaymentMethods)
             ->get();
 
-        // الشحنات المستقبلة (مفلترة من قاعدة البيانات مباشرة)
         $receivedShipments = Shipment::with(['senderBranch', 'payments'])
             ->where('receiver_customer_id', $customer->id)
-            ->where('receiver_branch_code', $branchCode)
+            ->whereHas('receiverBranch', function ($query) use ($user) {
+                $query->where('app_id', $user->app_id);
+            })
             ->whereIn('payment_method', $targetPaymentMethods)
             ->get();
-
         $entries = collect();
 
         // معالجة الشحنات المرسلة
@@ -193,7 +204,7 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
 
     public function getTemplatePath(): string
     {
-        return 'receipts.templates.CustomerAccountStatementReceipt';
+        return 'receipts.templates.CoustomerAcoountDetection';
     }
 
     public function getFileName(array $data): string

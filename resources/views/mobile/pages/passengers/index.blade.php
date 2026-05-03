@@ -85,7 +85,7 @@
                 <!-- Top Info -->
                 <div class="flex relative z-10 gap-4 items-center mb-4">
                     <div class="flex justify-center items-center w-14 h-14 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
-                         <span class="material-symbols-outlined text-3xl">group</span>
+                         <span class="text-3xl material-symbols-outlined">group</span>
                     </div>
                     <div class="flex-1 min-w-0">
                         <h3 class="mb-1.5 text-base font-bold leading-none truncate font-headline text-slate-800">{{ $passenger->passenger_number }}</h3>
@@ -96,12 +96,12 @@
                     </div>
                     
                     <a href="{{ route('passengers.show', $passenger->id) }}"
-                        class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-indigo-50 text-indigo-500 hover:bg-indigo-100 active:scale-90">
+                        class="flex justify-center items-center w-10 h-10 text-indigo-500 bg-indigo-50 rounded-xl transition-all hover:bg-indigo-100 active:scale-90">
                         <span class="text-xl material-symbols-outlined">visibility</span>
                     </a>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 mb-4 p-3 bg-slate-50/50 rounded-2xl border border-slate-100">
+                <div class="grid grid-cols-2 gap-3 p-3 mb-4 rounded-2xl border bg-slate-50/50 border-slate-100">
                     <div class="flex flex-col">
                         <span class="text-[10px] font-bold text-slate-400 mb-0.5">العدد والعمولة</span>
                         <span class="text-xs font-bold text-slate-700">{{ $passenger->count }} ركاب | <span class="text-amber-500">{{ $passenger->total_commission }}</span></span>
@@ -127,10 +127,10 @@
                         تعديل
                     </button>
                      
-                    <button type="button" @click="openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
+                    {{-- <button type="button" @click="openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
                         class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl transition-all hover:bg-red-100 active:scale-90">
                         <span class="text-xl material-symbols-outlined">delete_outline</span>
-                    </button>
+                    </button> --}}
                 </div>
             </div>
         @empty

@@ -16,12 +16,25 @@ class AppController extends Controller
     public function index(Request $request)
     {
         $myAppId = auth()->user()->app_id;
+        $search = $request->input('search');
         $offices = App::with(['branches' => function ($query) {
             $query->withoutGlobalScope('app_id');
         }])
             ->where('id', '!=', $myAppId)
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                      ->orWhereHas('branches', function ($bQ) use ($search) {
+                          $bQ->withoutGlobalScope('app_id')
+                             ->where('name', 'like', "%{$search}%")
+                             ->orWhere('phone', 'like', "%{$search}%")
+                             ->orWhere('city', 'like', "%{$search}%")
+                             ->orWhere('address', 'like', "%{$search}%");
+                      });
+                });
+            })
             ->latest()
-            ->paginate(15);
+            ->paginate(15)->withQueryString();
         $offices->getCollection()->transform(function ($office) use ($myAppId) {
             $connection = OfficeConnection::where(function ($q) use ($myAppId, $office) {
                 $q->where('sender_app_id', $myAppId)->where('receiver_app_id', $office->id);

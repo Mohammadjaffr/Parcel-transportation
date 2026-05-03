@@ -7,7 +7,7 @@
 
     <div x-data="{
         showDeleteModal: false,
-        searchQuery: '',
+        searchQuery: '{{ addslashes(request('search', '')) }}',
         isSubmitting: false,
         deleteOfficeData: { id: '', name: '', url: '' },
 
@@ -46,44 +46,49 @@
             
             {{-- Search Bar --}}
             <div class="p-5 bg-white border-b border-gray-100 dark:border-boxdark-2 dark:bg-boxdark">
-                <div class="relative w-full md:w-[28rem] rounded-2xl border border-gray-200 dark:border-boxdark-2 transition-all group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
-                    <input type="text" x-model="searchQuery" 
+                <form action="{{ route('offices.unverified.index') }}" method="GET" class="relative w-full md:w-[28rem] rounded-2xl border border-gray-200 dark:border-boxdark-2 transition-all group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                    <input type="text" name="search" value="{{ request('search') }}" x-model="searchQuery" 
                         placeholder="ابحث باسم المكتب، رقم الهاتف أو العنوان..."
                         class="pr-12 pl-12 w-full h-12 text-sm font-medium placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
                     
-                    <span class="absolute right-4 top-1/2 text-gray-400 transition-colors -translate-y-1/2 material-symbols-outlined group-focus-within:text-primary">search</span>
+                    <button type="submit" class="absolute right-4 top-1/2 text-gray-400 transition-colors -translate-y-1/2 material-symbols-outlined group-focus-within:text-primary z-10">search</button>
                     
-                    <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''" style="display: none;"
+                    <a href="{{ route('offices.unverified.index') }}" x-show="searchQuery.length > 0" style="display: none;"
                         class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-gray-100 rounded-xl transition-all -translate-y-1/2 dark:bg-boxdark hover:text-error active:scale-95">
                         <span class="text-[18px] material-symbols-outlined">close</span>
-                    </button>
-                </div>
+                    </a>
+                </form>
             </div>
 
             {{-- ===== Mobile View (Cards) ===== --}}
             <div class="flex flex-col gap-4 p-5 lg:hidden">
                 @forelse($offices as $office)
-                    <div x-data="{ expanded: false }"
-                        x-show="searchQuery === '' || '{{ $office->name }}'.includes(searchQuery) || '{{ $office->address }}'.includes(searchQuery) || '{{ $office->phone }}'.includes(searchQuery)"
+                    @php
+                        $searchData = strtolower(addslashes($office->name . ' ' . $office->branches->pluck('name')->join(' ') . ' ' . $office->branches->pluck('city')->join(' ') . ' ' . $office->branches->pluck('phone')->join(' ') . ' ' . $office->branches->pluck('address')->join(' ')));
+                        $cities = $office->branches->pluck('city')->unique()->filter()->join('، ');
+                    @endphp
+                    <div x-data="{ expanded: false, searchString: '{{ $searchData }}' }"
+                        x-show="searchQuery === '' || searchString.includes(searchQuery.toLowerCase())"
                         class="overflow-hidden rounded-2xl border border-gray-100 shadow-sm transition-all duration-300 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
 
                         <div @click="expanded = !expanded" class="relative p-5 transition-colors cursor-pointer active:bg-gray-50 dark:active:bg-boxdark">
                             <div class="flex gap-4 items-center">
-                                <div class="flex justify-center items-center w-12 h-12 text-amber-500 bg-amber-50 rounded-xl shadow-sm dark:text-amber-400 dark:bg-amber-500/10 shrink-0">
-                                    <span class="text-[24px] material-symbols-outlined">storefront</span>
+                                <div class="flex justify-center items-center w-12 h-12 text-primary bg-primary/10 rounded-xl shadow-sm dark:bg-primary/20 shrink-0">
+                                    <span class="text-[24px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
                                 </div>
 
                                 <div class="flex-1 min-w-0">
                                     <div class="flex gap-2 items-center mb-1">
                                         <h3 class="text-sm font-black truncate text-on-surface dark:text-white font-headline">{{ $office->name }}</h3>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-container dark:bg-primary/10 text-primary dark:text-primary transition-transform"
+                                        <span class="inline-flex gap-1 items-center px-2 py-0.5 rounded-lg text-[10px] font-black bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 transition-transform"
                                             :class="expanded ? 'scale-110' : ''">
+                                            <span class="material-symbols-outlined text-[12px]">account_tree</span>
                                             {{ $office->branches->count() }} فرع
                                         </span>
                                     </div>
-                                    <p class="flex gap-1 items-center mt-1 text-xs text-gray-500 dark:text-bodydark">
-                                        <span class="material-symbols-outlined text-[14px]">location_on</span>
-                                        <span class="truncate">{{ $office->address ?: 'لم يتم تحديد العنوان' }}</span>
+                                    <p class="flex gap-1.5 items-center mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">
+                                        <span class="material-symbols-outlined text-[14px]">public</span>
+                                        <span class="truncate">{{ $cities ?: 'غير محدد' }}</span>
                                     </p>
                                 </div>
 
@@ -168,28 +173,32 @@
             <div class="hidden overflow-x-auto px-6 pb-6 mt-4 lg:block">
                 <table class="w-full text-right border-separate border-spacing-y-3">
                     <thead>
-                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] dark:text-bodydark bg-surface dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark">
-                            <th class="px-6 py-5">المكتب الرئيسي</th>
-                            <th class="px-6 py-5">الموقع الجغرافي</th>
-                            <th class="px-6 py-5 text-center">عدد الفروع</th>
-                            <th class="px-6 py-5 text-center">الإجراءات</th>
+                        <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] dark:text-bodydark">
+                            <th class="px-6 py-4 border-b border-gray-100 dark:border-boxdark-2">المكتب الرئيسي</th>
+                            <th class="px-6 py-4 border-b border-gray-100 dark:border-boxdark-2">النطاق الجغرافي</th>
+                            <th class="px-6 py-4 text-center border-b border-gray-100 dark:border-boxdark-2">عدد الفروع</th>
+                            <th class="px-6 py-4 text-center border-b border-gray-100 dark:border-boxdark-2">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y-0">
                         @foreach($offices as $office)
-                            <tr x-show="searchQuery === '' || '{{ $office->name }}'.includes(searchQuery) || '{{ $office->address }}'.includes(searchQuery) || '{{ $office->phone }}'.includes(searchQuery)" x-transition
-                                class="rounded-2xl border border-transparent shadow-sm transition-all bg-surface dark:bg-boxdark-2 hover:shadow-md hover:border-gray-200 dark:hover:border-boxdark group">
+                            @php
+                                $searchData = strtolower(addslashes($office->name . ' ' . $office->branches->pluck('name')->join(' ') . ' ' . $office->branches->pluck('city')->join(' ') . ' ' . $office->branches->pluck('phone')->join(' ') . ' ' . $office->branches->pluck('address')->join(' ')));
+                                $cities = $office->branches->pluck('city')->unique()->filter()->join('، ');
+                            @endphp
+                            <tr x-data="{ searchString: '{{ $searchData }}' }"
+                                x-show="searchQuery === '' || searchString.includes(searchQuery.toLowerCase())" x-transition
+                                class="rounded-2xl border border-transparent shadow-sm transition-all duration-300 bg-surface dark:bg-boxdark-2 hover:shadow-md hover:-translate-y-0.5 group">
                                 
                                 <td class="px-6 py-4 border-r border-gray-50 border-y dark:border-boxdark-2 first:rounded-r-2xl">
                                     <div class="flex gap-4 items-center">
-                                        <div class="flex justify-center items-center w-12 h-12 text-amber-500 bg-amber-50 rounded-xl shadow-sm dark:text-amber-400 dark:bg-amber-500/10">
-                                            <span class="text-[24px] material-symbols-outlined">storefront</span>
+                                        <div class="flex justify-center items-center w-12 h-12 text-primary bg-primary/10 rounded-xl shadow-sm dark:bg-primary/20">
+                                            <span class="text-[24px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
                                         </div>
                                         <div class="flex flex-col gap-1">
                                             <span class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $office->name }}</span>
-                                            <div class="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 dark:text-bodydark" dir="ltr">
-                                                <span class="material-symbols-outlined text-[14px]">call</span>
-                                                <span>{{ $office->phone ?? '---' }}</span>
+                                            <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400 dark:text-bodydark">
+                                                <span>أُضيف بواسطة: {{ $office->creator->name ?? 'النظام' }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -197,14 +206,17 @@
 
                                 <td class="px-6 py-4 border-gray-50 border-y dark:border-boxdark-2">
                                     <div class="flex gap-2 items-center text-gray-600 dark:text-gray-300">
-                                        <span class="material-symbols-outlined text-[18px] text-gray-400 dark:text-gray-500">location_on</span>
-                                        <span class="text-sm font-medium">{{ $office->address ?: 'لم يتم تحديد العنوان' }}</span>
+                                        <div class="flex justify-center items-center w-8 h-8 rounded-lg bg-gray-50 dark:bg-boxdark">
+                                            <span class="material-symbols-outlined text-[16px] text-gray-400 dark:text-gray-500">public</span>
+                                        </div>
+                                        <span class="text-sm font-bold">{{ $cities ?: 'غير محدد' }}</span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 text-center border-gray-50 border-y dark:border-boxdark-2">
                                     <div class="inline-block relative cursor-help group/branches">
-                                        <span class="px-3 py-1.5 rounded-lg bg-primary-container dark:bg-primary/10 text-primary font-black text-[10px]">
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-black text-[11px] transition-colors group-hover/branches:bg-indigo-100 dark:group-hover/branches:bg-indigo-500/20">
+                                            <span class="material-symbols-outlined text-[14px]">account_tree</span>
                                             {{ $office->branches->count() }} فرع مسجل
                                         </span>
                                         

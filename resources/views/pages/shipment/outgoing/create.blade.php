@@ -369,17 +369,37 @@
                         </h3>
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
+                            <div x-data="{ isCustom: false, packageType: 'carton' }">
                                 <label
                                     class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">النوع</label>
-                                <select name="package_type"
-                                    class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                    <option value="carton">كرتون</option>
-                                    <option value="bag">كيس</option>
-                                    <option value="envelope">مغلف</option>
-                                    <option value="other">أخرى</option>
-                                </select>
+
+                                <div class="relative w-full">
+                                    {{-- حالة القائمة المنسدلة --}}
+                                    <select x-show="!isCustom" x-model="packageType"
+                                        :name="!isCustom ? 'package_type' : ''"
+                                        @change="if(packageType === 'other') { isCustom = true; packageType = ''; $nextTick(() => $refs.customInput.focus()); }"
+                                        class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                        <option value="carton">كرتون</option>
+                                        <option value="bag">كيس</option>
+                                        <option value="envelope">مغلف</option>
+                                        <option value="other">أخرى (كتابة يدوية...)</option>
+                                    </select>
+
+                                    {{-- حالة الكتابة اليدوية (تظهر في نفس المكان وترسل نفس الاسم للسيرفر) --}}
+                                    <div x-show="isCustom" x-cloak style="display: none;" class="relative w-full">
+                                        <input x-ref="customInput" type="text" x-model="packageType"
+                                            :name="isCustom ? 'package_type' : ''" placeholder="اكتب النوع هنا..."
+                                            class="px-3 pl-10 w-full h-12 text-sm bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+
+                                        {{-- زر الإلغاء للعودة إلى القائمة --}}
+                                        <button type="button" @click="isCustom = false; packageType = 'carton'"
+                                            class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors -translate-y-1/2 hover:text-error active:bg-gray-100 dark:active:bg-boxdark">
+                                            <span class="material-symbols-outlined text-[18px]">close</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الوزن
                                     (كجم)</label>
@@ -389,19 +409,46 @@
                             </div>
                         </div>
 
-                        <div
-                            class="grid grid-cols-2 gap-4 p-4 mt-5 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
-                            <div>
-                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">دباب
-                                    العسل</label>
-                                <input type="number" name="no_gallons_honey" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">قروف
-                                    العسل</label>
-                                <input type="number" name="no_honey_jars" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                        {{-- منطقة بيانات العسل مخفية افتراضياً وتظهر عند الضغط --}}
+                        <div x-data="{ showHoneyFields: false }" class="mt-5">
+
+                            {{-- زر الإظهار والإخفاء --}}
+                            <button type="button" @click="showHoneyFields = !showHoneyFields"
+                                class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-[20px] material-symbols-outlined">hive</span>
+                                    <span>إضافة بيانات العسل (دباب / قروف)</span>
+                                </div>
+                                {{-- سهم يتحرك عند الفتح والإغلاق --}}
+                                <span class="transition-transform duration-300 material-symbols-outlined"
+                                    :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
+                            </button>
+
+                            {{-- الحقول (تظهر بتأثير انسيابي) --}}
+                            <div x-show="showHoneyFields" x-cloak x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 -translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 -translate-y-2">
+
+                                <div
+                                    class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
+                                    <div>
+                                        <label
+                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">دباب
+                                            العسل</label>
+                                        <input type="number" name="no_gallons_honey" placeholder="العدد"
+                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
+                                            العسل</label>
+                                        <input type="number" name="no_honey_jars" placeholder="العدد"
+                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -433,8 +480,7 @@
                                     class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
                                     <option value="prepaid">مدفوع مقدماً</option>
                                     <option value="cod">الدفع عند الاستلام (على المستلم)</option>
-                                    <option value="partial_payment">دفع جزئي</option>
-                                    <option value="customer_credit">آجل (على حساب المرسل)</option>
+             
                                 </select>
                             </div>
 

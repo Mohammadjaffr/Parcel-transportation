@@ -30,7 +30,7 @@ class PassengersController extends Controller
         $passengers = $query->paginate(15)->withQueryString();
         $drivers = Driver::all();
 
-        if ($request->isMobile && view()->exists('mobile.pages.passengers.index')) {
+      if ($request->isMobile)  {
             return view('mobile.pages.passengers.index', compact('passengers', 'drivers'));
         }
 
@@ -103,9 +103,14 @@ class PassengersController extends Controller
     }
 
     /* ========== 4- عرض تفاصيل راكب ========== */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $passenger = Passengers::with('driver')->findOrFail($id);
+        
+        if ($request->isMobile) {
+            return view('mobile.pages.passengers.model.show', compact('passenger'));
+        }
+
         return view('pages.passengers.show', compact('passenger'));
     }
 

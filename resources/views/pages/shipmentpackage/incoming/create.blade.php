@@ -205,7 +205,8 @@
                                 {{-- الإدخال (على اليمين) --}}
                                 <input type="tel" x-model="localPhoneNumber" @input="onPhoneInput()"
                                     @focus="driverOpen = true" @click.outside="driverOpen = false" placeholder="7XXXXXXXX"
-                                    dir="ltr" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    dir="ltr" autocomplete="off"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-grow px-3 min-w-0 h-full text-sm font-bold tracking-wider text-left bg-transparent border-none outline-none sm:px-4 focus:ring-0 text-slate-700">
 
                                 {{-- علامة صح --}}
@@ -328,7 +329,7 @@
                         <div :class="errorIndices.includes(index) ? 'border-rose-300 shadow-sm' : (activeItem === index ?
                             'border-primary/40 shadow-[0_8px_30px_-10px_rgba(var(--color-primary-rgb),0.3)]' :
                             'border-slate-100 hover:border-slate-200')"
-                            class="relative bg-white rounded-[1.5rem] border transition-all duration-300 overflow-hidden">
+                            class="relative bg-white rounded-[1.5rem] border transition-all duration-300 overflow-visible">
 
                             {{-- شريط رأس الأكورديون --}}
                             <div @click="activeItem = activeItem === index ? null : index"
@@ -661,17 +662,44 @@
 
                                     {{-- نوع الطرد وملاحظات --}}
                                     <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block mb-1.5 text-[10px] font-bold text-slate-500">النوع <span
-                                                    class="text-rose-500">*</span></label>
-                                            <select :name="`items[${index}][package_type]`" x-model="item.package_type"
-                                                class="px-3 w-full h-11 text-xs font-bold rounded-xl border appearance-none outline-none bg-slate-50/50 border-slate-200 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
-                                                <option value="carton">كرتون</option>
-                                                <option value="bag">كيس</option>
-                                                <option value="envelope">مغلف</option>
-                                                <option value="other">أخرى</option>
-                                            </select>
-                                        </div>
+                                       <div>
+    <label class="block mb-1.5 text-[10px] font-bold text-slate-500">نوع الشحنة <span class="text-rose-500">*</span></label>
+    
+    {{-- إضافة x-data لتعريف حالة القائمة والخيارات لكل طرد بشكل مستقل --}}
+    <div x-data="{ isOpen: false, options: ['كرتون', 'كيس', 'مغلف', 'طرد'] }" class="relative">
+        
+        {{-- حقل الإدخال النصي الديناميكي --}}
+        <input type="text" :name="`items[${index}][package_type]`"
+            x-model="item.package_type" 
+            @focus="isOpen = true"
+            @click.away="isOpen = false"
+            placeholder="اختر أو اكتب النوع..." autocomplete="off" required
+            class="px-4 pl-10 w-full h-11 text-xs font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+
+        {{-- زر السهم التفاعلي (قابل للنقر) --}}
+        <button type="button" @click="isOpen = !isOpen"
+            class="flex absolute left-1 top-1/2 justify-center items-center w-9 h-9 rounded-lg transition-colors -translate-y-1/2 text-slate-400 hover:text-primary hover:bg-primary/5 focus:outline-none">
+            <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
+        </button>
+
+        {{-- القائمة المنسدلة الذكية --}}
+        <div x-show="isOpen" x-cloak x-transition.opacity.scale.origin.top.left
+            class="absolute z-[999999] top-full mt-1.5 left-0 w-full bg-white rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden py-1.5">
+            <template x-for="option in options" :key="option">
+                <button type="button"
+                    @click="item.package_type = option; isOpen = false"
+                    class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                    <span x-text="option"></span>
+
+                    {{-- علامة الصح تظهر فقط إذا كان الخيار مطابقاً للقيمة الحالية --}}
+                    <span x-show="item.package_type === option"
+                        class="material-symbols-outlined text-[18px] text-primary">check</span>
+                </button>
+            </template>
+        </div>
+    </div>
+</div>
                                         <div>
                                             <label class="block mb-1.5 text-[10px] font-bold text-slate-500">ملاحظات
                                                 الطرد</label>

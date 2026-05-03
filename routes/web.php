@@ -93,6 +93,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
     Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
     //======================================================================================
+
+   
+ 
     // Route::resource('shipment', ShipmentController::class);
     Route::post('/shipment/{id}/status', [ShipmentController::class, 'updateStatus'])
         ->name('shipment.updateStatus');
@@ -307,7 +310,7 @@ Route::middleware('auth')->group(function () {
     Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
     Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
     
-    Route::resource('passengers',PassengersController::class);
+    Route::resource('passengers', PassengersController::class);
     
     });
 });

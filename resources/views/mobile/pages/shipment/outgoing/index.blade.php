@@ -26,58 +26,7 @@
             <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
         </div>
 
-        {{-- ================= شريط الفلترة حسب الحالة (للطرود المرسلة) ================= --}}
-        <div class="flex overflow-x-auto gap-2 pb-2 mt-2 custom-scrollbar snap-x snap-mandatory">
-
-            {{-- الكل --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => null, 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ !request('status') ? 'bg-slate-800 text-white border-slate-800 shadow-[0_4px_12px_rgba(30,41,59,0.2)]' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' }}">
-                الكل
-            </a>
-
-            {{-- 1. قيد الانتظار (في فرعنا) --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'pending', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50' }}">
-                قيد الانتظار
-            </a>
-
-            {{-- 2. في الطريق --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'in_transit', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.2)]' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50' }}">
-                في الطريق
-            </a>
-
-            {{-- 3. وصل فرع الوجهة (تحديث مهم للمُرسل ليعرف أن الطرد وصل) --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'received_at_branch', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'received_at_branch' ? 'bg-purple-500 text-white border-purple-500 shadow-[0_4px_12px_rgba(168,85,247,0.2)]' : 'bg-white text-purple-600 border-purple-100 hover:bg-purple-50' }}">
-                وصل فرع الوجهة
-            </a>
-
-            {{-- 5. تم التسليم للعميل --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'delivered', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-[0_4px_12px_rgba(16,185,129,0.2)]' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50' }}">
-                تم التسليم
-            </a>
-
-            {{-- 6. مرتجع --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'returned', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-[0_4px_12px_rgba(244,63,94,0.2)]' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50' }}">
-                مرتجع
-            </a>
-
-            {{-- 7. ملغي (قبل الانطلاق) --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'cancelled', 'page' => null]) }}"
-                class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-                    {{ request('status') == 'cancelled' ? 'bg-slate-500 text-white border-slate-500 shadow-[0_4px_12px_rgba(100,116,139,0.2)]' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50' }}">
-                ملغي
-            </a>
-        </div>
+       
 
         <div class="space-y-5">
             @forelse($shipments as $shipment)

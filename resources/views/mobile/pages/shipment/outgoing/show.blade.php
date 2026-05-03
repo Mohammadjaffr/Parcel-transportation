@@ -228,7 +228,7 @@
                                 <span
                                     class="block text-sm font-black text-slate-800">{{ $shipment->senderCustomer?->name ?? 'عميل نقدي' }}</span>
                                 <span
-                                    class="block mt-0.5 text-xs font-medium text-right text-slate-500 dir-ltr">{{ $shipment->senderCustomer?->phone }}</span>
+                                    class="block mt-0.5 text-xs font-medium text-right text-slate-500 dir-ltr"><x-phone-number :value="$shipment->senderCustomer?->phone ?? '---'" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" /></span>
                             </div>
                             @if($shipment->senderCustomer?->phone)
                                 <div class="flex gap-1.5 items-center">
@@ -267,7 +267,7 @@
                                 <span
                                     class="block text-sm font-black text-primary">{{ $shipment->receiverCustomer?->name ?? 'عميل نقدي' }}</span>
                                 <span
-                                    class="block mt-0.5 text-xs font-medium text-right text-primary/70 dir-ltr">{{ $shipment->receiverCustomer?->phone }}</span>
+                                    class="block mt-0.5 text-xs font-medium text-right text-primary/70 dir-ltr"><x-phone-number :value="$shipment->receiverCustomer?->phone ?? '---'" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" /></span>
                             </div>
                             @if($shipment->receiverCustomer?->phone)
                                 <div class="flex gap-1.5 items-center">
@@ -331,7 +331,7 @@
                                     {{ $shipment->package->driver->name ?? 'غير محدد' }}
                                 </p>
                                 <p class="text-[10px] font-bold text-slate-500 dir-ltr text-right mt-0.5">
-                                    {{ $shipment->package->driver->phone ?? '---' }}
+                                    <x-phone-number :value="$shipment->package->driver->phone ?? '---'" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
                                 </p>
                             </div>
                         </div>

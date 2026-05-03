@@ -9,9 +9,27 @@
         showEditModal: false,
         showDeleteModal: false,
         searchQuery: '',
+        
+        createPassengerData: {
+            date: '',
+            day: '',
+            passenger_number: ''
+        },
     
-        editPassengerData: { 
-            id: '', date: '', day: '', passenger_number: '', location: '', count: '', total_commission: '', broker: '', driver_id: '', driver_name: '', driver_phone: '', note: '', url: '' 
+        editPassengerData: {
+            id: '',
+            date: '',
+            day: '',
+            passenger_number: '',
+            location: '',
+            count: '',
+            total_commission: '',
+            broker: '',
+            driver_id: '',
+            driver_name: '',
+            driver_phone: '',
+            note: '',
+            url: ''
         },
         deletePassengerData: { id: '', passenger_number: '', url: '' },
     
@@ -33,6 +51,7 @@
             };
             this.showEditModal = true;
         },
+     
     
         openDeleteModal(id, passenger_number) {
             this.deletePassengerData = {
@@ -47,6 +66,13 @@
             this.showCreateModal = false;
             this.showEditModal = false;
             this.showDeleteModal = false;
+        },
+        
+        getArabicDayName(dateString) {
+            if (!dateString) return '';
+            const days = ['الاحد', 'الاثنين', 'الثلاثاء', 'الاربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const dateObj = new Date(dateString);
+            return isNaN(dateObj.getTime()) ? '' : days[dateObj.getDay()];
         }
     }"
         class="flex relative flex-col gap-6 p-4 pb-24 mx-auto max-w-7xl min-h-screen md:p-6 bg-surface dark:bg-boxdark-2 font-body"
@@ -100,13 +126,17 @@
 
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex gap-3 items-center w-full">
-                                <div class="flex justify-center items-center w-12 h-12 text-lg font-black rounded-xl bg-primary-container dark:bg-primary/10 text-primary shrink-0">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 text-lg font-black rounded-xl bg-primary-container dark:bg-primary/10 text-primary shrink-0">
                                     <span class="material-symbols-outlined">person</span>
                                 </div>
                                 <div class="flex flex-col w-full">
                                     <div class="flex justify-between items-center">
-                                        <h3 class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $passenger->passenger_number }}</h3>
-                                        <span class="text-xs font-semibold text-gray-500 dark:text-bodydark">{{ $passenger->date }} - {{ $passenger->day }}</span>
+                                        <h3 class="text-sm font-black text-on-surface dark:text-white font-headline">
+                                            {{ $passenger->passenger_number }}</h3>
+                                        <span
+                                            class="text-xs font-semibold text-gray-500 dark:text-bodydark">{{ $passenger->date }}
+                                            - {{ $passenger->day }}</span>
                                     </div>
                                     <div class="flex gap-1.5 items-center mt-1 text-gray-500 dark:text-bodydark">
                                         <span class="material-symbols-outlined text-[14px]">location_on</span>
@@ -117,15 +147,20 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-3 mb-4 text-sm">
-                            <div class="flex flex-col p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                            <div
+                                class="flex flex-col p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
                                 <span class="text-[10px] text-gray-400 dark:text-gray-500">العدد والعمولة</span>
-                                <span class="font-bold text-gray-700 dark:text-gray-300">{{ $passenger->count }} | {{ $passenger->total_commission }}</span>
+                                <span class="font-bold text-gray-700 dark:text-gray-300">{{ $passenger->count }} |
+                                    {{ $passenger->total_commission }}</span>
                             </div>
-                            <div class="flex flex-col p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                            <div
+                                class="flex flex-col p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
                                 <span class="text-[10px] text-gray-400 dark:text-gray-500">الوسيط</span>
-                                <span class="font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker ?: 'لا يوجد' }}</span>
+                                <span
+                                    class="font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker ?: 'لا يوجد' }}</span>
                             </div>
-                            <div class="flex flex-col col-span-2 p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                            <div
+                                class="flex flex-col col-span-2 p-2 rounded-lg border border-gray-50 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
                                 <span class="text-[10px] text-gray-400 dark:text-gray-500">السائق</span>
                                 <span class="font-bold text-primary">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
                             </div>
@@ -187,36 +222,45 @@
                                 x-transition
                                 class="rounded-2xl border border-transparent shadow-sm transition-all bg-surface dark:bg-boxdark-2 hover:shadow-md hover:border-gray-200 dark:hover:border-boxdark group">
 
-                                <td class="px-6 py-4 border-r border-gray-50 border-y dark:border-boxdark-2 first:rounded-r-2xl">
+                                <td
+                                    class="px-6 py-4 border-r border-gray-50 border-y dark:border-boxdark-2 first:rounded-r-2xl">
                                     <div class="flex flex-col gap-1">
-                                        <span class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $passenger->date }}</span>
+                                        <span
+                                            class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $passenger->date }}</span>
                                         <span class="text-xs text-gray-500 dark:text-bodydark">{{ $passenger->day }}</span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 border-gray-50 border-y dark:border-boxdark-2">
-                                    <span class="font-mono text-sm font-bold tracking-wider text-gray-600 dark:text-gray-300">{{ $passenger->passenger_number }}</span>
+                                    <span
+                                        class="font-mono text-sm font-bold tracking-wider text-gray-600 dark:text-gray-300">{{ $passenger->passenger_number }}</span>
                                 </td>
 
                                 <td class="px-6 py-4 border-gray-50 border-y dark:border-boxdark-2">
-                                    <span class="text-sm font-bold text-gray-600 dark:text-gray-300">{{ $passenger->location }}</span>
+                                    <span
+                                        class="text-sm font-bold text-gray-600 dark:text-gray-300">{{ $passenger->location }}</span>
                                 </td>
 
                                 <td class="px-6 py-4 border-gray-50 border-y dark:border-boxdark-2">
                                     <div class="flex flex-col gap-1">
-                                        <span class="text-sm text-gray-600 dark:text-gray-300">العدد: <span class="font-bold">{{ $passenger->count }}</span></span>
-                                        <span class="text-xs text-gray-500 dark:text-bodydark">العمولة: <span class="font-bold">{{ $passenger->total_commission }}</span></span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">العدد: <span
+                                                class="font-bold">{{ $passenger->count }}</span></span>
+                                        <span class="text-xs text-gray-500 dark:text-bodydark">العمولة: <span
+                                                class="font-bold">{{ $passenger->total_commission }}</span></span>
                                     </div>
                                 </td>
 
                                 <td class="px-6 py-4 border-gray-50 border-y dark:border-boxdark-2">
                                     <div class="flex flex-col gap-1">
-                                        <span class="text-sm text-gray-600 dark:text-gray-300">الوسيط: <span class="font-bold">{{ $passenger->broker ?: 'لا يوجد' }}</span></span>
-                                        <span class="text-xs font-bold text-primary">السائق: {{ $passenger->driver->name ?? 'غير محدد' }}</span>
+                                        <span class="text-sm text-gray-600 dark:text-gray-300">الوسيط: <span
+                                                class="font-bold">{{ $passenger->broker ?: 'لا يوجد' }}</span></span>
+                                        <span class="text-xs font-bold text-primary">السائق:
+                                            {{ $passenger->driver->name ?? 'غير محدد' }}</span>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 text-center border-l border-gray-50 border-y dark:border-boxdark-2 last:rounded-l-2xl">
+                                <td
+                                    class="px-6 py-4 text-center border-l border-gray-50 border-y dark:border-boxdark-2 last:rounded-l-2xl">
                                     <div class="flex gap-2 justify-center items-center">
                                         <button
                                             @click="openEditModal({{ $passenger->id }}, {{ json_encode($passenger->date) }}, {{ json_encode($passenger->day) }}, {{ json_encode($passenger->passenger_number) }}, {{ json_encode($passenger->location) }}, {{ $passenger->count ?? 'null' }}, {{ $passenger->total_commission ?? 'null' }}, {{ json_encode($passenger->broker) }}, {{ json_encode($passenger->driver_id) }}, {{ json_encode($passenger->driver->name ?? '') }}, {{ json_encode($passenger->driver->phone ?? '') }}, {{ json_encode($passenger->note) }})"
@@ -224,20 +268,19 @@
                                             class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-primary-container hover:text-primary hover:border-primary/20 dark:hover:bg-primary/10 dark:hover:text-primary active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
                                         </button>
-                                        <a href="{{ route('passengers.show', $passenger->id) }}"
-                                            title="عرض التفاصيل"
+                                        <a href="{{ route('passengers.show', $passenger->id) }}" title="عرض التفاصيل"
                                             class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-indigo-50 hover:text-indigo-500 hover:border-indigo-200 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">visibility</span>
                                         </a>
 
-                                        <button
+                                        {{-- <button
                                             @click="openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
                                             title="حذف"
                                             class="inline-flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-500 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-95">
                                             <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
+                                        </button> --}}
                                     </div>
-                                    
+
                                 </td>
                             </tr>
                         @endforeach
@@ -286,114 +329,151 @@
                 <form action="{{ route('passengers.store') }}" method="POST" class="space-y-6">
                     @csrf
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <!-- Date -->
                         <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span class="text-error">*</span></label>
-                            <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
-                                <input type="date" name="date" required
-                                    class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
+                                        class="text-error">*</span></label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
+                                    
+                                    {{-- التعديل هنا --}}
+                                    <input type="date" name="date" required
+                                        x-model="createPassengerData.date"
+                                        @input="createPassengerData.day = getArabicDayName(createPassengerData.date)"
+                                        class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Day -->
-                        <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span class="text-error">*</span></label>
-                            <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
-                                <input type="text" name="day" required placeholder="مثلاً: الأحد"
-                                    class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                            </div>
-                        </div>
 
-                        <!-- Passenger Number -->
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span
+                                        class="text-error">*</span></label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
+                                    
+                                    {{-- التعديل هنا: إضافة x-model --}}
+                                    <select
+                                        class="pr-12 pl-4 w-full h-14 text-sm bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none pointer-events-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                        name="day" id="day" required
+                                        x-model="createPassengerData.day" readonly>
+                                        <option value="">(يتم تحديده تلقائياً)</option>
+                                        <option value="السبت">السبت</option>
+                                        <option value="الاحد">الاحد</option>
+                                        <option value="الاثنين">الاثنين</option>
+                                        <option value="الثلاثاء">الثلاثاء</option>
+                                        <option value="الاربعاء">الاربعاء</option>
+                                        <option value="الخميس">الخميس</option>
+                                        <option value="الجمعة">الجمعة</option>
+                                    </select>
+                                </div>
+                            </div>
+
                         <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span class="text-error">*</span></label>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span
+                                    class="text-error">*</span></label>
                             <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
                                 <input type="text" name="passenger_number" required placeholder="رقم الراكب"
-                                    class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                                    x-model="createPassengerData.passenger_number"
+                                    class="pr-12 pl-4 w-full h-14 text-sm font-mono font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                    dir="ltr">
                             </div>
                         </div>
 
-                        <!-- Location -->
                         <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span class="text-error">*</span></label>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
+                                    class="text-error">*</span></label>
                             <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">location_on</span>
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">location_on</span>
                                 <input type="text" name="location" required placeholder="مكان التواجد"
                                     class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
-                        <!-- Count -->
                         <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">العدد <span class="text-error">*</span></label>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">العدد <span
+                                    class="text-error">*</span></label>
                             <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">group</span>
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">group</span>
                                 <input type="number" name="count" required placeholder="1"
                                     class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
-                        <!-- Total Commission -->
                         <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة <span class="text-error">*</span></label>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة
+                                <span class="text-error">*</span></label>
                             <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">payments</span>
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">payments</span>
                                 <input type="number" step="0.01" name="total_commission" required placeholder="0.00"
                                     class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
-                        <!-- Broker -->
-                        <div>
+                       <div class="md:col-span-2">
                             <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط</label>
                             <div class="relative">
-                                <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
                                 <input type="text" name="broker" placeholder="اسم الوسيط (اختياري)"
                                     class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
-                        <!-- Driver Details (Search / Add) -->
                         <div class="md:col-span-2" x-data="driverSelect({{ $drivers }}, @js(array_values(config('countries', []))))">
-                            <h4 class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">بيانات السائق</h4>
+                            <h4
+                                class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
+                                بيانات السائق</h4>
                             <div class="grid relative grid-cols-1 gap-4 md:grid-cols-2">
                                 <input type="hidden" name="driver_id" x-model="selectedDriverId">
                                 <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
 
                                 {{-- رقم الهاتف --}}
                                 <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم الهاتف (اختياري)</label>
+                                    <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
+                                        الهاتف (اختياري)</label>
                                     <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary"
-                                        :class="selectedDriverId ? 'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
+                                        :class="selectedDriverId ? 'bg-primary-container dark:bg-primary/10 ring-primary/30' :
+                                            ''"
                                         style="direction: ltr;">
 
                                         <div class="relative h-full" @click.away="openCountryDropdown = false">
                                             <button type="button" @click="openCountryDropdown = !openCountryDropdown"
                                                 class="flex gap-2 items-center px-3 h-14 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                                 <template x-if="selectedCountry?.svg">
-                                                    <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                                    <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                                        x-html="selectedCountry.svg"></div>
                                                 </template>
-                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-300" x-text="selectedCountry?.dial_code"></span>
+                                                <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
+                                                    x-text="selectedCountry?.dial_code"></span>
                                             </button>
 
                                             {{-- Country Dropdown --}}
                                             <div x-show="openCountryDropdown" x-cloak x-transition
                                                 class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
                                                 <div class="p-2 border-b border-gray-50 dark:border-boxdark">
-                                                    <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                                    <input type="text" x-model="searchCountryQuery"
+                                                        placeholder="بحث..."
                                                         class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
                                                         dir="rtl">
                                                 </div>
                                                 <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
                                                     <template x-for="country in filteredCountries" :key="country.code">
-                                                        <button type="button" @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
+                                                        <button type="button"
+                                                            @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
                                                             class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                            <div class="w-5 h-auto rounded-[2px] overflow-hidden" x-html="country.svg"></div>
-                                                            <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
-                                                            <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500" x-text="country.dial_code"></span>
+                                                            <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                                x-html="country.svg"></div>
+                                                            <span
+                                                                class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
+                                                                x-text="country.name"></span>
+                                                            <span
+                                                                class="text-[10px] font-mono text-gray-400 dark:text-gray-500"
+                                                                x-text="country.dial_code"></span>
                                                         </button>
                                                     </template>
                                                 </div>
@@ -421,22 +501,31 @@
                                             <button type="button" @click="selectDriver(driver)"
                                                 class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                                 <div class="flex flex-col gap-0.5">
-                                                    <span class="text-sm font-bold text-on-surface dark:text-white" x-text="driver.name"></span>
-                                                    <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="driver.phone"></span>
+                                                    <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                        x-text="driver.name"></span>
+                                                    <span
+                                                        class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
+                                                        x-text="driver.phone"></span>
                                                 </div>
-                                                <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                                <span
+                                                    class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
                                             </button>
                                         </template>
-                                        <div x-show="filteredDrivers.length === 0" class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
-                                            <span class="text-xs font-bold text-gray-500 dark:text-bodydark">سائق جديد، سيتم حفظه تلقائياً.</span>
+                                        <div x-show="filteredDrivers.length === 0"
+                                            class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                            <span class="text-xs font-bold text-gray-500 dark:text-bodydark">سائق جديد،
+                                                سيتم حفظه تلقائياً.</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {{-- الاسم --}}
                                 <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم السائق <span class="text-error" x-show="localPhoneNumber.length > 0 && !selectedDriverId">*</span></label>
-                                    <input type="text" name="driver_name" x-model="nameInput" :required="localPhoneNumber.length > 0 && !selectedDriverId"
+                                    <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
+                                        السائق <span class="text-error"
+                                            x-show="localPhoneNumber.length > 0 && !selectedDriverId">*</span></label>
+                                    <input type="text" name="driver_name" x-model="nameInput"
+                                        :required="localPhoneNumber.length > 0 && !selectedDriverId"
                                         :readonly="selectedDriverId !== null" placeholder="الاسم..."
                                         class="px-4 w-full h-14 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
                                         :class="selectedDriverId ?
@@ -446,11 +535,11 @@
                             </div>
                         </div>
 
-                        <!-- Note -->
                         <div class="md:col-span-2">
                             <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
                             <div class="relative">
-                                <span class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
+                                <span
+                                    class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
                                 <textarea name="note" rows="3" placeholder="أي ملاحظات إضافية..."
                                     class="py-4 pr-12 pl-4 w-full text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"></textarea>
                             </div>
@@ -498,114 +587,148 @@
                         @csrf
                         @method('PUT')
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <!-- Date -->
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span class="text-error">*</span></label>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
+                                        class="text-error">*</span></label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
                                     <input type="date" name="date" x-model="editPassengerData.date" required
-                                        class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                                </div>
-                            </div>
-                            
-                            <!-- Day -->
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span class="text-error">*</span></label>
-                                <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
-                                    <input type="text" name="day" x-model="editPassengerData.day" required
+                                        @input="editPassengerData.day = getArabicDayName(editPassengerData.date)"
                                         class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                                 </div>
                             </div>
 
-                            <!-- Passenger Number -->
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span class="text-error">*</span></label>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span
+                                        class="text-error">*</span></label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
-                                    <input type="text" name="passenger_number" x-model="editPassengerData.passenger_number" required
-                                        class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
+                                    <select
+                                        class="pr-12 pl-4 w-full h-14 text-sm bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none pointer-events-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                        name="day" id="day" required
+                                        x-model="editPassengerData.day" readonly>
+                                        <option value="">(يتم تحديده تلقائياً)</option>
+                                        <option value="السبت">السبت</option>
+                                        <option value="الاحد">الاحد</option>
+                                        <option value="الاثنين">الاثنين</option>
+                                        <option value="الثلاثاء">الثلاثاء</option>
+                                        <option value="الاربعاء">الاربعاء</option>
+                                        <option value="الخميس">الخميس</option>
+                                        <option value="الجمعة">الجمعة</option>
+                                    </select>
                                 </div>
                             </div>
 
-                            <!-- Location -->
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span class="text-error">*</span></label>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
+                                    <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">location_on</span>
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
+                                    <input type="text" name="passenger_number"
+                                        x-model="editPassengerData.passenger_number" required
+                                        class="pr-12 pl-4 w-full h-14 text-sm font-mono font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                        dir="ltr">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
+                                        class="text-error">*</span></label>
+                                <div class="relative">
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">location_on</span>
                                     <input type="text" name="location" x-model="editPassengerData.location" required
                                         class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                                 </div>
                             </div>
 
-                            <!-- Count -->
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">العدد <span class="text-error">*</span></label>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">العدد <span
+                                        class="text-error">*</span></label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">group</span>
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">group</span>
                                     <input type="number" name="count" x-model="editPassengerData.count" required
                                         class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                                 </div>
                             </div>
 
-                            <!-- Total Commission -->
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة <span class="text-error">*</span></label>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة
+                                    <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">payments</span>
-                                    <input type="number" step="0.01" name="total_commission" x-model="editPassengerData.total_commission" required
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">payments</span>
+                                    <input type="number" step="0.01" name="total_commission"
+                                        x-model="editPassengerData.total_commission" required
                                         class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                                 </div>
                             </div>
 
-                            <!-- Broker -->
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط</label>
                                 <div class="relative">
-                                    <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
+                                    <span
+                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
                                     <input type="text" name="broker" x-model="editPassengerData.broker"
                                         class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                                 </div>
                             </div>
 
-                            <!-- Driver Details (Search / Add) -->
                             <div class="md:col-span-2" x-data="driverSelect({{ $drivers }}, @js(array_values(config('countries', []))), { id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
-                                <h4 class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">بيانات السائق</h4>
+                                <h4
+                                    class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
+                                    بيانات السائق</h4>
                                 <div class="grid relative grid-cols-1 gap-4 md:grid-cols-2">
                                     <input type="hidden" name="driver_id" x-model="selectedDriverId">
                                     <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
 
                                     {{-- رقم الهاتف --}}
                                     <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم الهاتف (اختياري)</label>
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
+                                            الهاتف (اختياري)</label>
                                         <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary"
-                                            :class="selectedDriverId ? 'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
+                                            :class="selectedDriverId ?
+                                                'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
                                             style="direction: ltr;">
 
                                             <div class="relative h-full" @click.away="openCountryDropdown = false">
                                                 <button type="button" @click="openCountryDropdown = !openCountryDropdown"
                                                     class="flex gap-2 items-center px-3 h-14 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                                     <template x-if="selectedCountry?.svg">
-                                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                                            x-html="selectedCountry.svg"></div>
                                                     </template>
-                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300" x-text="selectedCountry?.dial_code"></span>
+                                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
+                                                        x-text="selectedCountry?.dial_code"></span>
                                                 </button>
 
                                                 {{-- Country Dropdown --}}
                                                 <div x-show="openCountryDropdown" x-cloak x-transition
                                                     class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
                                                     <div class="p-2 border-b border-gray-50 dark:border-boxdark">
-                                                        <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                                        <input type="text" x-model="searchCountryQuery"
+                                                            placeholder="بحث..."
                                                             class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
                                                             dir="rtl">
                                                     </div>
                                                     <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
-                                                        <template x-for="country in filteredCountries" :key="country.code">
-                                                            <button type="button" @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
+                                                        <template x-for="country in filteredCountries"
+                                                            :key="country.code">
+                                                            <button type="button"
+                                                                @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
                                                                 class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden" x-html="country.svg"></div>
-                                                                <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
-                                                                <span class="text-[10px] font-mono text-gray-400 dark:text-gray-500" x-text="country.dial_code"></span>
+                                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                                    x-html="country.svg"></div>
+                                                                <span
+                                                                    class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
+                                                                    x-text="country.name"></span>
+                                                                <span
+                                                                    class="text-[10px] font-mono text-gray-400 dark:text-gray-500"
+                                                                    x-text="country.dial_code"></span>
                                                             </button>
                                                         </template>
                                                     </div>
@@ -613,8 +736,9 @@
                                             </div>
 
                                             <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
-                                                @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                                placeholder="7XXXXXXXX" inputmode="numeric" autocomplete="off"
+                                                @focus="showDriverDropdown = true"
+                                                @click.away="showDriverDropdown = false" placeholder="7XXXXXXXX"
+                                                inputmode="numeric" autocomplete="off"
                                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                                 class="flex-1 px-3 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
                                                 :class="selectedDriverId ? 'font-bold text-primary' : ''">
@@ -633,22 +757,31 @@
                                                 <button type="button" @click="selectDriver(driver)"
                                                     class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                                     <div class="flex flex-col gap-0.5">
-                                                        <span class="text-sm font-bold text-on-surface dark:text-white" x-text="driver.name"></span>
-                                                        <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="driver.phone"></span>
+                                                        <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                            x-text="driver.name"></span>
+                                                        <span
+                                                            class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
+                                                            x-text="driver.phone"></span>
                                                     </div>
-                                                    <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
                                                 </button>
                                             </template>
-                                            <div x-show="filteredDrivers.length === 0" class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
-                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">سائق جديد، سيتم حفظه تلقائياً.</span>
+                                            <div x-show="filteredDrivers.length === 0"
+                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">سائق جديد،
+                                                    سيتم حفظه تلقائياً.</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {{-- الاسم --}}
                                     <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم السائق <span class="text-error" x-show="localPhoneNumber.length > 0 && !selectedDriverId">*</span></label>
-                                        <input type="text" name="driver_name" x-model="nameInput" :required="localPhoneNumber.length > 0 && !selectedDriverId"
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
+                                            السائق <span class="text-error"
+                                                x-show="localPhoneNumber.length > 0 && !selectedDriverId">*</span></label>
+                                        <input type="text" name="driver_name" x-model="nameInput"
+                                            :required="localPhoneNumber.length > 0 && !selectedDriverId"
                                             :readonly="selectedDriverId !== null" placeholder="الاسم..."
                                             class="px-4 w-full h-14 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
                                             :class="selectedDriverId ?
@@ -658,11 +791,12 @@
                                 </div>
                             </div>
 
-                            <!-- Note -->
                             <div class="md:col-span-2">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
+                                <label
+                                    class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
                                 <div class="relative">
-                                    <span class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
+                                    <span
+                                        class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
                                     <textarea name="note" x-model="editPassengerData.note" rows="3"
                                         class="py-4 pr-12 pl-4 w-full text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"></textarea>
                                 </div>
@@ -747,26 +881,32 @@
                         let phone = initialData.phone;
                         if (/^\d/.test(phone)) phone = '+' + phone;
 
-                        this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code)) || this.countries.find(c => c.code === 'YE') || this.countries[0];
+                        this.selectedCountry = this.countries.find(c => phone.startsWith(c
+                            .dial_code)) || this.countries.find(c => c.code === 'YE') || this.countries[
+                                0];
                         if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
-                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code
+                                .length);
                         } else {
                             this.localPhoneNumber = initialData.phone;
                         }
                         this.selectedDriverId = initialData.id;
                         this.nameInput = initialData.name || '';
                     } else {
-                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this
+                            .countries[0];
                     }
                 },
                 get filteredCountries() {
                     if (this.searchCountryQuery === '') return this.countries;
                     const query = this.searchCountryQuery.toLowerCase();
-                    return this.countries.filter(c => c.name.toLowerCase().includes(query) || c.dial_code.includes(query));
+                    return this.countries.filter(c => c.name.toLowerCase().includes(query) || c
+                        .dial_code.includes(query));
                 },
                 get fullPhoneNumber() {
                     if (!this.localPhoneNumber) return '';
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace(
+                        '+', '') : '';
                     return dialCode + this.localPhoneNumber;
                 },
                 searchDriver() {
@@ -784,7 +924,8 @@
                 },
                 selectDriver(driver) {
                     this.selectedDriverId = driver.id;
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
+                        '') : '';
                     if (driver.phone && driver.phone.startsWith(dialCode)) {
                         this.localPhoneNumber = driver.phone.substring(dialCode.length);
                     } else {

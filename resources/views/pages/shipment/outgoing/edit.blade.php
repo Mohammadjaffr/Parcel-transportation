@@ -54,83 +54,84 @@
                 <div class="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
 
                     {{-- 1. بيانات الفروع (الوجهة) --}}
-                   {{-- 1. بيانات الفروع (الوجهة) --}}
-{{-- 1. بيانات الفروع (الوجهة) --}}
-<div x-data='destinationLogic(
+                    {{-- 1. بيانات الفروع (الوجهة) --}}
+                    {{-- 1. بيانات الفروع (الوجهة) --}}
+                    <div x-data='destinationLogic(
         @json($offices),
-        @json(old("receiver_branch_id", $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id)),
-        @json(old("office_id", $initialOfficeId ?? ""))
+        @json(old('receiver_branch_id', $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id)),
+        @json(old('office_id', $initialOfficeId ?? ''))
     )'
-    class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
+                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
 
-    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none"></div>
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
+                        </div>
 
-    <div class="relative z-10">
-        <div class="flex gap-3 items-center mb-6">
-            <div
-                class="flex justify-center items-center w-12 h-12 text-gray-500 rounded-xl shadow-sm transition-all shrink-0 bg-surface dark:bg-boxdark-2 dark:text-bodydark group-hover/card:bg-primary group-hover/card:text-white">
-                <span class="material-symbols-outlined text-[24px]">local_shipping</span>
-            </div>
-            <div>
-                <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد</h3>
-                <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">
-                    اختر المكتب والفرع المستلم
-                </p>
-            </div>
-        </div>
+                        <div class="relative z-10">
+                            <div class="flex gap-3 items-center mb-6">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 text-gray-500 rounded-xl shadow-sm transition-all shrink-0 bg-surface dark:bg-boxdark-2 dark:text-bodydark group-hover/card:bg-primary group-hover/card:text-white">
+                                    <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد
+                                    </h3>
+                                    <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">
+                                        اختر المكتب والفرع المستلم
+                                    </p>
+                                </div>
+                            </div>
 
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-            <div>
-                <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                    المكتب <span class="text-error">*</span>
-                </label>
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        المكتب <span class="text-error">*</span>
+                                    </label>
 
-                <div class="relative">
-                    <select name="office_id"
-                        x-model="selectedOfficeId"
-                        @change="selectedBranchId = ''; updateBranches()"
-                        required
-                        class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                    <div class="relative">
+                                        <select name="office_id" x-model="selectedOfficeId"
+                                            @change="selectedBranchId = ''; updateBranches()" required
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
 
-                        <option value="" disabled>اختر المكتب...</option>
+                                            <option value="" disabled>اختر المكتب...</option>
 
-                        <template x-for="office in offices" :key="office.id">
-                            <option :value="office.id" x-text="office.name"></option>
-                        </template>
-                    </select>
+                                            <template x-for="office in offices" :key="office.id">
+                                                <option :value="office.id" x-text="office.name"></option>
+                                            </template>
+                                        </select>
 
-                    <span class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
-                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                    </span>
-                </div>
-            </div>
+                                        <span
+                                            class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                        </span>
+                                    </div>
+                                </div>
 
-            <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
-                <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                    الفرع <span class="text-error">*</span>
-                </label>
+                                <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        الفرع <span class="text-error">*</span>
+                                    </label>
 
-                <div class="relative">
-                    <select name="receiver_branch_id"
-                        x-model="selectedBranchId"
-                        required
-                        class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
+                                    <div class="relative">
+                                        <select name="receiver_branch_id" x-model="selectedBranchId" required
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
 
-                        <option value="" disabled>اختر الفرع...</option>
+                                            <option value="" disabled>اختر الفرع...</option>
 
-                        <template x-for="branch in availableBranches" :key="branch.id">
-                            <option :value="branch.id" x-text="branch.name"></option>
-                        </template>
-                    </select>
+                                            <template x-for="branch in availableBranches" :key="branch.id">
+                                                <option :value="branch.id" x-text="branch.name"></option>
+                                            </template>
+                                        </select>
 
-                    <span class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
-                        <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                                        <span
+                                            class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {{-- 2. بيانات العملاء --}}
                     <div
@@ -420,25 +421,38 @@
                             </div>
                         </div> --}}
 
-                        <div class="mb-4">
-                            <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">رقم
-                                السند</label>
-                            <input type="text" value="{{ $shipment->bond_number }}" disabled
-                                class="px-4 w-full h-12 font-mono text-sm text-left text-gray-500 bg-gray-100 rounded-xl border border-gray-200 transition-all cursor-not-allowed outline-none dark:bg-gray-800 dark:border-boxdark"
-                                dir="ltr">
-                        </div>
+                        
 
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
+                                  <div x-data="{ isCustom: false, packageType: 'carton' }">
                                 <label
                                     class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">النوع</label>
-                                <select name="package_type"
-                                    class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                    <option value="carton" @selected(old('package_type', $shipment->package_type) == 'carton')>كرتون</option>
-                                    <option value="bag" @selected(old('package_type', $shipment->package_type) == 'bag')>كيس</option>
-                                    <option value="envelope" @selected(old('package_type', $shipment->package_type) == 'envelope')>مغلف</option>
-                                    <option value="other" @selected(old('package_type', $shipment->package_type) == 'other')>أخرى</option>
-                                </select>
+
+                                <div class="relative w-full">
+                                    {{-- حالة القائمة المنسدلة --}}
+                                    <select x-show="!isCustom" x-model="packageType"
+                                        :name="!isCustom ? 'package_type' : ''"
+                                        @change="if(packageType === 'other') { isCustom = true; packageType = ''; $nextTick(() => $refs.customInput.focus()); }"
+                                        class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                        <option value="carton">كرتون</option>
+                                        <option value="bag">كيس</option>
+                                        <option value="envelope">مغلف</option>
+                                        <option value="other">أخرى (كتابة يدوية...)</option>
+                                    </select>
+
+                                    {{-- حالة الكتابة اليدوية (تظهر في نفس المكان وترسل نفس الاسم للسيرفر) --}}
+                                    <div x-show="isCustom" x-cloak style="display: none;" class="relative w-full">
+                                        <input x-ref="customInput" type="text" x-model="packageType"
+                                            :name="isCustom ? 'package_type' : ''" placeholder="اكتب النوع هنا..."
+                                            class="px-3 pl-10 w-full h-12 text-sm bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+
+                                        {{-- زر الإلغاء للعودة إلى القائمة --}}
+                                        <button type="button" @click="isCustom = false; packageType = 'carton'"
+                                            class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors -translate-y-1/2 hover:text-error active:bg-gray-100 dark:active:bg-boxdark">
+                                            <span class="material-symbols-outlined text-[18px]">close</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الوزن
@@ -450,21 +464,45 @@
                             </div>
                         </div>
 
-                        <div
-                            class="grid grid-cols-2 gap-4 p-4 mt-5 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
-                            <div>
-                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">دباب
-                                    العسل</label>
-                                <input type="number" name="no_gallons_honey"
-                                    value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-amber-600 dark:text-amber-500 mb-1.5">قروف
-                                    العسل</label>
-                                <input type="number" name="no_honey_jars"
-                                    value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                      <div x-data="{ showHoneyFields: false }" class="mt-5">
+
+                            {{-- زر الإظهار والإخفاء --}}
+                            <button type="button" @click="showHoneyFields = !showHoneyFields"
+                                class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
+                                <div class="flex gap-2 items-center">
+                                    <span class="text-[20px] material-symbols-outlined">hive</span>
+                                    <span>إضافة بيانات العسل (دباب / قروف)</span>
+                                </div>
+                                {{-- سهم يتحرك عند الفتح والإغلاق --}}
+                                <span class="transition-transform duration-300 material-symbols-outlined"
+                                    :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
+                            </button>
+
+                            {{-- الحقول (تظهر بتأثير انسيابي) --}}
+                            <div x-show="showHoneyFields" x-cloak x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0 -translate-y-2"
+                                x-transition:enter-end="opacity-100 translate-y-0"
+                                x-transition:leave="transition ease-in duration-200"
+                                x-transition:leave-start="opacity-100 translate-y-0"
+                                x-transition:leave-end="opacity-0 -translate-y-2">
+
+                                <div
+                                    class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
+                                    <div>
+                                        <label
+                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">دباب
+                                            العسل</label>
+                                        <input type="number" name="no_gallons_honey" placeholder="العدد"
+                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
+                                            العسل</label>
+                                        <input type="number" name="no_honey_jars" placeholder="العدد"
+                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -496,8 +534,6 @@
                                     class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
                                     <option value="prepaid">مدفوع مقدماً</option>
                                     <option value="cod">الدفع عند الاستلام (على المستلم)</option>
-                                    <option value="partial_payment">دفع جزئي</option>
-                                    <option value="customer_credit">آجل (على حساب المرسل)</option>
                                 </select>
                             </div>
 
@@ -543,74 +579,75 @@
 @section('script')
     <script>
         document.addEventListener('alpine:init', () => {
-          Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
-    offices: officesList || [],
+            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
+                offices: officesList || [],
 
-    selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
-    selectedBranchId: initialBranchId ? String(initialBranchId) : '',
-    availableBranches: [],
+                selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
+                selectedBranchId: initialBranchId ? String(initialBranchId) : '',
+                availableBranches: [],
 
-    init() {
-        if (this.selectedOfficeId) {
-            const office = this.offices.find(
-                o => String(o.id) === String(this.selectedOfficeId)
-            );
+                init() {
+                    if (this.selectedOfficeId) {
+                        const office = this.offices.find(
+                            o => String(o.id) === String(this.selectedOfficeId)
+                        );
 
-            if (office) {
-                this.availableBranches = office.branches || [];
+                        if (office) {
+                            this.availableBranches = office.branches || [];
 
-                const branchExists = this.availableBranches.some(
-                    b => String(b.id) === String(this.selectedBranchId)
-                );
+                            const branchExists = this.availableBranches.some(
+                                b => String(b.id) === String(this.selectedBranchId)
+                            );
 
-                if (this.selectedBranchId && !branchExists) {
-                    this.selectedBranchId = '';
+                            if (this.selectedBranchId && !branchExists) {
+                                this.selectedBranchId = '';
+                            }
+                        }
+
+                        return;
+                    }
+
+                    if (this.selectedBranchId) {
+                        const foundOffice = this.offices.find(office => {
+                            return (office.branches || []).some(
+                                branch => String(branch.id) === String(this
+                                    .selectedBranchId)
+                            );
+                        });
+
+                        if (foundOffice) {
+                            this.selectedOfficeId = String(foundOffice.id);
+                            this.availableBranches = foundOffice.branches || [];
+                            return;
+                        }
+                    }
+
+                    const internalOffice = this.offices.find(
+                        o => String(o.id).startsWith('internal_')
+                    );
+
+                    if (internalOffice) {
+                        this.selectedOfficeId = String(internalOffice.id);
+                        this.availableBranches = internalOffice.branches || [];
+                    }
+                },
+
+                updateBranches() {
+                    const office = this.offices.find(
+                        o => String(o.id) === String(this.selectedOfficeId)
+                    );
+
+                    this.availableBranches = office ? (office.branches || []) : [];
+
+                    const branchExists = this.availableBranches.some(
+                        b => String(b.id) === String(this.selectedBranchId)
+                    );
+
+                    if (!branchExists) {
+                        this.selectedBranchId = '';
+                    }
                 }
-            }
-
-            return;
-        }
-
-        if (this.selectedBranchId) {
-            const foundOffice = this.offices.find(office => {
-                return (office.branches || []).some(
-                    branch => String(branch.id) === String(this.selectedBranchId)
-                );
-            });
-
-            if (foundOffice) {
-                this.selectedOfficeId = String(foundOffice.id);
-                this.availableBranches = foundOffice.branches || [];
-                return;
-            }
-        }
-
-        const internalOffice = this.offices.find(
-            o => String(o.id).startsWith('internal_')
-        );
-
-        if (internalOffice) {
-            this.selectedOfficeId = String(internalOffice.id);
-            this.availableBranches = internalOffice.branches || [];
-        }
-    },
-
-    updateBranches() {
-        const office = this.offices.find(
-            o => String(o.id) === String(this.selectedOfficeId)
-        );
-
-        this.availableBranches = office ? (office.branches || []) : [];
-
-        const branchExists = this.availableBranches.some(
-            b => String(b.id) === String(this.selectedBranchId)
-        );
-
-        if (!branchExists) {
-            this.selectedBranchId = '';
-        }
-    }
-}));
+            }));
             Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
                 customers: customersList || [],
                 countries: countriesList || [],
@@ -629,7 +666,8 @@
                         if (/^\d/.test(phone)) phone = '+' + phone;
 
                         this.selectedCountry = this.countries.find(c => phone.startsWith(c
-                            .dial_code)) || this.countries.find(c => c.code === 'YE') || this.countries[
+                                .dial_code)) || this.countries.find(c => c.code === 'YE') || this
+                            .countries[
                                 0];
                         if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
                             this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code

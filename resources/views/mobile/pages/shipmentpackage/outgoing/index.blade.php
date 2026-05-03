@@ -3,7 +3,8 @@
 @section('title', 'الشحنات المرسلة')
 
 @section('content')
-    <div class="flex flex-col gap-5 px-4 pt-4 pb-28">
+    {{-- 1. تعريف searchQuery هنا --}}
+    <div x-data="{ searchQuery: '' }" class="flex flex-col gap-5 px-4 pt-4 pb-28 min-h-screen bg-slate-50/50">
 
         {{-- الهيدر الاحترافي --}}
         <div class="flex justify-between items-center mb-2">
@@ -25,13 +26,20 @@
             </a>
         </div>
 
-        {{-- شريط البحث المطور --}}
+        {{-- ================= شريط البحث الفوري (Alpine.js) ================= --}}
         <div class="relative group">
             <span
-                class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</span>
-            <input type="text" placeholder="ابحث برقم التتبع أو الوجهة..."
-                class="w-full h-14 pr-12 pl-4 bg-white border-none rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 outline-none text-sm font-bold transition-all placeholder:text-slate-300">
+                class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-emerald-500">search</span>
+
+            <input type="text" x-model="searchQuery" placeholder="ابحث برقم السند، أو اسم السائق..."
+                class="pr-12 pl-4 w-full h-14 text-sm font-bold bg-white rounded-2xl border-none shadow-[0_8px_30px_rgb(0,0,0,0.02)] ring-1 ring-slate-100 outline-none focus:ring-2 focus:ring-emerald-500/20 text-slate-700 placeholder-slate-400 transition-all">
+
+            <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''" style="display: none;" x-cloak
+                class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 rounded-xl transition-all -translate-y-1/2 text-slate-400 bg-slate-50 hover:text-error active:scale-95">
+                <span class="text-[18px] material-symbols-outlined">close</span>
+            </button>
         </div>
+
         {{-- شريط الفلترة حسب الحالة (Status Filters) --}}
         <div class="flex overflow-x-auto gap-2 pb-2 mt-2 custom-scrollbar snap-x snap-mandatory">
             <a href="{{ route('shipmentpackage.outgoing.index') }}"
@@ -39,7 +47,7 @@
                 {{ !request('status') ? 'bg-slate-800 text-white border-slate-800 shadow-[0_4px_12px_rgba(30,41,59,0.2)]' : 'bg-white text-slate-500 border-slate-100 hover:bg-slate-50' }}">
                 الكل
             </a>
-            
+
             <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'pending']) }}"
                 class="snap-start shrink-0 px-4 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
                 {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-[0_4px_12px_rgba(245,158,11,0.2)]' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50' }}">
@@ -65,11 +73,13 @@
             </a>
         </div>
 
-        {{-- قائمة الإرساليات (Manifests) بالتصميم الجديد --}}
-        <div class="flex flex-col gap-5">
+        {{-- قائمة الإرساليات (Manifests) --}}
+        <div class="flex relative flex-col gap-5">
             @forelse($packages as $package)
-                <div x-data="{ openMenu: false }"
-                    class="bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group">
+                {{-- 2. هنا سحر الفلترة: البطاقة تختفي وتظهر بناءً على ما يكتبه المستخدم --}}
+                <div x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
+                    x-data="{ openMenu: false }" x-transition
+                    class="bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group package-card">
 
                     {{-- شريط لوني علوي خفيف يعطي طابعاً مميزاً --}}
                     <div
@@ -88,21 +98,36 @@
                                 <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
                                     {{ $package->tracking_number }}
                                 </h3>
-                                <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1">
+                                <div
+                                    class="flex gap-1 items-center mt-0.5 text-[11px] font-bold text-slate-400 dark:text-gray-500">
                                     <span class="material-symbols-outlined text-[12px]">schedule</span>
-                                    {{ $package->created_at->format('Y/m/d - H:i') }}
-                                </p>
+                                    <span class="text-primary/80">{{ $package->created_at->translatedFormat('l') }}</span>
+                                    <span class="mx-0.5 text-slate-300">|</span>
+                                    <span>{{ $package->created_at->format('Y/m/d') }}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div class="flex gap-2 items-center">
-                            {{-- شارة الحالة (Pill Badge) بتصميم FinTech --}}
+                            {{-- شارة الحالة (Pill Badge) --}}
                             @php
                                 $statusMap = [
-                                    'pending' => ['label' => 'قيد التجهيز', 'class' => 'bg-amber-50 text-amber-600 ring-amber-500/20'],
-                                    'in_transit' => ['label' => 'في الطريق', 'class' => 'bg-blue-50 text-blue-600 ring-blue-500/20'],
-                                    'delivered' => ['label' => 'مكتملة', 'class' => 'bg-emerald-50 text-emerald-600 ring-emerald-500/20'],
-                                    'returned' => ['label' => 'مرتجعة', 'class' => 'bg-rose-50 text-rose-600 ring-rose-500/20'],
+                                    'pending' => [
+                                        'label' => 'قيد التجهيز',
+                                        'class' => 'bg-amber-50 text-amber-600 ring-amber-500/20',
+                                    ],
+                                    'in_transit' => [
+                                        'label' => 'في الطريق',
+                                        'class' => 'bg-blue-50 text-blue-600 ring-blue-500/20',
+                                    ],
+                                    'delivered' => [
+                                        'label' => 'مكتملة',
+                                        'class' => 'bg-emerald-50 text-emerald-600 ring-emerald-500/20',
+                                    ],
+                                    'returned' => [
+                                        'label' => 'مرتجعة',
+                                        'class' => 'bg-rose-50 text-rose-600 ring-rose-500/20',
+                                    ],
                                 ];
                                 $currStatus = $statusMap[$package->status] ?? $statusMap['pending'];
                             @endphp
@@ -111,7 +136,7 @@
                                 {{ $currStatus['label'] }}
                             </span>
 
-                            {{-- قائمة الثلاث نقاط (Kebab Menu) الاحترافية --}}
+                            {{-- قائمة الثلاث نقاط (Kebab Menu) --}}
                             <div class="relative">
                                 <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
                                     class="flex justify-center items-center w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20">
@@ -121,25 +146,23 @@
                                 <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
                                     class="absolute top-full left-0 mt-1.5 w-48 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-50 overflow-hidden py-1.5">
 
-                                    {{-- رابط عرض التفاصيل --}}
                                     <a href="{{ route('shipmentpackage.outgoing.show', $package->id) }}"
                                         class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                                         عرض التفاصيل
                                     </a>
 
-                                    <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}" target="_blank"
+                                    <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}"
+                                        target="_blank"
                                         class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">print</span>
                                         طباعة كشف الرحلة
                                     </a>
 
-                                    @if($package->driver && $package->driver->phone)
+                                    @if ($package->driver && $package->driver->phone)
                                         <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
-                                        {{-- التواصل مع السائق (واتساب) --}}
                                         <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}" target="_blank"
                                             class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-                                            {{-- 💡 أيقونة واتساب باللون الأخضر الرسمي --}}
                                             <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <path
@@ -153,7 +176,7 @@
                         </div>
                     </div>
 
-                    {{-- ================= 2. الفاصل المقطّع (Ticket Divider) ================= --}}
+                    {{-- ================= 2. الفاصل المقطّع ================= --}}
                     <div class="flex overflow-hidden relative items-center h-4">
                         <div
                             class="absolute -right-2 w-4 h-4 rounded-full border-l shadow-inner bg-slate-50/50 border-slate-200/60">
@@ -167,20 +190,18 @@
                     {{-- ================= 3. جسد البطاقة ================= --}}
                     <div class="p-5 pt-4 space-y-5">
                         <div class="flex gap-4 justify-between items-start">
-
-                            {{-- العمود الأيمن: خط السير (من المستودع للسائق) --}}
                             <div class="flex gap-3 items-stretch w-1/2">
                                 <div class="flex flex-col items-center mt-1">
-                                    <div class="w-2.5 h-2.5 rounded-full border-[2.5px] border-slate-300 bg-white z-10"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full border-[2.5px] border-slate-300 bg-white z-10">
+                                    </div>
                                     <div class="w-[1.5px] h-10 bg-slate-200 my-0.5"></div>
                                     <div
                                         class="w-2.5 h-2.5 rounded-full border-[2.5px] border-primary bg-white z-10 shadow-[0_0_8px_rgba(36,56,156,0.4)]">
                                     </div>
                                 </div>
-
                                 <div class="flex flex-col flex-1 justify-between space-y-4">
                                     <div>
-                                        <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">فرع التجميع</p>
+                                        <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">فرع المرسل</p>
                                         <p class="text-xs font-bold text-slate-800 truncate max-w-[100px]">
                                             {{ $package->senderBranch->name ?? 'غير محدد' }}
                                         </p>
@@ -196,7 +217,6 @@
                                 </div>
                             </div>
 
-                            {{-- العمود الأيسر: تفاصيل إضافية للإرسالية --}}
                             <div
                                 class="flex flex-col gap-2.5 justify-center p-3 w-1/2 rounded-xl border bg-slate-50/70 border-slate-100/80">
                                 <div class="flex justify-between items-center">
@@ -207,44 +227,41 @@
                                     </span>
                                 </div>
                                 <div class="flex justify-between items-center pt-2 mt-1 border-t border-slate-200/50">
-                                    <span class="text-[10px] text-slate-400 font-bold">رقم السائق:</span>
+                                    <span class="text-[9px] text-slate-400 font-bold">رقم السائق:</span>
                                     <span class="text-[11px] font-black text-slate-600 dir-ltr text-right">
-                                        {{ $package->driver->phone ?? '---' }}
+                                        <x-phone-number :value="$package->driver->phone ?? '---'"
+                                            class="text-[11px] font-black text-gray-500 dark:text-bodydark" />
                                     </span>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {{-- ================= 4. كبسولة الفوتر (إحصائيات الإرسالية) ================= --}}
-                        <div
-                            class="bg-slate-800 rounded-[18px] p-3.5 flex justify-between items-center shadow-lg shadow-slate-900/10">
-
-                            {{-- الحالة --}}
-                            <div class="flex gap-2.5 items-center">
-                                <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-slate-700 text-slate-300">
-                                    <span class="material-symbols-outlined text-[18px]">inventory_2</span>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] font-black text-slate-300 mb-0.5">حالة الرحلة</p>
-                                    <p class="text-[11px] font-bold text-white tracking-wide">
-                                        {{ $currStatus['label'] }}
-                                    </p>
-                                </div>
+                    {{-- ================= 4. كبسولة الفوتر ================= --}}
+                    <div
+                        class="bg-slate-800 rounded-[18px] p-3.5 flex justify-between items-center shadow-lg shadow-slate-900/10">
+                        <div class="flex gap-2.5 items-center">
+                            <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-slate-700 text-slate-300">
+                                <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                             </div>
-
-                            {{-- إجمالي الطرود (مساحة بارزة جداً) --}}
-                            <div class="pl-2 text-left">
-                                <p class="text-[9px] font-bold text-slate-400 mb-0.5">إجمالي الطرود</p>
-                                <p class="text-lg font-black tracking-tight leading-none text-amber-400 font-headline">
-                                    {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}
-                                    <span class="text-[10px] font-bold text-slate-300">طرد</span>
+                            <div>
+                                <p class="text-[10px] font-black text-slate-300 mb-0.5">حالة الرحلة</p>
+                                <p class="text-[11px] font-bold text-white tracking-wide">
+                                    {{ $currStatus['label'] }}
                                 </p>
                             </div>
+                        </div>
+                        <div class="pl-2 text-left">
+                            <p class="text-[9px] font-bold text-slate-400 mb-0.5">إجمالي الطرود</p>
+                            <p class="text-lg font-black tracking-tight leading-none text-amber-400 font-headline">
+                                {{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}
+                                <span class="text-[10px] font-bold text-slate-300">طرد</span>
+                            </p>
                         </div>
                     </div>
                 </div>
             @empty
-                {{-- Empty State بتصميم أنيق ومريح --}}
+                {{-- Empty State --}}
                 <div
                     class="flex flex-col items-center justify-center py-20 bg-white rounded-[24px] border-2 border-dashed border-slate-200/70 mt-4 shadow-sm">
                     <div class="relative mb-4">
@@ -259,16 +276,17 @@
                 </div>
             @endforelse
 
-            @if(method_exists($packages, 'hasPages') && $packages->hasPages())
-                <div class="mt-8">
-                    {{ $packages->links('vendor.pagination.mobile') }}
-                </div>
-            @endif
+            {{-- 3. تظهر هذه الرسالة فقط إذا كتب المستخدم شيئاً غير موجود في أي بطاقة --}}
+            <div x-show="searchQuery !== '' && !Array.from(document.querySelectorAll('.package-card')).some(el => el.style.display !== 'none')"
+                style="display: none;"
+                class="flex flex-col justify-center items-center py-16 text-center rounded-[24px] border-2 border-slate-200/70 border-dashed bg-white shadow-sm">
+                <span class="text-[48px] material-symbols-outlined text-slate-300 mb-4">search_off</span>
+                <p class="text-sm font-bold text-slate-500">لا يوجد نتائج تطابق بحثك</p>
+            </div>
         </div>
 
-        {{-- الترقيم المخصص --}}
-        @if($packages->hasPages())
-            <div class="px-2 mt-6">
+        @if ($packages->hasPages())
+            <div class="mt-2">
                 {{ $packages->links('vendor.pagination.tailwind') }}
             </div>
         @endif

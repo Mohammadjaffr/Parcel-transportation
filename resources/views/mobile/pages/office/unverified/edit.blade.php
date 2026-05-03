@@ -102,16 +102,61 @@
                         </div>
 
                         <div class="relative">
+                            {{-- الحقل المخفي الذي سيتم إرساله للسيرفر --}}
                             <input type="hidden" :name="`branches[${index}][phone]`" x-model="branch.fullPhone">
-                            <div class="relative group flex items-center bg-slate-50 rounded-xl overflow-hidden ring-1 ring-slate-100">
-                                <input type="tel" x-model="branch.localPhone" @input="updatePhone(index)" required placeholder="7XXXXXXXX" class="flex-1 bg-transparent border-0 px-4 py-3 pr-11 text-sm dir-ltr text-left">
-                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"><span class="material-symbols-outlined text-lg">call</span></div>
-                                <button type="button" @click="branch.open = !branch.open" class="flex items-center gap-2 px-3 h-12 bg-slate-100">
-                                    <span class="text-xs font-bold dir-ltr" x-text="branch.selectedCountry?.dial_code"></span>
-                                    <div class="w-5 h-auto rounded-sm overflow-hidden" x-html="branch.selectedCountry?.svg"></div>
+
+                            <div class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+                                
+                                {{-- حقل إدخال الرقم المحلي --}}
+                                <input type="tel" 
+                                    x-model="branch.localPhone" 
+                                    @input="
+                                        branch.localPhone = branch.localPhone.replace(/[^0-9]/g, ''); 
+                                        if(branch.selectedCountry?.dial_code === '+967' && branch.localPhone.length > 9) {
+                                            branch.localPhone = branch.localPhone.substring(0, 9);
+                                        }
+                                        updatePhone(index);
+                                    " 
+                                    :maxlength="branch.selectedCountry?.dial_code === '+967' ? 9 : 15"
+                                    required 
+                                    placeholder="7XXXXXXXX" 
+                                    inputmode="numeric"
+                                    class="flex-1 min-w-0 w-full px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+
+                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
+                                    <span class="text-lg material-symbols-outlined">call</span>
+                                </div>
+
+                                {{-- زر اختيار الدولة (معدل ليبقى ثابتاً في الجوالات الصغيرة) --}}
+                                <button type="button" @click="branch.open = !branch.open" 
+                                    class="flex gap-1.5 sm:gap-2 items-center px-2 sm:px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0 whitespace-nowrap">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400 shrink-0">expand_more</span>
+                                    <span class="text-xs font-bold text-slate-700 dir-ltr shrink-0" x-text="branch.selectedCountry?.dial_code"></span>
+                                    <template x-if="branch.selectedCountry?.svg">
+                                        <div class="overflow-hidden w-5 h-auto rounded-sm shrink-0" x-html="branch.selectedCountry.svg"></div>
+                                    </template>
                                 </button>
                             </div>
+
+                            {{-- قائمة الدول (السليكت الذي كان مختفياً) --}}
+                            <div x-show="branch.open" @click.outside="branch.open = false" x-transition x-cloak
+                                class="absolute top-[calc(100%+6px)] left-0 z-50 w-full bg-white rounded-2xl border border-slate-100 shadow-2xl overflow-hidden">
+                                <div class="p-2 border-b border-slate-50">
+                                    <input type="text" x-model="branch.search" placeholder="بحث عن دولة..."
+                                        class="px-3 py-2 w-full text-xs rounded-lg outline-none bg-slate-50 focus:bg-slate-100 font-headline">
+                                </div>
+                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
+                                    <template x-for="country in allCountries.filter(c => c.name.toLowerCase().includes(branch.search.toLowerCase()) || c.dial_code.includes(branch.search))" :key="country.code">
+                                        <div @click="branch.selectedCountry = country; branch.open = false; branch.search = ''; updatePhone(index)"
+                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
+                                            <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
+                                            <span class="flex-grow text-xs font-medium truncate text-slate-700" x-text="country.name"></span>
+                                            <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr" x-text="country.dial_code"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
+                        </div>
 
                         <input type="text" :name="`branches[${index}][address]`" x-model="branch.address" placeholder="العنوان"
                                class="w-full h-12 px-4 text-xs rounded-xl border-none ring-1 ring-slate-100 bg-slate-50 font-headline">

@@ -3,88 +3,87 @@
 @section('title', 'إدارة العملاء')
 
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
+
 
     <div x-data="{
-                showCreateModal: false,
-                showEditModal: false,
-                showDeleteModal: false,
-                searchQuery: '',
-                isSubmitting: false,
-                errors: {},
-
-                editCustomerData: { id: '', name: '', phone: '', url: '' },
-                createCustomerData: { name: '', phone: '' },
-                deleteCustomerData: { id: '', name: '', url: '' },
-
-                openEditModal(id, name, phone) {
-                    this.errors = {};
-                    this.editCustomerData = {
-                        id: id,
-                        name: name,
-                        phone: phone,
-                        url: '{{ route('customers.index') }}/' + id
-                    };
-                    this.$dispatch('set-edit-phone', { phone: phone });
-                    this.showEditModal = true;
-                },
-
-                openCreateModal() {
-                    this.errors = {};
-                    this.createCustomerData = { name: '', phone: '' };
-                    this.showCreateModal = true;
-                },
-
-                openDeleteModal(id, name) {
-                    this.deleteCustomerData = {
-                        id: id,
-                        name: name,
-                        url: '{{ route('customers.index') }}/' + id
-                    };
-                    this.showDeleteModal = true;
-                },
-
-                closeModals() {
-                    this.showCreateModal = false;
-                    this.showEditModal = false;
-                    this.showDeleteModal = false;
-                    this.errors = {};
-                },
-
-                async submitForm(url, method, data) {
-                    this.isSubmitting = true;
-                    this.errors = {};
-
-                    try {
-                        const response = await fetch(url, {
-                            method: method,
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json'
-                            },
-                            body: JSON.stringify(data)
-                        });
-                        const result = await response.json();
-                        if (!response.ok) {
-                            if (response.status === 422) {
-                                this.errors = result.errors;
-                            } else {
-                                alert(result.message || 'حدث خطأ غير متوقع.');
-                            }
-                        } else {
-                            this.closeModals();
-                            window.location.reload();
-                        }
-                    } catch (error) {
-                        console.error('Error:', error);
-                        alert('حدث خطأ في الاتصال بالخادم.');
-                    } finally {
-                        this.isSubmitting = false;
+        showCreateModal: false,
+        showEditModal: false,
+        showDeleteModal: false,
+        searchQuery: '',
+        isSubmitting: false,
+        errors: {},
+    
+        editCustomerData: { id: '', name: '', phone: '', url: '' },
+        createCustomerData: { name: '', phone: '' },
+        deleteCustomerData: { id: '', name: '', url: '' },
+    
+        openEditModal(id, name, phone) {
+            this.errors = {};
+            this.editCustomerData = {
+                id: id,
+                name: name,
+                phone: phone,
+                url: '{{ route('customers.index') }}/' + id
+            };
+            this.$dispatch('set-edit-phone', { phone: phone });
+            this.showEditModal = true;
+        },
+    
+        openCreateModal() {
+            this.errors = {};
+            this.createCustomerData = { name: '', phone: '' };
+            this.showCreateModal = true;
+        },
+    
+        openDeleteModal(id, name) {
+            this.deleteCustomerData = {
+                id: id,
+                name: name,
+                url: '{{ route('customers.index') }}/' + id
+            };
+            this.showDeleteModal = true;
+        },
+    
+        closeModals() {
+            this.showCreateModal = false;
+            this.showEditModal = false;
+            this.showDeleteModal = false;
+            this.errors = {};
+        },
+    
+        async submitForm(url, method, data) {
+            this.isSubmitting = true;
+            this.errors = {};
+    
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    if (response.status === 422) {
+                        this.errors = result.errors;
+                    } else {
+                        alert(result.message || 'حدث خطأ غير متوقع.');
                     }
+                } else {
+                    this.closeModals();
+                    window.location.reload();
                 }
-            }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
+            } catch (error) {
+                console.error('Error:', error);
+                alert('حدث خطأ في الاتصال بالخادم.');
+            } finally {
+                this.isSubmitting = false;
+            }
+        }
+    }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
         <div class="flex justify-between items-center px-2">
             <div>
@@ -95,8 +94,7 @@
             </div>
             <button type="button" @click="openCreateModal()"
                 class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-xl transition-all bg-primary shadow-primary/20 active:scale-95">
-                <span class="text-2xl material-symbols-outlined"
-                    style="font-variation-settings: 'FILL' 1;">person_add</span>
+                <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
             </button>
         </div>
 
@@ -144,9 +142,17 @@
                             </h3>
                             <div class="flex gap-1.5 items-center mt-1.5 text-slate-500">
                                 <span class="material-symbols-outlined text-[14px] text-primary/60">phone_iphone</span>
-                                <span class="font-mono text-[11px] font-bold tracking-wider">{{ $customer->phone }}</span>
+                                <x-phone-number :value="$customer->phone" class="font-mono text-[11px] font-bold tracking-wider" />
+                            </div>
+                            <div class="flex gap-1.5 items-center mt-1.5 text-slate-500">
+                                <span class="material-symbols-outlined text-[14px] text-primary/60">store</span>
+                                <span class="text-xs text-gray-500">{{ $customer->branch->name ?? 'N/A' }}</span>
                             </div>
                         </div>
+                        <div>
+                            <span class="text-xs text-gray-500">{{ $customer->created_at->diffForHumans() }}</span>
+                        </div>
+                    
 
                         {{-- 💡 القائمة المنسدلة للإجراءات (Kebab Menu) --}}
                         <div class="relative z-50 shrink-0">
@@ -203,7 +209,8 @@
                     <div class="flex gap-2 p-3 rounded-2xl border bg-slate-50 border-slate-100/50">
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
-                            <span class="block text-sm font-black text-slate-700">{{ $customer->shipments_count ?? 0 }}</span>
+                            <span
+                                class="block text-sm font-black text-slate-700">{{ $customer->shipments_count ?? 0 }}</span>
                         </div>
                         <div class="w-px bg-slate-200/60"></div>
                         <div class="flex-1 text-center">
@@ -273,9 +280,11 @@
                         <div class="relative">
                             <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
                                 :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
-                            <input type="text" x-model="createCustomerData.name" placeholder="مثلاً: محمد عبدالله" required
+                            <input type="text" x-model="createCustomerData.name" placeholder="مثلاً: محمد عبدالله"
+                                required
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' : 'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
+                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
                         </div>
                         <template x-if="errors.name">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
@@ -283,26 +292,26 @@
                     </div>
 
                     <div x-data="{
-                                open: false,
-                                search: '',
-                                countries: @js(array_values(config('countries', []))),
-                                selectedCountry: null,
-                                localPhoneNumber: '',
-                                fullPhone: '',
-                                init() {
-                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                                    this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                                    this.$watch('selectedCountry', () => this.updateFullPhone());
-                                },
-                                updateFullPhone() {
-                                    this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                                    createCustomerData.phone = this.fullPhone;
-                                },
-                                get filteredCountries() {
-                                    if (this.search === '') return this.countries;
-                                    return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                                }
-                            }">
+                        open: false,
+                        search: '',
+                        countries: @js(array_values(config('countries', []))),
+                        selectedCountry: null,
+                        localPhoneNumber: '',
+                        fullPhone: '',
+                        init() {
+                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                            this.$watch('selectedCountry', () => this.updateFullPhone());
+                        },
+                        updateFullPhone() {
+                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                            createCustomerData.phone = this.fullPhone;
+                        },
+                        get filteredCountries() {
+                            if (this.search === '') return this.countries;
+                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                        }
+                    }">
                         <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
                                 class="text-rose-500">*</span></label>
 
@@ -311,8 +320,7 @@
                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric"
-                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
@@ -343,7 +351,8 @@
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
                                             <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
-                                                fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                                fill="none" xmlns="http://www.w3.org/2000/svg"
+                                                x-html="country.svg"></svg>
                                             <span
                                                 class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
                                                 x-text="country.name"></span>
@@ -362,7 +371,8 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
                         <span x-show="!isSubmitting" class="material-symbols-outlined">save</span>
-                        <span x-show="isSubmitting" class="animate-spin material-symbols-outlined">progress_activity</span>
+                        <span x-show="isSubmitting"
+                            class="animate-spin material-symbols-outlined">progress_activity</span>
                         <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ بيانات العميل'"></span>
                     </button>
                 </form>
@@ -402,7 +412,8 @@
                                 :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
                             <input type="text" x-model="editCustomerData.name" required
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' : 'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
+                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
                         </div>
                         <template x-if="errors.name">
                             <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
@@ -410,40 +421,40 @@
                     </div>
 
                     <div x-data="{
-                                open: false,
-                                search: '',
-                                countries: @js(array_values(config('countries', []))),
-                                selectedCountry: null,
-                                localPhoneNumber: '',
-                                fullPhone: '',
-                                init() {
-                                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                                    this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                                    this.$watch('selectedCountry', () => this.updateFullPhone());
-                                },
-                                updateFullPhone() {
-                                    this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                                    editCustomerData.phone = this.fullPhone;
-                                },
-                                handleSetPhone(phoneString) {
-                                    if(!phoneString) {
-                                        this.localPhoneNumber = '';
-                                        return;
-                                    }
-                                    let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
-                                    if(matched) {
-                                        this.selectedCountry = matched;
-                                        this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
-                                    } else {
-                                        this.localPhoneNumber = phoneString;
-                                    }
-                                    this.updateFullPhone();
-                                },
-                                get filteredCountries() {
-                                    if (this.search === '') return this.countries;
-                                    return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                                }
-                            }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
+                        open: false,
+                        search: '',
+                        countries: @js(array_values(config('countries', []))),
+                        selectedCountry: null,
+                        localPhoneNumber: '',
+                        fullPhone: '',
+                        init() {
+                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
+                            this.$watch('selectedCountry', () => this.updateFullPhone());
+                        },
+                        updateFullPhone() {
+                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
+                            editCustomerData.phone = this.fullPhone;
+                        },
+                        handleSetPhone(phoneString) {
+                            if (!phoneString) {
+                                this.localPhoneNumber = '';
+                                return;
+                            }
+                            let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
+                            if (matched) {
+                                this.selectedCountry = matched;
+                                this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
+                            } else {
+                                this.localPhoneNumber = phoneString;
+                            }
+                            this.updateFullPhone();
+                        },
+                        get filteredCountries() {
+                            if (this.search === '') return this.countries;
+                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+                        }
+                    }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
                         <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
                                 class="text-rose-500">*</span></label>
 
@@ -452,7 +463,8 @@
                                 :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric"
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
@@ -483,7 +495,8 @@
                                         <div @click="selectedCountry = country; open = false; search = ''"
                                             class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
                                             <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
-                                                fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                                fill="none" xmlns="http://www.w3.org/2000/svg"
+                                                x-html="country.svg"></svg>
                                             <span
                                                 class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
                                                 x-text="country.name"></span>
@@ -502,7 +515,8 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
                         <span x-show="!isSubmitting" class="material-symbols-outlined">update</span>
-                        <span x-show="isSubmitting" class="animate-spin material-symbols-outlined">progress_activity</span>
+                        <span x-show="isSubmitting"
+                            class="animate-spin material-symbols-outlined">progress_activity</span>
                         <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'"></span>
                     </button>
                 </form>

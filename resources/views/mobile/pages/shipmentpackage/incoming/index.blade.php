@@ -98,43 +98,8 @@
                 <a x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
                     href="{{ route('shipmentpackage.incoming.show', $package->id) }}"
                     class="block bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative active:scale-[0.98] transition-transform">
-                    @php
-                        // 1. ألوان البادج (خلفية فاتحة، نص غامق، وإطار)
-                        $statusColors = [
-                            'pending'    => 'bg-amber-50 text-amber-600 border-amber-200',
-                            'in_transit' => 'bg-blue-50 text-blue-600 border-blue-200',
-                            'delivered'  => 'bg-emerald-50 text-emerald-600 border-emerald-200',
-                            'returned'   => 'bg-rose-50 text-rose-600 border-rose-200',
-                        ];
+                    <x-shipment-status :status="$package->status" />
 
-                        // 2. ألوان الشريط الجانبي (ألوان صلبة/Solid)
-                        $sideBarColors = [
-                            'pending'    => 'bg-amber-500',
-                            'in_transit' => 'bg-blue-500',
-                            'delivered'  => 'bg-emerald-500',
-                            'returned'   => 'bg-rose-500',
-                        ];
-
-                        // 3. الأيقونات والمسميات
-                        $statusIcons = [
-                            'pending'    => 'schedule',
-                            'in_transit' => 'local_shipping',
-                            'delivered'  => 'inventory_2',
-                            'returned'   => 'assignment_return',
-                        ];
-                        $statusNames = [
-                            'pending'    => 'جاري التجهيز بالمصدر',
-                            'in_transit' => 'في الطريق إلينا',
-                            'delivered'  => 'تم الاستلام',
-                            'returned'   => 'مرتجعة',
-                        ];
-
-                        $colorClass   = $statusColors[$package->status] ?? 'bg-slate-50 text-slate-600 border-slate-200';
-                        $sideBarClass = $sideBarColors[$package->status] ?? 'bg-slate-400';
-                        $icon         = $statusIcons[$package->status] ?? 'info';
-                        $name         = $statusNames[$package->status] ?? $package->status;
-                    @endphp
-                    
                     {{-- شريط جانبي لوني يوضح الحالة --}}
                     <div class="absolute right-0 top-0 bottom-0 w-1.5 {{ $sideBarClass }}"></div>
 

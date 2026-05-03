@@ -6,7 +6,7 @@
 
     <div x-data="{
                     showDeleteModal: false,
-                    searchQuery: '',
+                    searchQuery: '{{ addslashes(request('search', '')) }}',
                     isSubmitting: false,
                     deleteOfficeData: { id: '', name: '', url: '' },
 
@@ -22,7 +22,7 @@
                     closeModals() {
                         this.showDeleteModal = false;
                     }
-                }" class="flex flex-col gap-6 relative min-h-screen pb-24">
+                }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
         <div class="flex justify-between items-center px-2">
             <div>
@@ -37,22 +37,31 @@
             </a>
         </div>
 
-        <div class="px-2">
+        <form action="{{ route('offices.unverified.index') }}" method="GET" class="px-2">
             <div class="relative group">
-                <span
-                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</span>
-                <input type="text" x-model="searchQuery" placeholder="ابحث باسم المكتب، رقم الهاتف أو العنوان..."
+                <button type="submit"
+                    class="absolute right-4 top-1/2 z-10 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</button>
+                <input type="text" name="search" value="{{ request('search') }}" x-model="searchQuery" placeholder="ابحث باسم المكتب، رقم الهاتف أو العنوان..."
                     class="pr-12 w-full h-14 text-sm bg-white rounded-[1.25rem] border-none ring-1 shadow-sm transition-all outline-none ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline text-slate-700">
             </div>
-        </div>
+        </form>
 
         <div class="px-2 space-y-4">
             @forelse($offices as $office)
-                <div x-data="{ expanded: false }"
-                    x-show="searchQuery === '' || '{{ $office->name }}'.includes(searchQuery) || '{{ $office->address }}'.includes(searchQuery) || '{{ $office->phone }}'.includes(searchQuery)"
+                @php
+                    $searchData = collect([$office->name, $office->address, $office->phone]);
+                    foreach($office->branches as $branch) {
+                        $searchData->push($branch->name);
+                        $searchData->push($branch->phone);
+                        $searchData->push($branch->city);
+                    }
+                    $searchString = strtolower($searchData->filter()->implode(' '));
+                @endphp
+                <div x-data="{ expanded: false, searchString: '{{ addslashes($searchString) }}' }"
+                    x-show="searchQuery === '' || searchString.includes(searchQuery.toLowerCase())"
                     class="bg-white rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] overflow-hidden transition-all duration-300">
 
-                    <div @click="expanded = !expanded" class="p-5 relative cursor-pointer active:bg-slate-50 transition-colors">
+                    <div @click="expanded = !expanded" class="relative p-5 transition-colors cursor-pointer active:bg-slate-50">
 
                         <div class="flex gap-4 items-center mt-2">
                             <div
@@ -61,7 +70,7 @@
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
+                                <div class="flex gap-2 items-center mb-1">
                                     <h3 class="text-base font-bold truncate text-slate-800 font-headline">{{ $office->name }}
                                     </h3>
                                     <span
@@ -77,7 +86,7 @@
                                 </p>
                             </div>
 
-                            <div class="text-slate-300 transition-transform duration-300"
+                            <div class="transition-transform duration-300 text-slate-300"
                                 :class="expanded ? 'rotate-180 text-primary' : ''">
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
@@ -85,7 +94,7 @@
                     </div>
 
                     <div x-show="expanded" x-collapse x-cloak
-                        class="bg-slate-50/50 border-t border-slate-50 px-5 pb-5 pt-2 space-y-3">
+                        class="px-5 pt-2 pb-5 space-y-3 border-t bg-slate-50/50 border-slate-50">
 
                         <div
                             class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
@@ -95,9 +104,9 @@
 
                         @forelse($office->branches as $branch)
                             <div
-                                class="flex items-center justify-between p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-lg bg-primary/5 text-primary flex items-center justify-center">
+                                class="flex justify-between items-center p-3 bg-white rounded-2xl border shadow-sm border-slate-100">
+                                <div class="flex gap-3 items-center">
+                                    <div class="flex justify-center items-center w-8 h-8 rounded-lg bg-primary/5 text-primary">
                                         <span class="text-sm material-symbols-outlined">location_city</span>
                                     </div>
                                     <div>
@@ -106,33 +115,33 @@
                                     </div>
                                 </div>
                                 <a href="tel:{{ $branch->phone }}"
-                                    class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center active:scale-90 transition-transform">
+                                    class="flex justify-center items-center w-8 h-8 text-emerald-600 bg-emerald-50 rounded-full transition-transform active:scale-90">
                                     <span class="text-sm material-symbols-outlined">call</span>
                                 </a>
                             </div>
                         @empty
-                            <div class="text-center py-4 text-xs text-slate-400 font-medium italic">
+                            <div class="py-4 text-xs italic font-medium text-center text-slate-400">
                                 لا توجد فروع مسجلة لهذا المكتب
                             </div>
                         @endforelse
 
-                        <div class="flex gap-2 mt-4 pt-2 border-t border-slate-100">
+                        <div class="flex gap-2 pt-2 mt-4 border-t border-slate-100">
 
                             <a href="{{ route('offices.edit', $office->id) }}"
-                                class="w-10 h-10 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center active:scale-95 transition-all">
+                                class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl transition-all active:scale-95">
                                 <span class="text-xl material-symbols-outlined">edit_square</span>
                             </a>
 
                             <a href="{{ route('offices.show', $office->id) }}"
-                                class="flex-1 flex justify-center items-center gap-2 h-10 text-xs font-bold rounded-xl bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary active:scale-95 transition-all">
+                                class="flex flex-1 gap-2 justify-center items-center h-10 text-xs font-bold bg-white rounded-xl border transition-all border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-primary active:scale-95">
                                 <span class="text-sm material-symbols-outlined">visibility</span>
                                 تفاصيل المكتب
                             </a>
 
-                            <button @click.stop="openDeleteModal({{ $office }})"
-                                class="w-10 h-10 rounded-xl bg-red-50 text-red-400 flex items-center justify-center active:scale-95 transition-all">
+                            {{-- <button @click.stop="openDeleteModal({{ $office }})"
+                                class="flex justify-center items-center w-10 h-10 text-red-400 bg-red-50 rounded-xl transition-all active:scale-95">
                                 <span class="text-xl material-symbols-outlined">delete_outline</span>
-                            </button>
+                            </button> --}}
 
                         </div>
                     </div>

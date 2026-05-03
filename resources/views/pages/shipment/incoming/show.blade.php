@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تفاصيل الطرد الوارد #' . $shipment->code)
-@section('Breadcrumb', 'إدارة الشحنات / الطرود الواردة / تفاصيل الطرد')
+@section('title', 'تفاصيل الطرد الوارد #' . $shipment->bond_number)
 
 @section('content')
     <div class="flex flex-col gap-6 p-4 rounded-3xl bg-slate-50/50 dark:bg-boxdark-2 lg:p-6 font-body" x-data="{ 
@@ -21,7 +20,7 @@
                     <div class="flex gap-3 items-center">
                         <h1 class="text-xl font-black text-slate-800 dark:text-white font-headline">طرد وارد</h1>
                         <span class="px-3 py-1 font-mono text-xs font-black rounded-lg border bg-primary/10 text-primary border-primary/20">
-                            #{{ $shipment->code }}
+                            #{{ $shipment->bond_number }}
                         </span>
                     </div>
                     
@@ -92,7 +91,7 @@
         <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
                 @php
-                    $whatsappMsg = "مرحباً *" . ($shipment->receiverCustomer->name ?? 'عميلنا العزيز') . "*،\nيسعدنا إبلاغك بوصول طردك رقم: *" . $shipment->code . "* إلى فرعنا.\nيرجى التفضل بزيارتنا لاستلامه.";
+                    $whatsappMsg = "مرحباً *" . ($shipment->receiverCustomer->name ?? 'عميلنا العزيز') . "*،\nيسعدنا إبلاغك بوصول طردك رقم: *" . $shipment->id . "* إلى فرعنا.\nيرجى التفضل بزيارتنا لاستلامه.";
                     if ($shipment->payment_method !== 'prepaid') {
                         $whatsappMsg .= "\n*ملاحظة:* يرجى تجهيز مبلغ وقدره " . number_format($shipment->total_amount, 2) . " عند الاستلام.";
                     }

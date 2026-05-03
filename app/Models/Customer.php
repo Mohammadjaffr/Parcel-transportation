@@ -7,16 +7,18 @@ namespace App\Models;
 use App\Traits\BelongsToApp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUuid;
 
 class Customer extends Model
 {
-    use HasFactory,BelongsToApp;
+    use HasFactory,BelongsToApp,HasUuid;
     protected $fillable = [
         'name',
         'phone',
         'app_id',
         'branch_id',
-        'created_by'
+        'created_by',
+        'uuid',
     ];
 
     public function branch()

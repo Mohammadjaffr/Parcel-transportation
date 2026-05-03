@@ -18,7 +18,10 @@ class CustomerController extends Controller
     // معتمد
     public function index(Request $request)
     {
-        $query = Customer::with(['branch', 'creator']);
+        $user = auth()->user();
+        $query = Customer::with(['branch', 'creator'])
+            ->where('branch_id', $user->branch_id)
+            ->where('app_id', $user->app_id);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -310,14 +313,18 @@ class CustomerController extends Controller
     public function search(Request $request)
     {
         $q = trim((string) $request->get('q', ''));
+        $user = auth()->user();
 
         if (mb_strlen($q) < 1) {
             return response()->json([]);
         }
 
         $customers = Customer::query()
-            ->where('name', 'like', "%{$q}%")
-            ->orWhere('phone', 'like', "%{$q}%")
+            ->where('branch_id', $user->branch_id)
+            ->where(function ($query) use ($q) {
+                $query->where('name', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%");
+            })
             ->orderBy('name')
             ->limit(10)
             ->get(['id', 'name', 'phone']);

@@ -34,7 +34,7 @@ class ShipmentController extends Controller
     {
         $this->shipmentPaymentService = $shipmentPaymentService;
     }
-    
+
     // معتمد
     public function index(Request $request)
     {
@@ -415,114 +415,124 @@ class ShipmentController extends Controller
 
         return view('pages.shipment.outgoing.show', compact('shipment'));
     }
-    public function outgoingEdit(Request $request, $id){
-    $shipment = Shipment::with([
-        'senderCustomer',
-        'receiverCustomer',
-        'receiverBranch'
-    ])->findOrFail($id);
+    public function outgoingEdit(Request $request, $id)
+    {
+        $shipment = Shipment::with([
+            'senderCustomer',
+            'receiverCustomer',
+            'receiverBranch'
+        ])->findOrFail($id);
 
-    if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
-        return back()->with('error', 'لا يمكن تعديل هذا الطرد لأن حالته الحالية لا تسمح بذلك.');
-    }
+        if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
+            return back()->with('error', 'لا يمكن تعديل هذا الطرد لأن حالته الحالية لا تسمح بذلك.');
+        }
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    $customers = Customer::where('app_id', $user->app_id)
-        ->get(['id', 'name', 'phone']);
+        $customers = Customer::where('app_id', $user->app_id)
+            ->get(['id', 'name', 'phone']);
 
-    $branches = Branch::where('app_id', $user->app_id)->get();
+        $branches = Branch::where('app_id', $user->app_id)->get();
 
-    $currentApp = $user->app;
+        $currentApp = $user->app;
 
-    $sentAccepted = $currentApp->sentConnections()
-        ->where('status', 'accepted')
-        ->pluck('receiver_app_id');
+        $sentAccepted = $currentApp->sentConnections()
+            ->where('status', 'accepted')
+            ->pluck('receiver_app_id');
 
-    $receivedAccepted = $currentApp->receivedConnections()
-        ->where('status', 'accepted')
-        ->pluck('sender_app_id');
+        $receivedAccepted = $currentApp->receivedConnections()
+            ->where('status', 'accepted')
+            ->pluck('sender_app_id');
 
-    $connectedAppIds = collect()
-        ->merge($sentAccepted)
-        ->merge($receivedAccepted)
-        ->unique();
+        $connectedAppIds = collect()
+            ->merge($sentAccepted)
+            ->merge($receivedAccepted)
+            ->unique();
 
-    $trustedApps = App::whereIn('id', $connectedAppIds)
-        ->with(['branches' => function ($query) {
-            $query->withoutGlobalScope('app_id');
-        }])
-        ->get();
+        $trustedApps = App::whereIn('id', $connectedAppIds)
+            ->with(['branches' => function ($query) {
+                $query->withoutGlobalScope('app_id');
+            }])
+            ->get();
 
-    $untrustedOffices = Office::where('app_id', $currentApp->id)
-        ->with('branches')
-        ->get();
+        $untrustedOffices = Office::where('app_id', $currentApp->id)
+            ->with('branches')
+            ->get();
 
-    $offices = collect();
+        $offices = collect();
 
-    $myBranches = Branch::where('app_id', $currentApp->id)
-        ->where('id', '!=', $user->branch_id)
-        ->get();
+        $myBranches = Branch::where('app_id', $currentApp->id)
+            ->where('id', '!=', $user->branch_id)
+            ->get();
 
-    if ($myBranches->isNotEmpty()) {
-        $offices->push([
-            'id'       => 'internal_' . $currentApp->id,
-            'name'     => '🏠 مكتبنا الحالي',
-            'branches' => $myBranches,
-        ]);
-    }
-
-    foreach ($trustedApps as $tApp) {
-        if ($tApp->branches->isNotEmpty()) {
+        if ($myBranches->isNotEmpty()) {
             $offices->push([
-                'id'       => 'trusted_' . $tApp->id,
-                'name'     => $tApp->name,
-                'branches' => $tApp->branches,
+                'id'       => 'internal_' . $currentApp->id,
+                'name'     => '🏠 مكتبنا الحالي',
+                'branches' => $myBranches,
             ]);
         }
-    }
 
-    foreach ($untrustedOffices as $uOffice) {
-        if ($uOffice->branches->isNotEmpty()) {
-            $offices->push([
-                'id'       => 'untrusted_' . $uOffice->id,
-                'name'     => $uOffice->name,
-                'branches' => $uOffice->branches,
-            ]);
+        foreach ($trustedApps as $tApp) {
+            if ($tApp->branches->isNotEmpty()) {
+                $offices->push([
+                    'id'       => 'trusted_' . $tApp->id,
+                    'name'     => $tApp->name,
+                    'branches' => $tApp->branches,
+                ]);
+            }
         }
-    }
 
-    // مهم: إذا الشحنة خارجية نعتمد receiver_office_branch_id أولاً
-    $initialBranchId = old(
-        'receiver_branch_id',
-        $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id
-    );
-
-    $initialOfficeId = old('office_id', '');
-
-    if (!$initialOfficeId && $initialBranchId) {
-        foreach ($offices as $office) {
-            $officeId = (string) $office['id'];
-
-            if ($shipment->receiver_office_branch_id && !str_starts_with($officeId, 'untrusted_')) {
-                continue;
+        foreach ($untrustedOffices as $uOffice) {
+            if ($uOffice->branches->isNotEmpty()) {
+                $offices->push([
+                    'id'       => 'untrusted_' . $uOffice->id,
+                    'name'     => $uOffice->name,
+                    'branches' => $uOffice->branches,
+                ]);
             }
+        }
 
-            if (!$shipment->receiver_office_branch_id && str_starts_with($officeId, 'untrusted_')) {
-                continue;
-            }
+        // مهم: إذا الشحنة خارجية نعتمد receiver_office_branch_id أولاً
+        $initialBranchId = old(
+            'receiver_branch_id',
+            $shipment->receiver_office_branch_id ?: $shipment->receiver_branch_id
+        );
 
-            foreach ($office['branches'] as $branch) {
-                if ((int) $branch->id === (int) $initialBranchId) {
-                    $initialOfficeId = $office['id'];
-                    break 2;
+        $initialOfficeId = old('office_id', '');
+
+        if (!$initialOfficeId && $initialBranchId) {
+            foreach ($offices as $office) {
+                $officeId = (string) $office['id'];
+
+                if ($shipment->receiver_office_branch_id && !str_starts_with($officeId, 'untrusted_')) {
+                    continue;
+                }
+
+                if (!$shipment->receiver_office_branch_id && str_starts_with($officeId, 'untrusted_')) {
+                    continue;
+                }
+
+                foreach ($office['branches'] as $branch) {
+                    if ((int) $branch->id === (int) $initialBranchId) {
+                        $initialOfficeId = $office['id'];
+                        break 2;
+                    }
                 }
             }
         }
-    }
 
-    if ($request->isMobile) {
-        return view('mobile.pages.shipment.outgoing.edit', compact(
+        if ($request->isMobile) {
+            return view('mobile.pages.shipment.outgoing.edit', compact(
+                'shipment',
+                'customers',
+                'offices',
+                'branches',
+                'initialOfficeId'
+            ));
+        }
+
+        return view('pages.shipment.outgoing.edit', compact(
             'shipment',
             'customers',
             'offices',
@@ -530,16 +540,8 @@ class ShipmentController extends Controller
             'initialOfficeId'
         ));
     }
-
-    return view('pages.shipment.outgoing.edit', compact(
-        'shipment',
-        'customers',
-        'offices',
-        'branches',
-        'initialOfficeId'
-    ));
-    }
-    public function outgoingUpdate(Request $request, $id){
+    public function outgoingUpdate(Request $request, $id)
+    {
         $shipment = Shipment::findOrFail($id);
 
         if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
@@ -547,147 +549,147 @@ class ShipmentController extends Controller
         }
 
         $rules = [
-        'office_id'             => 'required|string',
-        'receiver_branch_id'    => 'required|integer|exists:branches,id',
+            'office_id'             => 'required|string',
+            'receiver_branch_id'    => 'required|integer|exists:branches,id',
 
-        'sender_customer_id'    => 'nullable|exists:customers,id',
-        'sender_name'           => 'required_without:sender_customer_id|string|max:255',
-        'sender_phone'          => 'required_without:sender_customer_id|string|max:50',
+            'sender_customer_id'    => 'nullable|exists:customers,id',
+            'sender_name'           => 'required_without:sender_customer_id|string|max:255',
+            'sender_phone'          => 'required_without:sender_customer_id|string|max:50',
 
-        'receiver_customer_id'  => 'nullable|exists:customers,id',
-        'receiver_name'         => 'required_without:receiver_customer_id|string|max:255',
-        'receiver_phone'        => 'required_without:receiver_customer_id|string|max:50',
+            'receiver_customer_id'  => 'nullable|exists:customers,id',
+            'receiver_name'         => 'required_without:receiver_customer_id|string|max:255',
+            'receiver_phone'        => 'required_without:receiver_customer_id|string|max:50',
 
-        'package_type'          => 'required|string',
-        'weight'                => 'nullable|numeric|min:0',
-        'no_gallons_honey'      => 'nullable|numeric|min:0',
-        'no_honey_jars'         => 'nullable|numeric|min:0',
+            'package_type'          => 'required|string',
+            'weight'                => 'nullable|numeric|min:0',
+            'no_gallons_honey'      => 'nullable|numeric|min:0',
+            'no_honey_jars'         => 'nullable|numeric|min:0',
 
-        'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
-        'total_amount'          => 'required|numeric|min:0',
-        'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
-        'notes'                 => 'nullable|string',
-    ];
+            'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
+            'total_amount'          => 'required|numeric|min:0',
+            'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+            'notes'                 => 'nullable|string',
+        ];
 
-    $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules);
 
-    $validator->after(function ($validator) use ($request) {
-        if ($request->payment_method === 'partial_payment') {
-            $total = (float) $request->total_amount;
-            $partial = (float) $request->partial_amount;
+        $validator->after(function ($validator) use ($request) {
+            if ($request->payment_method === 'partial_payment') {
+                $total = (float) $request->total_amount;
+                $partial = (float) $request->partial_amount;
 
-            if ($partial >= $total) {
-                $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
-            }
-        }
-
-        if (
-            !str_starts_with((string) $request->office_id, 'untrusted_') &&
-            (int) $request->receiver_branch_id === (int) auth()->user()->branch_id
-        ) {
-            $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
-        }
-    });
-
-    if ($validator->fails()) {
-        return back()
-            ->withErrors($validator)
-            ->withInput()
-            ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
-    }
-
-    try {
-        DB::beginTransaction();
-
-        $data = $validator->validated();
-        $user = auth()->user();
-
-        $senderCustomerId = $data['sender_customer_id'] ?? null;
-
-        if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
-            $senderCustomer = Customer::firstOrCreate(
-                ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
-                [
-                    'name'       => $data['sender_name'],
-                    'branch_id'  => $user->branch_id,
-                    'created_by' => $user->id,
-                ]
-            );
-
-            if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
-                $senderCustomer->update(['name' => $data['sender_name']]);
+                if ($partial >= $total) {
+                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
+                }
             }
 
-            $senderCustomerId = $senderCustomer->id;
+            if (
+                !str_starts_with((string) $request->office_id, 'untrusted_') &&
+                (int) $request->receiver_branch_id === (int) auth()->user()->branch_id
+            ) {
+                $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+            }
+        });
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
         }
 
-        $receiverCustomerId = $data['receiver_customer_id'] ?? null;
+        try {
+            DB::beginTransaction();
 
-        if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
-            $receiverCustomer = Customer::firstOrCreate(
-                ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
-                [
-                    'name'       => $data['receiver_name'],
-                    'branch_id'  => $user->branch_id,
-                    'created_by' => $user->id,
-                ]
-            );
+            $data = $validator->validated();
+            $user = auth()->user();
 
-            if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
-                $receiverCustomer->update(['name' => $data['receiver_name']]);
+            $senderCustomerId = $data['sender_customer_id'] ?? null;
+
+            if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
+                $senderCustomer = Customer::firstOrCreate(
+                    ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
+                    [
+                        'name'       => $data['sender_name'],
+                        'branch_id'  => $user->branch_id,
+                        'created_by' => $user->id,
+                    ]
+                );
+
+                if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                    $senderCustomer->update(['name' => $data['sender_name']]);
+                }
+
+                $senderCustomerId = $senderCustomer->id;
             }
 
-            $receiverCustomerId = $receiverCustomer->id;
+            $receiverCustomerId = $data['receiver_customer_id'] ?? null;
+
+            if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
+                $receiverCustomer = Customer::firstOrCreate(
+                    ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
+                    [
+                        'name'       => $data['receiver_name'],
+                        'branch_id'  => $user->branch_id,
+                        'created_by' => $user->id,
+                    ]
+                );
+
+                if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                    $receiverCustomer->update(['name' => $data['receiver_name']]);
+                }
+
+                $receiverCustomerId = $receiverCustomer->id;
+            }
+
+            $officeId = (string) $request->office_id;
+
+            $isUntrusted = str_starts_with($officeId, 'untrusted_');
+
+            $shipment->update([
+                'receiver_branch_id'        => $isUntrusted ? null : $data['receiver_branch_id'],
+                'receiver_office_branch_id' => $isUntrusted ? $data['receiver_branch_id'] : null,
+
+                'sender_customer_id'        => $senderCustomerId,
+                'receiver_customer_id'      => $receiverCustomerId,
+
+                'package_type'              => $data['package_type'],
+                'weight'                    => $data['weight'] ?? 0,
+                'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
+                'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
+
+                'payment_method'            => $data['payment_method'],
+                'total_amount'              => $data['total_amount'],
+                'partial_amount'            => $data['payment_method'] === 'partial_payment'
+                    ? ($data['partial_amount'] ?? 0)
+                    : 0,
+
+                'notes'                     => $data['notes'] ?? null,
+
+                'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
+                    ? ($shipment->customer_debt_status ?? 'pending')
+                    : null,
+            ]);
+
+            DB::commit();
+
+            return redirect()
+                ->route('shipment.outgoing.index')
+                ->with('success', 'تم تعديل بيانات الطرد بنجاح.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
         }
-
-        $officeId = (string) $request->office_id;
-
-        $isUntrusted = str_starts_with($officeId, 'untrusted_');
-
-        $shipment->update([
-            'receiver_branch_id'        => $isUntrusted ? null : $data['receiver_branch_id'],
-            'receiver_office_branch_id' => $isUntrusted ? $data['receiver_branch_id'] : null,
-
-            'sender_customer_id'        => $senderCustomerId,
-            'receiver_customer_id'      => $receiverCustomerId,
-
-            'package_type'              => $data['package_type'],
-            'weight'                    => $data['weight'] ?? 0,
-            'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
-            'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
-
-            'payment_method'            => $data['payment_method'],
-            'total_amount'              => $data['total_amount'],
-            'partial_amount'            => $data['payment_method'] === 'partial_payment'
-                ? ($data['partial_amount'] ?? 0)
-                : 0,
-
-            'notes'                     => $data['notes'] ?? null,
-
-            'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
-                ? ($shipment->customer_debt_status ?? 'pending')
-                : null,
-        ]);
-
-        DB::commit();
-
-        return redirect()
-            ->route('shipment.outgoing.index')
-            ->with('success', 'تم تعديل بيانات الطرد بنجاح.');
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        return back()
-            ->withInput()
-            ->with('error', 'حدث خطأ أثناء التعديل: ' . $e->getMessage());
-    }
     }
 
     // End Outgoing methods 
     // ==================================================================================
-    
+
     // معتمد
-    
+
     public function edit($id)
     {
         $shipment = Shipment::findOrFail($id);
@@ -704,15 +706,15 @@ class ShipmentController extends Controller
     public function incomingIndex(Request $request)
     {
         $user = auth()->user();
-        
+
         $shipments = Shipment::with(['senderBranch', 'senderOfficeBranch', 'senderCustomer', 'receiverCustomer'])
             ->where('receiver_branch_id', $user->branch_id)
-            
+
             // 💡 الإضافة السحرية: الفلترة حسب الحالة القادمة من الرابط
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            
+
             ->latest()
             ->paginate(10)
             ->withQueryString(); // 💡 مهم جداً: للاحتفاظ بالفلتر عند الانتقال للصفحة 2 و 3
@@ -729,15 +731,15 @@ class ShipmentController extends Controller
 
         // جلب الطرد مع العلاقات المطلوبة لعرض التفاصيل
         $shipment = Shipment::with([
-            'senderBranch', 
-            'senderOfficeBranch', 
-            'senderCustomer', 
+            'senderBranch',
+            'senderOfficeBranch',
+            'senderCustomer',
             'receiverCustomer',
             'package' // جلب الإرسالية المجمعة (الرحلة) التابع لها الطرد إن وجدت
         ])
-        // 💡 حماية أمنية (Authorization): التأكد أن الطرد فعلاً وارد إلى فرع المستخدم الحالي
-        ->where('receiver_branch_id', $user->branch_id)
-        ->findOrFail($id);
+            // 💡 حماية أمنية (Authorization): التأكد أن الطرد فعلاً وارد إلى فرع المستخدم الحالي
+            ->where('receiver_branch_id', $user->branch_id)
+            ->findOrFail($id);
 
         // توجيه المستخدم حسب نوع الجهاز
         if ($request->isMobile) {
@@ -1179,165 +1181,164 @@ class ShipmentController extends Controller
         return view('pages.shipment.select-customer', compact('customers'));
     }
 
-   public function updateStatus(Request $request, $id)
-{
-    // 1. Validation
-    $request->validate([
-        'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
-    ]);
-
-    try {
-        DB::beginTransaction();
-
-        $shipment = Shipment::findOrFail($id);
-        $oldStatus = $shipment->status;
-        $newStatus = $request->status;
-
-        // ========================================================
-        // 2. الحماية البرمجية المحدثة (Backend State Validation) 🛡️
-        // ========================================================
-        $validTransitions = [
-            'pending'            => ['in_transit', 'cancelled', 'returned'], 
-            'in_transit'         => ['received_at_branch', 'delivered', 'returned'], 
-            'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'], 
-            'out_for_delivery'   => ['delivered', 'returned'], 
-        ];
-
-        if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
-            return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
-        }
-
-        // 💡 تم إزالة شرط "المنع" الذي كان يطلب من الموظف فك الارتباط يدوياً.
-
-        // ========================================================
-        // 3. تحديث الحالة (مع نظام المرتجعات الذكي 🔄)
-        // ========================================================
-        if ($newStatus === 'returned') {
-            
-            if (!$shipment->is_returned) {
-                // 🔴 المرحلة الأولى: (المستلم يرفض الطرد) -> تبدأ رحلة العودة
-                $packageId = $shipment->shipment_package_id;
-
-                $shipment->update([
-                    'is_returned'         => true,      
-                    'status'              => 'pending', // يعود قيد التجهيز ليركب شاحنة العودة
-                    'shipment_package_id' => null,      // فك ارتباطه فوراً 
-                ]);
-
-                if ($packageId) {
-                    $activeShipmentsCount = Shipment::where('shipment_package_id', $packageId)
-                        ->whereNotIn('status', ['delivered', 'cancelled'])->count();
-
-                    if ($activeShipmentsCount === 0) {
-                        ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
-                    }
-                }
-                
-                $newStatus = 'pending'; // لتشغيل الإشعارات كطرد قيد التجهيز
-
-            } else {
-                // 🟢 المرحلة النهائية: (المُرسل يسلم الطرد للتاجر) -> إغلاق الطرد نهائياً كـ (مرتجع)
-                $shipment->update([
-                    'status' => 'returned'
-                ]);
-            }
-        } else {
-            // التحديث الطبيعي لأي حالة أخرى
-            $shipment->update([
-                'status' => $newStatus
-            ]);
-        }
-
-        // ========================================================
-        // 4. إشعار الإدارة 
-        // ========================================================
-        $user = auth()->user();
-        $admins = User::where('app_id', $user->app_id)->where('type', 'admin')->get();
-
-        if ($admins->isNotEmpty()) {
-            $statusNamesAr = [
-                'pending'            => 'قيد التجهيز',
-                'in_transit'         => 'قيد النقل',
-                'received_at_branch' => 'وصل المستودع',
-                'out_for_delivery'   => 'خرج للتوصيل',
-                'delivered'          => 'تم التسليم',
-                'cancelled'          => 'ملغي',
-            ];
-            
-            // إذا كان مرتجعاً وهو الآن pending، نغير النص ليكون مفهوماً للمدير
-            $statusText = ($shipment->is_returned && $newStatus === 'pending') 
-                            ? 'تم إرجاع الطرد (عاد للمستودع)' 
-                            : ($statusNamesAr[$newStatus] ?? $newStatus);
-
-            Notification::send(
-                $admins,
-                new \App\Notifications\AdminShipmentStatusUpdated(
-                    $user->name,
-                    $shipment->bond_number,
-                    $statusText,
-                    $shipment->id
-                )
-            );
-        }
-
-        // ========================================================
-        // 5. الإجراءات الجانبية 
-        // ========================================================
-        if ($shipment->shipment_package_id && in_array($newStatus, ['received_at_branch', 'delivered'])) {
-            $packageId = $shipment->shipment_package_id;
-            $package = ShipmentPackage::find($packageId);
-
-            if ($package && $package->status === 'in_transit') {
-                $senderBranchUsers = User::where('branch_id', $shipment->sender_branch_id)->get();
-                if ($senderBranchUsers->isNotEmpty()) {
-                    Notification::send(
-                        $senderBranchUsers,
-                        new \App\Notifications\PackageReceivedNotification(
-                            $package->tracking_number, 
-                            auth()->user()->branch->name ?? 'الفرع المستلم',
-                            $shipment->tracking_number,
-                            $shipment->id
-                        )
-                    );
-                }
-
-                $remainingShipments = Shipment::where('shipment_package_id', $packageId)
-                    ->whereIn('status', ['pending', 'in_transit'])
-                    ->count();
-
-                if ($remainingShipments === 0) {
-                    $package->update(['status' => 'delivered']);
-                }
-            }
-        }
-
-        if ($newStatus === 'delivered') {
-            if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
-                // $this->shipmentPaymentService->createCodBranchTransactionOnDelivery($shipment);
-            }
-        }
-
-        DB::commit();
-
-        $successMessages = [
-            'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
-            'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
-            'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
-            'delivered'          => 'تم التسليم بنجاح ✅',
-            'cancelled'          => 'تم إلغاء الطرد 🚫',
-            'pending'            => $shipment->is_returned ? 'تم تسجيل الطرد كمرتجع وهو الآن قيد التجهيز للعودة ❌' : 'تم التحديث',
-        ];
-
-        return back()->with([
-            'success_title' => 'تم التحديث!',
-            'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
+    public function updateStatus(Request $request, $id)
+    {
+        // 1. Validation
+        $request->validate([
+            'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
         ]);
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+        try {
+            DB::beginTransaction();
+
+            $shipment = Shipment::findOrFail($id);
+            $oldStatus = $shipment->status;
+            $newStatus = $request->status;
+
+            // ========================================================
+            // 2. الحماية البرمجية المحدثة (Backend State Validation) 🛡️
+            // ========================================================
+            $validTransitions = [
+                'pending'            => ['in_transit', 'cancelled', 'returned'],
+                'in_transit'         => ['received_at_branch', 'delivered', 'returned'],
+                'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'],
+                'out_for_delivery'   => ['delivered', 'returned'],
+            ];
+
+            if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
+                return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
+            }
+
+            // 💡 تم إزالة شرط "المنع" الذي كان يطلب من الموظف فك الارتباط يدوياً.
+
+            // ========================================================
+            // 3. تحديث الحالة (مع نظام المرتجعات الذكي 🔄)
+            // ========================================================
+            if ($newStatus === 'returned') {
+
+                if (!$shipment->is_returned) {
+                    // 🔴 المرحلة الأولى: (المستلم يرفض الطرد) -> تبدأ رحلة العودة
+                    $packageId = $shipment->shipment_package_id;
+
+                    $shipment->update([
+                        'is_returned'         => true,
+                        'status'              => 'pending', // يعود قيد التجهيز ليركب شاحنة العودة
+                        'shipment_package_id' => null,      // فك ارتباطه فوراً 
+                    ]);
+
+                    if ($packageId) {
+                        $activeShipmentsCount = Shipment::where('shipment_package_id', $packageId)
+                            ->whereNotIn('status', ['delivered', 'cancelled'])->count();
+
+                        if ($activeShipmentsCount === 0) {
+                            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
+                        }
+                    }
+
+                    $newStatus = 'pending'; // لتشغيل الإشعارات كطرد قيد التجهيز
+
+                } else {
+                    // 🟢 المرحلة النهائية: (المُرسل يسلم الطرد للتاجر) -> إغلاق الطرد نهائياً كـ (مرتجع)
+                    $shipment->update([
+                        'status' => 'returned'
+                    ]);
+                }
+            } else {
+                // التحديث الطبيعي لأي حالة أخرى
+                $shipment->update([
+                    'status' => $newStatus
+                ]);
+            }
+
+            // ========================================================
+            // 4. إشعار الإدارة 
+            // ========================================================
+            $user = auth()->user();
+            $admins = User::where('app_id', $user->app_id)->where('type', 'admin')->get();
+
+            if ($admins->isNotEmpty()) {
+                $statusNamesAr = [
+                    'pending'            => 'قيد التجهيز',
+                    'in_transit'         => 'قيد النقل',
+                    'received_at_branch' => 'وصل المستودع',
+                    'out_for_delivery'   => 'خرج للتوصيل',
+                    'delivered'          => 'تم التسليم',
+                    'cancelled'          => 'ملغي',
+                ];
+
+                // إذا كان مرتجعاً وهو الآن pending، نغير النص ليكون مفهوماً للمدير
+                $statusText = ($shipment->is_returned && $newStatus === 'pending')
+                    ? 'تم إرجاع الطرد (عاد للمستودع)'
+                    : ($statusNamesAr[$newStatus] ?? $newStatus);
+
+                Notification::send(
+                    $admins,
+                    new \App\Notifications\AdminShipmentStatusUpdated(
+                        $user->name,
+                        $shipment->bond_number,
+                        $statusText,
+                        $shipment->id
+                    )
+                );
+            }
+
+            // ========================================================
+            // 5. الإجراءات الجانبية 
+            // ========================================================
+            if ($shipment->shipment_package_id && in_array($newStatus, ['received_at_branch', 'delivered'])) {
+                $packageId = $shipment->shipment_package_id;
+                $package = ShipmentPackage::find($packageId);
+
+                if ($package && $package->status === 'in_transit') {
+                    $senderBranchUsers = User::where('branch_id', $shipment->sender_branch_id)->get();
+                    if ($senderBranchUsers->isNotEmpty()) {
+                        Notification::send(
+                            $senderBranchUsers,
+                            new \App\Notifications\PackageReceivedNotification(
+                                $package->tracking_number,
+                                auth()->user()->branch->name ?? 'الفرع المستلم',
+                                $shipment->tracking_number,
+                                $shipment->id
+                            )
+                        );
+                    }
+
+                    $remainingShipments = Shipment::where('shipment_package_id', $packageId)
+                        ->whereIn('status', ['pending', 'in_transit'])
+                        ->count();
+
+                    if ($remainingShipments === 0) {
+                        $package->update(['status' => 'delivered']);
+                    }
+                }
+            }
+
+            if ($newStatus === 'delivered') {
+                if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
+                    // $this->shipmentPaymentService->createCodBranchTransactionOnDelivery($shipment);
+                }
+            }
+
+            DB::commit();
+
+            $successMessages = [
+                'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
+                'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
+                'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
+                'delivered'          => 'تم التسليم بنجاح ✅',
+                'cancelled'          => 'تم إلغاء الطرد 🚫',
+                'pending'            => $shipment->is_returned ? 'تم تسجيل الطرد كمرتجع وهو الآن قيد التجهيز للعودة ❌' : 'تم التحديث',
+            ];
+
+            return back()->with([
+                'success_title' => 'تم التحديث!',
+                'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+        }
     }
-}
 
     /**
      * دالة مساعدة لإرسال إشعار تحرك الطرد للفرع المستلم (إذا كان مسجلاً بالنظام)

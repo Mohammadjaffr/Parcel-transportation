@@ -116,102 +116,129 @@
                             </div>
                         </div>
 
-                       <div class="flex gap-2 items-center">
-    {{-- ================= شارة الحالة الشاملة الذكية ================= --}}
-    @if($shipment->is_returned && !in_array($shipment->status, ['delivered', 'cancelled']))
-        {{-- 🔴 بادج المرتجع --}}
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/30 ring-inset flex items-center gap-1">
-            <span class="material-symbols-outlined text-[12px] animate-pulse">keyboard_return</span>
-            مرتجع
-            @if($shipment->status == 'pending') (بالمستودع)
-            @elseif($shipment->status == 'in_transit') (في الطريق)
-            @elseif($shipment->status == 'received_at_branch') (وصل المصدر)
-            @endif
-        </span>
+                        <div class="flex gap-2 items-center">
+                            {{-- ================= شارة الحالة الشاملة الذكية ================= --}}
+                            @if ($shipment->is_returned && !in_array($shipment->status, ['delivered', 'cancelled']))
+                                {{-- 🔴 بادج المرتجع --}}
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/30 ring-inset flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px] animate-pulse">keyboard_return</span>
+                                    مرتجع
+                                    @if ($shipment->status == 'pending')
+                                        (بالمستودع)
+                                    @elseif($shipment->status == 'in_transit')
+                                        (في الطريق)
+                                    @elseif($shipment->status == 'received_at_branch')
+                                        (وصل المصدر)
+                                    @endif
+                                </span>
+                            @elseif($shipment->status == 'pending')
+                                <span
+                                    class="px-2 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 ring-1 ring-amber-500/20 ring-inset">قيد
+                                    التجهيز</span>
+                            @elseif($shipment->status == 'in_transit')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 ring-1 ring-blue-500/20 ring-inset">في
+                                    الطريق</span>
+                            @elseif($shipment->status == 'received_at_branch')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/20 ring-inset">بالمستودع</span>
+                            @elseif($shipment->status == 'out_for_delivery')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-50 text-purple-600 ring-1 ring-purple-500/20 ring-inset">خرج
+                                    للتوصيل</span>
+                            @elseif($shipment->status == 'delivered')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">done_all</span>
+                                    {{ $shipment->is_returned ? 'سُلم للتاجر' : 'تم التسليم' }}
+                                </span>
+                            @elseif($shipment->status == 'returned')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/20 ring-inset">مرتجع</span>
+                            @elseif($shipment->status == 'cancelled')
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-50 text-slate-600 ring-1 ring-slate-500/20 ring-inset">ملغي</span>
+                            @else
+                                <span
+                                    class="px-2.5 py-1 rounded-full text-[10px] font-black bg-gray-50 text-gray-500 ring-1 ring-gray-500/20 ring-inset">{{ $shipment->status }}</span>
+                            @endif
 
-    @elseif($shipment->status == 'pending')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-50 text-amber-600 ring-1 ring-amber-500/20 ring-inset">قيد التجهيز</span>
 
-    @elseif($shipment->status == 'in_transit')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600 ring-1 ring-blue-500/20 ring-inset">في الطريق</span>
+                            {{-- ================= قائمة الثلاث نقاط ================= --}}
+                            <div x-data="{ openMenu: false }" class="relative">
+                                <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
+                                    class="flex justify-center items-center w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                </button>
 
-    @elseif($shipment->status == 'received_at_branch')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-600 ring-1 ring-indigo-500/20 ring-inset">بالمستودع</span>
+                                <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
+                                    class="absolute top-full left-0 mt-1.5 w-44 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-50 overflow-hidden py-1.5">
 
-    @elseif($shipment->status == 'out_for_delivery')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-purple-50 text-purple-600 ring-1 ring-purple-500/20 ring-inset">خرج للتوصيل</span>
+                                    {{-- عرض التفاصيل --}}
+                                    <a href="{{ route('shipment.incoming.show', $shipment->id) }}"
+                                        class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
+                                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                        {{ $shipment->is_returned ? 'تفاصيل المرتجع' : 'التفاصيل والتسليم' }}
+                                    </a>
 
-    @elseif($shipment->status == 'delivered')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/20 ring-inset flex items-center gap-1">
-            <span class="material-symbols-outlined text-[12px]">done_all</span>
-            {{ $shipment->is_returned ? 'سُلم للتاجر' : 'تم التسليم' }}
-        </span>
+                                    {{-- طباعة السند --}}
+                                    <a href="{{ route('receipt.generate', ['type' => 'Shipment', 'id' => $shipment->id]) }}"
+                                        target="_blank"
+                                        class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
+                                        <span class="material-symbols-outlined text-[18px]">print</span>
+                                        طباعة السند
+                                    </a>
 
-    @elseif($shipment->status == 'returned')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 ring-1 ring-rose-500/20 ring-inset">مرتجع</span>
+                                    <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
 
-    @elseif($shipment->status == 'cancelled')
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-50 text-slate-600 ring-1 ring-slate-500/20 ring-inset">ملغي</span>
+                                    {{-- 💡 إشعار ذكي عبر الواتساب (للتاجر أو المستلم) --}}
+                                    @php
+                                        // تحديد من هو العميل المستهدف للرسالة بناءً على حالة الطرد
+                                        $targetCustomer = $shipment->is_returned
+                                            ? $shipment->senderCustomer
+                                            : $shipment->receiverCustomer;
+                                    @endphp
 
-    @else
-        <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-gray-50 text-gray-500 ring-1 ring-gray-500/20 ring-inset">{{ $shipment->status }}</span>
-    @endif
+                                    @if ($targetCustomer && $targetCustomer->phone)
+                                        @php
+                                            if ($shipment->is_returned) {
+                                                $whatsappMsg =
+                                                    'مرحباً *' .
+                                                    $targetCustomer->name .
+                                                    "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" .
+                                                    $shipment->code .
+                                                    "* إلى فرعنا.\nيرجى التفضل باستلامه.";
+                                            } else {
+                                                $whatsappMsg =
+                                                    'مرحباً *' .
+                                                    $targetCustomer->name .
+                                                    "*،\nنفيدك بوصول طردك برقم السند: *" .
+                                                    $shipment->code .
+                                                    "* إلى فرعنا.\n" .
+                                                    ($shipment->payment_method !== 'prepaid'
+                                                        ? 'المبلغ المطلوب عند الاستلام: *' .
+                                                            number_format($shipment->total_amount, 0) .
+                                                            '* ريال.'
+                                                        : 'الطرد خالص الدفع.');
+                                            }
+                                        @endphp
 
+                                        <a href="https://wa.me/{{ ltrim($targetCustomer->phone, '+') }}?text={{ urlencode($whatsappMsg) }}"
+                                            target="_blank"
+                                            class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-700">
+                                            <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                            </svg>
+                                            {{ $shipment->is_returned ? 'إشعار التاجر بالمرتجع' : 'إشعار المستلم' }}
+                                        </a>
+                                    @endif
 
-    {{-- ================= قائمة الثلاث نقاط ================= --}}
-    <div x-data="{ openMenu: false }" class="relative">
-        <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
-            class="flex justify-center items-center w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-            <span class="material-symbols-outlined text-[20px]">more_vert</span>
-        </button>
-
-        <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
-            class="absolute top-full left-0 mt-1.5 w-44 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-50 overflow-hidden py-1.5">
-
-            {{-- عرض التفاصيل --}}
-            <a href="{{ route('shipment.incoming.show', $shipment->id) }}"
-                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
-                <span class="material-symbols-outlined text-[18px]">visibility</span>
-                {{ $shipment->is_returned ? 'تفاصيل المرتجع' : 'التفاصيل والتسليم' }}
-            </a>
-
-            {{-- طباعة السند --}}
-            <a href="{{ route('receipt.generate', ['type' => 'Shipment', 'id' => $shipment->id]) }}" target="_blank"
-                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
-                <span class="material-symbols-outlined text-[18px]">print</span>
-                طباعة السند
-            </a>
-
-            <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
-
-            {{-- 💡 إشعار ذكي عبر الواتساب (للتاجر أو المستلم) --}}
-            @php
-                // تحديد من هو العميل المستهدف للرسالة بناءً على حالة الطرد
-                $targetCustomer = $shipment->is_returned ? $shipment->senderCustomer : $shipment->receiverCustomer;
-            @endphp
-
-            @if($targetCustomer && $targetCustomer->phone)
-                @php
-                    if($shipment->is_returned) {
-                        $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" . $shipment->code . "* إلى فرعنا.\nيرجى التفضل باستلامه.";
-                    } else {
-                        $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردك برقم السند: *" . $shipment->code . "* إلى فرعنا.\n" . ($shipment->payment_method !== 'prepaid' ? "المبلغ المطلوب عند الاستلام: *" . number_format($shipment->total_amount, 0) . "* ريال." : "الطرد خالص الدفع.");
-                    }
-                @endphp
-                
-                <a href="https://wa.me/{{ ltrim($targetCustomer->phone, '+') }}?text={{ urlencode($whatsappMsg) }}"
-                    target="_blank"
-                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-700">
-                    <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                    </svg>
-                    {{ $shipment->is_returned ? 'إشعار التاجر بالمرتجع' : 'إشعار المستلم' }}
-                </a>
-            @endif
-
-        </div>
-    </div>
-</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- ================= 2. الفاصل المقطّع ================= --}}
@@ -232,7 +259,8 @@
                             {{-- العمود الأيمن: خط السير (المصدر -> المستلم) --}}
                             <div class="flex gap-3 items-stretch w-1/2">
                                 <div class="flex flex-col items-center mt-1">
-                                    <div class="w-2.5 h-2.5 rounded-full border-[2.5px] border-slate-300 bg-white z-10"></div>
+                                    <div class="w-2.5 h-2.5 rounded-full border-[2.5px] border-slate-300 bg-white z-10">
+                                    </div>
                                     <div class="w-[1.5px] h-10 bg-slate-200 my-0.5"></div>
                                     <div
                                         class="w-2.5 h-2.5 rounded-full border-[2.5px] border-emerald-500 bg-white z-10 shadow-[0_0_8px_rgba(16,185,129,0.4)]">
@@ -244,8 +272,18 @@
                                     <div>
                                         <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">وارد من</p>
                                         <p class="text-xs font-bold text-slate-800 truncate max-w-[100px]">
-                                            {{ $shipment->sender->name ?? 'مصدر غير محدد' }}
+                                            {{ $shipment->senderCustomer?->name ?? 'مصدر غير محدد' }}
                                         </p>
+                                        <x-phone-number :value="$shipment->senderCustomer?->phone ?? '---'"
+                                            class="text-[15px] font-bold text-gray-500 dark:text-bodydark" />
+                                        <div class="flex justify-between items-center mt-2">
+                                            <span class="text-[10px] text-slate-400 font-bold">الفرع:</span>
+                                            <span
+                                                class="text-[11px] font-black text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-100 shadow-sm">
+                                                {{ $shipment->senderBranch->name ?? '---' }}
+                                            </span>
+                                        </div>
+
                                     </div>
 
                                     {{-- المستلم (العميل) --}}
@@ -258,40 +296,68 @@
                                             <p class="text-xs font-black text-slate-800 truncate max-w-[100px]">
                                                 {{ $shipment->receiverCustomer?->name ?? 'غير مسجل' }}
                                             </p>
+                                            <x-phone-number :value="$shipment->receiverCustomer?->phone ?? '---'"
+                                                class="text-[15px] font-bold text-gray-500 dark:text-bodydark" />
+                                            <div class="flex justify-between items-center mt-2">
+                                                <span class="text-[10px] text-slate-400 font-bold">الفرع:</span>
+                                                <span
+                                                    class="text-[11px] font-black text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-100 shadow-sm">
+                                                    {{ $shipment->receiverBranch->name ?? '---' }}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- العمود الأيسر: المساحة المستغلة (تفاصيل الطرد الدقيقة) --}}
-                            <div class="flex flex-col gap-2.5 p-3 w-1/2 rounded-xl border bg-slate-50/70 border-slate-100/80">
+                            <div
+                                class="flex flex-col gap-2.5 p-3 w-1/2 rounded-xl border bg-slate-50/70 border-slate-100/80">
                                 {{-- الوزن والنوع --}}
                                 <div class="flex justify-between items-center">
                                     <span class="text-[10px] text-slate-400 font-bold">المحتوى:</span>
                                     <span
-                                        class="text-[10px] font-black text-slate-700 bg-white px-2 py-0.5 rounded-md border border-slate-100 shadow-sm">
-                                            {{ $shipment->package_type }}
+                                        class="inline-flex w-fit text-[11px] font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
+                                        @if ($shipment->package_type == 'carton')
+                                            كرتون
+                                        @elseif($shipment->package_type == 'bag')
+                                            كيس
+                                        @elseif($shipment->package_type == 'envelope')
+                                            مغلف
+                                        @else
+                                            أخرى
+                                        @endif
+                                        @if ($shipment->weight > 0) <span
+                                                class="mr-1 text-slate-500">({{ $shipment->weight }} كجم)</span>
+                                        @endif
                                     </span>
                                 </div>
 
                                 {{-- تفاصيل العسل (إن وجدت) --}}
-                                @if($shipment->no_gallons_honey > 0 || $shipment->no_honey_jars > 0)
+                                @if ($shipment->no_gallons_honey > 0 || $shipment->no_honey_jars > 0)
                                     <div class="flex justify-between items-center">
                                         <span class="text-[10px] text-amber-500 font-bold">عسل:</span>
                                         <span class="text-[10px] font-bold text-slate-600">
-                                            @if($shipment->no_gallons_honey > 0) {{ $shipment->no_gallons_honey }} دباب @endif
-                                            @if($shipment->no_gallons_honey > 0 && $shipment->no_honey_jars > 0) + @endif
-                                            @if($shipment->no_honey_jars > 0) {{ $shipment->no_honey_jars }} قوارير @endif
+                                            @if ($shipment->no_gallons_honey > 0)
+                                                {{ $shipment->no_gallons_honey }} دباب
+                                            @endif
+                                            @if ($shipment->no_gallons_honey > 0 && $shipment->no_honey_jars > 0)
+                                                +
+                                            @endif
+                                            @if ($shipment->no_honey_jars > 0)
+                                                {{ $shipment->no_honey_jars }} قوارير
+                                            @endif
                                         </span>
                                     </div>
                                 @endif
 
                                 {{-- الدفع الجزئي --}}
-                                @if($shipment->payment_method == 'partial_payment')
+                                @if ($shipment->payment_method == 'partial_payment')
                                     <div class="flex justify-between items-center pt-2 mt-1 border-t border-slate-200/50">
                                         <span class="text-[10px] text-rose-500 font-bold">المتبقي:</span>
                                         <span class="text-[11px] font-black text-rose-600">
-                                            {{ number_format($shipment->total_amount - $shipment->partial_amount, 0) }} ريال
+                                            {{ number_format($shipment->total_amount - $shipment->partial_amount, 0) }}
+                                            ريال
                                         </span>
                                     </div>
                                 @endif
@@ -303,16 +369,23 @@
                             class="bg-slate-800 rounded-[18px] p-3.5 flex justify-between items-center shadow-lg shadow-slate-900/10">
                             {{-- تفاصيل الدفع --}}
                             <div class="flex gap-2.5 items-center">
-                                <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-slate-700 text-slate-300">
+                                <div
+                                    class="flex justify-center items-center w-9 h-9 rounded-xl bg-slate-700 text-slate-300">
                                     <span class="material-symbols-outlined text-[18px]">wallet</span>
                                 </div>
                                 <div>
                                     <p class="text-[10px] font-black text-slate-300 mb-0.5">الدفع (تحصيل)</p>
                                     <p
                                         class="text-[11px] font-bold {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-400' : 'text-white' }} tracking-wide">
-                                        @if($shipment->payment_method == 'prepaid') خالص (مدفوع)
-                                        @elseif($shipment->payment_method == 'cod') الدفع عند الاستلام
-                                        @elseif($shipment->payment_method == 'partial_payment') دفع جزئي @else آجل @endif
+                                        @if ($shipment->payment_method == 'prepaid')
+                                            خالص (مدفوع)
+                                        @elseif($shipment->payment_method == 'cod')
+                                            الدفع عند الاستلام
+                                        @elseif($shipment->payment_method == 'partial_payment')
+                                            دفع جزئي
+                                        @else
+                                            آجل
+                                        @endif
                                     </p>
                                 </div>
                             </div>
@@ -346,7 +419,7 @@
             @endforelse
 
             {{-- الترقيم --}}
-            @if(method_exists($shipments, 'hasPages') && $shipments->hasPages())
+            @if (method_exists($shipments, 'hasPages') && $shipments->hasPages())
                 <div class="mt-8">
                     {{ $shipments->links('vendor.pagination.mobile') }}
                 </div>
