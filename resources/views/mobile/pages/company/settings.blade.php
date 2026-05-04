@@ -412,7 +412,7 @@
 
                         <div
                             class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
+                            <input type="tel" required x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
                               
                                 :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
                                 @input="localPhone = localPhone.replace(/\D/g, '')"

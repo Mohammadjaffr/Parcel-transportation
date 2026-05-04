@@ -1209,15 +1209,34 @@ class ShipmentController extends Controller
                 return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
             }
 
-            // 💡 تم إزالة شرط "المنع" الذي كان يطلب من الموظف فك الارتباط يدوياً.
-
             // ========================================================
             // 3. تحديث الحالة (مع نظام المرتجعات الذكي 🔄)
             // ========================================================
             if ($newStatus === 'returned') {
 
-                if (!$shipment->is_returned) {
-                    // 🔴 المرحلة الأولى: (المستلم يرفض الطرد) -> تبدأ رحلة العودة
+                // 💡 الشرط الجديد الذي طلبته: إلغاء الإرسال (في الطريق) وإعادته للانتظار
+                if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
+                    $packageId = $shipment->shipment_package_id;
+
+                    $shipment->update([
+                        'status'              => 'pending', // يعود للانتظار فقط
+                        'shipment_package_id' => null,      // فك ارتباطه من الإرسالية
+                    ]);
+
+                    if ($packageId) {
+                        $activeShipmentsCount = Shipment::where('shipment_package_id', $packageId)
+                            ->whereNotIn('status', ['delivered', 'cancelled'])->count();
+
+                        if ($activeShipmentsCount === 0) {
+                            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
+                        }
+                    }
+
+                    $newStatus = 'pending'; // لتشغيل الإشعارات كطرد قيد التجهيز
+                }
+                // 🔴 المرحلة الأولى: (المستلم يرفض الطرد) -> تبدأ رحلة العودة
+                elseif (!$shipment->is_returned) {
+                    
                     $packageId = $shipment->shipment_package_id;
 
                     $shipment->update([
@@ -1327,7 +1346,8 @@ class ShipmentController extends Controller
                 'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
                 'delivered'          => 'تم التسليم بنجاح ✅',
                 'cancelled'          => 'تم إلغاء الطرد 🚫',
-                'pending'            => $shipment->is_returned ? 'تم تسجيل الطرد كمرتجع وهو الآن قيد التجهيز للعودة ❌' : 'تم التحديث',
+                // تعديل رسالة النجاح لتناسب الحالة الجديدة
+                'pending'            => ($oldStatus === 'in_transit' && !$shipment->is_returned) ? 'تم إلغاء الإرسال وإعادة الطرد للانتظار 🔄' : ($shipment->is_returned ? 'تم تسجيل الطرد كمرتجع وهو الآن قيد التجهيز للعودة ❌' : 'تم التحديث'),
             ];
 
             return back()->with([

@@ -54,22 +54,27 @@ class ShipmentPackagesController extends Controller
         return view('pages.shipmentpackage.outgoing.index', compact('packages'));
     }
     //معتمد
-    public function sentCreate(Request $request)
-    {
-        $user = auth()->user();
-        $drivers = Driver::get();
-        $pendingParcels = Shipment::with(['receiverCustomer', 'receiverBranch'])
-            ->where('sender_branch_id', $user->branch_id)
-            ->where('status', 'pending')
-            ->whereNull('shipment_package_id')
-            ->latest()
-            ->get();
-        if ($request->isMobile) {
-            return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
-        }
-        // السعدي حط المسار حق الدسك توب 
-        return view('pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
+   public function sentCreate(Request $request)
+{
+    $user = auth()->user();
+    $drivers = Driver::get();
+    
+    $pendingParcels = Shipment::with(['receiverCustomer', 'receiverBranch'])
+        ->where('sender_branch_id', $user->branch_id)
+        ->where('status', 'pending')
+        ->whereNull('shipment_package_id')
+        // 💡 التعديل هنا: استبعاد الطرود المرتجعة حتى لا تظهر في قائمة الإرساليات العادية
+        ->where('is_returned', false) 
+        ->latest()
+        ->get();
+
+    if ($request->isMobile) {
+        return view('mobile.pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
     }
+    
+    // السعدي حط المسار حق الدسك توب 
+    return view('pages.shipmentpackage.outgoing.create', compact('drivers', 'pendingParcels'));
+}
     //معتمد
     public function sentStore(Request $request)
     {
