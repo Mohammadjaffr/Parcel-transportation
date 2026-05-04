@@ -33,12 +33,11 @@
         }
     </style>
 
-    <div x-data="{ searchQuery: '' }"
-        class="flex relative flex-col gap-6 p-4 rounded-3xl bg-surface dark:bg-boxdark-2 lg:p-6 font-body" dir="rtl">
+    <div x-data="{ searchQuery: '' }" class="flex relative flex-col gap-6 font-body" dir="rtl">
 
         {{-- الهيدر العلوي --}}
         <div
-            class="flex justify-between items-center p-2 mt-6 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 lg:p-4">
+            class="flex justify-between items-center p-2 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 lg:p-4">
             <div class="flex flex-col">
                 <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">الشحنات المرسلة
                 </h1>
@@ -96,11 +95,11 @@
                 </a>
 
                 {{-- خرج للتوصيل --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'out_for_delivery']) }}"
+                {{-- <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'out_for_delivery']) }}"
                     class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
     {{ request('status') == 'out_for_delivery' ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20 dark:bg-indigo-600 dark:border-indigo-600' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50 dark:bg-boxdark-2 dark:text-indigo-500 dark:border-boxdark dark:hover:bg-indigo-500/10' }}">
                     خرج للتوصيل
-                </a>
+                </a> --}}
 
                 {{-- مكتملة (تم التسليم) --}}
                 <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'delivered']) }}"
@@ -340,23 +339,10 @@
 
             {{-- الترقيم --}}
             @if (method_exists($packages, 'hasPages') && $packages->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-slate-100 dark:border-boxdark bg-slate-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                <div class="px-6 py-5 rounded-b-[2rem] pagination-container">
                     {{ $packages->links() }}
                 </div>
             @endif
         </div>
-
-        {{-- الترقيم --}}
-        @if (method_exists($packages, 'hasPages') && $packages->hasPages())
-            <div class="flex justify-center items-center pt-6 mt-4 w-full">
-                <div
-                    class="w-full p-4 transition-all bg-white border shadow-sm pagination-container rounded-[2rem] border-primary/50 dark:bg-boxdark dark:border-primary/30 hover:shadow-md lg:w-fit lg:min-w-[50%]">
-                    <div class="flex overflow-x-auto justify-center w-full custom-scrollbar text-primary">
-                        {{ $packages->links() }}
-                    </div>
-                </div>
-            </div>
-        @endif
     </div>
 @endsection

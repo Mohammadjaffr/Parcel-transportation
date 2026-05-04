@@ -1,7 +1,6 @@
 {{-- خلفية مظلمة (Backdrop) تظهر في الموبايل عند فتح القائمة --}}
 <div x-cloak x-show="sidebarToggle" x-transition.opacity
-    class="fixed inset-0 z-[9998] bg-slate-900/50 backdrop-blur-sm lg:hidden"
-    @click="sidebarToggle = false"></div>
+    class="fixed inset-0 z-[9998] bg-slate-900/50 backdrop-blur-sm lg:hidden" @click="sidebarToggle = false"></div>
 
 {{-- السايد بار --}}
 <aside
@@ -11,19 +10,20 @@
 
     {{-- ==================== 1. منطقة الشعار (Logo Header) ==================== --}}
     <div class="flex justify-between items-center px-6 h-24 border-b border-gray-50 dark:border-gray-800/50 shrink-0"
-        :class="{'lg:justify-center': sidebarToggle}">
+        :class="{ 'lg:justify-center': sidebarToggle }">
 
         <a href="{{ route('dashboard.index') }}"
             class="flex gap-2 justify-center items-center w-full transition-transform active:scale-95">
             {{-- الشعار الكامل --}}
-            <img class="object-contain w-auto h-14 transition-all duration-300"
-                :class="{'lg:hidden': sidebarToggle}"
-                src="@if(auth()->user()?->app?->logo) {{ asset('storage/' . auth()->user()->app->logo) }} @else {{ asset('assets/image/icon_without_bg.png') }} @endif" alt="شعار النظام" />
+            <img class="object-contain w-auto h-14 transition-all duration-300" :class="{ 'lg:hidden': sidebarToggle }"
+                src="@if (auth()->user()?->app?->logo) {{ asset('storage/' . auth()->user()->app->logo) }} @else {{ asset('assets/image/icon_without_bg.png') }} @endif"
+                alt="شعار النظام" />
 
             {{-- الأيقونة المصغرة --}}
             <img class="hidden object-contain w-10 h-10 transition-all duration-300"
-                :class="{'hidden lg:block': sidebarToggle, 'hidden': !sidebarToggle}"
-                src="@if(auth()->user()?->app?->logo) {{ asset('storage/' . auth()->user()->app->logo) }} @else {{ asset('assets/image/icon_without_bg.png') }} @endif" alt="أيقونة النظام" />
+                :class="{ 'hidden lg:block': sidebarToggle, 'hidden': !sidebarToggle }"
+                src="@if (auth()->user()?->app?->logo) {{ asset('storage/' . auth()->user()->app->logo) }} @else {{ asset('assets/image/icon_without_bg.png') }} @endif"
+                alt="أيقونة النظام" />
         </a>
 
         {{-- زر الإغلاق في شاشات الموبايل --}}
@@ -39,10 +39,10 @@
 
             <div>
                 <h3 class="mb-4 text-xs font-black tracking-widest text-gray-400 uppercase transition-all dark:text-gray-500"
-                    :class="{'lg:text-center': sidebarToggle}">
-                    <span :class="{'lg:hidden': sidebarToggle}">القائمة الرئيسية</span>
+                    :class="{ 'lg:text-center': sidebarToggle }">
+                    <span :class="{ 'lg:hidden': sidebarToggle }">القائمة الرئيسية</span>
                     <span class="material-symbols-outlined mx-auto hidden text-[20px]"
-                        :class="{'hidden lg:block': sidebarToggle, 'hidden': !sidebarToggle}">more_horiz</span>
+                        :class="{ 'hidden lg:block': sidebarToggle, 'hidden': !sidebarToggle }">more_horiz</span>
                 </h3>
 
                 <ul class="flex flex-col gap-2">
@@ -60,36 +60,40 @@
                                     'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 grid_view
                             </span>
-                            <span :class="{'lg:hidden': sidebarToggle}">الصفحة الرئيسية</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الصفحة الرئيسية</span>
                         </a>
                     </li>
 
                     {{-- إدارة الأفراد --}}
-                    <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*')) selected = 'People' @endif">
+                    <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*') || request()->routeIs('passengers.*')) selected = 'People' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'People' ? '' : 'People')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="(selected === 'People' || {{ request()->routeIs('drivers.*', 'users.*', 'customers.*') ? 'true' : 'false' }}) ?
+                            :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*', 'passengers.*') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="(selected === 'People' || {{ request()->routeIs('drivers.*', 'users.*', 'customers.*') ? 'true' : 'false' }}) ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*', 'passengers.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 group
                             </span>
-                            <span :class="{'lg:hidden': sidebarToggle}">إدارة الأفراد</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة الأفراد</span>
 
-                            <span class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{'rotate-180': selected === 'People', 'lg:hidden': sidebarToggle}">
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'People', 'lg:hidden': sidebarToggle }">
                                 expand_more
                             </span>
                         </a>
 
                         <div x-cloak x-show="selected === 'People'" x-collapse>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
-                                :class="{'lg:hidden': sidebarToggle}">
-                                <div class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}"></div>
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
 
-                                <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
                                         <a href="{{ route('drivers.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('drivers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
@@ -122,33 +126,37 @@
                     </li>
 
                     {{-- إدارة المكاتب --}}
-                    <li x-init="@if (request()->routeIs('branch.*') || request()->routeIs('offices.*') || request()->routeIs('offices.unverified.*')) selected = 'Offices' @endif">
+                    <li x-init="@if (request()->routeIs('app.*') || request()->routeIs('branch.*') || request()->routeIs('offices.*') || request()->routeIs('offices.unverified.*')) selected = 'Offices' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'Offices' ? '' : 'Offices')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="(selected === 'Offices' || {{ request()->routeIs('branch.*', 'offices.*', 'offices.unverified.*') ? 'true' : 'false' }}) ?
+                            :class="{{ request()->routeIs('app.*', 'branch.*', 'offices.*', 'offices.unverified.*') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="(selected === 'Offices' || {{ request()->routeIs('branch.*', 'offices.*', 'offices.unverified.*') ? 'true' : 'false' }}) ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('app.*', 'branch.*', 'offices.*', 'offices.unverified.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 apartment
                             </span>
-                            <span :class="{'lg:hidden': sidebarToggle}">إدارة المكاتب</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة المكاتب</span>
 
-                            <span class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{'rotate-180': selected === 'Offices', 'lg:hidden': sidebarToggle}">
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'Offices', 'lg:hidden': sidebarToggle }">
                                 expand_more
                             </span>
                         </a>
 
                         <div x-cloak x-show="selected === 'Offices'" x-collapse>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
-                                :class="{'lg:hidden': sidebarToggle}">
-                                <div class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}"></div>
-                                <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
                                         <a href="{{ route('app.index') }}"
-                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('offices.index') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('app.index') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             المكاتب الموثوقة
                                         </a>
                                     </li>
@@ -164,30 +172,36 @@
                     </li>
 
                     {{-- إدارة الطرود --}}
-                    <li x-init="@if (request()->routeIs('shipment.outgoing.*') || request()->routeIs('shipment.incoming.*') || request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
+                    <li x-init="@if (request()->routeIs('shipment.outgoing.*') ||
+                            request()->routeIs('shipment.incoming.*') ||
+                            request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'Shipments' ? '' : 'Shipments')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="(selected === 'Shipments' || {{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }}) ?
+                            :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="(selected === 'Shipments' || {{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }}) ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 inventory_2
                             </span>
-                            <span :class="{'lg:hidden': sidebarToggle}">إدارة الطرود</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة الطرود</span>
 
-                            <span class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{'rotate-180': selected === 'Shipments', 'lg:hidden': sidebarToggle}">
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'Shipments', 'lg:hidden': sidebarToggle }">
                                 expand_more
                             </span>
                         </a>
 
                         <div x-cloak x-show="selected === 'Shipments'" x-collapse>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
-                                :class="{'lg:hidden': sidebarToggle}">
-                                <div class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}"></div>
-                                <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
                                         <a href="{{ route('shipment.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
@@ -207,29 +221,35 @@
 
                     {{-- حركة الشحنات --}}
                     <li x-init="@if (request()->routeIs('shipmentpackage.*') || request()->routeIs('receipts.*')) selected = 'ShipmentsOps' @endif">
-                        <a href="#" @click.prevent="selected = (selected === 'ShipmentsOps' ? '' : 'ShipmentsOps')"
+                        <a href="#"
+                            @click.prevent="selected = (selected === 'ShipmentsOps' ? '' : 'ShipmentsOps')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="(selected === 'ShipmentsOps' || {{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }}) ?
+                            :class="{{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="(selected === 'ShipmentsOps' || {{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }}) ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }} ?
+                                'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 local_shipping
                             </span>
-                            <span :class="{'lg:hidden': sidebarToggle}">حركة الشحنات</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">حركة الشحنات</span>
 
-                            <span class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{'rotate-180': selected === 'ShipmentsOps', 'lg:hidden': sidebarToggle}">
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'ShipmentsOps', 'lg:hidden': sidebarToggle }">
                                 expand_more
                             </span>
                         </a>
 
                         <div x-cloak x-show="selected === 'ShipmentsOps'" x-collapse>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
-                                :class="{'lg:hidden': sidebarToggle}">
-                                <div class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}"></div>
-                                <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     <li>
                                         <a href="{{ route('shipmentpackage.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">

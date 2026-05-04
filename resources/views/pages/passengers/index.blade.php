@@ -9,7 +9,7 @@
         showEditModal: false,
         showDeleteModal: false,
         searchQuery: '',
-        
+    
         createPassengerData: {
             date: '',
             day: '',
@@ -51,7 +51,7 @@
             };
             this.showEditModal = true;
         },
-     
+    
     
         openDeleteModal(id, passenger_number) {
             this.deletePassengerData = {
@@ -67,7 +67,7 @@
             this.showEditModal = false;
             this.showDeleteModal = false;
         },
-        
+    
         getArabicDayName(dateString) {
             if (!dateString) return '';
             const days = ['الاحد', 'الاثنين', 'الثلاثاء', 'الاربعاء', 'الخميس', 'الجمعة', 'السبت'];
@@ -330,43 +330,41 @@
                     @csrf
                     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
-                                        class="text-error">*</span></label>
-                                <div class="relative">
-                                    <span
-                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
-                                    
-                                    {{-- التعديل هنا --}}
-                                    <input type="date" name="date" required
-                                        x-model="createPassengerData.date"
-                                        @input="createPassengerData.day = getArabicDayName(createPassengerData.date)"
-                                        class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                                </div>
-                            </div>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
+                                    class="text-error">*</span></label>
+                            <div class="relative">
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">calendar_today</span>
 
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span
-                                        class="text-error">*</span></label>
-                                <div class="relative">
-                                    <span
-                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
-                                    
-                                    {{-- التعديل هنا: إضافة x-model --}}
-                                    <select
-                                        class="pr-12 pl-4 w-full h-14 text-sm bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none pointer-events-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
-                                        name="day" id="day" required
-                                        x-model="createPassengerData.day" readonly>
-                                        <option value="">(يتم تحديده تلقائياً)</option>
-                                        <option value="السبت">السبت</option>
-                                        <option value="الاحد">الاحد</option>
-                                        <option value="الاثنين">الاثنين</option>
-                                        <option value="الثلاثاء">الثلاثاء</option>
-                                        <option value="الاربعاء">الاربعاء</option>
-                                        <option value="الخميس">الخميس</option>
-                                        <option value="الجمعة">الجمعة</option>
-                                    </select>
-                                </div>
+                                {{-- التعديل هنا --}}
+                                <input type="date" name="date" required x-model="createPassengerData.date"
+                                    @input="createPassengerData.day = getArabicDayName(createPassengerData.date)"
+                                    class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اليوم <span
+                                    class="text-error">*</span></label>
+                            <div class="relative">
+                                <span
+                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
+
+                                {{-- التعديل هنا: إضافة x-model --}}
+                                <select
+                                    class="pr-12 pl-4 w-full h-14 text-sm bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none pointer-events-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                    name="day" id="day" required x-model="createPassengerData.day" readonly>
+                                    <option value="">(يتم تحديده تلقائياً)</option>
+                                    <option value="السبت">السبت</option>
+                                    <option value="الاحد">الاحد</option>
+                                    <option value="الاثنين">الاثنين</option>
+                                    <option value="الثلاثاء">الثلاثاء</option>
+                                    <option value="الاربعاء">الاربعاء</option>
+                                    <option value="الخميس">الخميس</option>
+                                    <option value="الجمعة">الجمعة</option>
+                                </select>
+                            </div>
+                        </div>
 
                         <div>
                             <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span
@@ -376,7 +374,7 @@
                                     class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
                                 <input type="text" name="passenger_number" required placeholder="رقم الراكب"
                                     x-model="createPassengerData.passenger_number"
-                                    class="pr-12 pl-4 w-full h-14 text-sm font-mono font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                    class="pr-12 pl-4 w-full h-14 font-mono text-sm font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
                                     dir="ltr">
                             </div>
                         </div>
@@ -410,16 +408,6 @@
                                 <span
                                     class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">payments</span>
                                 <input type="number" step="0.01" name="total_commission" required placeholder="0.00"
-                                    class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                            </div>
-                        </div>
-
-                       <div class="md:col-span-2">
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط</label>
-                            <div class="relative">
-                                <span
-                                    class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
-                                <input type="text" name="broker" placeholder="اسم الوسيط (اختياري)"
                                     class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
@@ -535,20 +523,37 @@
                             </div>
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
+
+                        {{-- ========================== --}}
+                        <div>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات<span
+                                    class="text-error">*</span></label>
                             <div class="relative">
-                                <span
-                                    class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
-                                <textarea name="note" rows="3" placeholder="أي ملاحظات إضافية..."
-                                    class="py-4 pr-12 pl-4 w-full text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"></textarea>
+                           <span
+                                class="absolute top-4 right-4 text-gray-400 material-symbols-outlined dark:text-gray-500">description</span>
+                            <textarea name="note" rows="3" placeholder="أي ملاحظات إضافية..."
+                                class="py-4 pr-12 pl-4 w-full text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"></textarea>
                             </div>
                         </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط <span
+                                    class="text-error">*</span></label>
+                            <div class="relative">
+                      <span
+                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
+                            <input type="text" name="broker" placeholder="اسم الوسيط (اختياري)"
+                                class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                            </div>
+                        </div>
+                        {{-- ========================================== --}}
+                       
+
                     </div>
 
                     <button type="submit"
                         class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
                         <span class="material-symbols-outlined">save</span>
+                        
                         حفظ الراكب
                     </button>
                 </form>
@@ -607,8 +612,7 @@
                                         class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">today</span>
                                     <select
                                         class="pr-12 pl-4 w-full h-14 text-sm bg-gray-50 rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none pointer-events-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
-                                        name="day" id="day" required
-                                        x-model="editPassengerData.day" readonly>
+                                        name="day" id="day" required x-model="editPassengerData.day" readonly>
                                         <option value="">(يتم تحديده تلقائياً)</option>
                                         <option value="السبت">السبت</option>
                                         <option value="الاحد">الاحد</option>
@@ -629,7 +633,7 @@
                                         class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">tag</span>
                                     <input type="text" name="passenger_number"
                                         x-model="editPassengerData.passenger_number" required
-                                        class="pr-12 pl-4 w-full h-14 text-sm font-mono font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
+                                        class="pr-12 pl-4 w-full h-14 font-mono text-sm font-bold text-left rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"
                                         dir="ltr">
                                 </div>
                             </div>
@@ -668,15 +672,7 @@
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط</label>
-                                <div class="relative">
-                                    <span
-                                        class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
-                                    <input type="text" name="broker" x-model="editPassengerData.broker"
-                                        class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                                </div>
-                            </div>
+
 
                             <div class="md:col-span-2" x-data="driverSelect({{ $drivers }}, @js(array_values(config('countries', []))), { id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
                                 <h4
@@ -800,6 +796,16 @@
                                     <textarea name="note" x-model="editPassengerData.note" rows="3"
                                         class="py-4 pr-12 pl-4 w-full text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40"></textarea>
                                 </div>
+                                <div>
+                                    <label
+                                        class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الوسيط</label>
+                                    <div class="relative">
+                                        <span
+                                            class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">handshake</span>
+                                        <input type="text" name="broker" x-model="editPassengerData.broker"
+                                            class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -882,7 +888,8 @@
                         if (/^\d/.test(phone)) phone = '+' + phone;
 
                         this.selectedCountry = this.countries.find(c => phone.startsWith(c
-                            .dial_code)) || this.countries.find(c => c.code === 'YE') || this.countries[
+                                .dial_code)) || this.countries.find(c => c.code === 'YE') || this
+                            .countries[
                                 0];
                         if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
                             this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code

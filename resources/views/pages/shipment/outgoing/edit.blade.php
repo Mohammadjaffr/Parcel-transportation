@@ -534,6 +534,8 @@
                                     class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
                                     <option value="prepaid">مدفوع مقدماً</option>
                                     <option value="cod">الدفع عند الاستلام (على المستلم)</option>
+                                    <option value="partial_payment">دفع جزئي</option>
+                                    <option value="overdue">متأخر</option>
                                 </select>
                             </div>
 

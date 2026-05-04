@@ -276,9 +276,9 @@
 
                 {{-- Modal Footer --}}
                 <div
-                    class="flex flex-row-reverse gap-3 justify-start items-center pt-6 mt-8 border-t border-gray-100 dark:border-gray-800">
+                    class="pt-6 mt-4 w-full border-t border-gray-100 dark:border-gray-800">
                     <button type="submit" :disabled="isSubmitting"
-                        class="flex items-center justify-center gap-2 px-8 py-2.5 text-sm font-bold text-white transition-all rounded-xl bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[140px]">
+                        class="w-full px-8 py-2.5 text-sm font-bold text-white transition-all rounded-xl bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed min-w-[140px]">
                         <template x-if="isSubmitting">
                             <svg class="w-5 h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10"
@@ -293,10 +293,7 @@
                         </template>
                     </button>
 
-                    <button type="button" @click="isModalOpen = false"
-                        class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
-                        إلغاء
-                    </button>
+                  
                 </div>
 
             </form>

@@ -282,94 +282,94 @@
                     </button>
                 </div>
 
-                <form action="{{ route('drivers.store') }}" method="POST" class="space-y-6">
-                    @csrf
-                    <div>
-                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الاسم الكامل <span
-                                class="text-error">*</span></label>
-                        <div class="relative">
-                            <span
-                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">person</span>
-                            <input type="text" name="name" required placeholder="مثلاً: أحمد السعيدي"
-                                class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
-                        </div>
+              <form action="{{ route('drivers.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }" @submit="isSubmitting = true">
+    @csrf
+    
+    <div>
+        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الاسم الكامل <span class="text-error">*</span></label>
+        <div class="relative">
+            <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">person</span>
+            <input type="text" name="name" required placeholder="مثلاً: أحمد السعيدي"
+                class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+        </div>
+    </div>
+
+    <div x-data="{
+        open: false,
+        search: '',
+        countries: @js(array_values(config('countries', []))),
+        selectedCountry: null,
+        localPhoneNumber: '',
+        init() {
+            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+        },
+        get filteredCountries() {
+            if (this.search === '') return this.countries;
+            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
+        }
+    }">
+        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الهاتف <span class="text-error">*</span></label>
+
+        <div class="relative">
+            <input type="hidden" name="phone" :value="(selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber">
+
+            <div class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
+
+                {{-- Country Selector Button --}}
+                <button type="button" @click="open = !open" @click.away="open = false"
+                    class="flex gap-2 items-center px-4 h-14 bg-white rounded-r-xl border-l border-gray-200 transition-colors dark:bg-boxdark dark:border-boxdark-2 shrink-0 hover:bg-gray-50 dark:hover:bg-boxdark-2">
+                    <template x-if="selectedCountry?.svg">
+                        <svg class="w-6 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24"
+                            fill="none" xmlns="http://www.w3.org/2000/svg"
+                            x-html="selectedCountry.svg"></svg>
+                    </template>
+                    <span class="text-sm font-bold text-gray-600 dark:text-gray-300 dir-ltr" x-text="selectedCountry?.dial_code"></span>
+                    <span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
+                </button>
+
+                {{-- Phone Input --}}
+                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                    @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')"
+                    class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
+
+                {{-- Dropdown panel --}}
+                <div x-show="open" x-transition x-cloak
+                    class="absolute top-[calc(100%+8px)] right-0 z-50 w-full bg-white dark:bg-boxdark rounded-xl border border-gray-100 dark:border-boxdark-2 shadow-xl overflow-hidden">
+                    <div class="p-2 border-b border-gray-50 dark:border-boxdark-2">
+                        <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
+                            class="px-4 py-2 w-full text-sm rounded-lg transition-colors outline-none bg-surface dark:bg-boxdark-2 dark:text-white focus:bg-white dark:focus:bg-boxdark">
                     </div>
-
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries', []))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }">
-                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الهاتف <span
-                                class="text-error">*</span></label>
-
-                        <div class="relative">
-                            <input type="hidden" name="phone"
-                                :value="(selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber">
-
-                            <div
-                                class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
-
-                                {{-- Country Selector Button --}}
-                                <button type="button" @click="open = !open" @click.away="open = false"
-                                    class="flex gap-2 items-center px-4 h-14 bg-white rounded-r-xl border-l border-gray-200 transition-colors dark:bg-boxdark dark:border-boxdark-2 shrink-0 hover:bg-gray-50 dark:hover:bg-boxdark-2">
-                                    <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-[2px] shadow-sm" viewBox="0 0 36 24"
-                                            fill="none" xmlns="http://www.w3.org/2000/svg"
-                                            x-html="selectedCountry.svg"></svg>
-                                    </template>
-                                    <span class="text-sm font-bold text-gray-600 dark:text-gray-300 dir-ltr"
-                                        x-text="selectedCountry?.dial_code"></span>
-                                    <span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
-                                </button>
-
-                                {{-- Phone Input --}}
-                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
-
-                                {{-- Dropdown panel --}}
-                                <div x-show="open" x-transition x-cloak
-                                    class="absolute top-[calc(100%+8px)] right-0 z-50 w-full bg-white dark:bg-boxdark rounded-xl border border-gray-100 dark:border-boxdark-2 shadow-xl overflow-hidden">
-                                    <div class="p-2 border-b border-gray-50 dark:border-boxdark-2">
-                                        <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                            class="px-4 py-2 w-full text-sm rounded-lg transition-colors outline-none bg-surface dark:bg-boxdark-2 dark:text-white focus:bg-white dark:focus:bg-boxdark">
-                                    </div>
-                                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
-                                        <template x-for="country in filteredCountries" :key="country.code">
-                                            <div @click="selectedCountry = country; open = false; search = ''"
-                                                class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary-container dark:hover:bg-boxdark-2">
-                                                <svg class="w-5 h-auto rounded-[2px] shadow-sm shrink-0"
-                                                    viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                                    x-html="country.svg"></svg>
-                                                <span
-                                                    class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200"
-                                                    x-text="country.name"></span>
-                                                <span class="font-mono text-xs font-bold text-gray-500 shrink-0 dir-ltr"
-                                                    x-text="country.dial_code"></span>
-                                            </div>
-                                        </template>
-                                    </div>
-                                </div>
+                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                        <template x-for="country in filteredCountries" :key="country.code">
+                            <div @click="selectedCountry = country; open = false; search = ''"
+                                class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary-container dark:hover:bg-boxdark-2">
+                                <svg class="w-5 h-auto rounded-[2px] shadow-sm shrink-0" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg" x-html="country.svg"></svg>
+                                <span class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
+                                <span class="font-mono text-xs font-bold text-gray-500 shrink-0 dir-ltr" x-text="country.dial_code"></span>
                             </div>
-                        </div>
+                        </template>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <button type="submit"
-                        class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
-                        <span class="material-symbols-outlined">save</span>
-                        حفظ السائق
-                    </button>
-                </form>
+    <button type="submit" :disabled="isSubmitting"
+        :class="isSubmitting ? 'opacity-80 cursor-wait' : 'active:scale-95 hover:shadow-xl'"
+        class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all duration-300 bg-primary shadow-primary/30">
+
+        <span x-show="!isSubmitting" class="transition-transform material-symbols-outlined">save</span>
+
+        <svg x-cloak x-show="isSubmitting" class="w-6 h-6 text-white animate-spin"
+            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+
+        <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ السائق'"></span>
+    </button>
+</form>
             </div>
         </div>
 

@@ -305,16 +305,12 @@
                 </div>
 
                 {{-- ================= الترقيم ================= --}}
-                @if (method_exists($packages, 'hasPages') && $packages->hasPages())
-                    <div class="p-5 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                        <div class="hidden md:block">
-                            {{ $packages->links('vendor.pagination.tailwind') }}
-                        </div>
-                        <div class="md:hidden">
-                            {{ $packages->links('vendor.pagination.mobile') }}
-                        </div>
-                    </div>
-                @endif
+            
+                   @if (method_exists($packages, 'hasPages') && $packages->hasPages())
+                <div class="px-6 py-5 rounded-b-[2rem] pagination-container">
+                    {{ $packages->links() }}
+                </div>
+            @endif
 
             </div>
         </div>
