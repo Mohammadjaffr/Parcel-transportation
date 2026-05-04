@@ -40,17 +40,27 @@ class Customer extends Model
     {
         return $this->hasMany(Shipment::class, 'receiver_customer_id');
     }
-
     public function transactions()
     {
         return $this->hasMany(CustomerTransaction::class);
     }
-
-    public function cashTransactions()
+    // 2. 🟢 كم له؟ (إجمالي الأرصدة المستحقة له من الـ COD)
+    public function getTotalCreditAttribute()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->transactions()->where('type', 'credit')->sum('amount');
     }
 
+    // 3. 🔴 كم عليه؟ (إجمالي الديون من الشحن الآجل)
+    public function getTotalDebitAttribute()
+    {
+        return $this->transactions()->where('type', 'debit')->sum('amount');
+    }
+    // 4. ⚖️ الرصيد الصافي (إذا كان موجب = أنتم مدينون له / سالب = هو مدين لكم)
+    public function getBalanceAttribute()
+    {
+        return $this->total_credit - $this->total_debit;
+    }
+    
     public function users()
     {
         return $this->hasMany(User::class);

@@ -17,6 +17,7 @@ use App\Notifications\AdminShipmentStatusUpdated;
 use App\Notifications\NewShipmentNotification;
 use App\Notifications\PackageReceivedNotification;
 use App\Services\AdminLoggerService;
+use App\Services\CustomerTransactionService;
 use App\Services\ShipmentPaymentService;
 use App\Services\WhatsApp\WhatsAppLinkService;
 use Exception;
@@ -266,10 +267,8 @@ class ShipmentController extends Controller
             $finalReceiverOfficeBranchId = null;
 
             if ($officeType === 'untrusted') {
-                // المسار الثاني: فرع لمكتب خارجي يدوي
                 $finalReceiverOfficeBranchId = $data['receiver_branch_id'];
             } else {
-                // المسار الأول: فرع داخلي أو موثوق مسجل بالنظام
                 $finalReceiverBranchId = $data['receiver_branch_id'];
             }
 
@@ -285,7 +284,7 @@ class ShipmentController extends Controller
                     [
                         'name' => $data['sender_name'],
                         'app_id' => $user->app_id,
-                        'branch_id' => $senderBranchId, // يتبع لفرع الموظف الحالي
+                        'branch_id' => $senderBranchId,
                         'created_by' => $user->id
                     ]
                 );
@@ -313,7 +312,6 @@ class ShipmentController extends Controller
             $shipment = Shipment::create([
                 'sender_branch_id'          => $senderBranchId,
 
-                // الحقول المفصولة للوجهة:
                 'receiver_branch_id'        => $finalReceiverBranchId,
                 'receiver_office_branch_id' => $finalReceiverOfficeBranchId,
 
@@ -336,16 +334,21 @@ class ShipmentController extends Controller
             ]);
 
             // ========================================================
+            // 💰 الحركات المالية (FinTech Ledger) عبر الـ Service 
+            // ========================================================
+            // استدعاء السيرفيس لمعالجة جميع حالات الدفع (آجل، مسبق، جزئي) بسطر واحد
+            (new CustomerTransactionService())->recordInitialShipment($shipment);
+
+            // ========================================================
             // إشعار الإدارة (Admins Notification)
             // ========================================================
-            // نجلب مستخدمي النظام الذين يحملون دور "admin" في نفس التطبيق (App)
             $admins = User::where('app_id', $user->app_id)
                 ->where('type', 'admin')
                 ->get();
             if ($admins->isNotEmpty()) {
                 Notification::send(
                     $admins,
-                    new AdminShipmentCreated(
+                    new \App\Notifications\AdminShipmentCreated(
                         $user->name,
                         $user->branch->name ?? 'غير محدد الفرع',
                         $shipment->bond_number,
@@ -355,24 +358,8 @@ class ShipmentController extends Controller
             }
 
             // ========================================================
-            // معالجة المدفوعات (عبر Service)
+            // معالجة المدفوعات (عبر Service) - معلق حالياً
             // ========================================================
-            // $paidAmount = null;
-            // if ($shipment->payment_method === 'prepaid') {
-            //     $paidAmount = (float) $shipment->total_amount;
-            // } elseif ($shipment->payment_method === 'partial_payment') {
-            //     $paidAmount = (float) $shipment->partial_amount;
-            // }
-
-            // // نفترض أن الدفع النقدي هو الافتراضي للموبايل
-            // $paymentType = 'cash'; 
-
-            // $this->shipmentPaymentService->handlePaymentForNewShipment(
-            //     $shipment,
-            //     $paymentType,
-            //     $paidAmount,
-            //     null
-            // );
 
             DB::commit();
 
@@ -393,9 +380,8 @@ class ShipmentController extends Controller
                 'shipment.outgoing.index'
             );
         } catch (\Exception $e) {
-
             DB::rollBack();
-            dd($e->getMessage());
+            // dd($e->getMessage()); // يفضل إزالتها في الإنتاج
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -1182,183 +1168,158 @@ class ShipmentController extends Controller
     }
 
     public function updateStatus(Request $request, $id)
-    {
-        // 1. Validation
-        $request->validate([
-            'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
+{
+    // 1. التحقق من صحة المدخلات
+    $request->validate([
+        'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $shipment = Shipment::findOrFail($id);
+        $oldStatus = $shipment->status;
+        $newStatus = $request->status;
+        $transactionService = new \App\Services\CustomerTransactionService();
+
+        // ========================================================
+        // 2. الحماية البرمجية (Backend State Validation) 🛡️
+        // ========================================================
+        $validTransitions = [
+            'pending'            => ['in_transit', 'cancelled', 'returned'],
+            'in_transit'         => ['received_at_branch', 'delivered', 'returned'],
+            'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'],
+            'out_for_delivery'   => ['delivered', 'returned'],
+        ];
+
+        if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
+            return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
+        }
+
+        // ========================================================
+        // 3. تحديث الحالة (نظام المرتجعات والمالية الذكي 🔄💰)
+        // ========================================================
+        if ($newStatus === 'returned') {
+
+            // أ. حالة إلغاء الإرسال (في الطريق -> إرجاع للمستودع قبل وصوله)
+            if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
+                $packageId = $shipment->shipment_package_id;
+                $shipment->update([
+                    'status' => 'pending',
+                    'shipment_package_id' => null,
+                ]);
+                $this->checkAndClosePackage($packageId);
+                $newStatus = 'pending';
+            }
+            // ب. المرحلة الأولى للمرتجع الحقيقي (رفض المستلم)
+            elseif (!$shipment->is_returned) {
+                $packageId = $shipment->shipment_package_id;
+                $shipment->update([
+                    'is_returned' => true,
+                    'status' => 'pending',
+                    'shipment_package_id' => null,
+                ]);
+                $this->checkAndClosePackage($packageId);
+                $newStatus = 'pending';
+            } 
+            // ج. المرحلة النهائية للمرتجع (تسليم الطرد للتاجر/المُرسل)
+            else {
+                $shipment->update(['status' => 'returned']);
+                
+                // 💰 إلغاء الديون المالية عبر السيرفيس لأن الطرد عاد لصاحبه
+                $transactionService->cancelTransactions($shipment);
+            }
+        } 
+        else {
+            // التحديث الطبيعي لأي حالة أخرى
+            $shipment->update(['status' => $newStatus]);
+
+            // 💰 تسجيل رصيد للعميل إذا تم التسليم بنجاح
+            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+                $transactionService->recordDelivery($shipment);
+            }
+        }
+
+        // ========================================================
+        // 4. الإشعارات والإجراءات الجانبية
+        // ========================================================
+        $this->handleNotifications($shipment, $newStatus, $user = auth()->user());
+        $this->handlePackageSideEffects($shipment, $newStatus);
+
+        DB::commit();
+
+        // رسائل النجاح المخصصة
+        $successMessages = [
+            'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
+            'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
+            'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
+            'delivered'          => 'تم التسليم وتوثيق المستحقات المالية ✅',
+            'cancelled'          => 'تم إلغاء الطرد 🚫',
+            'pending'            => ($oldStatus === 'in_transit' && !$shipment->is_returned) ? 'تم إلغاء الإرسال وإعادة الطرد للانتظار 🔄' : 'تم تسجيل المرتجع وقيد العودة ❌',
+        ];
+
+        return back()->with([
+            'success_title' => 'تم التحديث!',
+            'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
         ]);
 
-        try {
-            DB::beginTransaction();
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+    }
+}
 
-            $shipment = Shipment::findOrFail($id);
-            $oldStatus = $shipment->status;
-            $newStatus = $request->status;
-
-            // ========================================================
-            // 2. الحماية البرمجية المحدثة (Backend State Validation) 🛡️
-            // ========================================================
-            $validTransitions = [
-                'pending'            => ['in_transit', 'cancelled', 'returned'],
-                'in_transit'         => ['received_at_branch', 'delivered', 'returned'],
-                'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'],
-                'out_for_delivery'   => ['delivered', 'returned'],
-            ];
-
-            if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
-                return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
-            }
-
-            // ========================================================
-            // 3. تحديث الحالة (مع نظام المرتجعات الذكي 🔄)
-            // ========================================================
-            if ($newStatus === 'returned') {
-
-                // 💡 الشرط الجديد الذي طلبته: إلغاء الإرسال (في الطريق) وإعادته للانتظار
-                if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
-                    $packageId = $shipment->shipment_package_id;
-
-                    $shipment->update([
-                        'status'              => 'pending', // يعود للانتظار فقط
-                        'shipment_package_id' => null,      // فك ارتباطه من الإرسالية
-                    ]);
-
-                    if ($packageId) {
-                        $activeShipmentsCount = Shipment::where('shipment_package_id', $packageId)
-                            ->whereNotIn('status', ['delivered', 'cancelled'])->count();
-
-                        if ($activeShipmentsCount === 0) {
-                            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
-                        }
-                    }
-
-                    $newStatus = 'pending'; // لتشغيل الإشعارات كطرد قيد التجهيز
-                }
-                // 🔴 المرحلة الأولى: (المستلم يرفض الطرد) -> تبدأ رحلة العودة
-                elseif (!$shipment->is_returned) {
-                    
-                    $packageId = $shipment->shipment_package_id;
-
-                    $shipment->update([
-                        'is_returned'         => true,
-                        'status'              => 'pending', // يعود قيد التجهيز ليركب شاحنة العودة
-                        'shipment_package_id' => null,      // فك ارتباطه فوراً 
-                    ]);
-
-                    if ($packageId) {
-                        $activeShipmentsCount = Shipment::where('shipment_package_id', $packageId)
-                            ->whereNotIn('status', ['delivered', 'cancelled'])->count();
-
-                        if ($activeShipmentsCount === 0) {
-                            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
-                        }
-                    }
-
-                    $newStatus = 'pending'; // لتشغيل الإشعارات كطرد قيد التجهيز
-
-                } else {
-                    // 🟢 المرحلة النهائية: (المُرسل يسلم الطرد للتاجر) -> إغلاق الطرد نهائياً كـ (مرتجع)
-                    $shipment->update([
-                        'status' => 'returned'
-                    ]);
-                }
-            } else {
-                // التحديث الطبيعي لأي حالة أخرى
-                $shipment->update([
-                    'status' => $newStatus
-                ]);
-            }
-
-            // ========================================================
-            // 4. إشعار الإدارة 
-            // ========================================================
-            $user = auth()->user();
-            $admins = User::where('app_id', $user->app_id)->where('type', 'admin')->get();
-
-            if ($admins->isNotEmpty()) {
-                $statusNamesAr = [
-                    'pending'            => 'قيد التجهيز',
-                    'in_transit'         => 'قيد النقل',
-                    'received_at_branch' => 'وصل المستودع',
-                    'out_for_delivery'   => 'خرج للتوصيل',
-                    'delivered'          => 'تم التسليم',
-                    'cancelled'          => 'ملغي',
-                ];
-
-                // إذا كان مرتجعاً وهو الآن pending، نغير النص ليكون مفهوماً للمدير
-                $statusText = ($shipment->is_returned && $newStatus === 'pending')
-                    ? 'تم إرجاع الطرد (عاد للمستودع)'
-                    : ($statusNamesAr[$newStatus] ?? $newStatus);
-
-                Notification::send(
-                    $admins,
-                    new \App\Notifications\AdminShipmentStatusUpdated(
-                        $user->name,
-                        $shipment->bond_number,
-                        $statusText,
-                        $shipment->id
-                    )
-                );
-            }
-
-            // ========================================================
-            // 5. الإجراءات الجانبية 
-            // ========================================================
-            if ($shipment->shipment_package_id && in_array($newStatus, ['received_at_branch', 'delivered'])) {
-                $packageId = $shipment->shipment_package_id;
-                $package = ShipmentPackage::find($packageId);
-
-                if ($package && $package->status === 'in_transit') {
-                    $senderBranchUsers = User::where('branch_id', $shipment->sender_branch_id)->get();
-                    if ($senderBranchUsers->isNotEmpty()) {
-                        Notification::send(
-                            $senderBranchUsers,
-                            new \App\Notifications\PackageReceivedNotification(
-                                $package->tracking_number,
-                                auth()->user()->branch->name ?? 'الفرع المستلم',
-                                $shipment->tracking_number,
-                                $shipment->id
-                            )
-                        );
-                    }
-
-                    $remainingShipments = Shipment::where('shipment_package_id', $packageId)
-                        ->whereIn('status', ['pending', 'in_transit'])
-                        ->count();
-
-                    if ($remainingShipments === 0) {
-                        $package->update(['status' => 'delivered']);
-                    }
-                }
-            }
-
-            if ($newStatus === 'delivered') {
-                if (in_array($shipment->payment_method, ['cod', 'partial_payment'])) {
-                    // $this->shipmentPaymentService->createCodBranchTransactionOnDelivery($shipment);
-                }
-            }
-
-            DB::commit();
-
-            $successMessages = [
-                'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
-                'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
-                'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
-                'delivered'          => 'تم التسليم بنجاح ✅',
-                'cancelled'          => 'تم إلغاء الطرد 🚫',
-                // تعديل رسالة النجاح لتناسب الحالة الجديدة
-                'pending'            => ($oldStatus === 'in_transit' && !$shipment->is_returned) ? 'تم إلغاء الإرسال وإعادة الطرد للانتظار 🔄' : ($shipment->is_returned ? 'تم تسجيل الطرد كمرتجع وهو الآن قيد التجهيز للعودة ❌' : 'تم التحديث'),
-            ];
-
-            return back()->with([
-                'success_title' => 'تم التحديث!',
-                'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+/**
+ * دالة مساعدة للتحقق من الإرسالية وإغلاقها إذا فرغت
+ */
+private function checkAndClosePackage($packageId)
+{
+    if ($packageId) {
+        $activeCount = Shipment::where('shipment_package_id', $packageId)
+            ->whereNotIn('status', ['delivered', 'cancelled', 'returned'])->count();
+        if ($activeCount === 0) {
+            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
         }
     }
+}
+
+/**
+ * دالة معالجة الإشعارات للإدارة والفروع
+ */
+private function handleNotifications($shipment, $newStatus, $user)
+{
+    $admins = User::where('app_id', $user->app_id)->where('type', 'admin')->get();
+    if ($admins->isNotEmpty()) {
+        $statusNamesAr = [
+            'pending' => 'قيد التجهيز', 'in_transit' => 'قيد النقل',
+            'received_at_branch' => 'وصل المستودع', 'out_for_delivery' => 'خرج للتوصيل',
+            'delivered' => 'تم التسليم', 'cancelled' => 'ملغي',
+        ];
+        $statusText = ($shipment->is_returned && $newStatus === 'pending') ? 'مرتجع قيد العودة' : ($statusNamesAr[$newStatus] ?? $newStatus);
+        
+        Notification::send($admins, new \App\Notifications\AdminShipmentStatusUpdated($user->name, $shipment->bond_number, $statusText, $shipment->id));
+    }
+}
+
+/**
+ * معالجة الإجراءات الجانبية للإرساليات (Packages)
+ */
+private function handlePackageSideEffects($shipment, $newStatus)
+{
+    if ($shipment->shipment_package_id && in_array($newStatus, ['received_at_branch', 'delivered'])) {
+        $package = ShipmentPackage::find($shipment->shipment_package_id);
+        if ($package && $package->status === 'in_transit') {
+            // إرسال إشعار لفرع المصدر بوصول الطرد
+            $senderBranchUsers = User::where('branch_id', $shipment->sender_branch_id)->get();
+            if ($senderBranchUsers->isNotEmpty()) {
+                Notification::send($senderBranchUsers, new \App\Notifications\PackageReceivedNotification($package->tracking_number, auth()->user()->branch->name ?? 'الفرع المستلم', $shipment->tracking_number, $shipment->id));
+            }
+            // إغلاق الإرسالية إذا سلمت كل طرودها
+            $remaining = Shipment::where('shipment_package_id', $package->id)->whereIn('status', ['pending', 'in_transit'])->count();
+            if ($remaining === 0) { $package->update(['status' => 'delivered']); }
+        }
+    }
+}
 
     /**
      * دالة مساعدة لإرسال إشعار تحرك الطرد للفرع المستلم (إذا كان مسجلاً بالنظام)

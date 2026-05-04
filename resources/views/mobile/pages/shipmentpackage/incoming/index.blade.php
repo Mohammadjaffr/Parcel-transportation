@@ -95,6 +95,25 @@
         {{-- ================= قائمة الإرساليات المستقبلة ================= --}}
         <div class="space-y-4">
             @forelse($packages as $package)
+            @php
+                    // إعدادات الألوان والأيقونات بناءً على حالة الإرسالية (Package Status)
+                    $statusSettings = [
+                        'pending'            => ['color' => 'bg-amber-50 text-amber-600 border-amber-200', 'icon' => 'schedule', 'name' => 'قيد التجهيز', 'sidebar' => 'bg-amber-400'],
+                        'in_transit'         => ['color' => 'bg-blue-50 text-blue-600 border-blue-200', 'icon' => 'local_shipping', 'name' => 'في الطريق', 'sidebar' => 'bg-blue-400'],
+                        'received_at_branch' => ['color' => 'bg-purple-50 text-purple-600 border-purple-200', 'icon' => 'inventory_2', 'name' => 'بالمستودع', 'sidebar' => 'bg-purple-400'],
+                        'out_for_delivery'   => ['color' => 'bg-indigo-50 text-indigo-600 border-indigo-200', 'icon' => 'two_wheeler', 'name' => 'خرج للتوصيل', 'sidebar' => 'bg-indigo-400'],
+                        'delivered'          => ['color' => 'bg-emerald-50 text-emerald-600 border-emerald-200', 'icon' => 'task_alt', 'name' => 'مكتملة', 'sidebar' => 'bg-emerald-400'],
+                        'returned'           => ['color' => 'bg-rose-50 text-rose-600 border-rose-200', 'icon' => 'assignment_return', 'name' => 'مرتجعة', 'sidebar' => 'bg-rose-400'],
+                        'cancelled'          => ['color' => 'bg-slate-50 text-slate-600 border-slate-200', 'icon' => 'block', 'name' => 'ملغاة', 'sidebar' => 'bg-slate-400'],
+                    ];
+
+                    $currentStatus = $statusSettings[$package->status] ?? $statusSettings['pending'];
+                    
+                    $colorClass   = $currentStatus['color'];
+                    $icon         = $currentStatus['icon'];
+                    $name         = $currentStatus['name'];
+                    $sideBarClass = $currentStatus['sidebar'];
+                @endphp
                 <a x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
                     href="{{ route('shipmentpackage.incoming.show', $package->id) }}"
                     class="block bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative active:scale-[0.98] transition-transform">
