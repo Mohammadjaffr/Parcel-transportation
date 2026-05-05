@@ -29,32 +29,60 @@ class CustomerTransactionService
     }
 
     /**
-     * 2. الحركات المالية عند التسليم (تسجيل أرصدة للمرسل)
+     * 2. الحركات المالية عند التسليم (مجهزة لمحاسبة الفروع مستقبلاً)
      */
     public function recordDelivery(Shipment $shipment)
     {
+        // 🛑 الجزء الخاص بالعميل (المرسل):
+        // تم إيقافه لأن المستلم عندما يدفع رسوم الشحن، فإن المبلغ يذهب لخزينة الشركة 
+        // ولا يتم تسجيله كرصيد للعميل المرسل (نحن شركة نقل ولسنا متجر).
+        
+        // ====================================================================
+        // 🚀 TODO: [ميزة مستقبلية - محاسبة الفروع Inter-Branch Accounting]
+        // ====================================================================
+        // مستقبلاً، سنستخدم هذه الدالة لتسجيل المبالغ التي بعهدة الفرع المستلم.
+        // الفرع المستلم سيأخذ كاش من الزبون في حالتين فقط (COD أو الدفع الجزئي).
+        
+        /* 
+        $collectedAmount = 0;
+
         if ($shipment->payment_method === 'cod') {
-            // الدفع عند الاستلام: كامل المبلغ رصيد للمرسل
-            $this->createTransaction($shipment, $shipment->total_amount, 'credit', "متحصلات بوليصة دفع عند الاستلام #{$shipment->bond_number}");
+            // الفرع سيستلم كامل المبلغ
+            $collectedAmount = $shipment->total_amount;
         } 
         elseif ($shipment->payment_method === 'partial_payment') {
-            // دفع جزئي: المتبقي من المبلغ رصيد للمرسل
-            $remainingAmount = $shipment->total_amount - $shipment->partial_amount;
-            if ($remainingAmount > 0) {
-                $this->createTransaction($shipment, $remainingAmount, 'credit', "باقي متحصلات بوليصة دفع جزئي #{$shipment->bond_number}");
-            }
+            // الفرع سيستلم (باقي المبلغ) فقط، لأن المرسل دفع جزءاً منه مسبقاً
+            $collectedAmount = $shipment->total_amount - $shipment->partial_amount;
         }
+
+        // إذا كان هناك مبلغ تم تحصيله فعلياً بواسطة الفرع المستلم، نسجله كدين عليه
+        if ($collectedAmount > 0) {
+             \App\Models\BranchTransaction::create([
+                 'branch_id'   => $shipment->receiver_branch_id,
+                 'shipment_id' => $shipment->id,
+                 'amount'      => $collectedAmount,
+                 'type'        => 'debit', // دين على الفرع المستلم (عهدة الكاش التي لديه)
+                 'description' => "متحصلات أجور شحن بوليصة #{$shipment->bond_number} لصالح الإدارة"
+             ]);
+        }
+        */
+
+        return true; 
     }
 
     /**
      * 3. إلغاء الحركات المالية (إذا أصبح الطرد مرتجعاً للتاجر)
      */
+    /**
+     * إلغاء القيود المالية عند إرجاع الطرد أو إلغائه
+     */
     public function cancelTransactions(Shipment $shipment)
     {
-        // نحذف الديون (debit) المعلقة التي لم يتم تسديدها
-        CustomerTransaction::where('shipment_id', $shipment->id)
-            ->where('type', 'debit')
-            ->delete();
+        // هذا السطر سيقوم بمسح كل الحركات المالية (تكلفة الشحن + أي سداد نقدي تم مسبقاً)
+        // لكي يعود كشف حساب العميل نظيفاً وكأن الطرد لم يُنشأ من الأساس
+        CustomerTransaction::where('shipment_id', $shipment->id)->delete();
+        
+        return true;
     }
 
     /**
@@ -68,6 +96,20 @@ class CustomerTransactionService
             'amount'      => $amount,
             'type'        => $type,
             'description' => $description,
+        ]);
+    }
+
+    /**
+     * . تسجيل دفعة نقدية (سداد مديونية) لحساب العميل بشكل عام
+     */
+    public function addPayment($customer, $amount, $notes = null)
+    {
+        return CustomerTransaction::create([
+            'customer_id' => $customer->id,
+            'amount'      => $amount,
+            'type'        => 'credit', // رصيد موجب يقلص الديون
+            'description' => 'سداد نقدي لحساب العميل' . ($notes ? ' - ' . $notes : ''),
+            'shipment_id' => null, // دفعة عامة غير مرتبطة بطرد معين
         ]);
     }
 }

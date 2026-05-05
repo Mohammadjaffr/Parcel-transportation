@@ -1180,7 +1180,7 @@ class ShipmentController extends Controller
         $shipment = Shipment::findOrFail($id);
         $oldStatus = $shipment->status;
         $newStatus = $request->status;
-        $transactionService = new \App\Services\CustomerTransactionService();
+        $transactionService = new CustomerTransactionService();
 
         // ========================================================
         // 2. الحماية البرمجية (Backend State Validation) 🛡️
@@ -1263,7 +1263,7 @@ class ShipmentController extends Controller
             'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
         ]);
 
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         DB::rollBack();
         return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
     }

@@ -115,7 +115,7 @@
         <div class="px-2 space-y-4">
             @forelse ($customers as $customer)
                 @php
-                    $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
+                    $balance = ($customer->sum_debit ?? 0) - ($customer->sum_credit ?? 0);
                 @endphp
                 {{-- 💡 أضفنا x-data="openMenu: false" هنا، وحذفنا overflow-hidden --}}
                 <div x-data="{ openMenu: false }"
@@ -210,19 +210,19 @@
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
                             <span
-                                class="block text-sm font-black text-slate-700">{{ $customer->shipments_count ?? 0 }}</span>
+                                class="block text-sm font-black text-slate-700">{{ $customer->sent_shipments_count ?? 0 }}</span>
                         </div>
                         <div class="w-px bg-slate-200/60"></div>
                         <div class="flex-1 text-center">
-                            <span class="block text-[10px] font-bold text-slate-400 mb-1">المدفوع</span>
+                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد له</span>
                             <span
-                                class="block text-sm font-black text-emerald-600">{{ number_format($customer->credit_sum ?? 0, 0) }}</span>
+                                class="block text-sm font-black text-emerald-600">{{ number_format($customer->sum_credit ?? 0, 2) }}</span>
                         </div>
                         <div class="w-px bg-slate-200/60"></div>
                         <div class="flex-1 text-center">
-                            <span class="block text-[10px] font-bold text-slate-400 mb-1">عليه</span>
+                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد عليه</span>
                             <span
-                                class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($balance, 0) }}</span>
+                                class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($customer->sum_debit ?? 0, 2) }}</span>
                         </div>
                     </div>
                 </div>

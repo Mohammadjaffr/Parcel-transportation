@@ -81,18 +81,47 @@ Route::middleware('auth')->group(function () {
     Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
     Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
-    //======================================================================================
-    // معتمد
+    //==================================================================   معتمد   ===================================================
+    // shipment outgoing
     Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoingIndex'])->name('shipment.outgoing.index');
     Route::get('/shipment/outgoing/create', [ShipmentController::class,'outgoingCreate'])->name('shipment.outgoing.create');
     Route::post('/shipment/outgoing/store',[ShipmentController::class,'outgoingStore'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
     Route::get('/shipment/outgoing/show/{id}', [ShipmentController::class,'outgoingShow'])->name('shipment.outgoing.show');
     Route::get('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
     Route::put('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
-
+    // shipment incoming
     Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
     Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
-    //======================================================================================
+
+    Route::resource('customers', CustomerController::class);
+    Route::resource('passengers', PassengersController::class);
+    Route::resource('offices', OfficeController::class);
+    Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+    Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])
+    ->name('customers.addPayment');
+
+    // shipmentpackage outgoing
+    Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
+    Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('shipmentpackage.outgoing.create');
+    Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
+    Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
+    Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
+    Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
+    Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
+
+    // shipmentpackage incoming
+    Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
+    Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
+    Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
+    Route::get('shipmentpackage/incoming/show/{id}', [ShipmentPackagesController::class,'incomingShow'])->name('shipmentpackage.incoming.show');
+
+    // mobile routes
+    Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
+    Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
+    Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
+    Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
+
+    //=============================================================================   معتمد   ======================================
 
    
  
@@ -153,7 +182,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/customers/{customer}/clear-balance', [CustomerController::class, 'clearBalance'])
         ->name('customers.clear-balance');
 
-    Route::resource('customers', CustomerController::class);
+    
 
 
     // دفعات العملاء
@@ -222,23 +251,7 @@ Route::middleware('auth')->group(function () {
         ->name('reports.revenue');
 
     Route::resource('shipmentpackage', ShipmentPackagesController::class);
-    //======================================================================================
-    // معتمد
-    //outgoing
-    Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
-    Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('shipmentpackage.outgoing.create');
-    Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
-    Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
 
-    Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
-    Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
-    Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
-    //incoming
-    Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
-    Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
-    Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
-    Route::get('shipmentpackage/incoming/show/{id}', [ShipmentPackagesController::class,'incomingShow'])->name('shipmentpackage.incoming.show');
-    //======================================================================================
     Route::get('/shipmentpackage/print/{id}', [ShipmentPackagesController::class, 'printManifest'])->name('shipmentpackage.print');
 
     Route::get('/shipmentpackage/print-driver/{id}', [ShipmentPackagesController::class, 'printManifestD'])->name('shipmentpackage.printD');
@@ -298,19 +311,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/connect/send/{receiverAppId}', [ConnectionController::class, 'sendRequest'])->name('offices.connect');
     Route::post('/connect/accept/{id}', [ConnectionController::class, 'accept'])->name('connections.accept');
     Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
-    Route::resource('offices', OfficeController::class);
-
-
-    // mobile routes
-
-    Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
     
-    Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
-    Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
-    Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
-    
-    Route::resource('passengers', PassengersController::class);
     
     });
 });
