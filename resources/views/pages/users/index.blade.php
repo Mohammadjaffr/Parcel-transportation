@@ -1,23 +1,30 @@
 @extends('layouts.app')
 
 @section('title', 'إدارة المستخدمين')
-@section('Breadcrumb', 'إدارة المستخدمين')
 
-@section('addButton')
-    <button x-data @click="$dispatch('open-create-modal')"
-        class="inline-flex gap-2 items-center px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95">
-        <span class="material-symbols-outlined text-[20px]">add</span>
-        إضافة مستخدم جديد
-    </button>
-@endsection
 
 @section('content')
 
-    <div x-data="userFilter()"
-         @open-create-modal.window="openCreateModal()"
-         class="pb-24 space-y-6 min-h-screen font-body lg:pb-12"
-         dir="rtl">
+    <div x-data="userFilter()" @open-create-modal.window="openCreateModal()"
+        class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
+        <div class="mx-auto w-full max-w-7xl">
+            <div class="flex gap-4 justify-between items-start">
+                <div class="text-right">
+                    <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
+                        إدارة المستخدمين
+                    </h1>
+                    <p class="mt-1 text-sm font-bold text-gray-500 dark:text-bodydark">
+                        إجمالي {{ $users->total() ?? $users->count() }} مستخدم مسجل
+                    </p>
+                </div>
 
+                <button type="button" @click="openCreateModal()"
+                    class="inline-flex gap-2.5 items-center px-5 h-12 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95 shrink-0">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    <span>إضافة مستخدم جديد</span>
+                </button>
+            </div>
+        </div>
         {{-- Modals --}}
         @include('pages.users.create-user-modal')
         @include('pages.users.edit-user-modal')
@@ -27,10 +34,12 @@
 
             {{-- إجمالي المستخدمين --}}
             <div @click="statusFilter = 'all'"
-                :class="statusFilter === 'all' ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2'"
+                :class="statusFilter === 'all' ? 'border-primary ring-2 ring-primary/20' :
+                    'border-gray-100 hover:border-primary/50 dark:border-boxdark-2'"
                 class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md dark:border-boxdark-2">
 
-                <div class="flex justify-center items-center w-12 h-12 rounded-xl shadow-inner bg-primary-container dark:bg-primary/10 text-primary">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl shadow-inner bg-primary-container dark:bg-primary/10 text-primary">
                     <span class="material-symbols-outlined text-[24px]">group</span>
                 </div>
 
@@ -40,18 +49,22 @@
                     </span>
 
                     <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
-                        <span x-text="statusFilter === 'all' && search.trim() === '' ? '{{ $users->count() }}' : filteredUsers.length"></span>
-                        <span class="text-sm font-bold text-gray-400 dark:text-bodydark">/ {{ $users->total() ?? $users->count() }}</span>
+                        <span
+                            x-text="statusFilter === 'all' && search.trim() === '' ? '{{ $users->count() }}' : filteredUsers.length"></span>
+                        <span class="text-sm font-bold text-gray-400 dark:text-bodydark">/
+                            {{ $users->total() ?? $users->count() }}</span>
                     </h4>
                 </div>
             </div>
 
             {{-- حسابات نشطة --}}
             <div @click="statusFilter = 'active'"
-                :class="statusFilter === 'active' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-100 hover:border-emerald-300 dark:border-boxdark-2'"
+                :class="statusFilter === 'active' ? 'border-emerald-500 ring-2 ring-emerald-500/20' :
+                    'border-gray-100 hover:border-emerald-300 dark:border-boxdark-2'"
                 class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md dark:border-boxdark-2 border-r-emerald-500 dark:border-r-emerald-500">
 
-                <div class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10">
+                <div
+                    class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10">
                     <span class="material-symbols-outlined text-[24px]">verified_user</span>
                 </div>
 
@@ -67,10 +80,12 @@
 
             {{-- حسابات محظورة --}}
             <div @click="statusFilter = 'banned'"
-                :class="statusFilter === 'banned' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-gray-100 hover:border-rose-300 dark:border-boxdark-2'"
+                :class="statusFilter === 'banned' ? 'border-rose-500 ring-2 ring-rose-500/20' :
+                    'border-gray-100 hover:border-rose-300 dark:border-boxdark-2'"
                 class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md dark:border-boxdark-2 border-r-rose-500 dark:border-r-rose-500">
 
-                <div class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10">
+                <div
+                    class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10">
                     <span class="material-symbols-outlined text-[24px]">block</span>
                 </div>
 
@@ -86,25 +101,24 @@
         </div>
 
         {{-- ====================== Search & Table Section ====================== --}}
-        <div class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+        <div
+            class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
             {{-- Search --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
-                <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-96 dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                <div
+                    class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-96 dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
 
-                    <input type="text"
-                        x-model.debounce.300ms="search"
+                    <input type="text" x-model.debounce.300ms="search"
                         placeholder="ابحث بالاسم أو رقم الهاتف أو الواتساب..."
                         class="pr-12 pl-12 w-full h-12 text-sm font-medium placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
 
-                    <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                    <div
+                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                         <span class="material-symbols-outlined text-[22px]">search</span>
                     </div>
 
-                    <button type="button"
-                        x-show="search.length > 0"
-                        @click="search = ''"
-                        x-cloak
+                    <button type="button" x-show="search.length > 0" @click="search = ''" x-cloak
                         class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-gray-100 rounded-xl transition-all -translate-y-1/2 dark:bg-boxdark hover:text-error active:scale-95">
                         <span class="text-[18px] material-symbols-outlined">close</span>
                     </button>
@@ -115,7 +129,8 @@
             <div class="flex flex-col gap-4 p-5 lg:hidden">
 
                 <template x-for="user in filteredUsers" :key="user.id">
-                    <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm group">
+                    <div
+                        class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm group">
 
                         <div class="flex justify-between items-start">
                             <div class="flex gap-3 items-center min-w-0">
@@ -126,29 +141,28 @@
                                     <span class="text-sm font-black truncate text-on-surface dark:text-white font-headline"
                                         x-text="user.name || 'مستخدم بدون اسم'"></span>
 
-                                    <div class="inline-flex items-center gap-2 justify-start text-[11px] font-bold text-gray-500 dark:text-bodydark" dir="ltr">
-                                        <span class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
-                                              x-html="getFlagSvg(user.phone)"></span>
-                                        <span class="font-mono tracking-wider" x-text="cleanPhone(user.phone) || 'غير مدخل'"></span>
+                                    <div class="inline-flex items-center gap-2 justify-start text-[11px] font-bold text-gray-500 dark:text-bodydark"
+                                        dir="ltr">
+                                        <span
+                                            class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
+                                            x-html="getFlagSvg(user.phone)"></span>
+                                        <span class="font-mono tracking-wider"
+                                            x-text="cleanPhone(user.phone) || 'غير مدخل'"></span>
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Mobile Actions --}}
                             <div x-data="{ menuOpen: false }" class="relative shrink-0">
-                                <button @click="menuOpen = !menuOpen"
-                                    @click.away="menuOpen = false"
+                                <button @click="menuOpen = !menuOpen" @click.away="menuOpen = false"
                                     class="p-2 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2">
                                     <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                 </button>
 
-                                <div x-show="menuOpen"
-                                    x-transition
-                                    x-cloak
+                                <div x-show="menuOpen" x-transition x-cloak
                                     class="absolute left-0 top-full z-[999] py-1.5 mt-2 w-52 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark overflow-hidden">
 
-                                    <button type="button"
-                                        @click="openEditModal(user); menuOpen = false"
+                                    <button type="button" @click="openEditModal(user); menuOpen = false"
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                         تعديل البيانات
@@ -164,15 +178,17 @@
                         </div>
 
                         <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-boxdark">
-                            <span :class="user.type === 'admin'
-                                    ? 'bg-primary-container text-primary dark:bg-primary/10'
-                                    : 'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
+                            <span
+                                :class="user.type === 'admin' ?
+                                    'bg-primary-container text-primary dark:bg-primary/10' :
+                                    'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
                                 class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border border-transparent"
                                 x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
 
-                            <span :class="Number(user.is_banned) === 0
-                                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                                    : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'"
+                            <span
+                                :class="Number(user.is_banned) === 0 ?
+                                    'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                                    'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'"
                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black">
 
                                 <span :class="Number(user.is_banned) === 0 ? 'bg-emerald-500' : 'bg-rose-500'"
@@ -187,22 +203,26 @@
                                 رقم الواتساب
                             </span>
 
-                            <span class="inline-flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-bodydark" dir="ltr">
-                                <span class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
-                                      x-html="getFlagSvg(user.whatsapp_number)"></span>
-                                <span class="font-mono" x-text="cleanPhone(user.whatsapp_number) || 'لا يوجد رقم واتساب'"></span>
+                            <span
+                                class="inline-flex items-center gap-2 text-[10px] font-bold text-gray-500 dark:text-bodydark"
+                                dir="ltr">
+                                <span
+                                    class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
+                                    x-html="getFlagSvg(user.whatsapp_number)"></span>
+                                <span class="font-mono"
+                                    x-text="cleanPhone(user.whatsapp_number) || 'لا يوجد رقم واتساب'"></span>
                             </span>
                         </div>
                     </div>
                 </template>
 
                 {{-- Mobile Empty State --}}
-                <div x-show="filteredUsers.length === 0"
-                    x-cloak
+                <div x-show="filteredUsers.length === 0" x-cloak
                     class="py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
 
                     <div class="flex flex-col gap-4 justify-center items-center">
-                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                        <div
+                            class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                             <span class="text-[28px] text-gray-400 material-symbols-outlined">search_off</span>
                         </div>
 
@@ -222,7 +242,8 @@
             <div class="hidden overflow-visible w-full lg:block">
                 <table class="w-full text-right border-collapse">
                     <thead>
-                        <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
+                        <tr
+                            class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">المستخدم</th>
                             <th class="px-6 py-4 text-center">الهاتف</th>
                             <th class="px-6 py-4 text-center">نوع الحساب</th>
@@ -245,10 +266,13 @@
                                             <span class="text-sm font-black text-gray-800 dark:text-white"
                                                 x-text="user.name || 'مستخدم بدون اسم'"></span>
 
-                                            <div class="inline-flex items-center gap-2 text-[11px] font-bold text-gray-500 dark:text-bodydark" dir="ltr">
-                                                <span class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
-                                                      x-html="getFlagSvg(user.whatsapp_number)"></span>
-                                                <span class="font-mono tracking-wider" x-text="cleanPhone(user.whatsapp_number) || '-'"></span>
+                                            <div class="inline-flex items-center gap-2 text-[11px] font-bold text-gray-500 dark:text-bodydark"
+                                                dir="ltr">
+                                                <span
+                                                    class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
+                                                    x-html="getFlagSvg(user.whatsapp_number)"></span>
+                                                <span class="font-mono tracking-wider"
+                                                    x-text="cleanPhone(user.whatsapp_number) || '-'"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -256,9 +280,11 @@
 
                                 {{-- رقم الهاتف --}}
                                 <td class="px-6 py-4 text-center">
-                                    <div class="inline-flex gap-2 justify-center items-center text-gray-600 dark:text-gray-300" dir="ltr">
-                                        <span class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
-                                              x-html="getFlagSvg(user.phone)"></span>
+                                    <div class="inline-flex gap-2 justify-center items-center text-gray-600 dark:text-gray-300"
+                                        dir="ltr">
+                                        <span
+                                            class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
+                                            x-html="getFlagSvg(user.phone)"></span>
 
                                         <span class="font-mono text-xs font-bold tracking-wider"
                                             x-text="cleanPhone(user.phone) || '---'"></span>
@@ -267,18 +293,20 @@
 
                                 {{-- نوع الحساب --}}
                                 <td class="px-6 py-4 text-center">
-                                    <span :class="user.type === 'admin'
-                                            ? 'bg-primary-container text-primary dark:bg-primary/10'
-                                            : 'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
+                                    <span
+                                        :class="user.type === 'admin' ?
+                                            'bg-primary-container text-primary dark:bg-primary/10' :
+                                            'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
                                         class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border border-transparent"
                                         x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
                                 </td>
 
                                 {{-- الحالة --}}
                                 <td class="px-6 py-4 text-center">
-                                    <span :class="Number(user.is_banned) === 0
-                                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400'
-                                            : 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'"
+                                    <span
+                                        :class="Number(user.is_banned) === 0 ?
+                                            'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                                            'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black">
 
                                         <span :class="Number(user.is_banned) === 0 ? 'bg-emerald-500' : 'bg-rose-500'"
@@ -290,20 +318,15 @@
 
                                 {{-- الإجراءات --}}
                                 <td class="relative px-6 py-4 text-center">
-                                    <div x-data="{ open: false }"
-                                        class="inline-block relative text-right"
+                                    <div x-data="{ open: false }" class="inline-block relative text-right"
                                         @click.away="open = false">
 
-                                        <button @click="open = !open"
-                                            type="button"
-                                            title="خيارات"
+                                        <button @click="open = !open" type="button" title="خيارات"
                                             class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
                                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                         </button>
 
-                                        <div x-show="open"
-                                            x-cloak
-                                            x-transition:enter="transition ease-out duration-100"
+                                        <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100"
                                             x-transition:enter-start="transform opacity-0 scale-95"
                                             x-transition:enter-end="transform opacity-100 scale-100"
                                             x-transition:leave="transition ease-in duration-75"
@@ -313,8 +336,7 @@
                                             style="display: none;">
 
                                             <div class="py-1" role="menu">
-                                                <button type="button"
-                                                    @click="openEditModal(user); open = false"
+                                                <button type="button" @click="openEditModal(user); open = false"
                                                     class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
                                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                                     تعديل البيانات
@@ -336,7 +358,8 @@
                         <tr x-show="filteredUsers.length === 0" x-cloak>
                             <td colspan="5" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
-                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                    <div
+                                        class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                                     </div>
 
@@ -357,7 +380,8 @@
 
             {{-- Pagination --}}
             @if ($users->hasPages())
-                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                <div
+                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
                     {{ $users->links() }}
                 </div>
             @endif
@@ -418,9 +442,9 @@
                             const phone = String(user.phone || '');
                             const whatsapp = String(user.whatsapp_number || '');
 
-                            return name.includes(searchTerm)
-                                || phone.includes(searchTerm)
-                                || whatsapp.includes(searchTerm);
+                            return name.includes(searchTerm) ||
+                                phone.includes(searchTerm) ||
+                                whatsapp.includes(searchTerm);
                         });
                     }
 
@@ -526,7 +550,7 @@
                         type: user.type || '',
                         branch_id: user.branch_id || '',
                         is_banned: user.is_banned ?? 0,
-                        url: '{{ url("users") }}/' + user.id
+                        url: '{{ url('users') }}/' + user.id
                     };
 
                     this.editModalOpen = true;

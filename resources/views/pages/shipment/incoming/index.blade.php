@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'الطرود الواردة')
-@section('Breadcrumb', 'الطرود الواردة')
+
 
 @section('content')
 
@@ -9,6 +9,18 @@
          dir="rtl"
          x-data="incomingShipmentsRegistry()">
 
+    <div class="mx-auto w-full max-w-7xl">
+        <div class="flex gap-4 justify-between items-start">
+            <div class="text-right">
+                <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
+                    الطرود الواردة
+                </h1>
+                <p class="mt-1 text-sm font-bold text-gray-500 dark:text-bodydark">
+                    إجمالي {{ $shipments->total() ?? 0 }} طرد وارد
+                </p>
+            </div>
+        </div>
+    </div>
         @php
             $currentStatus = request('status');
             $pageShipments = $shipments->getCollection();
