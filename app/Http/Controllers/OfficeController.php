@@ -9,7 +9,7 @@ use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-
+use App\Services\WhatsAppLinkService;
 
 class OfficeController extends Controller
 {
@@ -111,12 +111,16 @@ class OfficeController extends Controller
 
         $office = Office::with('branches')->findOrFail($id);
         $branchIds = $office->branches->pluck('id');
+        
 
         $shipments = Shipment::with(['senderCustomer', 'receiverCustomer', 'receiverOfficeBranch'])
             ->where('sender_branch_id', auth()->user()->branch_id)
             ->whereIn('receiver_office_branch_id', $branchIds)
             ->latest()
             ->paginate(15);
+
+     
+
         if ($request->isMobile) {
             return view('mobile.pages.office.unverified.show', compact('office', 'shipments'));
         }

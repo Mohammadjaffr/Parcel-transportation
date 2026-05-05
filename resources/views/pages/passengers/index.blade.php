@@ -530,7 +530,7 @@
                                 class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                         </div>
 
-                        {{-- رقم الراكب --}}
+                        {{-- رقم الراكب + اسم الراكب --}}
                         <div class="relative"
                             x-data="customerPhonePicker(
                                 @js($customers->map(fn($c) => [
@@ -547,7 +547,6 @@
 
                             <input type="hidden" name="passenger_number" :value="fullPhoneNumber">
                             <input type="hidden" name="customer_id" x-model="selectedCustomerId">
-                            <input type="hidden" name="customer_name" :value="nameInput">
 
                             <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40"
                                 :class="selectedCustomerId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''"
@@ -556,13 +555,11 @@
                                 <div class="relative h-full" @click.away="openCountryDropdown = false">
                                     <button type="button"
                                         @click="openCountryDropdown = !openCountryDropdown"
-                                        class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                        class="flex justify-center items-center px-3 w-14 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                         <template x-if="selectedCountry?.svg">
-                                            <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                            <div class="flex overflow-hidden justify-center items-center w-7 h-5 rounded-md ring-1 ring-gray-200 shadow-sm dark:ring-boxdark"
                                                 x-html="selectedCountry.svg"></div>
                                         </template>
-                                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                            x-text="selectedCountry?.dial_code"></span>
                                     </button>
 
                                     <div x-show="openCountryDropdown" x-cloak x-transition
@@ -580,7 +577,7 @@
                                                 <button type="button"
                                                     @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
                                                     class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                    <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                    <div class="flex overflow-hidden justify-center items-center w-6 h-4 rounded-sm shadow-sm"
                                                         x-html="country.svg"></div>
                                                     <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
                                                         x-text="country.name"></span>
@@ -622,39 +619,52 @@
                                     <button type="button"
                                         @click="selectCustomer(customer)"
                                         class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-
                                         <div class="flex flex-col gap-0.5">
-                                            <span class="text-sm font-bold text-on-surface dark:text-white"
-                                                x-text="customer.name"></span>
-                                            <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                x-text="customer.phone"></span>
+                                            <span class="text-sm font-bold text-on-surface dark:text-white" x-text="customer.name"></span>
+                                            <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="customer.phone"></span>
                                         </div>
-
-                                        <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">
-                                            arrow_back_ios
-                                        </span>
+                                        <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
                                     </button>
                                 </template>
 
                                 <div x-show="filteredCustomers.length === 0"
-                                    class="px-4 py-3 bg-surface dark:bg-boxdark-2">
-                                    <span class="block mb-2 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                        عميل جديد، أدخل اسمه وسيتم حفظه تلقائياً.
-                                    </span>
-
-                                    <input type="text"
-                                        x-model="nameInput"
-                                        placeholder="اسم العميل الجديد"
-                                        class="px-3 w-full h-10 text-xs bg-white rounded-lg border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30">
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 bg-surface dark:bg-boxdark-2 dark:text-bodydark">
+                                    الرقم غير موجود. اكتب اسم الراكب في الحقل أسفل الرقم وسيتم حفظه تلقائياً.
                                 </div>
                             </div>
 
-                            <template x-if="selectedCustomerId">
-                                <div class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                    تم اختيار العميل:
-                                    <span x-text="nameInput"></span>
+                            <div class="mt-3">
+                                <label class="block mb-2 text-xs font-black text-gray-500 dark:text-gray-400">
+                                    اسم الراكب
+                                    <span class="text-[10px] font-bold text-gray-400">(يتعبأ تلقائياً إذا الرقم موجود)</span>
+                                </label>
+
+                                <div class="relative">
+                                    <input type="text"
+                                        name="customer_name"
+                                        x-model="nameInput"
+                                        :readonly="selectedCustomerId"
+                                        :required="!selectedCustomerId"
+                                        placeholder="اكتب اسم الراكب"
+                                        class="px-4 pr-10 w-full h-11 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/30"
+                                        :class="selectedCustomerId ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
+
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]"
+                                        :class="selectedCustomerId ? 'text-emerald-500' : 'text-gray-400'">person</span>
                                 </div>
-                            </template>
+
+                                <template x-if="selectedCustomerId">
+                                    <p class="mt-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        تم العثور على الراكب وربطه بهذا الرقم.
+                                    </p>
+                                </template>
+
+                                <template x-if="!selectedCustomerId && localPhoneNumber.length > 0">
+                                    <p class="mt-1.5 text-[11px] font-bold text-gray-400">
+                                        إذا كان الرقم جديداً، سيتم إنشاء الراكب بهذا الاسم.
+                                    </p>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- رقم السائق --}}
@@ -884,7 +894,7 @@
                                 class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                         </div>
 
-                        {{-- رقم الراكب --}}
+                        {{-- رقم الراكب + اسم الراكب --}}
                         <div class="relative"
                             x-data="customerPhonePicker(
                                 @js($customers->map(fn($c) => [
@@ -911,7 +921,6 @@
 
                             <input type="hidden" name="passenger_number" :value="fullPhoneNumber">
                             <input type="hidden" name="customer_id" x-model="selectedCustomerId">
-                            <input type="hidden" name="customer_name" :value="nameInput">
 
                             <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40"
                                 :class="selectedCustomerId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''"
@@ -920,13 +929,11 @@
                                 <div class="relative h-full" @click.away="openCountryDropdown = false">
                                     <button type="button"
                                         @click="openCountryDropdown = !openCountryDropdown"
-                                        class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                        class="flex justify-center items-center px-3 w-14 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                         <template x-if="selectedCountry?.svg">
-                                            <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
+                                            <div class="flex overflow-hidden justify-center items-center w-7 h-5 rounded-md ring-1 ring-gray-200 shadow-sm dark:ring-boxdark"
                                                 x-html="selectedCountry.svg"></div>
                                         </template>
-                                        <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                            x-text="selectedCountry?.dial_code"></span>
                                     </button>
 
                                     <div x-show="openCountryDropdown" x-cloak x-transition
@@ -944,7 +951,7 @@
                                                 <button type="button"
                                                     @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
                                                     class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                    <div class="w-5 h-auto rounded-[2px] overflow-hidden"
+                                                    <div class="flex overflow-hidden justify-center items-center w-6 h-4 rounded-sm shadow-sm"
                                                         x-html="country.svg"></div>
                                                     <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
                                                         x-text="country.name"></span>
@@ -986,39 +993,52 @@
                                     <button type="button"
                                         @click="selectCustomer(customer)"
                                         class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-
                                         <div class="flex flex-col gap-0.5">
-                                            <span class="text-sm font-bold text-on-surface dark:text-white"
-                                                x-text="customer.name"></span>
-                                            <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                x-text="customer.phone"></span>
+                                            <span class="text-sm font-bold text-on-surface dark:text-white" x-text="customer.name"></span>
+                                            <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="customer.phone"></span>
                                         </div>
-
-                                        <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">
-                                            arrow_back_ios
-                                        </span>
+                                        <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
                                     </button>
                                 </template>
 
                                 <div x-show="filteredCustomers.length === 0"
-                                    class="px-4 py-3 bg-surface dark:bg-boxdark-2">
-                                    <span class="block mb-2 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                        عميل جديد، أدخل اسمه وسيتم حفظه تلقائياً.
-                                    </span>
-
-                                    <input type="text"
-                                        x-model="nameInput"
-                                        placeholder="اسم العميل الجديد"
-                                        class="px-3 w-full h-10 text-xs bg-white rounded-lg border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30">
+                                    class="px-4 py-3 text-xs font-bold text-gray-500 bg-surface dark:bg-boxdark-2 dark:text-bodydark">
+                                    الرقم غير موجود. اكتب اسم الراكب في الحقل أسفل الرقم وسيتم حفظه تلقائياً.
                                 </div>
                             </div>
 
-                            <template x-if="selectedCustomerId">
-                                <div class="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                                    تم اختيار العميل:
-                                    <span x-text="nameInput"></span>
+                            <div class="mt-3">
+                                <label class="block mb-2 text-xs font-black text-gray-500 dark:text-gray-400">
+                                    اسم الراكب
+                                    <span class="text-[10px] font-bold text-gray-400">(يتعبأ من بيانات الراكب الحالية)</span>
+                                </label>
+
+                                <div class="relative">
+                                    <input type="text"
+                                        name="customer_name"
+                                        x-model="nameInput"
+                                        :readonly="selectedCustomerId"
+                                        :required="!selectedCustomerId"
+                                        placeholder="اكتب اسم الراكب"
+                                        class="px-4 pr-10 w-full h-11 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/30"
+                                        :class="selectedCustomerId ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
+
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]"
+                                        :class="selectedCustomerId ? 'text-emerald-500' : 'text-gray-400'">person</span>
                                 </div>
-                            </template>
+
+                                <template x-if="selectedCustomerId">
+                                    <p class="mt-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                                        الراكب مرتبط بعميل موجود.
+                                    </p>
+                                </template>
+
+                                <template x-if="!selectedCustomerId && localPhoneNumber.length > 0">
+                                    <p class="mt-1.5 text-[11px] font-bold text-gray-400">
+                                        إذا كان الرقم جديداً، سيتم إنشاء الراكب بهذا الاسم.
+                                    </p>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- رقم السائق --}}
@@ -1435,7 +1455,6 @@
                     }
 
                     this.loadedInitialKey = key;
-
                     this.selectedRecordId = data.id || null;
                     this.nameInput = data.name || '';
 

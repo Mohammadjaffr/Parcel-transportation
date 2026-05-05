@@ -93,9 +93,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
     Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
 
-    Route::resource('customers', CustomerController::class);
-    Route::resource('passengers', PassengersController::class);
-    Route::resource('offices', OfficeController::class);
+  Route::resource('customers', CustomerController::class);
+Route::resource('passengers', PassengersController::class);
+
+// لازم يكون قبل resource offices
+Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])
+    ->name('offices.unverified.index');
+
+Route::resource('offices', OfficeController::class);
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])->name('customers.addPayment');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
@@ -297,12 +302,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/receipts/{receipt}/add-item', [ReceiptHeaderController::class, 'addItem'])->name('receipts.add-item');
     Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
     Route::delete('/receipt-items/{item}', [ReceiptHeaderController::class, 'destroyItem'])->name('receipt-items.destroy');
-    Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
-    Route::get('/offices/create', [OfficeController::class, 'create'])->name('offices.create');
-    Route::get('/offices/{office}', [OfficeController::class, 'show'])->name('offices.show');
-    Route::get('/offices/{office}', [OfficeController::class, 'edit'])->name('offices.edit');
-
-    Route::delete('/offices/{office}', [OfficeController::class, 'destroy'])->name('offices.destroy');
+  
     Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
     Route::get('/app', [AppController::class, 'index'])->name('app.index');
     Route::PUT('/app/update', [AppController::class, 'update'])->name('app.update');

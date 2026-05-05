@@ -157,7 +157,7 @@
                                         ($package->shipments ? $package->shipments->count() : 0)) .
                                     '* طرد.';
                             @endphp
-                            <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}?text={{ urlencode($driverMsg) }}"
+                            <a href="{{ $package->DriverDetection }}"
                                 target="_blank"
                                 class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-black text-emerald-600 rounded-xl border transition-all bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20">
                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">

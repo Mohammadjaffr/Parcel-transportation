@@ -42,6 +42,7 @@ class ShipmentPackagesController extends Controller
         $packages->appends($request->all());
         $packages->getCollection()->transform(function ($package) {
             $package->DriverDetection = WhatsAppLinkService::generate($package, 'DriverDetection');
+
             return $package;
         });
 
@@ -182,6 +183,7 @@ class ShipmentPackagesController extends Controller
                 'next' => []
             ]
         ];
+        $package->DriverDetection = WhatsAppLinkService::generate($package, 'DriverDetection');
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.outgoing.show', compact('package', 'statusMap', 'availableShipments'));
         }

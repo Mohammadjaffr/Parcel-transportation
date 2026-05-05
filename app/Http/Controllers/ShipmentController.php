@@ -89,7 +89,7 @@ class ShipmentController extends Controller
             return view('mobile.pages.shipment.outgoing.index', compact('shipments', 'type'));
         }
 
-        return view('pages.shipment.index', compact('shipments', 'type'));
+        return view('pages.shipment.outgoing.index', compact('shipments', 'type'));
     }
     // ===========================================================================
     // Start Outgoing methods   
