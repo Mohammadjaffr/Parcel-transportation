@@ -5,17 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Passengers extends Model
+class Passengers extends Model 
 {
-    use HasFactory;
+    use HasFactory ;
     protected $fillable = [
         'date',
-        'day',
+        'customer_id',
         'passenger_number',
         'location',
         'count',
         'total_commission',
-        'broker',
+        'branch_id',
         'driver_id',
         'note',
     ];
@@ -24,4 +24,15 @@ class Passengers extends Model
     {
         return $this->belongsTo(Driver::class);
     }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
 }

@@ -1,348 +1,623 @@
 @extends('layouts.app')
 
-@section('title', 'الشحنات المرسلة (المانيفست)')
+@section('title', 'الشحنات المرسلة')
+@section('Breadcrumb', 'الشحنات المرسلة')
+
+@section('addButton')
+    <a href="{{ route('shipmentpackage.outgoing.create') }}"
+        class="inline-flex gap-2.5 items-center px-5 h-11 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95">
+        <span class="material-symbols-outlined text-[20px]">add_box</span>
+        <span>إضافة إرسالية جديدة</span>
+    </a>
+@endsection
 
 @section('content')
-    <style type="text/tailwindcss">
-        @layer components {
 
-            /* تلوين الصفحة النشطة */
-            .pagination-container span[aria-current="page"]>span {
-                @apply bg-primary border-primary text-white font-black !important;
-            }
+    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12"
+         dir="rtl"
+         x-data="outgoingPackagesRegistry()">
 
-            /* تلوين أرقام الصفحات العادية والأسهم */
-            .pagination-container a,
-            .pagination-container span[aria-disabled="true"]>span {
-                @apply text-primary border-primary/30 dark:border-primary/20 !important;
-            }
+        @php
+            $currentStatus = request('status');
+            $pagePackages = $packages->getCollection();
 
-            /* تأثير عند تمرير الماوس */
-            .pagination-container a:hover {
-                @apply bg-primary-container text-primary-hover dark:bg-primary/10 dark:text-primary !important;
-            }
+            $pendingCount = $pagePackages->where('status', 'pending')->count();
+            $inTransitCount = $pagePackages->where('status', 'in_transit')->count();
+            $deliveredCount = $pagePackages->where('status', 'delivered')->count();
 
-            /* تدوير الحواف وإزالة الظل */
-            .pagination-container .isolate>* {
-                @apply rounded-lg mx-0.5 !important;
-            }
+            $totalShipmentsCount = $pagePackages->sum(function ($package) {
+                return $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0);
+            });
 
-            .pagination-container .isolate {
-                @apply shadow-none !important;
-            }
-        }
-    </style>
+            $statusUrl = fn($status = null) => request()->fullUrlWithQuery([
+                'status' => $status,
+                'page' => null,
+            ]);
 
-    <div x-data="{ searchQuery: '' }" class="flex relative flex-col gap-6 font-body" dir="rtl">
+            $statusData = function ($status) {
+                return match ($status) {
+                    'pending' => [
+                        'label' => 'قيد التجهيز',
+                        'class' => 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
+                        'dot' => 'bg-amber-500',
+                        'icon' => 'schedule',
+                    ],
+                    'in_transit' => [
+                        'label' => 'في الطريق',
+                        'class' => 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
+                        'dot' => 'bg-blue-500',
+                        'icon' => 'local_shipping',
+                    ],
+                    'received_at_branch' => [
+                        'label' => 'بالمستودع',
+                        'class' => 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400',
+                        'dot' => 'bg-purple-500',
+                        'icon' => 'warehouse',
+                    ],
+                    'delivered' => [
+                        'label' => 'مكتملة',
+                        'class' => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+                        'dot' => 'bg-emerald-500',
+                        'icon' => 'task_alt',
+                    ],
+                    'returned' => [
+                        'label' => 'مرتجعة',
+                        'class' => 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
+                        'dot' => 'bg-rose-500',
+                        'icon' => 'assignment_return',
+                    ],
+                    'cancelled' => [
+                        'label' => 'ملغاة',
+                        'class' => 'bg-gray-50 text-gray-600 dark:bg-gray-500/10 dark:text-gray-300',
+                        'dot' => 'bg-gray-500',
+                        'icon' => 'block',
+                    ],
+                    default => [
+                        'label' => $status ?: 'غير محدد',
+                        'class' => 'bg-gray-50 text-gray-600 dark:bg-gray-500/10 dark:text-gray-300',
+                        'dot' => 'bg-gray-500',
+                        'icon' => 'help',
+                    ],
+                };
+            };
+        @endphp
 
-        {{-- الهيدر العلوي --}}
-        <div
-            class="flex justify-between items-center p-2 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 lg:p-4">
-            <div class="flex flex-col">
-                <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">الشحنات المرسلة
-                </h1>
-                <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">
-                    إجمالي <span class="font-bold text-primary">{{ $packages->total() ?? 0 }}</span> إرسالية مسجلة
-                </p>
-            </div>
+        {{-- ====================== Stats Cards ====================== --}}
+        <div class="grid grid-cols-1 gap-2 mx-auto max-w-7xl xl:grid-cols-4 md:gap-6">
 
-            <a href="{{ route('shipmentpackage.outgoing.create') }}"
-                class="flex justify-center items-center w-32 h-12 text-white rounded-2xl shadow-lg transition-transform text-md shrink-0 bg-primary hover:bg-primary-hover shadow-primary/30 active:scale-90"
-                title="إضافة إرسالية جديدة">
-                <span class="text-[26px] material-symbols-outlined">add_box</span>
-                إضافة شحنة
+            {{-- إجمالي الإرساليات --}}
+            <a href="{{ $statusUrl(null) }}"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md {{ !$currentStatus ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2' }}">
+
+                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[24px]">local_shipping</span>
+                </div>
+
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">
+                        إجمالي الإرساليات
+                    </span>
+
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $packages->total() ?? 0 }}
+                    </h4>
+                </div>
             </a>
-        </div>
 
-        {{-- شريط البحث والفلترة --}}
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            {{-- البحث --}}
-            <div class="relative flex-1 max-w-xl">
-                <input type="text" x-model="searchQuery" placeholder="ابحث برقم التتبع أو الوجهة..."
-                    class="pr-12 pl-4 w-full h-14 text-sm font-bold placeholder-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm transition-all outline-none dark:bg-boxdark dark:border-boxdark-2 focus:ring-2 focus:ring-primary/20 focus:border-primary dark:text-white">
-                <span
-                    class="absolute right-4 top-1/2 text-gray-400 transition-colors -translate-y-1/2 material-symbols-outlined dark:text-bodydark">search</span>
-            </div>
+            {{-- قيد التجهيز --}}
+            <a href="{{ $statusUrl('pending') }}"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-amber-500 dark:border-r-amber-500 {{ $currentStatus === 'pending' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-gray-100 hover:border-amber-300 dark:border-boxdark-2' }}">
 
-            {{-- شريط الفلترة حسب الحالة --}}
-            <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar snap-x snap-mandatory lg:pb-0">
-                {{-- الكل --}}
-                <a href="{{ route('shipmentpackage.outgoing.index') }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ !request('status') ? 'bg-boxdark text-primary border-primary shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-white text-gray-500 border-gray-100 hover:bg-surface dark:bg-primary dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
-                    الكل
-                </a>
+                <div class="flex justify-center items-center w-12 h-12 text-amber-500 bg-amber-50 rounded-xl dark:bg-amber-500/10">
+                    <span class="material-symbols-outlined text-[24px]">hourglass_top</span>
+                </div>
 
-                {{-- قيد التجهيز --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'pending']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'pending' ? 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/20 dark:bg-amber-600 dark:border-amber-600' : 'bg-white text-amber-600 border-amber-100 hover:bg-amber-50 dark:bg-boxdark-2 dark:text-amber-500 dark:border-boxdark dark:hover:bg-amber-500/10' }}">
-                    قيد التجهيز
-                </a>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-amber-500 uppercase">
+                        قيد التجهيز
+                    </span>
 
-                {{-- في الطريق --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'in_transit']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'in_transit' ? 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/20 dark:bg-blue-600 dark:border-blue-600' : 'bg-white text-blue-600 border-blue-100 hover:bg-blue-50 dark:bg-boxdark-2 dark:text-blue-500 dark:border-boxdark dark:hover:bg-blue-500/10' }}">
-                    في الطريق
-                </a>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $pendingCount }}
+                    </h4>
+                </div>
+            </a>
 
-                {{-- بالمستودع --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'received_at_branch']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'received_at_branch' ? 'bg-purple-500 text-white border-purple-500 shadow-md shadow-purple-500/20 dark:bg-purple-600 dark:border-purple-600' : 'bg-white text-purple-600 border-purple-100 hover:bg-purple-50 dark:bg-boxdark-2 dark:text-purple-500 dark:border-boxdark dark:hover:bg-purple-500/10' }}">
-                    بالمستودع
-                </a>
+            {{-- في الطريق --}}
+            <a href="{{ $statusUrl('in_transit') }}"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-blue-500 dark:border-r-blue-500 {{ $currentStatus === 'in_transit' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-100 hover:border-blue-300 dark:border-boxdark-2' }}">
 
-                {{-- خرج للتوصيل --}}
-                {{-- <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'out_for_delivery']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'out_for_delivery' ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20 dark:bg-indigo-600 dark:border-indigo-600' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50 dark:bg-boxdark-2 dark:text-indigo-500 dark:border-boxdark dark:hover:bg-indigo-500/10' }}">
-                    خرج للتوصيل
-                </a> --}}
+                <div class="flex justify-center items-center w-12 h-12 text-blue-500 bg-blue-50 rounded-xl dark:bg-blue-500/10">
+                    <span class="material-symbols-outlined text-[24px]">route</span>
+                </div>
 
-                {{-- مكتملة (تم التسليم) --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'delivered']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'delivered' ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20 dark:bg-emerald-600 dark:border-emerald-600' : 'bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50 dark:bg-boxdark-2 dark:text-emerald-500 dark:border-boxdark dark:hover:bg-emerald-500/10' }}">
-                    مكتملة
-                </a>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-blue-500 uppercase">
+                        في الطريق
+                    </span>
 
-                {{-- مرتجعة --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'returned']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'returned' ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/20 dark:bg-rose-600 dark:border-rose-600' : 'bg-white text-rose-600 border-rose-100 hover:bg-rose-50 dark:bg-boxdark-2 dark:text-rose-500 dark:border-boxdark dark:hover:bg-rose-500/10' }}">
-                    مرتجعة
-                </a>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $inTransitCount }}
+                    </h4>
+                </div>
+            </a>
 
-                {{-- ملغاة --}}
-                <a href="{{ route('shipmentpackage.outgoing.index', ['status' => 'cancelled']) }}"
-                    class="snap-start shrink-0 px-4 h-11 flex items-center justify-center rounded-xl text-xs font-bold transition-all border 
-    {{ request('status') == 'cancelled' ? 'bg-slate-500 text-white border-slate-500 shadow-md shadow-slate-500/20 dark:bg-slate-600 dark:border-slate-600' : 'bg-white text-slate-600 border-slate-100 hover:bg-slate-50 dark:bg-boxdark-2 dark:text-slate-500 dark:border-boxdark dark:hover:bg-slate-500/10' }}">
-                    ملغاة
-                </a>
+            {{-- إجمالي الطرود داخل الإرساليات --}}
+            <div class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 border-gray-100 shadow-sm transition-all dark:bg-boxdark hover:shadow-md border-r-emerald-500 dark:border-r-emerald-500 hover:border-emerald-300 dark:border-boxdark-2">
+
+                <div class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10">
+                    <span class="material-symbols-outlined text-[24px]">inventory_2</span>
+                </div>
+
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-emerald-500 uppercase">
+                        طرود الصفحة
+                    </span>
+
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ number_format($totalShipmentsCount, 0) }}
+                    </h4>
+                </div>
             </div>
         </div>
 
-        {{-- شبكة الإرساليات --}}
-        <div
-            class="bg-white rounded-[2rem] border shadow-sm border-slate-200/60 dark:bg-boxdark dark:border-boxdark-2 transition-all">
-            <div class="overflow-x-auto min-h-[350px] custom-scrollbar rounded-[2rem]">
-                <table class="w-full text-sm text-right whitespace-nowrap">
+        {{-- ====================== Search & Table Section ====================== --}}
+        <div class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
-                    {{-- رأس الجدول --}}
-                    <thead
-                        class="text-xs font-black uppercase border-b text-slate-500 bg-slate-50/80 border-slate-200/60 dark:bg-boxdark-2/50 dark:border-boxdark dark:text-gray-400">
-                        <tr>
-                            <th class="px-6 py-5">رقم الإرسالية / التاريخ</th>
-                            <th class="px-6 py-5">فرع التجميع (المرسل)</th>
-                            <th class="px-6 py-5">الوجهة</th>
-                            <th class="px-6 py-5">بيانات الحمولة</th>
-                            <th class="px-6 py-5 text-center">الحالة</th>
-                            <th class="px-6 py-5 text-center">إجراءات</th>
+            {{-- Search --}}
+            <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
+                <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
+
+                    {{-- مربع البحث --}}
+                    <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+
+                        <input type="text"
+                            x-model="searchQuery"
+                            @input.debounce.300ms="updateVisibility()"
+                            placeholder="ابحث برقم الإرسالية، السائق، الوجهة، أو الفرع..."
+                            class="pr-12 pl-12 w-full h-12 text-sm font-bold placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
+
+                        <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                            <span class="material-symbols-outlined text-[22px]">search</span>
+                        </div>
+
+                        <button type="button"
+                            x-show="searchQuery.length > 0"
+                            @click="searchQuery = ''; updateVisibility()"
+                            x-cloak
+                            class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
+                            <span class="text-[18px] material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    {{-- معلومات النتائج --}}
+                    <div class="flex gap-2 items-center text-xs font-black text-gray-500 dark:text-bodydark">
+                        <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                        </span>
+
+                        <span>
+                            النتائج المعروضة:
+                            <span class="text-primary" x-text="visibleCount"></span>
+                            من
+                            <span>{{ $packages->count() }}</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ====================== Mobile View ====================== --}}
+            <div class="flex flex-col gap-4 p-5 lg:hidden">
+                @forelse($packages as $package)
+                    @php
+                        $destinations = $package->shipments
+                            ->map(function ($shipment) {
+                                return $shipment->receiverBranch->name
+                                    ?? ($shipment->receiverOfficeBranch->name ?? null);
+                            })
+                            ->filter()
+                            ->unique()
+                            ->values();
+
+                        $destText = $destinations->count() > 1
+                            ? 'وجهات متعددة (' . $destinations->count() . ')'
+                            : ($destinations->first() ?? 'غير محدد');
+
+                        $shipmentsCount = $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0);
+                        $currentStatusData = $statusData($package->status);
+                    @endphp
+
+                    <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all package-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
+                        x-show="showRow(
+                            @js($package->tracking_number),
+                            @js($package->senderBranch->name ?? ''),
+                            @js($package->driver->name ?? ''),
+                            @js($package->driver->phone ?? ''),
+                            @js($destText)
+                        )">
+
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center min-w-0">
+                                <div class="flex justify-center items-center w-12 h-12 text-white rounded-xl shadow-inner bg-primary shrink-0">
+                                    <span class="material-symbols-outlined text-[22px]">local_shipping</span>
+                                </div>
+
+                                <div class="flex flex-col gap-1 min-w-0">
+                                    <span class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
+                                        {{ $package->tracking_number }}
+                                    </span>
+
+                                    <div class="flex gap-1.5 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
+                                        <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                        <span>{{ $package->created_at->translatedFormat('l') }}</span>
+                                        <span class="text-gray-300">|</span>
+                                        <span>{{ $package->created_at->format('Y/m/d') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Mobile Actions --}}
+                            <div x-data="{ menuOpen: false }" class="relative shrink-0">
+                                <button @click="menuOpen = !menuOpen"
+                                    @click.away="menuOpen = false"
+                                    class="p-2 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2">
+                                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                </button>
+
+                                <div x-show="menuOpen"
+                                    x-transition
+                                    x-cloak
+                                    class="absolute left-0 top-full z-[999] py-1.5 mt-2 w-56 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark overflow-hidden">
+
+                                    <a href="{{ route('shipmentpackage.outgoing.show', $package->id) }}"
+                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-boxdark dark:hover:text-blue-400">
+                                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                        عرض التفاصيل
+                                    </a>
+
+                                    @if (!in_array($package->status, ['returned', 'cancelled']))
+                                        <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}"
+                                            target="_blank"
+                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-slate-50 hover:text-primary dark:hover:bg-boxdark">
+                                            <span class="material-symbols-outlined text-[18px]">print</span>
+                                            طباعة كشف الرحلة
+                                        </a>
+
+                                        @if ($package->driver && $package->driver->phone && $package->DriverDetection)
+                                            <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+
+                                            <a href="{{ $package->DriverDetection }}"
+                                                target="_blank"
+                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                <span class="material-symbols-outlined text-[18px]">send</span>
+                                                إرسال للسائق
+                                            </a>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100 dark:border-boxdark">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-black text-gray-400 dark:text-gray-500">فرع التجميع</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    {{ $package->senderBranch->name ?? 'غير محدد' }}
+                                </span>
+                                <span class="text-[10px] font-bold text-gray-500 dark:text-bodydark">
+                                    بواسطة: {{ $package->creator->name ?? 'النظام' }}
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-black text-gray-400 dark:text-gray-500">الوجهة</span>
+                                <span class="text-xs font-bold text-primary">
+                                    {{ $destText }}
+                                </span>
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-black text-gray-400 dark:text-gray-500">السائق</span>
+                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    {{ $package->driver->name ?? 'غير محدد' }}
+                                </span>
+                                <x-phone-number :value="$package->driver?->phone ?? '---'"
+                                    class="text-[10px] font-bold text-gray-500 dark:text-bodydark" />
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] font-black text-gray-400 dark:text-gray-500">عدد الطرود</span>
+                                <span class="text-xs font-black text-primary">
+                                    {{ $shipmentsCount }} طرد
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-boxdark">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black {{ $currentStatusData['class'] }}">
+                                <span class="material-symbols-outlined text-[14px]">{{ $currentStatusData['icon'] }}</span>
+                                {{ $currentStatusData['label'] }}
+                            </span>
+
+                            <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 shadow-sm text-gray-500 dark:text-gray-300 text-[10px] font-black">
+                                {{ $destinations->count() > 1 ? $destinations->join('، ') : $destText }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="flex flex-col gap-3 items-center py-16 text-center text-gray-400 rounded-2xl border-2 border-gray-100 border-dashed dark:text-bodydark dark:border-boxdark-2 bg-surface dark:bg-boxdark-2">
+                        <span class="material-symbols-outlined text-[40px] opacity-30">local_shipping</span>
+                        <p class="text-sm font-bold">لا توجد إرساليات مرسلة حالياً.</p>
+                    </div>
+                @endforelse
+
+                <div x-show="visibleCount === 0 && {{ $packages->count() }} > 0"
+                    x-cloak
+                    class="py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                    <div class="flex flex-col justify-center items-center">
+                        <span class="mb-3 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
+                        <h4 class="text-sm font-black text-on-surface dark:text-white font-headline">لا توجد نتائج</h4>
+                        <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">
+                            لا توجد إرساليات تطابق بحثك في هذه الصفحة.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ====================== Desktop View ====================== --}}
+            <div class="hidden overflow-visible w-full lg:block">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
+                            <th class="px-6 py-4">رقم الإرسالية</th>
+                            <th class="px-6 py-4">فرع التجميع</th>
+                            <th class="px-6 py-4 text-center">الوجهة</th>
+                            <th class="px-6 py-4">بيانات الحمولة</th>
+                            <th class="px-6 py-4 text-center">الحالة</th>
+                            <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
 
-                    {{-- جسم الجدول --}}
-                    <tbody class="divide-y divide-slate-100 dark:divide-boxdark-2">
+                    <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                         @forelse($packages as $package)
-                            <tr x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
-                                class="transition-colors duration-200 hover:bg-slate-50/50 dark:hover:bg-boxdark-2/30 group">
+                            @php
+                                $destinations = $package->shipments
+                                    ->map(function ($shipment) {
+                                        return $shipment->receiverBranch->name
+                                            ?? ($shipment->receiverOfficeBranch->name ?? null);
+                                    })
+                                    ->filter()
+                                    ->unique()
+                                    ->values();
 
-                                {{-- 1. رقم الإرسالية والتاريخ --}}
+                                $destText = $destinations->count() > 1
+                                    ? 'وجهات متعددة (' . $destinations->count() . ')'
+                                    : ($destinations->first() ?? 'غير محدد');
+
+                                $shipmentsCount = $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0);
+                                $currentStatusData = $statusData($package->status);
+                            @endphp
+
+                            <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group package-row"
+                                x-show="showRow(
+                                    @js($package->tracking_number),
+                                    @js($package->senderBranch->name ?? ''),
+                                    @js($package->driver->name ?? ''),
+                                    @js($package->driver->phone ?? ''),
+                                    @js($destText)
+                                )">
+
+                                {{-- رقم الإرسالية --}}
                                 <td class="px-6 py-4">
-                                    <div class="flex gap-3 items-center">
-                                        <div
-                                            class="flex justify-center items-center w-11 h-11 rounded-xl border transition-transform bg-slate-50 border-slate-100 dark:bg-boxdark-2 dark:border-gray-700 group-hover:scale-105">
-                                            <span
-                                                class="material-symbols-outlined text-slate-400 dark:text-gray-500 text-[22px]">local_shipping</span>
+                                    <div class="flex gap-4 items-center">
+                                        <div class="flex justify-center items-center w-11 h-11 text-white rounded-lg shadow-inner bg-primary">
+                                            <span class="material-symbols-outlined text-[20px]">local_shipping</span>
                                         </div>
-                                        <div>
-                                            <div class="font-black text-slate-800 dark:text-white font-headline">
-                                                {{ $package->tracking_number }}</div>
-                                            <div
-                                                class="flex gap-1 items-center mt-0.5 text-[11px] font-bold text-slate-400 dark:text-gray-500">
-                                                <span class="material-symbols-outlined text-[12px]">schedule</span>
 
-                                                <span
-                                                    class="text-primary/80">{{ $package->created_at->translatedFormat('l') }}</span>
-                                                <span class="mx-0.5 text-slate-300">|</span>
-                                                <span>{{ $package->created_at->format('Y/m/d') }}</span>
-                                            </div>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-sm font-black text-gray-800 dark:text-white">
+                                                {{ $package->tracking_number }}
+                                            </span>
+                                            <span class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
+                                                <span class="material-symbols-outlined text-[13px]">schedule</span>
+                                                <span class="text-primary">{{ $package->created_at->translatedFormat('l') }}</span>
+                                                <span class="text-gray-300">|</span>
+                                                {{ $package->created_at->format('Y/m/d') }}
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
 
-                                {{-- 2. فرع التجميع (بواسطة من) --}}
+                                {{-- فرع التجميع --}}
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-800 dark:text-gray-200 truncate max-w-[150px]">
-                                        {{ $package->senderBranch->name ?? 'غير محدد' }}
-                                    </div>
-                                    <div class="text-[11px] font-bold text-slate-400 dark:text-gray-500 mt-0.5">
-                                        بواسطة: {{ $package->creator->name ?? 'النظام' }}
-                                    </div>
-                                </td>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-sm font-black text-gray-800 dark:text-white truncate max-w-[170px]">
+                                            {{ $package->senderBranch->name ?? 'غير محدد' }}
+                                        </span>
 
-                                {{-- 3. الوجهة (حساب الوجهات المتعددة) --}}
-                                <td class="px-6 py-4">
-                                    @php
-                                        $destinations = $package->shipments
-                                            ->map(function ($shipment) {
-                                                return $shipment->receiverBranch->name ??
-                                                    ($shipment->receiverOfficeBranch->name ?? null);
-                                            })
-                                            ->filter()
-                                            ->unique()
-                                            ->values();
-
-                                        $destText =
-                                            $destinations->count() > 1
-                                                ? 'وجهات متعددة (' . $destinations->count() . ')'
-                                                : $destinations->first() ?? 'غير محدد';
-                                    @endphp
-
-                                    <div
-                                        class="inline-flex gap-1.5 items-center px-2.5 py-1 rounded-lg border bg-primary/5 border-primary/10">
-                                        <span class="material-symbols-outlined text-[16px] text-primary">route</span>
-                                        <span class="text-xs font-black text-primary truncate max-w-[150px]"
-                                            title="{{ $destinations->join('، ') }}">
-                                            {{ $destText }}
+                                        <span class="text-[11px] font-bold text-gray-500 dark:text-bodydark">
+                                            بواسطة: {{ $package->creator->name ?? 'النظام' }}
                                         </span>
                                     </div>
                                 </td>
 
-                                {{-- 4. بيانات الحمولة (السائق والعدد) --}}
+                                {{-- الوجهة --}}
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold text-primary bg-primary/5 rounded-lg border border-primary/10 max-w-[220px]">
+                                        <span class="material-symbols-outlined text-[16px]">route</span>
+                                        <span class="truncate" title="{{ $destinations->join('، ') }}">
+                                            {{ $destText }}
+                                        </span>
+                                    </span>
+                                </td>
+
+                                {{-- بيانات الحمولة --}}
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-800 dark:text-gray-200 truncate max-w-[150px]">
-                                        <span class="text-[10px] text-slate-400 dark:text-gray-500 ml-1">السائق:</span>
-                                        {{ $package->driver->name ?? 'غير محدد' }}
-                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <span class="text-sm font-black text-gray-800 dark:text-white truncate max-w-[170px]">
+                                            {{ $package->driver->name ?? 'غير محدد' }}
+                                        </span>
 
-                                    <x-phone-number :value="$package->driver?->phone ?? '---'"
-                                        class="text-[15px] font-bold text-gray-500 dark:text-bodydark" />
-                                    <div
-                                        class="flex gap-1 items-center mt-0.5 text-[11px] font-bold text-slate-500 dark:text-gray-400">
-                                        <span class="material-symbols-outlined text-[14px]">inventory_2</span>
-                                        إجمالي: <span
-                                            class="ml-1 font-black text-primary">{{ $package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0) }}</span>
+                                        <x-phone-number :value="$package->driver?->phone ?? '---'"
+                                            class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
 
-                                        طرد
-                                    </div>
-                                </td>
-
-                                {{-- 5. الحالة --}}
-                                <td class="px-6 py-4 text-center">
-                                    @php
-                                        $statusMap = [
-                                            'pending' => [
-                                                'label' => 'قيد التجهيز',
-                                                'class' =>
-                                                    'bg-amber-50 text-amber-600 ring-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400',
-                                                'icon' => 'schedule',
-                                            ],
-                                            'in_transit' => [
-                                                'label' => 'في الطريق',
-                                                'class' =>
-                                                    'bg-blue-50 text-blue-600 ring-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400',
-                                                'icon' => 'local_shipping',
-                                            ],
-                                            'delivered' => [
-                                                'label' => 'مكتملة',
-                                                'class' =>
-                                                    'bg-emerald-50 text-emerald-600 ring-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-400',
-                                                'icon' => 'task_alt',
-                                            ],
-                                            'returned' => [
-                                                'label' => 'مرتجعة',
-                                                'class' =>
-                                                    'bg-rose-50 text-rose-600 ring-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400',
-                                                'icon' => 'assignment_return',
-                                            ],
-                                        ];
-                                        $currStatus = $statusMap[$package->status] ?? $statusMap['pending'];
-                                    @endphp
-
-                                    <div
-                                        class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-xl ring-1 ring-inset {{ $currStatus['class'] }}">
-                                        <span
-                                            class="material-symbols-outlined text-[16px]">{{ $currStatus['icon'] }}</span>
-                                        <span>{{ $currStatus['label'] }}</span>
+                                        <span class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
+                                            <span class="material-symbols-outlined text-[14px]">inventory_2</span>
+                                            إجمالي:
+                                            <span class="font-black text-primary">{{ $shipmentsCount }}</span>
+                                            طرد
+                                        </span>
                                     </div>
                                 </td>
 
-                                {{-- 6. الإجراءات (النقاط الثلاث) --}}
+                                {{-- الحالة --}}
                                 <td class="px-6 py-4 text-center">
-                                    <div x-data="{ openMenu: false }" class="inline-block relative text-right">
-                                        <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                            class="flex justify-center items-center w-9 h-9 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-boxdark-2 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
-                                            <span class="material-symbols-outlined text-[22px]">more_vert</span>
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black {{ $currentStatusData['class'] }}">
+                                        <span class="material-symbols-outlined text-[14px]">{{ $currentStatusData['icon'] }}</span>
+                                        {{ $currentStatusData['label'] }}
+                                    </span>
+                                </td>
+
+                                {{-- الإجراءات --}}
+                                <td class="relative px-6 py-4 text-center">
+                                    <div x-data="{ open: false }"
+                                         class="inline-block relative text-right"
+                                         @click.away="open = false">
+
+                                        <button @click="open = !open"
+                                            type="button"
+                                            title="خيارات"
+                                            class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
+                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                         </button>
 
-                                        <div x-show="openMenu" x-transition.opacity.scale.origin.top.left x-cloak
-                                            class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-boxdark-2 rounded-[1.2rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100 dark:border-boxdark z-[99] overflow-hidden py-1.5 text-right">
+                                        <div x-show="open"
+                                            x-cloak
+                                            x-transition:enter="transition ease-out duration-100"
+                                            x-transition:enter-start="transform opacity-0 scale-95"
+                                            x-transition:enter-end="transform opacity-100 scale-100"
+                                            x-transition:leave="transition ease-in duration-75"
+                                            x-transition:leave-start="transform opacity-100 scale-100"
+                                            x-transition:leave-end="transform opacity-0 scale-95"
+                                            class="absolute left-0 top-full mt-2 z-[999] w-56 bg-white/95 backdrop-blur-md rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark/95 dark:border-boxdark-2 focus:outline-none origin-top-left overflow-hidden"
+                                            style="display: none;">
 
-                                            <a href="{{ route('shipmentpackage.outgoing.show', $package->id) }}"
-                                                class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark hover:text-primary">
-                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                                عرض التفاصيل
-                                            </a>
-
-                                            @if (!in_array($package->status, ['returned', 'cancelled']))
-                                                <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}"
-                                                    target="_blank"
-                                                    class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark hover:text-primary">
-                                                    <span class="material-symbols-outlined text-[18px]">print</span>
-                                                    طباعة كشف الرحلة
+                                            <div class="py-1" role="menu">
+                                                <a href="{{ route('shipmentpackage.outgoing.show', $package->id) }}"
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-boxdark-2 dark:hover:text-blue-400">
+                                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                                    عرض التفاصيل
                                                 </a>
 
-                                                @if ($package->driver && $package->driver->phone)
-                                                    <div class="mx-3 my-1 h-px bg-slate-100 dark:bg-gray-700/50"></div>
-                                                    <a href="{{ $package->DriverDetection }}" target="_blank"
-                                                        class="flex gap-2.5 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 dark:text-gray-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-400">
-                                                        <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
-                                                            xmlns="http://www.w3.org/2000/svg">
-                                                            <path
-                                                                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                        </svg>
-                                                        إرسال للسائق
+                                                @if (!in_array($package->status, ['returned', 'cancelled']))
+                                                    <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}"
+                                                        target="_blank"
+                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-slate-50 hover:text-primary dark:hover:bg-boxdark-2">
+                                                        <span class="material-symbols-outlined text-[18px]">print</span>
+                                                        طباعة كشف الرحلة
                                                     </a>
+
+                                                    @if ($package->driver && $package->driver->phone && $package->DriverDetection)
+                                                        <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+
+                                                        <a href="{{ $package->DriverDetection }}"
+                                                            target="_blank"
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                            <span class="material-symbols-outlined text-[18px]">send</span>
+                                                            إرسال للسائق
+                                                        </a>
+                                                    @endif
                                                 @endif
-                                            @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            {{-- حالة عدم وجود بيانات (Empty State) --}}
                             <tr>
-                                <td colspan="6" class="px-6 py-24 text-center">
-                                    <div class="flex flex-col justify-center items-center">
-                                        <div class="relative mb-5">
-                                            <div class="absolute inset-0 rounded-full blur-xl bg-primary/20"></div>
-                                            <div
-                                                class="flex relative z-10 justify-center items-center w-20 h-20 rounded-[1.5rem] border shadow-sm bg-slate-50 border-slate-100 dark:bg-boxdark-2 dark:border-boxdark">
-                                                <span
-                                                    class="material-symbols-outlined text-[40px] text-slate-300 dark:text-gray-600">local_shipping</span>
-                                            </div>
+                                <td colspan="6" class="py-24 text-center">
+                                    <div class="flex flex-col gap-4 justify-center items-center">
+                                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                            <span class="material-symbols-outlined text-[28px] text-gray-400">local_shipping</span>
                                         </div>
-                                        <h3 class="text-lg font-black text-slate-700 dark:text-white font-headline">لا توجد
-                                            إرساليات</h3>
-                                        <p class="mt-1.5 text-sm font-bold text-slate-400 dark:text-gray-500">لم نجد أي
-                                            إرساليات تطابق بحثك حالياً.</p>
+
+                                        <div>
+                                            <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">
+                                                لا توجد إرساليات
+                                            </h3>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                لم نعثر على أي إرساليات مرسلة في النظام حالياً.
+                                            </p>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
                         @endforelse
+
+                        <tr x-show="visibleCount === 0 && {{ $packages->count() }} > 0" x-cloak>
+                            <td colspan="6" class="py-24 text-center">
+                                <div class="flex flex-col gap-4 justify-center items-center">
+                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                        <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
+                                    </div>
+
+                                    <div>
+                                        <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">
+                                            لا توجد نتائج مطابقة
+                                        </h3>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            لم نعثر على إرساليات تطابق كلمة البحث المدخلة.
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
 
-            {{-- الترقيم --}}
+            {{-- Pagination --}}
             @if (method_exists($packages, 'hasPages') && $packages->hasPages())
-                <div class="px-6 py-5 rounded-b-[2rem] pagination-container">
+                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
                     {{ $packages->links() }}
                 </div>
             @endif
         </div>
     </div>
+
+@endsection
+
+@section('script')
+    <script>
+        function outgoingPackagesRegistry() {
+            return {
+                searchQuery: '',
+                visibleCount: {{ $packages->count() }},
+
+                init() {
+                    this.updateVisibility();
+                },
+
+                showRow(trackingNumber, senderBranch, driverName, driverPhone, destination) {
+                    const query = this.searchQuery.toLowerCase().trim();
+
+                    if (!query) {
+                        return true;
+                    }
+
+                    return String(trackingNumber || '').toLowerCase().includes(query)
+                        || String(senderBranch || '').toLowerCase().includes(query)
+                        || String(driverName || '').toLowerCase().includes(query)
+                        || String(driverPhone || '').toLowerCase().includes(query)
+                        || String(destination || '').toLowerCase().includes(query);
+                },
+
+                updateVisibility() {
+                    this.$nextTick(() => {
+                        this.visibleCount = document.querySelectorAll('.package-row:not([style*="display: none"])').length;
+                    });
+                }
+            }
+        }
+    </script>
 @endsection

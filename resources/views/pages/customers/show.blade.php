@@ -3,9 +3,73 @@
 @section('title', 'ملف العميل | ' . $customer->name)
 
 @section('content')
-<div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl">
+    @php
+        // الحسابات المالية الدقيقة من دفتر الأستاذ
+        $credit  = $customer->sum_credit ?? 0; // متحصلاته
+        $debit   = $customer->sum_debit ?? 0;  // ديونه (أجور الشحن)
+        $balance = $credit - $debit;           // الصافي
+    @endphp
 
-    {{-- ================= الشريط العلوي (Sticky Header) ================= --}}
+<div x-data="{ 
+        activeTab: new URLSearchParams(window.location.search).has('ship_page') || new URLSearchParams(window.location.search).has('direction') ? 'shipments' : 'financials', 
+        showPaymentModal: false, 
+        amountToPay: {{ abs($balance) }} 
+     }" 
+     class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl">
+
+    {{-- ================= النافذة المنبثقة (Modal) للسداد ================= --}}
+    <div x-show="showPaymentModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
+        {{-- خلفية ضبابية --}}
+        <div x-show="showPaymentModal" x-transition.opacity class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 dark:bg-black/60" @click="showPaymentModal = false"></div>
+
+        {{-- صندوق السداد --}}
+        <div x-show="showPaymentModal" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+             x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+             class="bg-white dark:bg-boxdark w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10 border border-slate-100 dark:border-boxdark-2">
+            
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="flex gap-2 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
+                    <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+                    تسديد مديونية
+                </h3>
+                <button @click="showPaymentModal = false" class="transition-colors text-slate-400 hover:text-rose-500">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form action="{{ route('customers.addPayment', $customer->id) }}" method="POST">
+                @csrf
+                
+                {{-- حقل المبلغ --}}
+                <div class="mb-4">
+                    <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">المبلغ المراد سداده (ريال)</label>
+                    <div class="relative">
+                        <input type="number" name="amount" x-model="amountToPay" step="0.01" min="1" max="{{ abs($balance) }}" required
+                            class="px-4 py-3 pl-12 w-full text-lg font-black rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20">
+                        <span class="absolute left-4 top-1/2 text-sm font-bold -translate-y-1/2 text-slate-400">ريال</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-1.5">يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.</p>
+                </div>
+
+                {{-- حقل الملاحظات (اختياري) --}}
+                <div class="mb-6">
+                    <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">ملاحظات (اختياري)</label>
+                    <input type="text" name="notes" placeholder="مثال: تحويل بنكي، كاش للمندوب..."
+                        class="px-4 py-3 w-full text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-700 dark:text-white focus:ring-2 focus:ring-primary/20">
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-slate-800 dark:bg-primary text-white text-sm font-black rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] dark:shadow-[0_4px_12px_rgba(var(--color-primary),0.3)] hover:bg-slate-900 dark:hover:bg-primary-hover transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">done_all</span>
+                    تأكيد السداد
+                </button>
+            </form>
+        </div>
+    </div>
     <div class="sticky top-0 z-40 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/90 dark:bg-boxdark/90 dark:border-boxdark-2">
         <div class="flex justify-between items-center px-4 py-4 mx-auto max-w-7xl md:px-6">
             <div class="flex gap-4 items-center">
@@ -20,17 +84,18 @@
             </div>
           
             {{-- زر مراسلة العميل واتساب (يظهر كأيقونة في الموبايل ونص في الديسكتوب) --}}
-            <a href="https://wa.me/{{ str_starts_with(ltrim($customer->phone, '+'), '7') ? '967' . ltrim($customer->phone, '+') : ltrim($customer->phone, '+') }}" target="_blank"
+            <a href="{{ route('whatsapp.customer.account.statement', $customer->id) }}"
+                target="_blank"
                 class="flex gap-2 justify-center items-center px-3 h-10 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform md:px-4 dark:bg-emerald-500/10 dark:text-emerald-400 active:scale-95 dark:border-emerald-500/20 hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-500/20">
-                <svg class="w-4 h-4 fill-emerald-500" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
-                <span class="hidden md:inline">مراسلة واتساب</span>
+                <span class="material-symbols-outlined text-[18px]">send</span>
+                <span class="hidden md:inline">إرسال كشف الحساب</span>
             </a>
-            <a href="{{ route('receipt.generate', ['type' => 'CustomerAccountStatementReceipt', 'id' => $customer->id]) }}" target="_blank"
+            <a href="{{ route('receipt.generate', ['type' => 'CustomerAccountStatementReceipt', 'id' => $customer->uuid ?? $customer->id]) }}" target="_blank"
                 class="flex gap-2 justify-center items-center px-3 h-10 text-xs font-bold rounded-xl border transition-transform text-primary bg-primary-container border-primary/10 md:px-4 dark:bg-primary/10 dark:text-primary active:scale-95 hover:shadow-md hover:bg-primary/10 dark:hover:bg-primary/20">
                 <span class="material-symbols-outlined text-[18px]">receipt_long</span>
                 <span class="hidden md:inline">كشف حساب</span>
             </a>
-        </div>
+        </div>  
     </div>
 
     {{-- ================= محتوى الصفحة (Grid Layout) ================= --}}
@@ -64,33 +129,52 @@
                 </h3>
 
                 <div class="grid grid-cols-2 gap-4">
-                    {{-- إجمالي المستحق عليه --}}
-                    <div class="col-span-2 bg-surface dark:bg-boxdark-2 p-5 rounded-[1.5rem] border border-gray-100 dark:border-boxdark shadow-sm flex items-center justify-between transition-all hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700">
-                        <div>
-                            <p class="mb-1 text-xs font-bold text-gray-500 dark:text-bodydark">المديونية (متبقي عليه)</p>
-                            <p class="text-3xl font-black font-headline {{ $grandTotalRemaining > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-on-surface dark:text-white' }}">
-                                {{ number_format($grandTotalRemaining, 0) }} <span class="text-xs text-gray-400">ريال</span>
+                    {{-- الرصيد الصافي --}}
+                    <div class="col-span-2 bg-surface dark:bg-boxdark-2 p-5 rounded-[1.5rem] border border-gray-100 dark:border-boxdark shadow-sm flex items-center justify-between relative overflow-hidden transition-all hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700">
+                        <div class="absolute right-0 top-0 bottom-0 w-1.5 {{ $balance >= 0 ? 'bg-emerald-400' : 'bg-rose-400' }}"></div>
+                        
+                        <div class="pr-2">
+                            <p class="mb-1 text-xs font-bold text-gray-500 dark:text-bodydark">الرصيد الصافي للعميل</p>
+                            <p class="text-3xl font-black font-headline {{ $balance >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400' }}">
+                                {{ number_format(abs($balance), 0) }} <span class="text-xs {{ $balance >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">ريال</span>
                             </p>
                         </div>
-                        <div class="w-12 h-12 rounded-xl {{ $grandTotalRemaining > 0 ? 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-white dark:bg-boxdark text-gray-400 dark:text-gray-500' }} flex items-center justify-center shadow-sm">
-                            <span class="material-symbols-outlined text-[24px]">{{ $grandTotalRemaining > 0 ? 'warning' : 'check_circle' }}</span>
+                        
+                        <div class="flex flex-col gap-2 items-end">
+                            <div class="px-3 py-1.5 rounded-lg text-[10px] font-black {{ $balance >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20' }}">
+                                {{ $balance >= 0 ? 'رصيد لصالحه (له)' : 'مطلوب سداده (عليه)' }}
+                            </div>
+                            
+                            {{-- 💡 زر السداد (يظهر فقط إذا كان عليه ديون $balance < 0) --}}
+                            @if ($balance < 0)
+                                <button @click="showPaymentModal = true" type="button" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 dark:bg-white dark:text-slate-800 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-slate-700 dark:hover:bg-gray-100 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-[14px]">payments</span>
+                                    تسديد مبلغ
+                                </button>
+                            @endif
                         </div>
                     </div>
 
-                    {{-- إجمالي قيمة الشحنات --}}
+                    {{-- إجمالي متحصلاته (له) --}}
                     <div class="bg-surface dark:bg-boxdark-2 p-4 rounded-[1.5rem] border border-gray-100 dark:border-boxdark shadow-sm flex flex-col justify-center">
-                        <p class="text-[10px] font-bold text-gray-500 dark:text-bodydark mb-1">إجمالي شحناته</p>
-                        <p class="text-xl font-black text-gray-700 dark:text-gray-200 font-headline">{{ number_format($grandTotalCost, 0) }}</p>
+                        <div class="flex gap-1.5 items-center mb-1.5 text-emerald-500 dark:text-emerald-400">
+                            <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-bodydark">متحصلات (له)</p>
+                        </div>
+                        <p class="text-xl font-black text-gray-700 dark:text-gray-200 font-headline">{{ number_format($credit, 0) }}</p>
                     </div>
 
-                    {{-- إجمالي ما تم سداده --}}
+                    {{-- إجمالي ديونه (عليه) --}}
                     <div class="bg-surface dark:bg-boxdark-2 p-4 rounded-[1.5rem] border border-gray-100 dark:border-boxdark shadow-sm flex flex-col justify-center">
-                        <p class="text-[10px] font-bold text-gray-500 dark:text-bodydark mb-1">إجمالي ما سدده</p>
-                        <p class="text-xl font-black text-emerald-500 dark:text-emerald-400 font-headline">{{ number_format($grandTotalPaid, 0) }}</p>
+                        <div class="flex gap-1.5 items-center mb-1.5 text-rose-500 dark:text-rose-400">
+                            <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                            <p class="text-[10px] font-bold text-gray-500 dark:text-bodydark">أجور شحن (عليه)</p>
+                        </div>
+                        <p class="text-xl font-black text-gray-700 dark:text-gray-200 font-headline">{{ number_format($debit, 0) }}</p>
                     </div>
                 </div>
                 
-                @if($unpaidShipmentsCount > 0)
+                @if(isset($unpaidShipmentsCount) && $unpaidShipmentsCount > 0)
                     <div class="flex gap-2.5 items-start px-4 py-3 mt-4 text-xs font-bold leading-relaxed text-rose-600 rounded-xl border border-rose-100 bg-rose-50/50 dark:bg-rose-500/5 dark:border-rose-500/20 dark:text-rose-400">
                         <span class="material-symbols-outlined text-[18px] shrink-0 mt-0.5">info</span>
                         <div>يوجد لدى العميل <span class="px-1 font-black">{{ $unpaidShipmentsCount }}</span> شحنات غير مسددة أو مسددة جزئياً، يرجى المتابعة.</div>
@@ -104,11 +188,80 @@
         {{-- ================= الجانب الأيسر: سجل الشحنات ================= --}}
         <div class="flex flex-col gap-6 xl:col-span-8">
             
+            {{-- ================= التبويبات الذكية (Alpine.js) ================= --}}
+            <div class="flex p-1 bg-gray-100 dark:bg-boxdark rounded-[1rem]">
+                <button @click="activeTab = 'financials'" 
+                        :class="activeTab === 'financials' ? 'bg-white dark:bg-boxdark-2 text-primary shadow-sm' : 'text-gray-500 dark:text-bodydark hover:text-gray-700 dark:hover:text-white'" 
+                        class="flex-1 flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-[0.75rem] transition-all">
+                    <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                    كشف الحساب
+                </button>
+                <button @click="activeTab = 'shipments'" 
+                        :class="activeTab === 'shipments' ? 'bg-white dark:bg-boxdark-2 text-primary shadow-sm' : 'text-gray-500 dark:text-bodydark hover:text-gray-700 dark:hover:text-white'" 
+                        class="flex-1 flex justify-center items-center gap-1.5 py-2.5 text-xs font-bold rounded-[0.75rem] transition-all">
+                    <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                    سجل الطرود
+                </button>
+            </div>
+
+            {{-- ================= التبويب الأول: كشف الحساب (المالية) ================= --}}
+            <div x-show="activeTab === 'financials'" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+                
+                <h3 class="flex gap-2 items-center mb-2 text-lg font-black text-on-surface dark:text-white font-headline">
+                    <span class="material-symbols-outlined text-primary text-[22px]">history</span>
+                    الحركات المالية الأخيرة
+                </h3>
+
+                <div class="space-y-3">
+                    @forelse($transactions as $trans)
+                        <div class="bg-white dark:bg-boxdark p-4 rounded-[1.5rem] border border-gray-100 dark:border-boxdark-2 shadow-sm flex items-center gap-3 hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+                            {{-- أيقونة الحركة --}}
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
+                                <span class="material-symbols-outlined text-[24px]">
+                                    {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
+                                </span>
+                            </div>
+                            
+                            {{-- تفاصيل الحركة --}}
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-gray-700 truncate dark:text-gray-200">{{ $trans->description }}</p>
+                                <p class="text-[10px] font-bold text-gray-400 dark:text-bodydark mt-1 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">schedule</span>
+                                    {{ $trans->created_at->format('Y-m-d (h:i A)') }}
+                                </p>
+                            </div>
+
+                            {{-- المبلغ --}}
+                            <div class="text-right shrink-0">
+                                <p class="text-lg font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                    {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
+                                </p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-12 flex flex-col items-center justify-center bg-white dark:bg-boxdark rounded-[2rem] border-2 border-dashed border-gray-100 dark:border-boxdark-2 text-center">
+                            <span class="mb-3 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">receipt_long</span>
+                            <p class="text-sm font-bold text-gray-500 dark:text-bodydark">لا توجد حركات مالية مسجلة</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- ترقيم الحركات المالية --}}
+                @if ($transactions->hasPages())
+                    <div class="mt-4 p-4 border-t border-gray-50 dark:border-boxdark-2 bg-surface/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                        {{ $transactions->links('vendor.pagination.tailwind') }}
+                    </div>
+                @endif
+            </div>
+
+            {{-- ================= التبويب الثاني: سجل الطرود ================= --}}
+            <div x-show="activeTab === 'shipments'" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="flex flex-col gap-6">
+
             {{-- لوحة الفلترة والبحث --}}
             <div class="bg-white dark:bg-boxdark rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm p-5 md:p-6">
                 <div class="flex flex-col gap-4 justify-between items-start mb-5 md:flex-row md:items-center">
                     <h3 class="flex gap-2 items-center text-lg font-black text-on-surface dark:text-white font-headline">
-                        <span class="material-symbols-outlined text-primary text-[22px]">history</span>
+                        <span class="material-symbols-outlined text-primary text-[22px]">local_shipping</span>
                         سجل الشحنات
                     </h3>
 
@@ -290,6 +443,8 @@
                     </div>
                 @endif
             </div>
+
+            </div> {{-- نهاية تبويب الشحنات --}}
 
         </div>
     </div>

@@ -7,6 +7,7 @@ use App\Services\WhatsApp\Messages\DriverMessage;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\DriverDetection;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
+use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -20,6 +21,7 @@ class WhatsAppLinkService
             'driver'   => new DriverMessage(),
             'DriverDetection'   => new DriverDetection(),
             'receiver'   => new ReceiverMessage(),
+             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
             default    => null,
         };
 

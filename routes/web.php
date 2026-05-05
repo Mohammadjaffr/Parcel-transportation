@@ -312,7 +312,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/connect/accept/{id}', [ConnectionController::class, 'accept'])->name('connections.accept');
     Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
     
-    
+    Route::get('/whatsapp/customer-account-statement/{id}', [WhatsAppController::class, 'sendCustomerAccountStatement'])
+    ->name('whatsapp.customer.account.statement');
     });
 });
 

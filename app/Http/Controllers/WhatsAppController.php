@@ -6,6 +6,8 @@ use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use App\Services\WhatsAppService;
 use App\Classes\WebResponseClass;
+use App\Models\Customer;
+use App\Services\WhatsApp\WhatsAppLinkService;
 
 class WhatsAppController extends Controller
 {
@@ -75,4 +77,20 @@ class WhatsAppController extends Controller
 
         return redirect()->away($link);
     }
+    public function sendCustomerAccountStatement($id)
+{
+    $user = auth()->user();
+
+    $customer = Customer::where('app_id', $user->app_id)
+        ->where('branch_id', $user->branch_id)
+        ->findOrFail($id);
+
+    $link = WhatsAppLinkService::generate($customer, 'CustomerAccountStatement');
+
+    if (!$link) {
+        return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم العميل.');
+    }
+
+    return redirect()->away($link);
+}
 }

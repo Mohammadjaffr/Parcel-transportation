@@ -1,573 +1,450 @@
-@extends('mobile.layouts.app')
-
+@extends('layouts.app')
 @section('title', 'إدارة العملاء')
+@section('Breadcrumb', 'إدارة العملاء')
+
+@section('addButton')
+    <button x-data @click="$dispatch('open-create-customer-modal')"
+        class="inline-flex gap-2 items-center px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/20 active:scale-95">
+        <span class="material-symbols-outlined text-[20px]">add</span>
+        إضافة عميل جديد
+    </button>
+@endsection
 
 @section('content')
 
+    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl" 
+         x-data="customerRegistry()" 
+         @open-create-customer-modal.window="openCreateModal()">
+        
+        {{-- Modals --}}
+        @include('pages.customers.create-customer-modal')
+        @include('pages.customers.edit-customer-modal')
 
-    <div x-data="{
-        showCreateModal: false,
-        showEditModal: false,
-        showDeleteModal: false,
-        searchQuery: '',
-        isSubmitting: false,
-        errors: {},
-    
-        editCustomerData: { id: '', name: '', phone: '', url: '' },
-        createCustomerData: { name: '', phone: '' },
-        deleteCustomerData: { id: '', name: '', url: '' },
-    
-        openEditModal(id, name, phone) {
-            this.errors = {};
-            this.editCustomerData = {
-                id: id,
-                name: name,
-                phone: phone,
-                url: '{{ route('customers.index') }}/' + id
-            };
-            this.$dispatch('set-edit-phone', { phone: phone });
-            this.showEditModal = true;
-        },
-    
-        openCreateModal() {
-            this.errors = {};
-            this.createCustomerData = { name: '', phone: '' };
-            this.showCreateModal = true;
-        },
-    
-        openDeleteModal(id, name) {
-            this.deleteCustomerData = {
-                id: id,
-                name: name,
-                url: '{{ route('customers.index') }}/' + id
-            };
-            this.showDeleteModal = true;
-        },
-    
-        closeModals() {
-            this.showCreateModal = false;
-            this.showEditModal = false;
-            this.showDeleteModal = false;
-            this.errors = {};
-        },
-    
-        async submitForm(url, method, data) {
-            this.isSubmitting = true;
-            this.errors = {};
-    
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (!response.ok) {
-                    if (response.status === 422) {
-                        this.errors = result.errors;
-                    } else {
-                        alert(result.message || 'حدث خطأ غير متوقع.');
+        {{-- ====================== Stats Cards (Grid Layout) ====================== --}}
+        <div class="grid grid-cols-1 gap-2 mx-auto max-w-7xl xl:grid-cols-3 md:gap-6">
+            {{-- إجمالي العملاء --}}
+            <div @click="filterStatus = 'all'; updateVisibility()"
+                :class="filterStatus === 'all' ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md">
+                <div class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[24px]">group</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">إجمالي العملاء</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">{{ $customers->total() }}</h4>
+                </div>
+            </div>
+
+            {{-- المديونين --}}
+            <div @click="filterStatus = 'debtor'; updateVisibility()"
+                :class="filterStatus === 'debtor' ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-gray-100 hover:border-rose-300 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-rose-500 dark:border-r-rose-500">
+                <div class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10">
+                    <span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-rose-500 uppercase">المديونين</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $customers->getCollection()->filter(fn($c) => ($c->debit_sum ?? 0) > ($c->credit_sum ?? 0))->count() }}
+                    </h4>
+                </div>
+            </div>
+
+            {{-- رصيد مسدد --}}
+            <div @click="filterStatus = 'cleared'; updateVisibility()"
+                :class="filterStatus === 'cleared' ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-gray-100 hover:border-emerald-300 dark:border-boxdark-2'"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border border-r-4 shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md border-r-emerald-500 dark:border-r-emerald-500">
+                <div class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10">
+                    <span class="material-symbols-outlined text-[24px]">task_alt</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-emerald-500 uppercase">رصيد مسدد</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $customers->getCollection()->filter(fn($c) => ($c->debit_sum ?? 0) <= ($c->credit_sum ?? 0))->count() }}
+                    </h4>
+                </div>
+            </div>
+        </div>
+
+        {{-- ====================== Search & Table Section ====================== --}}
+        <div class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+            
+            {{-- شريط البحث --}}
+            <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
+                <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-96 dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                    <input type="text" x-model="search" @input.debounce.300ms="updateVisibility()"
+                        placeholder="ابحث بالاسم أو رقم الهاتف..."
+                        class="pr-12 pl-4 w-full h-12 text-sm font-medium placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
+                    <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                        <span class="material-symbols-outlined text-[22px]">search</span>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ===== Mobile View (Cards) ===== --}}
+            <div class="flex flex-col gap-4 p-5 lg:hidden">
+                @forelse($customers as $customer)
+                    @php
+                        $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
+                        $is_debtor = $balance > 0;
+                    @endphp
+                    <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all customer-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
+                        x-show="showRow('{{ $customer->name }}', '{{ $customer->phone }}', {{ $is_debtor ? 'true' : 'false' }})">
+                        
+                        <div class="flex justify-between items-start">
+                            <div class="flex gap-3 items-center">
+                                <div class="flex justify-center items-center w-12 h-12 text-lg font-black text-white rounded-xl shadow-inner bg-primary">
+                                    {{ mb_substr($customer->name, 0, 1) }}
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <span class="text-sm font-black text-on-surface dark:text-white font-headline">{{ $customer->name }}</span>
+                                    <x-phone-number :value="$customer->phone" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
+                                </div>
+                            </div>
+                            
+                            <div x-data="{ menuOpen: false }" class="relative">
+                                <button @click="menuOpen = !menuOpen" @click.away="menuOpen = false" class="p-2 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2">
+                                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                </button>
+
+                                <div x-show="menuOpen" x-transition x-cloak class="absolute left-0 top-full z-[999] py-1.5 mt-2 w-48 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark overflow-hidden">
+                                    <a href="{{ route('customers.show', $customer->id) }}" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-surface dark:hover:bg-boxdark">
+                                        <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                        كشف الحساب
+                                    </a>
+                                    <button @click="menuOpen = false; openEditModal({{ $customer->id }})" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-surface dark:hover:bg-boxdark">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        تعديل البيانات
+                                    </button>
+                                    @if ($is_debtor)
+                                        <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+                                        <div class="px-2">
+                                            @include('pages.customers.clearamount', ['customer' => $customer])
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-4 border-t border-gray-100 dark:border-boxdark">
+                            <span class="px-2.5 py-1 rounded-lg bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 shadow-sm text-gray-500 dark:text-gray-300 text-[10px] font-black uppercase flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[12px] text-primary">store</span>
+                                {{ $customer->branch->name ?? 'N/A' }}
+                            </span>
+                            
+                            <div class="flex flex-col items-end">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-black {{ $is_debtor ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
+                                    {{ $is_debtor ? 'مديون' : 'مسدد' }}
+                                </span>
+                                @if ($is_debtor)
+                                    <span class="mt-1.5 text-xs font-black text-rose-500">{{ number_format($balance, 0) }} ر.ي</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="flex flex-col gap-3 items-center py-16 text-center text-gray-400 rounded-2xl border-2 border-gray-100 border-dashed dark:text-bodydark dark:border-boxdark-2 bg-surface dark:bg-boxdark-2">
+                        <span class="material-symbols-outlined text-[40px] opacity-30">group_off</span>
+                        <p class="text-sm font-bold">لا توجد بيانات عملاء مطابقة..</p>
+                    </div>
+                @endforelse
+
+                <div x-show="visibleCount === 0 && {{ $customers->count() }} > 0" x-cloak class="py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                    <div class="flex flex-col justify-center items-center">
+                        <span class="mb-3 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">search_off</span>
+                        <h4 class="text-sm font-black text-on-surface dark:text-white font-headline">لا توجد نتائج</h4>
+                        <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">لا توجد نتائج تطابق بحثك أو تصفيتك في هذه الصفحة.</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- ===== Desktop View (Data Table Official) ===== --}}
+            <div class="hidden overflow-visible w-full lg:block">
+                <table class="w-full text-right border-collapse">
+                    <thead>
+                        <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
+                            <th class="px-6 py-4">العميل</th>
+                            <th class="px-6 py-4 text-center">الفرع المسجل</th>
+                            <th class="px-6 py-4 text-center">الرصيد المالي</th>
+                            <th class="px-6 py-4 text-center">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
+                        @forelse($customers as $customer)
+                            @php
+                                $balance = ($customer->debit_sum ?? 0) - ($customer->credit_sum ?? 0);
+                                $is_debtor = $balance > 0;
+                            @endphp
+                            <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group customer-row"
+                                x-show="showRow('{{ $customer->name }}', '{{ $customer->phone }}', {{ $is_debtor ? 'true' : 'false' }})">
+                                
+                                <td class="px-6 py-4">
+                                    <div class="flex gap-4 items-center">
+                                        <div class="flex justify-center items-center w-11 h-11 text-lg font-black text-white rounded-lg shadow-inner bg-primary">
+                                            {{ mb_substr($customer->name, 0, 1) }}
+                                        </div>
+                                        <div class="flex flex-col gap-1">
+                                            <span class="text-sm font-black text-gray-800 dark:text-white">{{ $customer->name }}</span>
+                                            <x-phone-number :value="$customer->phone" class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    <span class="px-3 py-1.5 text-xs font-bold text-gray-600 bg-white rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
+                                        {{ $customer->branch->name ?? 'N/A' }}
+                                    </span>
+                                </td>
+
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex flex-col gap-1 items-center">
+                                        <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase {{ $is_debtor ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
+                                            {{ $is_debtor ? 'مديون' : 'مسدد' }}
+                                        </span>
+                                        @if ($is_debtor)
+                                            <span class="text-xs font-black text-rose-500">{{ number_format($balance, 0) }} ر.ي</span>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                <td class="relative px-6 py-4 text-center">
+                                    <div x-data="{ open: false }" class="inline-block relative text-right" @click.away="open = false">
+                                        
+                                        <button @click="open = !open" type="button" title="خيارات"
+                                            class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-transparent rounded-lg transition-all hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
+                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                        </button>
+
+                                        <div x-show="open" x-cloak
+                                             x-transition:enter="transition ease-out duration-100"
+                                             x-transition:enter-start="transform opacity-0 scale-95"
+                                             x-transition:enter-end="transform opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-75"
+                                             x-transition:leave-start="transform opacity-100 scale-100"
+                                             x-transition:leave-end="transform opacity-0 scale-95"
+                                             class="absolute left-0 top-full mt-1 z-[999] w-48 bg-white/95 backdrop-blur-md rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark/95 dark:border-boxdark-2 focus:outline-none origin-top-left overflow-hidden"
+                                             style="display: none;">
+                                            
+                                            <div class="py-1" role="menu">
+                                                <a href="{{ route('customers.show', $customer->id) }}" class="flex gap-3 items-center px-4 py-2.5 w-full text-sm text-right text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-boxdark-2 dark:hover:text-blue-400">
+                                                    <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                                                    كشف حساب
+                                                </a>
+
+                                                @if ($is_debtor)
+                                                    <div class="block w-full">
+                                                        @include('pages.customers.clearamount', ['customer' => $customer])
+                                                    </div>
+                                                @endif
+
+                                                <button type="button" @click="open = false; openEditModal({{ $customer->id }})" class="flex gap-3 items-center px-4 py-2.5 w-full text-sm text-right text-gray-700 transition-colors hover:bg-primary/10 hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark-2 dark:hover:text-primary">
+                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                                    تعديل العميل
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="py-24 text-center">
+                                    <div class="flex flex-col gap-4 justify-center items-center">
+                                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                            <span class="material-symbols-outlined text-[28px] text-gray-400">group_off</span>
+                                        </div>
+                                        <div>
+                                            <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">لا توجد بيانات للعملاء</h3>
+                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على أي عملاء مسجلين في النظام حالياً.</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+
+                        <tr x-show="visibleCount === 0 && {{ $customers->count() }} > 0" x-cloak>
+                            <td colspan="4" class="py-24 text-center">
+                                <div class="flex flex-col gap-4 justify-center items-center">
+                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                        <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">لا توجد نتائج مطابقة</h3>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على أي عملاء يطابقون كلمة البحث المدخلة.</p>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Pagination --}}
+            @if ($customers->hasPages())
+                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                    {{ $customers->links() }}
+                </div>
+            @endif
+        </div>
+    </div>
+
+@endsection
+
+@section('script')
+    <script>
+        function customerRegistry() {
+            return {
+                search: '',
+                filterStatus: 'all',
+                isFetching: null,
+                visibleCount: {{ $customers->count() }}, 
+                countries: @json(array_values(config('countries') ?? [])),
+                customersList: @json($customers->items()),
+                
+                editCustomer: { id: null, name: '', phone: '', phone_country: null, phone_local: '', url: '' },
+                editModalOpen: false,
+                createModalOpen: false,
+                
+                showDeleteModal: false,
+                isSubmitting: false,
+                errors: {},
+                createCustomerData: { name: '', phone: '' },
+                deleteCustomerData: { id: '', name: '', url: '' },
+
+                init() {
+                    if (!this.countries || this.countries.length === 0) {
+                        this.countries = [
+                            { name: 'اليمن', code: 'YE', dial_code: '967', svg: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600"><rect width="900" height="600" fill="#000"/><rect width="900" height="200" fill="#ce1126"/><rect y="400" width="900" height="200" fill="#fff"/></svg>' }
+                        ];
                     }
-                } else {
-                    this.closeModals();
-                    window.location.reload();
+                    this.editCustomer.phone_country = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                },
+
+                openCreateModal() {
+                    this.errors = {};
+                    this.createCustomerData = { name: '', phone: '' };
+                    this.createModalOpen = true;
+                },
+
+                openDeleteModal(id, name) {
+                    this.deleteCustomerData = {
+                        id: id,
+                        name: name,
+                        url: '{{ route('customers.index') }}/' + id
+                    };
+                    this.showDeleteModal = true;
+                },
+
+                closeModals() {
+                    this.createModalOpen = false;
+                    this.editModalOpen = false;
+                    this.showDeleteModal = false;
+                    this.errors = {};
+                },
+
+                async submitForm(url, method, data) {
+                    this.isSubmitting = true;
+                    this.errors = {};
+            
+                    try {
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await response.json();
+                        if (!response.ok) {
+                            if (response.status === 422) {
+                                this.errors = result.errors;
+                            } else {
+                                alert(result.message || 'حدث خطأ غير متوقع.');
+                            }
+                        } else {
+                            this.closeModals();
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('حدث خطأ في الاتصال بالخادم.');
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                showRow(name, phone, isDebtor) {
+                    const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || phone.includes(this.search);
+                    const matchesStatus = this.filterStatus === 'all' || 
+                                          (this.filterStatus === 'debtor' && isDebtor) || 
+                                          (this.filterStatus === 'cleared' && !isDebtor);
+                    return matchesSearch && matchesStatus;
+                },
+
+                updateVisibility() {
+                    this.$nextTick(() => {
+                        this.visibleCount = document.querySelectorAll('.customer-row:not([style*="display: none"])').length;
+                    });
+                },
+
+                parsePhoneNumber(fullNumber) {
+                    if (!fullNumber) return {
+                        country: this.countries.find(c => c.code === 'YE') || this.countries[0],
+                        local: ''
+                    };
+                    
+                    let phone = String(fullNumber).replace('+', '');
+                    const sortedCountries = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+
+                    for (let country of sortedCountries) {
+                        const regex = new RegExp(`^(00)?${country.dial_code}`);
+                        if (regex.test(phone)) {
+                            return {
+                                country: country,
+                                local: phone.replace(regex, '')
+                            };
+                        }
+                    }
+                    return {
+                        country: this.countries.find(c => c.code === 'YE') || this.countries[0],
+                        local: fullNumber
+                    };
+                },
+
+                openEditModal(customerId) {
+                    try {
+                        this.errors = {};
+                        const customer = this.customersList.find(c => c.id === customerId);
+                        if (!customer) {
+                            alert('تعذر العثور على بيانات العميل');
+                            return;
+                        }
+
+                        let parsedPhone;
+                        try {
+                            parsedPhone = this.parsePhoneNumber(customer.phone);
+                        } catch(e) {
+                            console.error('Phone parsing error:', e);
+                            parsedPhone = {
+                                country: this.countries.find(c => c.code === 'YE') || this.countries[0],
+                                local: customer.phone || ''
+                            };
+                        }
+
+                        this.editCustomer.id = customer.id;
+                        this.editCustomer.name = customer.name;
+                        this.editCustomer.phone_local = parsedPhone.local;
+                        this.editCustomer.phone_country = parsedPhone.country;
+                        this.editCustomer.url = '{{ route('customers.index') }}/' + customer.id;
+
+                        this.editModalOpen = true; 
+                    } catch (error) {
+                        alert('حدث خطأ غير متوقع: ' + error.message);
+                    }
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('حدث خطأ في الاتصال بالخادم.');
-            } finally {
-                this.isSubmitting = false;
             }
         }
-    }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
-
-        <div class="flex justify-between items-center px-2">
-            <div>
-                <h1 class="text-2xl font-black tracking-tight font-headline text-slate-800">العملاء</h1>
-                <p class="mt-0.5 text-xs font-semibold text-slate-400">
-                    إجمالي <span class="text-primary">{{ $customers->total() }}</span> عميل مسجل
-                </p>
-            </div>
-            <button type="button" @click="openCreateModal()"
-                class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-xl transition-all bg-primary shadow-primary/20 active:scale-95">
-                <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
-            </button>
-        </div>
-
-        <div class="px-2">
-            <div class="relative group">
-                <span
-                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</span>
-                <input type="text" x-model="searchQuery" placeholder="ابحث باسم العميل أو رقم الهاتف..."
-                    class="w-full h-14 pr-12 pl-12 rounded-[1.25rem] border-none bg-white shadow-sm ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 transition-all font-headline text-sm text-slate-700 outline-none">
-
-                <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''" style="display: none;"
-                    class="flex absolute left-4 top-1/2 justify-center items-center w-8 h-8 rounded-xl transition-transform -translate-y-1/2 bg-slate-50 text-slate-400 active:scale-95">
-                    <span class="text-lg material-symbols-outlined">close</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="px-2 space-y-4">
-            @forelse ($customers as $customer)
-                @php
-                    $balance = ($customer->sum_debit ?? 0) - ($customer->sum_credit ?? 0);
-                @endphp
-                {{-- 💡 أضفنا x-data="openMenu: false" هنا، وحذفنا overflow-hidden --}}
-                <div x-data="{ openMenu: false }"
-                    x-show="searchQuery === '' || '{{ $customer->name }}'.includes(searchQuery) || '{{ $customer->phone }}'.includes(searchQuery)"
-                    class="bg-white rounded-[1.75rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-50 relative overflow-visible active:scale-[0.98] transition-all">
-
-                    <div class="flex relative z-10 gap-3 items-start mb-5">
-
-                        {{-- الصورة الرمزية (Avatar) --}}
-                        <div
-                            class="flex justify-center items-center w-12 h-12 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
-                            @php
-                                $words = explode(' ', $customer->name);
-                                $first = mb_substr($words[0] ?? '', 0, 1, 'utf-8');
-                                $second = isset($words[1]) ? mb_substr($words[1], 0, 1, 'utf-8') : '';
-                                echo $first . $second;
-                            @endphp
-                        </div>
-
-                        {{-- بيانات العميل --}}
-                        <div class="flex-1 pt-0.5 min-w-0">
-                            <h3 class="mb-1 text-sm font-black leading-none truncate font-headline text-slate-800">
-                                {{ $customer->name }}
-                            </h3>
-                            <div class="flex gap-1.5 items-center mt-1.5 text-slate-500">
-                                <span class="material-symbols-outlined text-[14px] text-primary/60">phone_iphone</span>
-                                <x-phone-number :value="$customer->phone" class="font-mono text-[11px] font-bold tracking-wider" />
-                            </div>
-                            <div class="flex gap-1.5 items-center mt-1.5 text-slate-500">
-                                <span class="material-symbols-outlined text-[14px] text-primary/60">store</span>
-                                <span class="text-xs text-gray-500">{{ $customer->branch->name ?? 'N/A' }}</span>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="text-xs text-gray-500">{{ $customer->created_at->diffForHumans() }}</span>
-                        </div>
-                    
-
-                        {{-- 💡 القائمة المنسدلة للإجراءات (Kebab Menu) --}}
-                        <div class="relative z-50 shrink-0">
-                            <button type="button" @click="openMenu = !openMenu" @click.away="openMenu = false"
-                                class="flex justify-center items-center -mr-2 w-8 h-8 rounded-full transition-colors text-slate-400 hover:bg-slate-100 hover:text-slate-700 focus:outline-none">
-                                <span class="material-symbols-outlined text-[22px]">more_vert</span>
-                            </button>
-
-                            <div x-show="openMenu" x-transition.opacity.duration.200ms x-cloak
-                                class="absolute top-full left-0 mt-1 w-44 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-[60] overflow-hidden py-1.5">
-
-                                {{-- ملف العميل (التفاصيل) --}}
-                                <a href="{{ route('customers.show', $customer->id) }}"
-                                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-primary/5 hover:text-primary">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                    ملف العميل
-                                </a>
-
-                                {{-- مراسلة واتساب --}}
-                                <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
-                                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-600">
-
-                                    {{-- أيقونة واتساب الرسمية باللون الأخضر --}}
-                                    <svg class="w-[18px] h-[18px] fill-[#25D366]" viewBox="0 0 24 24"
-                                        xmlns="http://www.w3.org/2000/svg">
-                                        <path
-                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                    </svg>
-
-                                    مراسلة (واتساب)
-                                </a>
-
-                                <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
-
-                                {{-- تعديل البيانات --}}
-                                <button type="button"
-                                    @click="openMenu = false; openEditModal({{ $customer->id }}, {{ json_encode($customer->name) }}, {{ json_encode($customer->phone) }})"
-                                    class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right transition-colors text-slate-600 hover:bg-amber-50 hover:text-amber-600">
-                                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                    تعديل البيانات
-                                </button>
-
-                                {{-- حذف العميل --}}
-                                {{-- <button type="button"
-                                    @click="openMenu = false; openDeleteModal({{ $customer->id }}, {{ json_encode($customer->name) }})"
-                                    class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right text-rose-500 transition-colors hover:bg-rose-50">
-                                    <span class="material-symbols-outlined text-[18px]">delete_outline</span>
-                                    حذف العميل
-                                </button> --}}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-2 p-3 rounded-2xl border bg-slate-50 border-slate-100/50">
-                        <div class="flex-1 text-center">
-                            <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
-                            <span
-                                class="block text-sm font-black text-slate-700">{{ $customer->sent_shipments_count ?? 0 }}</span>
-                        </div>
-                        <div class="w-px bg-slate-200/60"></div>
-                        <div class="flex-1 text-center">
-                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد له</span>
-                            <span
-                                class="block text-sm font-black text-emerald-600">{{ number_format($customer->sum_credit ?? 0, 2) }}</span>
-                        </div>
-                        <div class="w-px bg-slate-200/60"></div>
-                        <div class="flex-1 text-center">
-                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد عليه</span>
-                            <span
-                                class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($customer->sum_debit ?? 0, 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-            @empty
-                <div
-                    class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 mx-2 shadow-sm">
-                    <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-200">
-                        <span class="text-6xl material-symbols-outlined">group_off</span>
-                    </div>
-                    <p class="text-lg font-bold font-headline text-slate-400">لم نعثر على أي عملاء</p>
-                </div>
-            @endforelse
-
-            <div x-show="searchQuery !== '' && !Array.from(document.querySelectorAll('.space-y-4 > div[x-show]')).some(el => el.style.display !== 'none')"
-                style="display: none;"
-                class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 mx-2 shadow-sm">
-                <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-200">
-                    <span class="text-6xl material-symbols-outlined">search_off</span>
-                </div>
-                <p class="text-lg font-bold font-headline text-slate-400">لا يوجد نتائج للبحث</p>
-            </div>
-        </div>
-
-        <div class="px-2 mt-4" x-show="searchQuery === ''">
-            {{ $customers->links('vendor.pagination.mobile') }}
-        </div>
-
-        <div x-show="showCreateModal" x-cloak x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 translate-y-full"
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
-
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()"></div>
-
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
-                <div @click="closeModals()"
-                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
-                </div>
-
-                <div class="flex justify-between items-center px-2 mb-8">
-                    <h3 class="text-xl font-black font-headline text-slate-800">إضافة عميل جديد</h3>
-                    <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitForm('{{ route('customers.store') }}', 'POST', createCustomerData)"
-                    class="px-2 space-y-5">
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">الاسم الكامل <span
-                                class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
-                            <input type="text" x-model="createCustomerData.name" placeholder="مثلاً: محمد عبدالله"
-                                required
-                                class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
-                        </div>
-                        <template x-if="errors.name">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
-                        </template>
-                    </div>
-
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries', []))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        fullPhone: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                            this.$watch('selectedCountry', () => this.updateFullPhone());
-                        },
-                        updateFullPhone() {
-                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                            createCustomerData.phone = this.fullPhone;
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }">
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
-                                class="text-rose-500">*</span></label>
-
-                        <div class="relative">
-                            <div class="flex overflow-hidden relative items-center rounded-2xl ring-1 transition-all group bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"
-                                :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
-
-                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
-
-                                <div
-                                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
-                                    <span class="material-symbols-outlined">call</span>
-                                </div>
-
-                                <button type="button" @click="open = !open"
-                                    class="flex gap-2 items-center px-3 h-14 border-r transition-colors bg-slate-100 border-slate-200 shrink-0 hover:bg-slate-200">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                    <span class="text-sm font-bold text-slate-600 dir-ltr"
-                                        x-text="selectedCountry?.dial_code"></span>
-                                    <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
-                                    </template>
-                                </button>
-                            </div>
-
-                            <div x-show="open" @click.outside="open = false" x-transition x-cloak
-                                class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
-                                <div class="p-2 border-b border-slate-50">
-                                    <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                        class="px-4 py-2 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 font-headline">
-                                </div>
-                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
-                                    <template x-for="country in filteredCountries" :key="country.code">
-                                        <div @click="selectedCountry = country; open = false; search = ''"
-                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
-                                                fill="none" xmlns="http://www.w3.org/2000/svg"
-                                                x-html="country.svg"></svg>
-                                            <span
-                                                class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
-                                                x-text="country.name"></span>
-                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
-                                                x-text="country.dial_code"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                        <template x-if="errors.phone">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.phone[0]"></p>
-                        </template>
-                    </div>
-
-                    <button type="submit" :disabled="isSubmitting"
-                        class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
-                        <span x-show="!isSubmitting" class="material-symbols-outlined">save</span>
-                        <span x-show="isSubmitting"
-                            class="animate-spin material-symbols-outlined">progress_activity</span>
-                        <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ بيانات العميل'"></span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div x-show="showEditModal" x-cloak x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 translate-y-full"
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
-
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
-            </div>
-
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
-                <div @click="closeModals()"
-                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
-                </div>
-
-                <div class="flex justify-between items-center px-2 mb-8">
-                    <h3 class="text-xl font-black font-headline text-slate-800">تعديل بيانات العميل</h3>
-                    <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-slate-100">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <form @submit.prevent="submitForm(editCustomerData.url, 'POST', { ...editCustomerData, _method: 'PUT' })"
-                    class="px-2 space-y-5">
-                    <div>
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">الاسم الكامل <span
-                                class="text-rose-500">*</span></label>
-                        <div class="relative">
-                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined"
-                                :class="errors.name ? 'text-red-400' : 'text-slate-400'">person</span>
-                            <input type="text" x-model="editCustomerData.name" required
-                                class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white font-headline"
-                                :class="errors.name ? 'ring-red-300 focus:ring-red-400' :
-                                    'ring-slate-100 focus:ring-2 focus:ring-primary/20'">
-                        </div>
-                        <template x-if="errors.name">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.name[0]"></p>
-                        </template>
-                    </div>
-
-                    <div x-data="{
-                        open: false,
-                        search: '',
-                        countries: @js(array_values(config('countries', []))),
-                        selectedCountry: null,
-                        localPhoneNumber: '',
-                        fullPhone: '',
-                        init() {
-                            this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-                            this.$watch('localPhoneNumber', () => this.updateFullPhone());
-                            this.$watch('selectedCountry', () => this.updateFullPhone());
-                        },
-                        updateFullPhone() {
-                            this.fullPhone = this.localPhoneNumber ? (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber : '';
-                            editCustomerData.phone = this.fullPhone;
-                        },
-                        handleSetPhone(phoneString) {
-                            if (!phoneString) {
-                                this.localPhoneNumber = '';
-                                return;
-                            }
-                            let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
-                            if (matched) {
-                                this.selectedCountry = matched;
-                                this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
-                            } else {
-                                this.localPhoneNumber = phoneString;
-                            }
-                            this.updateFullPhone();
-                        },
-                        get filteredCountries() {
-                            if (this.search === '') return this.countries;
-                            return this.countries.filter(c => c.name.toLowerCase().includes(this.search.toLowerCase()) || c.dial_code.includes(this.search));
-                        }
-                    }" @set-edit-phone.window="handleSetPhone($event.detail.phone)">
-                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">رقم الهاتف <span
-                                class="text-rose-500">*</span></label>
-
-                        <div class="relative">
-                            <div class="flex overflow-hidden relative items-center rounded-2xl ring-1 transition-all group bg-slate-50 focus-within:bg-white ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"
-                                :class="errors.phone ? 'ring-red-300 focus-within:ring-red-400' : ''">
-
-                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    
-                                    class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
-
-                                <div
-                                    class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
-                                    <span class="material-symbols-outlined">call</span>
-                                </div>
-
-                                <button type="button" @click="open = !open"
-                                    class="flex gap-2 items-center px-3 h-14 border-r transition-colors bg-slate-100 border-slate-200 shrink-0 hover:bg-slate-200">
-                                    <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                    <span class="text-sm font-bold text-slate-600 dir-ltr"
-                                        x-text="selectedCountry?.dial_code"></span>
-                                    <template x-if="selectedCountry?.svg">
-                                        <svg class="w-6 h-auto rounded-sm shadow-sm" viewBox="0 0 36 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" x-html="selectedCountry.svg"></svg>
-                                    </template>
-                                </button>
-                            </div>
-
-                            <div x-show="open" @click.outside="open = false" x-transition x-cloak
-                                class="absolute top-[calc(100%+6px)] left-0 z-50 w-full sm:w-[320px] max-h-60 bg-white rounded-2xl border border-slate-100 shadow-xl overflow-hidden">
-                                <div class="p-2 border-b border-slate-50">
-                                    <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
-                                        class="px-4 py-2 w-full text-sm rounded-xl transition-colors outline-none bg-slate-50 focus:bg-slate-100 hover:bg-slate-100 font-headline">
-                                </div>
-                                <div class="overflow-y-auto max-h-40 custom-scrollbar">
-                                    <template x-for="country in filteredCountries" :key="country.code">
-                                        <div @click="selectedCountry = country; open = false; search = ''"
-                                            class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                            <svg class="w-5 h-auto rounded-sm shadow-sm shrink-0" viewBox="0 0 36 24"
-                                                fill="none" xmlns="http://www.w3.org/2000/svg"
-                                                x-html="country.svg"></svg>
-                                            <span
-                                                class="flex-grow text-sm font-medium truncate text-slate-700 font-headline"
-                                                x-text="country.name"></span>
-                                            <span class="font-mono text-xs font-bold text-slate-500 shrink-0 dir-ltr"
-                                                x-text="country.dial_code"></span>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </div>
-                        <template x-if="errors.phone">
-                            <p class="mt-2 text-xs font-bold text-red-500" x-text="errors.phone[0]"></p>
-                        </template>
-                    </div>
-
-                    <button type="submit" :disabled="isSubmitting"
-                        class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95 disabled:opacity-70">
-                        <span x-show="!isSubmitting" class="material-symbols-outlined">update</span>
-                        <span x-show="isSubmitting"
-                            class="animate-spin material-symbols-outlined">progress_activity</span>
-                        <span x-text="isSubmitting ? 'جاري الحفظ...' : 'حفظ التعديلات'"></span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div x-show="showDeleteModal" x-cloak x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 translate-y-full"
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
-
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
-            </div>
-
-            <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
-                <div @click="closeModals()"
-                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
-                </div>
-
-                <div
-                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-red-50 text-red-500 rounded-[1.5rem]">
-                    <span class="text-4xl material-symbols-outlined">delete_forever</span>
-                </div>
-
-                <h3 class="mb-3 text-2xl font-black font-headline text-slate-800">تأكيد الحذف</h3>
-
-                <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
-                    هل أنت متأكد من أنك تريد حذف العميل <br>
-                    <span class="text-base font-bold text-slate-800 font-headline"
-                        x-text="deleteCustomerData.name"></span>؟<br>
-                    {{-- <span class="text-red-500/80">لا يمكن حذف عميل لديه حركات مالية.</span> --}}
-                </p>
-
-                <form @submit.prevent="submitForm(deleteCustomerData.url, 'POST', { _method: 'DELETE' })"
-                    class="flex gap-3 px-2">
-                    <button type="button" @click="closeModals()"
-                        class="flex-1 py-4 text-sm font-bold rounded-2xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 font-headline">
-                        تراجع
-                    </button>
-
-                    <button type="submit" :disabled="isSubmitting"
-                        class="flex-1 py-4 text-sm font-bold text-white bg-red-500 rounded-2xl shadow-lg transition-all hover:bg-red-600 shadow-red-500/30 active:scale-95 font-headline">
-                        <span x-show="!isSubmitting">نعم، احذف</span>
-                        <span x-show="isSubmitting"
-                            class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-    </div>
+    </script>
 @endsection

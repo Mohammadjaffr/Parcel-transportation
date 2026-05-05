@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('passengers', function (Blueprint $table) {
             $table->id();
             $table->date('date');                         
-            $table->string('day');                         
             $table->string('passenger_number');            
             $table->string('location');                    
-            $table->integer('count')->default(0);         
+            $table->integer('count')->default(1);         
             $table->decimal('total_commission', 10, 2);   
-            $table->string('broker');                
             $table->foreignId('driver_id')->constrained('drivers')->onDelete('cascade');  
+            $table->foreignId('customer_id')->nullable()->constrained('customers')->nullOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
             $table->text('note')->nullable();             
             $table->timestamps();
         });
