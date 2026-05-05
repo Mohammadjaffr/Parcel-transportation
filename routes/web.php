@@ -97,8 +97,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('passengers', PassengersController::class);
     Route::resource('offices', OfficeController::class);
     Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])
-    ->name('customers.addPayment');
+    Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])->name('customers.addPayment');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
     // shipmentpackage outgoing
     Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
@@ -216,9 +216,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/api/branches/{branch}/balance', [BranchFinanceController::class, 'apiBranchBalance'])
         ->name('api.branch.balance');
 
-    // Dashboard النظام
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard.index');
+   
 
     // التقارير
     Route::get('/reports', [ReportController::class, 'index'])

@@ -22,6 +22,9 @@ class CustomerController extends Controller
 {
     $user = auth()->user();
     
+    // 💡 1. استقبال الفلتر من الرابط (الافتراضي هو 'all')
+    $filter = $request->query('filter', 'all');
+
     // ========================================================
     // 📊 جلب العملاء مع الإحصائيات (N+1 Query Optimization)
     // ========================================================
@@ -44,6 +47,17 @@ class CustomerController extends Controller
         ->where('app_id', $user->app_id);
 
     // ========================================================
+    // 💰 فلترة المديونيات (بناءً على الأزرار)
+    // ========================================================
+    if ($filter === 'debtors') {
+        // عليهم ديون: (الموجب - السالب) يجب أن يكون أقل من صفر
+        $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) < 0');
+    } elseif ($filter === 'creditors') {
+        // حسابات مصفرة أو لهم رصيد: (الموجب - السالب) يجب أن يكون صفر أو أكبر
+        $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) >= 0');
+    }
+
+    // ========================================================
     // 🔍 البحث
     // ========================================================
     if ($request->filled('search')) {
@@ -57,11 +71,12 @@ class CustomerController extends Controller
 
     $customers = $query->latest()->paginate(10)->withQueryString();
 
+    // 💡 2. تمرير متغير $filter للفيو لكي تتلون الأزرار بشكل صحيح
     if ($request->isMobile) {
-        return view('mobile.pages.people.customers.index', compact('customers'));
+        return view('mobile.pages.people.customers.index', compact('customers', 'filter'));
     }
 
-    return view('pages.customers.index', compact('customers'));
+    return view('pages.customers.index', compact('customers', 'filter'));
 }
     public function create()
     {
