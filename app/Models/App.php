@@ -1,17 +1,18 @@
 <?php
 
-    // معتمد
-    namespace App\Models;
+// معتمد
+namespace App\Models;
 
 use App\Models\OfficeConnection;
 use App\Models\Service;
+use App\Traits\HasServices;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
     class App extends Model
     {
-        use HasFactory;
+        use HasFactory, HasServices;
         protected static function booted()
         {
             static::created(function ($app) {
@@ -48,7 +49,9 @@ use Illuminate\Support\Facades\Cache;
         }
         public function services()
         {
-            return $this->belongsToMany(Service::class)->withPivot('is_active')->withTimestamps();
+        return $this->belongsToMany(Service::class, 'app_service')
+                    ->withPivot('is_active')
+                    ->withTimestamps();
         }
 
         public function hasService($serviceSlug)

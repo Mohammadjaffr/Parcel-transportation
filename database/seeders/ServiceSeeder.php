@@ -17,6 +17,12 @@ class ServiceSeeder extends Seeder
                 'is_global_active' => true,
             ],
             [
+                'name' => 'الركاب',
+                'slug' => 'Passengers',
+                'description' => 'إدارة الركاب',
+                'is_global_active' => true,
+            ],
+            [
                 'name' => 'المستخدمين',
                 'slug' => 'Users',
                 'description' => 'إدارة المستخدمين',
