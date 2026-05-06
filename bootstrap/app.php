@@ -13,6 +13,7 @@ use App\Http\Middleware\VerifyAppAccessMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\CheckServiceAccess;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\MarkNotificationAsRead::class,
             \App\Http\Middleware\CheckUserBanned::class,
+
         ]); 
         $middleware->alias([
             "user"=>  UserMiddleware::class,
@@ -37,6 +39,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.key' => CheckAdminApiKey::class,
             'active.Subscription' => CheckActiveSubscription::class,
             'check.limit' => CheckSubscriptionLimits::class,
+            'check.service' => CheckServiceAccess::class,
         ]);
         $middleware->appendToGroup('api', [
         ]);
