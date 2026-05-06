@@ -88,33 +88,23 @@ class PassengersController extends Controller
         ));
     }
 
-    public function store(Request $request)
+public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
-
+            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'customer_name' => ['nullable', 'string', 'max:255'],
-
-            'driver_id' => ['nullable', 'exists:drivers,id'],
-            'driver_phone' => ['required', 'string', 'max:255'],
-            'driver_name' => ['nullable', 'string', 'max:255'],
-
+            
+            'customer_id'    => ['nullable', 'exists:customers,id'],
+            'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
+            'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
+            'driver_id'    => ['nullable', 'exists:drivers,id'],
+            'driver_phone' => ['required_without:driver_id', 'string', 'max:255'],
+            'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
             'total_commission' => ['required', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
-        ], [
-            'date.required' => 'تاريخ الرحلة مطلوب.',
-            'passenger_number.required' => 'رقم الراكب مطلوب.',
-            'driver_phone.required' => 'رقم السائق مطلوب.',
-            'driver_id.exists' => 'السائق المحدد غير صحيح.',
-            'location.required' => 'المكان مطلوب.',
-            'count.required' => 'عدد الركاب مطلوب.',
-            'count.min' => 'عدد الركاب يجب أن يكون 1 على الأقل.',
-            'total_commission.required' => 'إجمالي العمولة مطلوب.',
-            'customer_id.exists' => 'العميل المحدد غير صحيح.',
         ]);
 
         if ($validator->fails()) {
@@ -125,36 +115,27 @@ class PassengersController extends Controller
             $data = $validator->validated();
 
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
+            $customerPhone = $this->normalizePhone($data['customer_phone'] ?? '');
+            $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
-            $data['customer_id'] = $data['customer_id']
-                ?: $this->resolvePassengerCustomer($data['passenger_number'], $data['customer_name'] ?? null);
+            // الحل هنا: استخدام (?? null) لتفادي الخطأ
+            $data['customer_id'] = ($data['customer_id'] ?? null)
+                ?: $this->resolvePassengerCustomer($customerPhone, $data['customer_name'] ?? null);
 
-            $data['driver_id'] = $data['driver_id']
-                ?: $this->resolvePassengerDriver($data['driver_phone'], $data['driver_name'] ?? null);
+            // الحل هنا أيضاً للسائق
+            $data['driver_id'] = ($data['driver_id'] ?? null)
+                ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
-            unset($data['customer_name'], $data['driver_phone'], $data['driver_name']);
+            unset($data['customer_name'], $data['customer_phone'], $data['driver_phone'], $data['driver_name']);
 
             $passenger = Passengers::create($data);
 
-            AdminLoggerService::log(
-                'إضافة راكب',
-                'Passengers',
-                $passenger->id,
-                "تم إضافة الراكب رقم {$passenger->passenger_number}"
-            );
-
-            return WebResponseClass::sendResponse(
-                'تمت الإضافة!',
-                'تم حفظ الراكب بنجاح.',
-                'حسناً',
-                'passengers.index'
-            );
+            return WebResponseClass::sendResponse('تمت الإضافة!', 'تم حفظ الراكب بنجاح.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
     public function show(Request $request, $id)
     {
         $passenger = Passengers::with(['driver', 'customer', 'branch'])->findOrFail($id);
@@ -186,35 +167,25 @@ class PassengersController extends Controller
         ));
     }
 
-    public function update(Request $request, $id)
+  public function update(Request $request, $id)
     {
         $passenger = Passengers::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
-
+            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'customer_name' => ['nullable', 'string', 'max:255'],
-
-            'driver_id' => ['nullable', 'exists:drivers,id'],
-            'driver_phone' => ['required', 'string', 'max:255'],
-            'driver_name' => ['nullable', 'string', 'max:255'],
-
+            
+            'customer_id'    => ['nullable', 'exists:customers,id'],
+            'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
+            'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
+            'driver_id'    => ['nullable', 'exists:drivers,id'],
+            'driver_phone' => ['required_without:driver_id', 'string', 'max:255'],
+            'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
             'total_commission' => ['required', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
-        ], [
-            'date.required' => 'تاريخ الرحلة مطلوب.',
-            'passenger_number.required' => 'رقم الراكب مطلوب.',
-            'driver_phone.required' => 'رقم السائق مطلوب.',
-            'driver_id.exists' => 'السائق المحدد غير صحيح.',
-            'location.required' => 'المكان مطلوب.',
-            'count.required' => 'عدد الركاب مطلوب.',
-            'count.min' => 'عدد الركاب يجب أن يكون 1 على الأقل.',
-            'total_commission.required' => 'إجمالي العمولة مطلوب.',
-            'customer_id.exists' => 'العميل المحدد غير صحيح.',
         ]);
 
         if ($validator->fails()) {
@@ -225,31 +196,22 @@ class PassengersController extends Controller
             $data = $validator->validated();
 
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
+            $customerPhone = $this->normalizePhone($data['customer_phone'] ?? '');
+            $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
-            $data['customer_id'] = $data['customer_id']
-                ?: $this->resolvePassengerCustomer($data['passenger_number'], $data['customer_name'] ?? null);
+            // الحل هنا: استخدام (?? null) لتفادي الخطأ
+            $data['customer_id'] = ($data['customer_id'] ?? null)
+                ?: $this->resolvePassengerCustomer($customerPhone, $data['customer_name'] ?? null);
 
-            $data['driver_id'] = $data['driver_id']
-                ?: $this->resolvePassengerDriver($data['driver_phone'], $data['driver_name'] ?? null);
+            $data['driver_id'] = ($data['driver_id'] ?? null)
+                ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
-            unset($data['customer_name'], $data['driver_phone'], $data['driver_name']);
+            unset($data['customer_name'], $data['customer_phone'], $data['driver_phone'], $data['driver_name']);
 
             $passenger->update($data);
 
-            AdminLoggerService::log(
-                'تحديث راكب',
-                'Passengers',
-                $passenger->id,
-                "تحديث بيانات الراكب {$passenger->passenger_number}"
-            );
-
-            return WebResponseClass::sendResponse(
-                'تم التحديث!',
-                'تم تعديل بيانات الراكب بنجاح.',
-                'حسناً',
-                'passengers.index'
-            );
+            return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب بنجاح.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
@@ -330,7 +292,7 @@ class PassengersController extends Controller
 
         $customer = Customer::query()
             ->where('phone', $phone)
-            ->when($user?->app_id, fn ($q) => $q->where('app_id', $user->app_id))
+            ->when($user?->app_id, fn($q) => $q->where('app_id', $user->app_id))
             ->first();
 
         if ($customer) {

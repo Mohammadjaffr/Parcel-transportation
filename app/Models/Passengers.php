@@ -18,6 +18,7 @@ class Passengers extends Model
         'branch_id',
         'driver_id',
         'note',
+        'status'
     ];
 
     public function driver()

@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('passengers', function (Blueprint $table) {
             $table->id();
             $table->date('date');                         
-            $table->string('passenger_number');            
+            $table->string('passenger_number');  
+            $table->enum('status', ['pending', 'completed', 'cancel'])->default('pending');          
             $table->string('location');                    
             $table->integer('count')->default(1);         
             $table->decimal('total_commission', 10, 2);   

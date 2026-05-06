@@ -3,52 +3,9 @@
 @section('title', 'الركاب')
 
 @section('content')
-<div x-data="{
-    searchQuery: '',
-    showCreateModal: false,
-    showEditModal: false,
-    showDeleteModal: false,
-    deletePassengerData: {
-        id: null,
-        passenger_number: '',
-        url: ''
-    },
-    editPassengerData: {
-        id: null,
-        date: '',
-        day: '',
-        passenger_number: '',
-        location: '',
-        count: null,
-        total_commission: null,
-        broker: '',
-        driver_id: null,
-        driver_name: '',
-        driver_phone: '',
-        note: '',
-        url: ''
-    },
-    openDeleteModal(id, passengerNumber) {
-        this.deletePassengerData = { id: id, passenger_number: passengerNumber, url: '{{ url('passengers') }}/' + id };
-        this.showDeleteModal = true;
-    },
-    openEditModal(id, date, day, passengerNumber, location, count, totalCommission, broker, driverId, driverName, driverPhone, note) {
-        this.editPassengerData = {
-            id: id, date: date, day: day, passenger_number: passengerNumber, location: location,
-            count: count, total_commission: totalCommission, broker: broker || '', driver_id: driverId,
-            driver_name: driverName || '', driver_phone: driverPhone || '', note: note || '', url: '{{ url('passengers') }}/' + id
-        };
-        this.showEditModal = true;
-    },
-    closeModals() {
-        this.showCreateModal = false;
-        this.showEditModal = false;
-        this.showDeleteModal = false;
-    }
-}" class="flex relative flex-col gap-6 pb-24 min-h-screen">
+<div x-data="passengerMobileRegistry()" class="flex relative flex-col gap-6 pb-24 min-h-screen font-body bg-slate-50/50">
 
-    <!-- Header Section -->
-    <div class="flex justify-between items-center px-2 mt-2">
+    <div class="flex justify-between items-center px-4 mt-4">
         <div>
             <h1 class="text-2xl font-black tracking-tight font-headline text-slate-800">الركاب</h1>
             <p class="mt-0.5 text-xs font-semibold text-slate-400">
@@ -56,18 +13,17 @@
             </p>
         </div>
         <button type="button" @click="showCreateModal = true" 
-            class="flex justify-center items-center w-12 h-12 text-white rounded-2xl shadow-xl transition-all bg-primary shadow-primary/20 active:scale-95">
+            class="flex justify-center items-center w-12 h-12 text-white rounded-[1rem] shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
             <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
         </button>
     </div>
 
-    <!-- Search Bar Section -->
-    <div class="px-2">
+    <div class="px-4">
         <div class="relative group">
             <span class="absolute right-4 top-1/2 transition-colors -translate-y-1/2 material-symbols-outlined text-slate-400 group-focus-within:text-primary">search</span>
             <input type="text" x-model="searchQuery" 
-                placeholder="ابحث برقم الراكب أو المكان..."
-                class="w-full h-14 pr-12 pl-12 rounded-[1.25rem] border-none bg-white shadow-sm ring-1 ring-slate-100 focus:ring-2 focus:ring-primary/20 transition-all font-headline text-sm text-slate-700 outline-none">
+                placeholder="ابحث برقم الراكب، العميل، السائق أو المكان..."
+                class="w-full h-14 pr-12 pl-12 rounded-[1.25rem] border-none bg-white shadow-sm ring-1 ring-slate-200/60 focus:ring-2 focus:ring-primary/40 transition-all font-headline text-sm text-slate-700 outline-none">
             
             <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''" style="display: none;"
                 class="flex absolute left-4 top-1/2 justify-center items-center w-8 h-8 rounded-xl transition-transform -translate-y-1/2 bg-slate-50 text-slate-400 active:scale-95">
@@ -76,114 +32,712 @@
         </div>
     </div>
 
-    <!-- List Grid -->
-    <div class="px-2 space-y-4">
+    <div class="pl-4 pr-4 -mt-2">
+        <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <style> .custom-scrollbar::-webkit-scrollbar { display: none; } </style>
+            
+            <button type="button" @click="selectedStatus = ''" 
+                :class="selectedStatus === '' ? 'bg-slate-800 text-white shadow-md' : 'bg-white text-slate-500 border border-slate-200'"
+                class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
+                الكل
+            </button>
+            <button type="button" @click="selectedStatus = 'pending'" 
+                :class="selectedStatus === 'pending' ? 'bg-slate-500 text-white shadow-md' : 'bg-white text-slate-500 border border-slate-200'"
+                class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
+                قيد الانتظار
+            </button>
+            <button type="button" @click="selectedStatus = 'completed'" 
+                :class="selectedStatus === 'completed' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'bg-white text-slate-500 border border-slate-200'"
+                class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
+                مكتمل
+            </button>
+            <button type="button" @click="selectedStatus = 'cancel'" 
+                :class="selectedStatus === 'cancel' ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20' : 'bg-white text-slate-500 border border-slate-200'"
+                class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
+                ملغي
+            </button>
+        </div>
+    </div>
+
+    <div class="px-4 space-y-4">
         @forelse($passengers as $passenger)
-            <div x-show="searchQuery === '' || '{{ $passenger->passenger_number }}'.includes(searchQuery) || '{{ $passenger->location }}'.includes(searchQuery)"
-                class="bg-white rounded-[1.75rem] p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-50 relative overflow-hidden active:scale-[0.98] transition-all">
+            @php
+                // توحيد الحالة للـ UI والـ Backend بناءً على 3 حالات فقط
+                $rawStatus = strtolower($passenger->status ?? 'pending');
+                if ($rawStatus == 'completed' || $rawStatus == 'مكتمل') {
+                    $statusLabel = 'مكتمل'; $statusKey = 'completed'; $statusClass = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                } elseif ($rawStatus == 'cancel' || $rawStatus == 'ملغي') {
+                    $statusLabel = 'ملغي'; $statusKey = 'cancel'; $statusClass = 'bg-rose-50 text-rose-600 border-rose-100';
+                } else {
+                    $statusLabel = 'قيد الانتظار'; $statusKey = 'pending'; $statusClass = 'bg-slate-100 text-slate-600 border-slate-200';
+                }
+            @endphp
+
+            <div x-show="matchSearch({{ json_encode($passenger->passenger_number) }}, {{ json_encode($passenger->location) }}, {{ json_encode($passenger->customer->name ?? '') }}, {{ json_encode($passenger->customer->phone ?? '') }}, {{ json_encode($passenger->driver->name ?? '') }}, {{ json_encode($passenger->driver->phone ?? '') }}, {{ json_encode($statusKey) }})"
+                class="bg-white rounded-[1.75rem] p-5 shadow-sm border border-slate-100 relative overflow-hidden active:scale-[0.98] transition-all passenger-card">
                 
-                <!-- Top Info -->
-                <div class="flex relative z-10 gap-4 items-center mb-4">
-                    <div class="flex justify-center items-center w-14 h-14 text-lg font-black bg-gradient-to-br rounded-2xl border shadow-inner from-primary/10 to-primary/5 text-primary font-headline border-primary/5 shrink-0">
-                         <span class="text-3xl material-symbols-outlined">group</span>
+                <div class="absolute top-5 left-5 z-20">
+                    <span class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
+                        {{ $statusLabel }}
+                    </span>
+                </div>
+
+                <div class="flex relative z-10 gap-4 items-center mb-5 pr-1">
+                    <div class="flex justify-center items-center w-12 h-12 text-xl font-black bg-primary/10 rounded-[1rem] border shadow-inner text-primary font-headline border-primary/5 shrink-0">
+                         {{ mb_substr($passenger->customer->name ?? 'ع', 0, 1, 'UTF-8') }}
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="mb-1.5 text-base font-bold leading-none truncate font-headline text-slate-800">{{ $passenger->passenger_number }}</h3>
-                        <div class="flex gap-2 items-center text-slate-500">
-                            <span class="material-symbols-outlined text-[16px] text-primary/60">location_on</span>
-                            <span class="text-xs font-bold">{{ $passenger->location }}</span>
+                    <div class="flex-1 min-w-0 pr-1">
+                        <h3 class="mb-1 text-sm font-bold leading-none truncate font-headline text-slate-800">
+                            {{ $passenger->customer->name ?? 'عميل غير محدد' }}
+                        </h3>
+                        <div class="flex gap-1.5 items-center text-slate-500 mt-1.5">
+                            <span class="material-symbols-outlined text-[14px]">pin</span>
+                            <span class="text-xs font-bold font-mono dir-ltr text-primary">{{ $passenger->passenger_number }}</span>
                         </div>
                     </div>
                     
                     <a href="{{ route('passengers.show', $passenger->id) }}"
-                        class="flex justify-center items-center w-10 h-10 text-indigo-500 bg-indigo-50 rounded-xl transition-all hover:bg-indigo-100 active:scale-90">
+                        class="flex justify-center items-center w-10 h-10 text-slate-400 bg-slate-50 rounded-[1rem] transition-all hover:bg-primary/10 hover:text-primary active:scale-90 shrink-0">
                         <span class="text-xl material-symbols-outlined">visibility</span>
                     </a>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3 p-3 mb-4 rounded-2xl border bg-slate-50/50 border-slate-100">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-slate-400 mb-0.5">العدد والعمولة</span>
-                        <span class="text-xs font-bold text-slate-700">{{ $passenger->count }} ركاب | <span class="text-amber-500">{{ $passenger->total_commission }}</span></span>
+                <div class="grid grid-cols-2 gap-3 p-4 mb-4 rounded-2xl bg-slate-50/80 border border-slate-100/60">
+                    <div class="flex flex-col gap-1">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">location_on</span> المكان
+                        </span>
+                        <span class="text-xs font-bold text-slate-700 truncate">{{ $passenger->location }}</span>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-slate-400 mb-0.5">التاريخ واليوم</span>
-                        <span class="text-xs font-bold text-slate-700">{{ $passenger->date }} - {{ $passenger->day }}</span>
+                    
+                    <div class="flex flex-col gap-1">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">calendar_today</span> التاريخ
+                        </span>
+                        <span class="text-xs font-bold text-slate-700">{{ $passenger->date }}</span>
                     </div>
-                    <div class="flex flex-col col-span-2 pt-2 mt-1 border-t border-slate-100/80">
-                        <span class="text-[10px] font-bold text-slate-400 mb-0.5">السائق</span>
-                        <span class="text-xs font-bold text-primary">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
+
+                    <div class="flex flex-col gap-1 pt-2 border-t border-slate-200/50">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">group</span> العدد
+                        </span>
+                        <span class="text-xs font-bold text-slate-700">{{ $passenger->count }}</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1 pt-2 border-t border-slate-200/50">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">payments</span> العمولة
+                        </span>
+                        <span class="text-xs font-black text-amber-500">{{ number_format($passenger->total_commission, 0) }}</span>
+                    </div>
+
+                    <div class="flex flex-col gap-1 col-span-2 pt-2 mt-1 border-t border-slate-200/50">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">person</span> العميل
+                        </span>
+                        <span class="text-xs font-bold text-slate-700 truncate">
+                            {{ $passenger->customer->name ?? 'غير محدد' }} 
+                            @if($passenger->customer && $passenger->customer->phone)
+                                <span class="text-slate-400 font-mono text-[10px] dir-ltr inline-block ml-1">({{ $passenger->customer->phone }})</span>
+                            @endif
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col gap-1 col-span-2 pt-2 border-t border-slate-200/50">
+                        <span class="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                            <span class="material-symbols-outlined text-[14px]">local_taxi</span> السائق
+                        </span>
+                        <span class="text-xs font-bold text-primary truncate">
+                            {{ $passenger->driver->name ?? 'غير محدد' }} 
+                            @if($passenger->driver && $passenger->driver->phone)
+                                <span class="text-slate-400 font-mono text-[10px] dir-ltr inline-block ml-1">({{ $passenger->driver->phone }})</span>
+                            @endif
+                        </span>
                     </div>
                 </div>
 
-                <!-- Divider -->
-                <div class="mb-4 h-px bg-gradient-to-r from-transparent to-transparent via-slate-100"></div>
-
-                <!-- Actions -->
-                <div class="flex relative z-10 justify-between items-center">
-                    <button type="button" @click="openEditModal({{ $passenger->id }}, {{ json_encode($passenger->date) }}, {{ json_encode($passenger->day) }}, {{ json_encode($passenger->passenger_number) }}, {{ json_encode($passenger->location) }}, {{ $passenger->count ?? 'null' }}, {{ $passenger->total_commission ?? 'null' }}, {{ json_encode($passenger->broker) }}, {{ json_encode($passenger->driver_id) }}, {{ json_encode($passenger->driver->name ?? '') }}, {{ json_encode($passenger->driver->phone ?? '') }}, {{ json_encode($passenger->note) }})"
-                        class="flex gap-2 items-center px-4 py-2 text-xs font-bold rounded-xl border transition-transform bg-primary/5 text-primary font-headline active:scale-95 border-primary/5">
-                        <span class="text-sm material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_square</span>
-                        تعديل
+                <div class="mt-2">
+                    <button type="button" @click="openEditModal({
+                            id: {{ $passenger->id }},
+                            date: {{ json_encode($passenger->date) }},
+                            status: {{ json_encode($statusKey) }},
+                            passenger_number: {{ json_encode($passenger->passenger_number) }},
+                            customer_id: {{ json_encode($passenger->customer_id) }},
+                            customer_name: {{ json_encode($passenger->customer->name ?? '') }},
+                            customer_phone: {{ json_encode($passenger->customer->phone ?? '') }},
+                            driver_id: {{ json_encode($passenger->driver_id) }},
+                            driver_name: {{ json_encode($passenger->driver->name ?? '') }},
+                            driver_phone: {{ json_encode($passenger->driver->phone ?? '') }},
+                            location: {{ json_encode($passenger->location) }},
+                            count: {{ $passenger->count ?? 1 }},
+                            total_commission: {{ $passenger->total_commission ?? 0 }},
+                            note: {{ json_encode($passenger->note) }}
+                        })"
+                        class="flex w-full gap-2 items-center justify-center h-12 text-sm font-bold rounded-[1rem] transition-colors bg-primary/10 text-primary hover:bg-primary/20 font-headline active:scale-95">
+                        <span class="text-[18px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">edit_square</span>
+                        تعديل البيانات
                     </button>
-                     
-                    {{-- <button type="button" @click="openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
-                        class="flex justify-center items-center w-10 h-10 text-red-500 bg-red-50 rounded-xl transition-all hover:bg-red-100 active:scale-90">
-                        <span class="text-xl material-symbols-outlined">delete_outline</span>
-                    </button> --}}
                 </div>
             </div>
         @empty
-            <div class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 mx-2 shadow-sm">
-                <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-200">
+            <div class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm">
+                <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-300">
                     <span class="text-6xl material-symbols-outlined">group_off</span>
                 </div>
                 <p class="text-lg font-bold font-headline text-slate-400">لم نعثر على أي ركاب</p>
             </div>
         @endforelse
 
-        <div x-show="searchQuery !== '' && !Array.from(document.querySelectorAll('.space-y-4 > div[x-show]')).some(el => el.style.display !== 'none')" 
+        <div x-show="(searchQuery !== '' || selectedStatus !== '') && !Array.from(document.querySelectorAll('.passenger-card')).some(el => el.style.display !== 'none')" 
              style="display: none;"
-             class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100 mx-2 shadow-sm">
-            <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-200">
+             class="py-20 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-slate-200 shadow-sm">
+            <div class="flex justify-center items-center mb-6 w-24 h-24 rounded-full bg-slate-50 text-slate-300">
                 <span class="text-6xl material-symbols-outlined">search_off</span>
             </div>
-            <p class="text-lg font-bold font-headline text-slate-400">لا يوجد نتائج للبحث</p>
+            <p class="text-lg font-bold font-headline text-slate-400">لا توجد نتائج مطابقة لفلترك</p>
         </div>
     </div>
 
-    <div class="px-2 mt-4" x-show="searchQuery === ''">
+    <div class="px-4 mt-4" x-show="searchQuery === '' && selectedStatus === ''">
         {{ $passengers->links('vendor.pagination.mobile') }}
     </div>
 
-    {{-- Modals Includes --}}
-    @include('mobile.pages.passengers.model.create')
-    @include('mobile.pages.passengers.model.index')
+    {{-- ================= Create Modal (Bottom Sheet) ================= --}}
+    <div x-show="showCreateModal" x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-full"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-full"
+        class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+        
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
+
+        <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <div @click="closeModals()" class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
+
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-black font-headline text-slate-800">إضافة راكب جديد</h3>
+                <button type="button" @click="closeModals()" class="flex justify-center items-center w-10 h-10 rounded-[1rem] transition-colors bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-rose-500">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form action="{{ route('passengers.store') }}" method="POST" class="space-y-8">
+                @csrf
+                
+                {{-- القسم الأول: معلومات الرحلة --}}
+                <div class="space-y-3">
+                    <h4 class="text-xs font-bold text-slate-400">معلومات الرحلة</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">التاريخ <span class="text-rose-500">*</span></label>
+                            <input type="date" name="date" required value="{{ now()->format('Y-m-d') }}"
+                                class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                        </div>
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">الحالة <span class="text-rose-500">*</span></label>
+                            <select name="status" required class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                                <option value="pending">قيد الانتظار</option>
+                                <option value="completed">مكتمل</option>
+                                <option value="cancel">ملغي</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">المكان <span class="text-rose-500">*</span></label>
+                        <input type="text" name="location" required placeholder="مثال: عدن، حضرموت..."
+                            class="px-4 w-full h-14 text-sm rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                    </div>
+                </div>
+
+                {{-- القسم الثاني: رقم الراكب --}}
+                <div class="space-y-3">
+                    <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">رقم الراكب <span class="text-rose-500">*</span></label>
+                    <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }} })" class="relative">
+                        <input type="hidden" name="passenger_number" :value="fullPhone">
+                        
+                        <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary ring-slate-200" dir="ltr">
+                            <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                <template x-if="selectedCountry?.svg">
+                                    <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                </template>
+                                <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                            </button>
+                            
+                            <input type="tel" x-model="phone" @input="handlePhoneInput" placeholder="7XXXXXXXX" required 
+                                class="flex-1 px-4 w-full h-14 text-base font-bold text-left bg-transparent border-none outline-none font-headline text-slate-800 placeholder-slate-300">
+                            
+                            <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                    <template x-for="country in countries" :key="country.code">
+                                        <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                            <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden shrink-0" x-html="country.svg"></div>
+                                            <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- القسم الثالث: بيانات العميل --}}
+                <div class="space-y-3">
+                    <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العميل <span class="text-rose-500">*</span></label>
+                    <div x-data="recordSelect({ 
+                            records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }}, 
+                            countries: {{ Js::from(array_values(config('countries', []))) }}
+                        })" class="space-y-3">
+                        
+                        <input type="hidden" name="customer_id" :value="selectedId">
+                        <input type="hidden" name="customer_phone" :value="fullPhone">
+                        
+                        <div class="relative">
+                            <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary" :class="selectedId ? 'ring-primary border-primary bg-primary/5' : 'ring-slate-200'" dir="ltr">
+                                <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                    </template>
+                                    <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                                </button>
+                                
+                                <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true" placeholder="رقم العميل" required
+                                    class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300" :class="selectedId ? 'font-bold text-primary' : 'font-bold text-slate-800'">
+                                
+                                <button type="button" x-show="selectedId" @click="resetSelection" class="absolute right-3 top-1/2 z-10 flex justify-center items-center w-7 h-7 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-rose-500 shadow-sm border border-slate-200 transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                
+                                <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                        <template x-for="country in countries" :key="country.code">
+                                            <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                                <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="country.svg"></div>
+                                                <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="showDropdown && phone.length > 0 && !selectedId" @click.outside="showDropdown = false" x-transition x-cloak class="absolute z-[60] w-full mt-2 bg-white rounded-[1rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                <template x-for="record in filteredRecords" :key="record.id">
+                                    <button type="button" @click="selectRecord(record)" class="flex justify-between items-center w-full p-3.5 text-right border-b hover:bg-slate-50 border-slate-50 transition-colors">
+                                        <span class="material-symbols-outlined text-slate-300 text-[20px]">chevron_left</span>
+                                        <div class="flex flex-col items-end gap-0.5">
+                                            <span class="text-sm font-bold text-slate-800 font-headline" x-text="record.name"></span>
+                                            <span class="text-xs text-slate-500 font-mono dir-ltr" x-text="record.phone"></span>
+                                        </div>
+                                    </button>
+                                </template>
+                                <div x-show="filteredRecords.length === 0" class="p-4 text-center bg-slate-50/50">
+                                    <span class="text-xs font-bold text-slate-500">تسجيل عميل جديد</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="text" name="customer_name" x-model="nameInput" :readonly="isExisting" :required="!isExisting" placeholder="اسم العميل"
+                            :class="isExisting ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' : 'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                            class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
+                    </div>
+                </div>
+
+                {{-- القسم الرابع: بيانات السائق --}}
+                <div class="space-y-3">
+                    <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">السائق <span class="text-rose-500">*</span></label>
+                    <div x-data="recordSelect({ 
+                            records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }}, 
+                            countries: {{ Js::from(array_values(config('countries', []))) }}
+                        })" class="space-y-3">
+                        
+                        <input type="hidden" name="driver_id" :value="selectedId">
+                        <input type="hidden" name="driver_phone" :value="fullPhone">
+                        
+                        <div class="relative">
+                            <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary" :class="selectedId ? 'ring-primary border-primary bg-primary/5' : 'ring-slate-200'" dir="ltr">
+                                <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                    </template>
+                                    <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                                </button>
+                                
+                                <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true" placeholder="رقم السائق" required
+                                    class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300" :class="selectedId ? 'font-bold text-primary' : 'font-bold text-slate-800'">
+                                
+                                <button type="button" x-show="selectedId" @click="resetSelection" class="absolute right-3 top-1/2 z-10 flex justify-center items-center w-7 h-7 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-rose-500 shadow-sm border border-slate-200 transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                
+                                <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                        <template x-for="country in countries" :key="country.code">
+                                            <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                                <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="country.svg"></div>
+                                                <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div x-show="showDropdown && phone.length > 0 && !selectedId" @click.outside="showDropdown = false" x-transition x-cloak class="absolute z-[60] w-full mt-2 bg-white rounded-[1rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                <template x-for="record in filteredRecords" :key="record.id">
+                                    <button type="button" @click="selectRecord(record)" class="flex justify-between items-center w-full p-3.5 text-right border-b hover:bg-slate-50 border-slate-50 transition-colors">
+                                        <span class="material-symbols-outlined text-slate-300 text-[20px]">chevron_left</span>
+                                        <div class="flex flex-col items-end gap-0.5">
+                                            <span class="text-sm font-bold text-slate-800 font-headline" x-text="record.name"></span>
+                                            <span class="text-xs text-slate-500 font-mono dir-ltr" x-text="record.phone"></span>
+                                        </div>
+                                    </button>
+                                </template>
+                                <div x-show="filteredRecords.length === 0" class="p-4 text-center bg-slate-50/50">
+                                    <span class="text-xs font-bold text-slate-500">تسجيل سائق جديد</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <input type="text" name="driver_name" x-model="nameInput" :readonly="isExisting" :required="!isExisting" placeholder="اسم السائق"
+                            :class="isExisting ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' : 'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                            class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
+                    </div>
+                </div>
+
+                {{-- القسم الخامس: الحسابات والملاحظات --}}
+                <div class="space-y-3 pt-4 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العدد <span class="text-rose-500">*</span></label>
+                            <input type="number" name="count" required placeholder="1" value="1"
+                                class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                        </div>
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العمولة <span class="text-rose-500">*</span></label>
+                            <input type="number" name="total_commission" step="0.01" required placeholder="0.00"
+                                class="px-4 w-full h-14 text-sm rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-amber-600 font-black">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">ملاحظات</label>
+                        <textarea name="note" rows="2" placeholder="ملاحظات إضافية..."
+                            class="py-4 px-4 w-full text-sm rounded-[1rem] border-none ring-1 transition-all outline-none resize-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                    class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-[1rem] shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95">
+                    <span class="material-symbols-outlined">save</span>
+                    حفظ البيانات
+                </button>
+            </form>
+        </div>
+    </div>
+
+    {{-- ================= Edit Modal (Bottom Sheet) ================= --}}
+    <div x-show="showEditModal" x-cloak
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-full"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-full"
+        class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+        
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
+
+        <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto overflow-y-auto max-h-[90vh] custom-scrollbar">
+            <div @click="closeModals()" class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90"></div>
+
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-black font-headline text-slate-800">تعديل بيانات الراكب</h3>
+                <button type="button" @click="closeModals()" class="flex justify-center items-center w-10 h-10 rounded-[1rem] transition-colors bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-rose-500">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <template x-if="showEditModal">
+                <form :action="editPassengerData.url" method="POST" class="space-y-8">
+                    @csrf
+                    @method('PUT')
+                    
+                    {{-- القسم الأول: معلومات الرحلة --}}
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-slate-400">معلومات الرحلة</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">التاريخ <span class="text-rose-500">*</span></label>
+                                <input type="date" name="date" required x-model="editPassengerData.date"
+                                    class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">الحالة <span class="text-rose-500">*</span></label>
+                                <select name="status" required x-model="editPassengerData.status" class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                                    <option value="pending">قيد الانتظار</option>
+                                    <option value="completed">مكتمل</option>
+                                    <option value="cancel">ملغي</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">المكان <span class="text-rose-500">*</span></label>
+                            <input type="text" name="location" required placeholder="المكان" x-model="editPassengerData.location"
+                                class="px-4 w-full h-14 text-sm rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                        </div>
+                    </div>
+
+                    {{-- القسم الثاني: رقم الراكب --}}
+                    <div class="space-y-3">
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">رقم الراكب <span class="text-rose-500">*</span></label>
+                        <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }}, initialPhone: editPassengerData.passenger_number })" class="relative">
+                            <input type="hidden" name="passenger_number" :value="fullPhone">
+                            
+                            <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary ring-slate-200" dir="ltr">
+                                <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                    </template>
+                                    <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                                </button>
+                                
+                                <input type="tel" x-model="phone" @input="handlePhoneInput" placeholder="7XXXXXXXX" required 
+                                    class="flex-1 px-4 w-full h-14 text-base font-bold text-left bg-transparent border-none outline-none font-headline text-slate-800 placeholder-slate-300">
+                                
+                                <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                        <template x-for="country in countries" :key="country.code">
+                                            <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                                <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden shrink-0" x-html="country.svg"></div>
+                                                <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- القسم الثالث: بيانات العميل --}}
+                    <div class="space-y-3">
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العميل <span class="text-rose-500">*</span></label>
+                        <div x-data="recordSelect({ 
+                                records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }}, 
+                                countries: {{ Js::from(array_values(config('countries', []))) }},
+                                initialId: editPassengerData.customer_id,
+                                initialName: editPassengerData.customer_name,
+                                initialPhone: editPassengerData.customer_phone
+                            })" class="space-y-3">
+                            
+                            <input type="hidden" name="customer_id" :value="selectedId">
+                            <input type="hidden" name="customer_phone" :value="fullPhone">
+                            
+                            <div class="relative">
+                                <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary" :class="selectedId ? 'ring-primary border-primary bg-primary/5' : 'ring-slate-200'" dir="ltr">
+                                    <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                        <template x-if="selectedCountry?.svg">
+                                            <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                        </template>
+                                        <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                                    </button>
+                                    
+                                    <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true" placeholder="رقم العميل" required
+                                        class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300" :class="selectedId ? 'font-bold text-primary' : 'font-bold text-slate-800'">
+                                    
+                                    <button type="button" x-show="selectedId" @click="resetSelection" class="absolute right-3 top-1/2 z-10 flex justify-center items-center w-7 h-7 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-rose-500 shadow-sm border border-slate-200 transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                    
+                                    <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                        <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                            <template x-for="country in countries" :key="country.code">
+                                                <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                                    <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="country.svg"></div>
+                                                    <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div x-show="showDropdown && phone.length > 0 && !selectedId" @click.outside="showDropdown = false" x-transition x-cloak class="absolute z-[60] w-full mt-2 bg-white rounded-[1rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                    <template x-for="record in filteredRecords" :key="record.id">
+                                        <button type="button" @click="selectRecord(record)" class="flex justify-between items-center w-full p-3.5 text-right border-b hover:bg-slate-50 border-slate-50 transition-colors">
+                                            <span class="material-symbols-outlined text-slate-300 text-[20px]">chevron_left</span>
+                                            <div class="flex flex-col items-end gap-0.5">
+                                                <span class="text-sm font-bold text-slate-800 font-headline" x-text="record.name"></span>
+                                                <span class="text-xs text-slate-500 font-mono dir-ltr" x-text="record.phone"></span>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <input type="text" name="customer_name" x-model="nameInput" :readonly="isExisting" :required="!isExisting" placeholder="اسم العميل"
+                                :class="isExisting ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' : 'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
+                        </div>
+                    </div>
+
+                    {{-- القسم الرابع: بيانات السائق --}}
+                    <div class="space-y-3">
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">السائق <span class="text-rose-500">*</span></label>
+                        <div x-data="recordSelect({ 
+                                records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }}, 
+                                countries: {{ Js::from(array_values(config('countries', []))) }},
+                                initialId: editPassengerData.driver_id,
+                                initialName: editPassengerData.driver_name,
+                                initialPhone: editPassengerData.driver_phone
+                            })" class="space-y-3">
+                            
+                            <input type="hidden" name="driver_id" :value="selectedId">
+                            <input type="hidden" name="driver_phone" :value="fullPhone">
+                            
+                            <div class="relative">
+                                <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary" :class="selectedId ? 'ring-primary border-primary bg-primary/5' : 'ring-slate-200'" dir="ltr">
+                                    <button type="button" @click="openDropdown = !openDropdown" class="flex gap-2 items-center px-4 py-3 bg-slate-50/50 rounded-l-[1rem] border-r border-slate-200 shrink-0 hover:bg-slate-100 transition-colors">
+                                        <template x-if="selectedCountry?.svg">
+                                            <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                        </template>
+                                        <span class="text-sm font-bold text-slate-700 font-mono" x-text="selectedCountry?.dial_code"></span>
+                                    </button>
+                                    
+                                    <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true" placeholder="رقم السائق" required
+                                        class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300" :class="selectedId ? 'font-bold text-primary' : 'font-bold text-slate-800'">
+                                    
+                                    <button type="button" x-show="selectedId" @click="resetSelection" class="absolute right-3 top-1/2 z-10 flex justify-center items-center w-7 h-7 bg-white rounded-full -translate-y-1/2 text-slate-400 hover:text-rose-500 shadow-sm border border-slate-200 transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                    
+                                    <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak class="absolute top-[calc(100%+8px)] left-0 z-50 w-[280px] max-h-60 bg-white rounded-[1rem] border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden" dir="rtl">
+                                        <div class="overflow-y-auto max-h-48 custom-scrollbar">
+                                            <template x-for="country in countries" :key="country.code">
+                                                <div @click="selectCountry(country)" class="flex gap-3 items-center p-3.5 px-4 transition-colors cursor-pointer hover:bg-slate-50">
+                                                    <div class="w-6 h-auto rounded-sm shadow-sm overflow-hidden" x-html="country.svg"></div>
+                                                    <span class="flex-grow text-sm font-bold text-slate-700 font-headline" x-text="country.name"></span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div x-show="showDropdown && phone.length > 0 && !selectedId" @click.outside="showDropdown = false" x-transition x-cloak class="absolute z-[60] w-full mt-2 bg-white rounded-[1rem] shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] border border-slate-100 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                    <template x-for="record in filteredRecords" :key="record.id">
+                                        <button type="button" @click="selectRecord(record)" class="flex justify-between items-center w-full p-3.5 text-right border-b hover:bg-slate-50 border-slate-50 transition-colors">
+                                            <span class="material-symbols-outlined text-slate-300 text-[20px]">chevron_left</span>
+                                            <div class="flex flex-col items-end gap-0.5">
+                                                <span class="text-sm font-bold text-slate-800 font-headline" x-text="record.name"></span>
+                                                <span class="text-xs text-slate-500 font-mono dir-ltr" x-text="record.phone"></span>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <input type="text" name="driver_name" x-model="nameInput" :readonly="isExisting" :required="!isExisting" placeholder="اسم السائق"
+                                :class="isExisting ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' : 'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
+                        </div>
+                    </div>
+
+                    {{-- القسم الخامس: الحسابات والملاحظات --}}
+                    <div class="space-y-3 pt-4 border-t border-slate-100">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العدد <span class="text-rose-500">*</span></label>
+                                <input type="number" name="count" required placeholder="1" x-model="editPassengerData.count"
+                                    class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
+                            </div>
+                            <div>
+                                <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العمولة <span class="text-rose-500">*</span></label>
+                                <input type="number" name="total_commission" step="0.01" required placeholder="0.00" x-model="editPassengerData.total_commission"
+                                    class="px-4 w-full h-14 text-sm rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-amber-600 font-black">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">ملاحظات</label>
+                            <textarea name="note" rows="2" placeholder="ملاحظات إضافية..." x-model="editPassengerData.note"
+                                class="py-4 px-4 w-full text-sm rounded-[1rem] border-none ring-1 transition-all outline-none resize-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                        class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-[1rem] shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95">
+                        <span class="material-symbols-outlined">update</span>
+                        حفظ التعديلات
+                    </button>
+                </form>
+            </template>
+        </div>
+    </div>
 
 </div>
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('driverSelect', ({ drivers, countries, initialId = null, initialName = '', initialPhone = '' }) => ({
-            drivers: drivers || [],
+
+        Alpine.data('passengerMobileRegistry', () => ({
+            searchQuery: '',
+            selectedStatus: '',
+            showCreateModal: false,
+            showEditModal: false,
+            showDeleteModal: false,
+            deletePassengerData: { id: null, passenger_number: '', url: '' },
+            editPassengerData: {
+                id: null, date: '', status: '', passenger_number: '',
+                customer_id: null, customer_name: '', customer_phone: '',
+                location: '', count: null, total_commission: null,
+                driver_id: null, driver_name: '', driver_phone: '',
+                note: '', url: ''
+            },
+            matchSearch(number, location, cName, cPhone, dName, dPhone, statusKey) {
+                if (this.selectedStatus !== '' && statusKey !== this.selectedStatus) {
+                    return false;
+                }
+
+                if (this.searchQuery.trim() === '') return true;
+                
+                const query = this.searchQuery.toLowerCase().trim();
+                const cleanQuery = query.replace(/^(\+967|967|00967|0)/, '');
+                
+                const check = (str) => {
+                    if (!str) return false;
+                    const cleanStr = String(str).toLowerCase();
+                    return cleanStr.includes(query) || (cleanQuery !== '' && cleanStr.includes(cleanQuery));
+                };
+
+                const statusMap = {
+                    'pending': 'قيد الانتظار',
+                    'completed': 'مكتمل',
+                    'cancel': 'ملغي'
+                };
+                const arabicStatus = statusMap[statusKey] || statusKey;
+
+                return check(number) || check(location) || check(cName) || check(cPhone) || check(dName) || check(dPhone) || check(arabicStatus);
+            },
+            openEditModal(data) {
+                this.editPassengerData = { ...data, url: '{{ url('passengers') }}/' + data.id };
+                this.showEditModal = true;
+            },
+            closeModals() {
+                this.showCreateModal = false;
+                this.showEditModal = false;
+            }
+        }));
+
+        Alpine.data('recordSelect', ({ records, countries, initialId = null, initialName = '', initialPhone = '' }) => ({
+            records: records || [],
             countries: countries || [],
             openDropdown: false,
-            searchCountry: '',
             selectedCountry: null,
             phone: '',
             fullPhone: '',
-            driverName: initialName,
-            selectedDriverId: initialId,
-            isExistingDriver: initialId !== null,
-            filteredDrivers: [],
-            showDriverDropdown: false,
+            nameInput: initialName || '',
+            selectedId: initialId,
+            isExisting: initialId !== null,
+            filteredRecords: [],
+            showDropdown: false,
 
             init() {
                 const yemen = this.countries.find(c => c.dial_code === '+967');
                 this.selectedCountry = yemen || (this.countries.length > 0 ? this.countries[0] : { dial_code: '+967' });
 
                 if (initialPhone) {
-                    let matchedCountry = this.countries.find(c => initialPhone.startsWith(c.dial_code));
+                    let matchedCountry = [...this.countries].sort((a,b) => b.dial_code.length - a.dial_code.length).find(c => initialPhone.startsWith(c.dial_code));
                     if (matchedCountry) {
                         this.selectedCountry = matchedCountry;
                         this.phone = initialPhone.substring(matchedCountry.dial_code.length);
@@ -191,7 +745,6 @@
                         this.phone = initialPhone;
                     }
                     this.updateFullPhone();
-                    // We don't automatically trigger search on init
                 }
             },
 
@@ -199,74 +752,112 @@
                 this.selectedCountry = country;
                 this.openDropdown = false;
                 this.updateFullPhone();
-                this.searchDriver();
+                this.searchRecord();
             },
 
             handlePhoneInput() {
                 this.phone = this.phone.replace(/[^0-9]/g, '');
                 this.updateFullPhone();
-                this.searchDriver();
+                this.searchRecord();
             },
 
             updateFullPhone() {
                 this.fullPhone = this.phone ? (this.selectedCountry.dial_code + this.phone) : '';
             },
 
-            searchDriver() {
-                this.selectedDriverId = null;
-                this.isExistingDriver = false;
+            searchRecord() {
+                this.selectedId = null;
+                this.isExisting = false;
 
                 if (this.phone.trim() === '') {
-                    this.filteredDrivers = [];
-                    this.showDriverDropdown = false;
-                    // Don't clear driverName if we're just backspacing the phone? Actually yes, clear it
-                    if (!initialId) {
-                        this.driverName = '';
-                    }
+                    this.filteredRecords = [];
+                    this.showDropdown = false;
+                    if (!initialId) this.nameInput = '';
                     return;
                 }
 
                 let query = this.fullPhone.trim();
-
-                this.filteredDrivers = this.drivers.filter(d => {
-                    return d.phone && String(d.phone).includes(query);
-                });
-
-                this.showDriverDropdown = true;
+                let cleanQuery = this.phone.trim();
                 
-                // Optional: Auto-fill if exact match is found, but keep dropdown open
-                const exactMatch = this.drivers.find(d => d.phone === query);
-                if (exactMatch && !this.showDriverDropdown) {
-                    this.selectDriver(exactMatch);
+                this.filteredRecords = this.records.filter(r => {
+                    if (!r.phone) return false;
+                    let p = String(r.phone);
+                    return p.includes(query) || p.includes(cleanQuery);
+                });
+                
+                this.showDropdown = true;
+                
+                const exactMatch = this.records.find(r => r.phone === query || r.phone === cleanQuery);
+                if (exactMatch && !this.showDropdown) {
+                    this.selectRecord(exactMatch);
                 }
             },
 
-            selectDriver(driver) {
-                this.selectedDriverId = driver.id;
-                this.driverName = driver.name;
-                this.isExistingDriver = true;
-                this.showDriverDropdown = false;
+            selectRecord(record) {
+                this.selectedId = record.id;
+                this.nameInput = record.name;
+                this.isExisting = true;
+                this.showDropdown = false;
 
-                let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
-                let searchDialCode = this.selectedCountry.dial_code;
+                let dialCode = this.selectedCountry ? String(this.selectedCountry.dial_code).replace('+', '') : '';
+                let searchDialCode = String(this.selectedCountry.dial_code);
 
-                if (driver.phone && driver.phone.startsWith(searchDialCode)) {
-                    this.phone = driver.phone.substring(searchDialCode.length);
-                } else if (driver.phone && driver.phone.startsWith(dialCode)) {
-                    this.phone = driver.phone.substring(dialCode.length);
+                if (record.phone && String(record.phone).startsWith(searchDialCode)) {
+                    this.phone = String(record.phone).substring(searchDialCode.length);
+                } else if (record.phone && String(record.phone).startsWith(dialCode)) {
+                    this.phone = String(record.phone).substring(dialCode.length);
                 } else {
-                    this.phone = driver.phone;
+                    this.phone = record.phone;
                 }
                 this.updateFullPhone();
             },
 
             resetSelection() {
-                this.selectedDriverId = null;
+                this.selectedId = null;
                 this.phone = '';
-                this.driverName = '';
-                this.isExistingDriver = false;
-                this.showDriverDropdown = false;
+                this.nameInput = '';
+                this.isExisting = false;
+                this.showDropdown = false;
                 this.updateFullPhone();
+            }
+        }));
+
+        Alpine.data('phonePickerOnly', ({ countries, initialPhone = '' }) => ({
+            countries: countries || [],
+            openDropdown: false,
+            selectedCountry: null,
+            phone: '',
+            fullPhone: '',
+
+            init() {
+                const yemen = this.countries.find(c => c.dial_code === '+967');
+                this.selectedCountry = yemen || (this.countries.length > 0 ? this.countries[0] : { dial_code: '+967' });
+
+                if (initialPhone) {
+                    let matchedCountry = [...this.countries].sort((a,b) => b.dial_code.length - a.dial_code.length).find(c => initialPhone.startsWith(c.dial_code));
+                    if (matchedCountry) {
+                        this.selectedCountry = matchedCountry;
+                        this.phone = initialPhone.substring(matchedCountry.dial_code.length);
+                    } else {
+                        this.phone = initialPhone;
+                    }
+                    this.updateFullPhone();
+                }
+            },
+
+            selectCountry(country) {
+                this.selectedCountry = country;
+                this.openDropdown = false;
+                this.updateFullPhone();
+            },
+
+            handlePhoneInput() {
+                this.phone = this.phone.replace(/[^0-9]/g, '');
+                this.updateFullPhone();
+            },
+
+            updateFullPhone() {
+                this.fullPhone = this.phone ? (this.selectedCountry.dial_code + this.phone) : '';
             }
         }));
     });

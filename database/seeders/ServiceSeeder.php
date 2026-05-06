@@ -76,6 +76,12 @@ class ServiceSeeder extends Seeder
                 'description' => 'ادارة الاشعارات',
                 'is_global_active' => true,
             ],
+            [
+                'name' => 'تقرير الركاب',
+                'slug' => 'Passengers',
+                'description' => ' الركاب ',
+                'is_global_active' => true,
+            ],
         ];
 
         foreach ($services as $service) {

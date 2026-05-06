@@ -114,11 +114,11 @@
                             class="px-4 w-full h-11 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all dark:bg-gray-800 dark:border-gray-700 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:text-white"
                             required>
                             <option value="">-- اختر الفئة --</option>
-                            @foreach ($categories as $category)
+                            {{-- @foreach ($categories as $category)
                                 <template x-if="selectedType === '{{ $category->type }}'">
                                     <option value="{{ $category->id }}">{{ $category->name }}</option>
                                 </template>
-                            @endforeach
+                            @endforeach --}}
                         </select>
                         @error('transaction_category_id')
                             <p class="mt-1.5 text-xs text-error-500">{{ $message }}</p>
