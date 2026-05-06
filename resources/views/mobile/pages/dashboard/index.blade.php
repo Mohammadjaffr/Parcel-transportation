@@ -12,7 +12,7 @@
             
             <div class="relative z-10 flex justify-between items-start">
                 <div>
-                    <p class="text-slate-400 text-xs font-bold mb-1">{{ now()->format('l، d F Y') }}</p>
+                    <p class="text-slate-400 text-xs font-bold mb-1">  {{ now()->translatedFormat('l، d F Y') }}</p>
                     <h1 class="text-2xl font-headline font-black text-white mb-1">أهلاً، {{ auth()->user()->name ?? 'محمد' }}</h1>
                     <div class="flex items-center gap-1.5 text-slate-300 text-[10px] font-bold bg-white/10 w-max px-2 py-1 rounded-lg backdrop-blur-sm mt-2">
                         <span class="material-symbols-outlined text-[14px]">storefront</span>
@@ -134,7 +134,7 @@
                     </div>
                     
                     <div class="relative z-10 text-white/50 group-hover:text-white transition-colors">
-                        <span class="material-symbols-outlined">arrow_forward_ios</span>
+                    <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_forward_ios</span>
                     </div>
                 </a>
             </div>
