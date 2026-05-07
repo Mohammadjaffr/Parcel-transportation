@@ -12,10 +12,12 @@
                 إجمالي <span class="text-primary">{{ $passengers->total() ?? 0 }}</span> راكب مسجل
             </p>
         </div>
-        <button type="button" @click="showCreateModal = true" 
+        <a href="{{ route('passengers.create') }}">
+        <button type="button"
             class="flex justify-center items-center w-12 h-12 text-white rounded-[1rem] shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
             <span class="text-2xl material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
         </button>
+        </a>
     </div>
 
     <div class="px-4">

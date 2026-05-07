@@ -116,11 +116,6 @@
 
                     @else
                     {{-- ==================== Regular Employee Navigation ==================== --}}
-                    
-                    @php 
-                        // تعريف المتغير للتحقق من الميزات المتاحة للمكتب
-                        $tenantApp = auth()->check() ? auth()->user()->App : null; 
-                    @endphp
 
                     {{-- لوحة التحكم --}}
                     <li>
@@ -140,7 +135,7 @@
                     </li>
 
                     {{-- إدارة الأفراد (تظهر فقط إذا كان أحد الموديولات مفعل) --}}
-                    @if($tenantApp && ($tenantApp->hasService('Drivers') || $tenantApp->hasService('Users') || $tenantApp->hasService('Customers') || true))
+                    
                     <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*') || request()->routeIs('passengers.*')) selected = 'People' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'People' ? '' : 'People')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
@@ -170,49 +165,51 @@
 
                                 <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     
-                                    @if($tenantApp->hasService('Drivers'))
+                                    @hasservice('Drivers')
                                     <li>
                                         <a href="{{ route('drivers.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('drivers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             السائقين
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
-                                    @if($tenantApp->hasService('Users') && Auth::user()->type != 'user')
+                                    @if(Auth::user()->type != 'user')
+                                    @hasservice('Users')
                                         <li>
                                             <a href="{{ route('users.index') }}"
                                                 class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('users.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                                 ادارة المستخدمين
                                             </a>
                                         </li>
+                                    @endhasservice
                                     @endif
 
-                                    @if($tenantApp->hasService('Customers'))
+                                    @hasservice('Customers')
                                     <li>
                                         <a href="{{ route('customers.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('customers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             العملاء
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
                                     {{-- الركاب متاح افتراضيا --}}
-                                    @if($tenantApp->hasService('Passengers'))
+                                    @hasservice('Passengers')
                                     <li>
                                         <a href="{{ route('passengers.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('passengers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             ركاب
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
                                   
                                     
                                 </ul>
                             </div>
                         </div>
                     </li>
-                    @endif
+                    
 
                     {{-- إدارة المكاتب (المكاتب الموثوقة/غير الموثوقة) --}}
                     <li x-init="@if (request()->routeIs('app.*') || request()->routeIs('branch.*') || request()->routeIs('offices.*') || request()->routeIs('offices.unverified.*')) selected = 'Offices' @endif">
@@ -261,7 +258,7 @@
                     </li>
 
                     {{-- إدارة الطرود --}}
-                    @if($tenantApp && ($tenantApp->hasService('Shipment_Out') || $tenantApp->hasService('Shipment_In')))
+                    
                     <li x-init="@if (request()->routeIs('shipment.outgoing.*') ||
                             request()->routeIs('shipment.incoming.*') ||
                             request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
@@ -293,32 +290,32 @@
                                 <ul
                                     class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     
-                                    @if($tenantApp->hasService('Shipment_Out'))
+                                    @hasservice('Shipment_Out')
                                     <li>
                                         <a href="{{ route('shipment.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الطرود الصادرة
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
-                                    @if($tenantApp->hasService('Shipment_In'))
+                                    @hasservice('Shipment_In')
                                     <li>
                                         <a href="{{ route('shipment.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الطرود الواردة
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
                                 </ul>
                             </div>
                         </div>
                     </li>
-                    @endif
+                    
 
-                    {{-- حركة الشحنات (حزم الترحيل) --}}
-                    @if($tenantApp && ($tenantApp->hasService('Package_Out') || $tenantApp->hasService('Package_In')))
+                    
+                    
                     <li x-init="@if (request()->routeIs('shipmentpackage.*') || request()->routeIs('receipts.*')) selected = 'ShipmentsOps' @endif">
                         <a href="#"
                             @click.prevent="selected = (selected === 'ShipmentsOps' ? '' : 'ShipmentsOps')"
@@ -350,31 +347,31 @@
                                 <ul
                                     class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
                                     
-                                    @if($tenantApp->hasService('Package_Out'))
+                                    @hasservice('Package_Out')
                                     <li>
                                         <a href="{{ route('shipmentpackage.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الشحنات المرسلة
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
-                                    @if($tenantApp->hasService('Package_In'))
+                                    @hasService('Package_In')
                                     <li>
                                         <a href="{{ route('shipmentpackage.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الشحنات المستلمة
                                         </a>
                                     </li>
-                                    @endif
+                                    @endhasservice
 
                                 </ul>
                             </div>
                         </div>
                     </li>
-                    @endif
+                    
 
-                    @endif
+                    
                 </ul>
             </div>
         </nav>

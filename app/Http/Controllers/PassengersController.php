@@ -42,22 +42,14 @@ class PassengersController extends Controller
         }
 
         $passengers = $query->paginate(15)->withQueryString();
-
         $drivers = Driver::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
-
-        $currentBranch = $this->currentBranchId()
-            ? Branch::find($this->currentBranchId())
-            : null;
 
         if ($request->isMobile) {
-            return view('mobile.pages.passengers.index', compact(
+            return view('mobile.pages.people.passengers.index', compact(
                 'passengers',
                 'drivers',
                 'customers',
-                'branches',
-                'currentBranch'
             ));
         }
 
@@ -65,26 +57,23 @@ class PassengersController extends Controller
             'passengers',
             'drivers',
             'customers',
-            'branches',
-            'currentBranch'
         ));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $drivers = Driver::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
-        $branches = Branch::orderBy('name')->get();
-
-        $currentBranch = $this->currentBranchId()
-            ? Branch::find($this->currentBranchId())
-            : null;
+        if ($request->isMobile) {
+            return view('mobile.pages.people.passengers.create', compact(
+                'drivers',
+                'customers',
+            ));
+        }
 
         return view('pages.passengers.create', compact(
             'drivers',
             'customers',
-            'branches',
-            'currentBranch'
         ));
     }
 
@@ -92,9 +81,8 @@ public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
-            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+            'status' => ['required', 'string', 'in:pending,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
-            
             'customer_id'    => ['nullable', 'exists:customers,id'],
             'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
             'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
