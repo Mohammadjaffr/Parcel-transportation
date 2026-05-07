@@ -18,7 +18,7 @@ class OTPService
     }
     public function sendOtp($phone, string $otp): bool
     {
-        $message = "مرحباً بك في نظامنا 🚀\n";
+        $message = "مرحباً بك في نظام مرسل \n";
         $message .= "كود التحقق الخاص بك هو: *{$otp}*\n";
         $message .= "صالح لمدة 10 دقائق. لا تشارك هذا الكود مع أحد.";
 
