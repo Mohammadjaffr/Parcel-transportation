@@ -20,7 +20,6 @@
         <div class="px-4">
             <div class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2">
 
-                {{-- 👇 الفورم الخاص بك بنفس اللوجيك والأسماء حرفياً 👇 --}}
                 <form action="{{ route('passengers.store') }}" method="POST" class="space-y-6">
                     @csrf
                     <div class="grid grid-cols-1 gap-5">
@@ -63,13 +62,14 @@
                             </div>
                         </div>
 
+                        {{-- ================= بيانات العميل ================= --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم العميل <span class="text-error">*</span></label>
                                 <input type="hidden" name="customer_id" x-model="selectedRecordId">
                                 <input type="hidden" name="customer_phone" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40" :class="selectedRecordId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''" style="direction: ltr;">
+                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40" :class="selectedRecordId !== '' ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''" style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown" class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg"><div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div></template>
@@ -87,10 +87,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord" @focus="showDropdown = true" @click.away="showDropdown = false" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15" class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white" :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
-                                    <button type="button" x-show="selectedRecordId" @click="resetSelection" class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord" @focus="showDropdown = true" @click.away="showDropdown = false" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15" class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white" :class="selectedRecordId !== '' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
+                                    <button type="button" x-show="selectedRecordId !== ''" @click="resetSelection" class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span class="material-symbols-outlined text-[16px]">close</span></button>
                                 </div>
-                                <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition x-cloak class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                <div x-show="showDropdown && localPhoneNumber.length > 0 && selectedRecordId === ''" x-transition x-cloak class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
                                     <template x-for="record in filteredRecords" :key="record.id">
                                         <button type="button" @click="selectRecord(record)" class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                             <div class="flex flex-col gap-0.5"><span class="text-sm font-bold text-on-surface dark:text-white" x-text="record.name"></span><span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="record.phone"></span></div>
@@ -102,19 +102,20 @@
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم العميل <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <input type="text" name="customer_name" x-model="nameInput" :readonly="selectedRecordId" :required="!selectedRecordId" placeholder="اسم العميل" class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all" :class="selectedRecordId ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]" :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">person</span>
+                                    <input type="text" name="customer_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''" placeholder="اسم العميل" class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all" :class="selectedRecordId !== '' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none" :class="selectedRecordId !== '' ? 'text-emerald-500' : 'text-gray-400'">person</span>
                                 </div>
                             </div>
                         </div>
 
+                        {{-- ================= بيانات السائق ================= --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق <span class="text-error">*</span></label>
                                 <input type="hidden" name="driver_id" x-model="selectedRecordId">
                                 <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40" :class="selectedRecordId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''" style="direction: ltr;">
+                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40" :class="selectedRecordId !== '' ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''" style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown" class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg"><div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div></template>
@@ -132,10 +133,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord" @focus="showDropdown = true" @click.away="showDropdown = false" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15" class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white" :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
-                                    <button type="button" x-show="selectedRecordId" @click="resetSelection" class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord" @focus="showDropdown = true" @click.away="showDropdown = false" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15" class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white" :class="selectedRecordId !== '' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
+                                    <button type="button" x-show="selectedRecordId !== ''" @click="resetSelection" class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span class="material-symbols-outlined text-[16px]">close</span></button>
                                 </div>
-                                <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition x-cloak class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                <div x-show="showDropdown && localPhoneNumber.length > 0 && selectedRecordId === ''" x-transition x-cloak class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
                                     <template x-for="record in filteredRecords" :key="record.id">
                                         <button type="button" @click="selectRecord(record)" class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                             <div class="flex flex-col gap-0.5"><span class="text-sm font-bold text-on-surface dark:text-white" x-text="record.name"></span><span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="record.phone"></span></div>
@@ -147,8 +148,8 @@
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم السائق <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId" :required="!selectedRecordId" placeholder="اسم السائق" class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all" :class="selectedRecordId ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]" :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
+                                    <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''" placeholder="اسم السائق" class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all" :class="selectedRecordId !== '' ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px] pointer-events-none" :class="selectedRecordId !== '' ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
                                 </div>
                             </div>
                         </div>
@@ -176,10 +177,115 @@
                         </button>
                     </div>
                 </form>
-                {{-- 👆 نهاية الفورم الخاص بك 👆 --}}
                 
             </div>
         </div>
     </div>
 
+@endsection
+
+{{-- 🌟 تم إضافة السكريبت لتعمل دوال Alpine.js بشكل صحيح في الموبايل --}}
+@section('script')
+    <script>
+        function passengerPhonePicker(countriesList) {
+            return {
+                countries: countriesList || [], localPhoneNumber: '', selectedCountry: null, openCountryDropdown: false, searchCountryQuery: '', initializedPhone: null,
+                init() { this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null; },
+                get filteredCountries() {
+                    const query = this.searchCountryQuery.toLowerCase().trim();
+                    if (!query) return this.countries;
+                    return this.countries.filter(country => String(country.name || '').toLowerCase().includes(query) || String(country.code || '').toLowerCase().includes(query) || String(country.dial_code || '').toLowerCase().includes(query));
+                },
+                get fullPhoneNumber() {
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    if (!local) return ''; return dial + local;
+                },
+                loadInitial(phone) {
+                    if (!phone || this.initializedPhone === phone) return;
+                    this.initializedPhone = phone;
+                    const clean = String(phone).replace(/[^\d]/g, '');
+                    const sortedCountries = [...this.countries].sort((a, b) => String(b.dial_code || '').length - String(a.dial_code || '').length);
+                    const country = sortedCountries.find(c => {
+                        const dial = String(c.dial_code || '').replace('+', ''); return dial && clean.startsWith(dial);
+                    });
+                    this.selectedCountry = country || this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    this.localPhoneNumber = clean.startsWith(dial) ? clean.substring(dial.length) : clean;
+                }
+            }
+        }
+
+        function recordPhonePicker(recordsList, countriesList) {
+            return {
+                records: recordsList || [], countries: countriesList || [], localPhoneNumber: '', selectedCountry: null, openCountryDropdown: false, searchCountryQuery: '',
+                showDropdown: false, selectedRecordId: '', nameInput: '', initializedRecordKey: '',
+                
+                init() { this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null; },
+                
+                get filteredCountries() {
+                    const query = this.searchCountryQuery.toLowerCase().trim();
+                    if (!query) return this.countries;
+                    return this.countries.filter(country => String(country.name || '').toLowerCase().includes(query) || String(country.code || '').toLowerCase().includes(query) || String(country.dial_code || '').toLowerCase().includes(query));
+                },
+                
+                get fullPhoneNumber() {
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    if (!local) return ''; return dial + local;
+                },
+                
+                get filteredRecords() {
+                    const phone = this.fullPhoneNumber; const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '');
+                    if (!local) return [];
+                    return this.records.filter(record => {
+                        const recordPhone = String(record.phone || '').replace(/[^\d]/g, '');
+                        return recordPhone.includes(local) || recordPhone.includes(phone);
+                    });
+                },
+                
+                searchRecord() {
+                    const exact = this.records.find(record => String(record.phone || '').replace(/[^\d]/g, '') === String(this.fullPhoneNumber || '').replace(/[^\d]/g, ''));
+                    if (exact) { 
+                        this.selectRecord(exact); 
+                    } else { 
+                        this.selectedRecordId = ''; 
+                        this.showDropdown = true; 
+                    }
+                },
+                
+                selectRecord(record) {
+                    this.selectedRecordId = record.id || ''; 
+                    this.nameInput = record.name || '';
+                    this.applyPhone(record.phone || this.fullPhoneNumber);
+                    this.showDropdown = false;
+                },
+                
+                resetSelection() { 
+                    this.selectedRecordId = ''; 
+                    this.nameInput = ''; 
+                },
+                
+                applyPhone(phone) {
+                    const clean = String(phone || '').replace(/[^\d]/g, '');
+                    const sortedCountries = [...this.countries].sort((a, b) => String(b.dial_code || '').length - String(a.dial_code || '').length);
+                    const country = sortedCountries.find(c => {
+                        const dial = String(c.dial_code || '').replace('+', ''); return dial && clean.startsWith(dial);
+                    });
+                    this.selectedCountry = country || this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    this.localPhoneNumber = clean.startsWith(dial) ? clean.substring(dial.length) : clean;
+                },
+                
+                loadInitial(record) {
+                    if (!record || (!record.id && !record.phone && !record.name)) return;
+                    const key = JSON.stringify(record);
+                    if (this.initializedRecordKey === key) return;
+                    this.initializedRecordKey = key;
+                    this.selectedRecordId = record.id || ''; this.nameInput = record.name || '';
+                    if (record.phone) { this.applyPhone(record.phone); }
+                }
+            }
+        }
+    </script>
 @endsection

@@ -77,11 +77,10 @@ class PassengersController extends Controller
         ));
     }
 
-public function store(Request $request)
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
-            'status' => ['required', 'string', 'in:pending,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
             'customer_id'    => ['nullable', 'exists:customers,id'],
             'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
@@ -101,7 +100,7 @@ public function store(Request $request)
 
         try {
             $data = $validator->validated();
-
+            $data['status'] = 'pending';
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
             $customerPhone = $this->normalizePhone($data['customer_phone'] ?? '');
             $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
@@ -129,7 +128,7 @@ public function store(Request $request)
         $passenger = Passengers::with(['driver', 'customer', 'branch'])->findOrFail($id);
 
         if ($request->isMobile) {
-            return view('mobile.pages.passengers.model.show', compact('passenger'));
+            return view('mobile.pages.people.passengers.show', compact('passenger'));
         }
 
         return view('pages.passengers.show', compact('passenger'));
@@ -155,7 +154,7 @@ public function store(Request $request)
         ));
     }
 
-  public function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $passenger = Passengers::findOrFail($id);
 
@@ -163,7 +162,7 @@ public function store(Request $request)
             'date' => ['required', 'date'],
             'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
-            
+
             'customer_id'    => ['nullable', 'exists:customers,id'],
             'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
             'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
