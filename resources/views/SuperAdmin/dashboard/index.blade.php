@@ -1,95 +1,117 @@
-@extends('layouts.app')
+@extends('SuperAdmin.layouts.app')
 @section('title', 'لوحة تحكم المشرف العام')
 
 @section('content')
-<div x-data="superAdminDashboard()" class="space-y-8">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<div x-data="superAdminDashboard()" class="space-y-6 lg:space-y-8">
+    {{-- Header --}}
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-            <h1 class="text-2xl font-black text-gray-900 dark:text-white">لوحة تحكم المشرف العام</h1>
-            <p class="mt-1 text-sm font-medium text-gray-500 dark:text-gray-400">نظرة شاملة على أداء منصة مرسل</p>
+            <h1 class="text-2xl font-black text-slate-900 font-headline">لوحة تحكم المشرف العام</h1>
+            <p class="mt-1 text-sm font-medium text-slate-500">نظرة شاملة على أداء منصة الإدارة</p>
         </div>
-        <div class="flex gap-2 items-center px-4 py-2 text-sm font-bold text-emerald-700 bg-emerald-50 rounded-xl dark:bg-emerald-500/10 dark:text-emerald-400">
-            <span class="relative flex w-2.5 h-2.5"><span class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-emerald-400"></span><span class="relative inline-flex w-2.5 h-2.5 rounded-full bg-emerald-500"></span></span>
+        <div class="inline-flex gap-2 items-center self-start px-4 py-2 text-sm font-bold text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm md:self-auto">
+            <span class="flex relative w-2.5 h-2.5">
+                <span class="inline-flex absolute w-full h-full bg-emerald-400 rounded-full opacity-75 animate-ping"></span>
+                <span class="inline-flex relative w-2.5 h-2.5 bg-emerald-500 rounded-full"></span>
+            </span>
             النظام يعمل بشكل طبيعي
         </div>
     </div>
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 lg:gap-6">
         @php $cards = [
             ['label'=>'إجمالي المكاتب','value'=>number_format($totalApps),'icon'=>'apartment','color'=>'blue','sub'=>'جميع المكاتب المسجلة'],
             ['label'=>'المكاتب النشطة','value'=>number_format($activeApps),'icon'=>'check_circle','color'=>'emerald','sub'=>($totalApps>0?round(($activeApps/$totalApps)*100):0).'% من الإجمالي'],
             ['label'=>'إجمالي الشحنات','value'=>number_format($totalShipments),'icon'=>'inventory_2','color'=>'amber','sub'=>'على مستوى المنصة'],
             ['label'=>'إجمالي الإيرادات','value'=>number_format($totalRevenue,0).' ر.ي','icon'=>'payments','color'=>'violet','sub'=>'من الاشتراكات النشطة'],
         ]; @endphp
+        
         @foreach($cards as $c)
-        <div class="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 transition-all duration-300 hover:shadow-lg hover:ring-primary/20 dark:bg-gray-800 dark:ring-gray-700">
-            <div class="absolute -top-8 -left-8 h-24 w-24 rounded-full bg-gradient-to-br from-{{ $c['color'] }}-500/10 to-{{ $c['color'] }}-600/5 transition-transform duration-500 group-hover:scale-150"></div>
-            <div class="relative flex items-center justify-between">
+        <div class="relative p-6 overflow-hidden transition-all duration-300 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-{{ $c['color'] }}-200 group">
+            <div class="absolute -top-8 -left-8 h-24 w-24 rounded-full bg-{{ $c['color'] }}-50 transition-transform duration-500 group-hover:scale-150"></div>
+            <div class="flex relative justify-between items-center">
                 <div>
-                    <p class="text-sm font-bold text-gray-500 dark:text-gray-400">{{ $c['label'] }}</p>
-                    <h3 class="mt-2 text-3xl font-black text-gray-900 dark:text-white">{{ $c['value'] }}</h3>
+                    <p class="text-sm font-bold text-slate-500">{{ $c['label'] }}</p>
+                    <h3 class="mt-2 text-3xl font-black text-slate-900 font-headline">{{ $c['value'] }}</h3>
                 </div>
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-{{ $c['color'] }}-50 text-{{ $c['color'] }}-600 dark:bg-{{ $c['color'] }}-500/10 dark:text-{{ $c['color'] }}-400">
+                <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-{{ $c['color'] }}-50 text-{{ $c['color'] }}-600">
                     <span class="material-symbols-outlined text-[28px]">{{ $c['icon'] }}</span>
                 </div>
             </div>
-            <div class="mt-4 flex items-center gap-1 text-xs font-bold text-gray-400 dark:text-gray-500">{{ $c['sub'] }}</div>
+            <div class="flex relative gap-1 items-center mt-4 text-xs font-bold text-slate-400">{{ $c['sub'] }}</div>
         </div>
         @endforeach
     </div>
 
     {{-- Quick Actions --}}
-    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <a href="{{ route('superadmin.offices.index') }}" class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md dark:bg-gray-800 dark:ring-gray-700">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400"><span class="material-symbols-outlined text-[20px]">apartment</span></div>
-            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">إدارة المكاتب</span>
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
+        <a href="{{ route('superadmin.offices.index') }}" class="flex flex-col gap-3 items-center p-4 bg-white rounded-xl border shadow-sm transition-all sm:flex-row border-slate-100 hover:shadow-md hover:border-blue-200">
+            <div class="flex justify-center items-center w-10 h-10 text-blue-600 bg-blue-50 rounded-xl"><span class="material-symbols-outlined text-[20px]">apartment</span></div>
+            <span class="text-sm font-bold text-center text-slate-700 sm:text-right">إدارة المكاتب</span>
         </a>
-        <a href="{{ route('superadmin.packages.index') }}" class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md dark:bg-gray-800 dark:ring-gray-700">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"><span class="material-symbols-outlined text-[20px]">workspace_premium</span></div>
-            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">الباقات</span>
+        <a href="{{ route('superadmin.packages.index') }}" class="flex flex-col gap-3 items-center p-4 bg-white rounded-xl border shadow-sm transition-all sm:flex-row border-slate-100 hover:shadow-md hover:border-amber-200">
+            <div class="flex justify-center items-center w-10 h-10 text-amber-600 bg-amber-50 rounded-xl"><span class="material-symbols-outlined text-[20px]">workspace_premium</span></div>
+            <span class="text-sm font-bold text-center text-slate-700 sm:text-right">الباقات</span>
         </a>
-        <a href="{{ route('superadmin.subscriptions.index') }}" class="flex items-center gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-100 transition-all hover:shadow-md dark:bg-gray-800 dark:ring-gray-700">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400"><span class="material-symbols-outlined text-[20px]">card_membership</span></div>
-            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">الاشتراكات</span>
+        <a href="{{ route('superadmin.subscriptions.index') }}" class="flex flex-col gap-3 items-center p-4 bg-white rounded-xl border shadow-sm transition-all sm:flex-row border-slate-100 hover:shadow-md hover:border-violet-200">
+            <div class="flex justify-center items-center w-10 h-10 text-violet-600 bg-violet-50 rounded-xl"><span class="material-symbols-outlined text-[20px]">card_membership</span></div>
+            <span class="text-sm font-bold text-center text-slate-700 sm:text-right">الاشتراكات</span>
         </a>
-        <div class="flex items-center gap-3 rounded-xl bg-gradient-to-br from-primary/5 to-primary/10 p-4 ring-1 ring-primary/20">
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><span class="material-symbols-outlined text-[20px]">shield_person</span></div>
-            <span class="text-sm font-bold text-primary">مشرف عام</span>
+        <div class="flex flex-col gap-3 items-center p-4 bg-gradient-to-br rounded-xl border sm:flex-row border-primary/20 from-primary/5 to-primary/10">
+            <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary"><span class="material-symbols-outlined text-[20px]">shield_person</span></div>
+            <span class="text-sm font-bold text-center text-primary sm:text-right">إدارة النظام العليا</span>
         </div>
     </div>
 
     {{-- Latest Tenants Table --}}
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700">
-        <div class="flex items-center justify-between border-b border-gray-100 px-6 py-5 dark:border-gray-700">
-            <h2 class="text-lg font-black text-gray-900 dark:text-white">آخر المكاتب المسجلة</h2>
-            <a href="{{ route('superadmin.offices.index') }}" class="flex items-center gap-1 text-xs font-bold text-primary hover:underline">عرض الكل <span class="material-symbols-outlined text-[16px]">arrow_back</span></a>
+    <div class="overflow-hidden bg-white rounded-2xl border shadow-sm border-slate-100">
+        <div class="flex justify-between items-center px-4 py-5 border-b sm:px-6 border-slate-100 bg-slate-50/50">
+            <h2 class="text-lg font-black text-slate-900 font-headline">آخر المكاتب المسجلة</h2>
+            <a href="{{ route('superadmin.offices.index') }}" class="flex gap-1 items-center text-xs font-bold transition-colors text-primary hover:text-primary-hover">عرض الكل <span class="material-symbols-outlined text-[16px]">arrow_back</span></a>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px]">
-                <thead><tr class="bg-gray-50/50 dark:bg-gray-900/30">
-                    <th class="px-6 py-3 text-right text-xs font-black uppercase text-gray-500 dark:text-gray-400">المكتب</th>
-                    <th class="px-6 py-3 text-right text-xs font-black uppercase text-gray-500 dark:text-gray-400">الباقة</th>
-                    <th class="px-6 py-3 text-center text-xs font-black uppercase text-gray-500 dark:text-gray-400">الحالة</th>
-                    <th class="px-6 py-3 text-right text-xs font-black uppercase text-gray-500 dark:text-gray-400">تاريخ التسجيل</th>
-                </tr></thead>
-                <tbody class="divide-y divide-gray-50 dark:divide-gray-700/50">
-                @forelse($latestApps as $app)
-                <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-700/20">
-                    <td class="px-6 py-4"><div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-xl text-white text-sm font-black" style="background:{{ $app->color ?? '#6366f1' }}">{{ mb_substr($app->name ?? 'م',0,1) }}</div>
-                        <div><p class="text-sm font-bold text-gray-900 dark:text-white">{{ $app->name ?? 'بدون اسم' }}</p><p class="text-xs text-gray-400">ID: {{ $app->id }}</p></div>
-                    </div></td>
-                    <td class="px-6 py-4 text-sm font-bold text-gray-700 dark:text-gray-300">{{ $app->currentSubscription?->package?->name ?? 'بدون باقة' }}</td>
-                    <td class="px-6 py-4 text-center">
-                        @if($app->is_active)<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"><span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>نشط</span>
-                        @else<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2.5 py-1 text-xs font-bold text-red-700 dark:bg-red-500/10 dark:text-red-400"><span class="h-1.5 w-1.5 rounded-full bg-red-500"></span>معطل</span>@endif
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $app->created_at->format('Y/m/d') }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="4" class="px-6 py-12 text-center"><span class="material-symbols-outlined text-[48px] text-gray-300">apartment</span><p class="mt-2 text-sm text-gray-400">لا توجد مكاتب مسجلة بعد</p></td></tr>
-                @endforelse
+        <div class="overflow-x-auto scrollbar-hide">
+            <table class="w-full min-w-[700px] text-right">
+                <thead>
+                    <tr class="border-b border-slate-100 bg-slate-50/80">
+                        <th class="px-6 py-4 text-xs font-black tracking-wider uppercase text-slate-500">المكتب</th>
+                        <th class="px-6 py-4 text-xs font-black tracking-wider uppercase text-slate-500">الباقة</th>
+                        <th class="px-6 py-4 text-xs font-black tracking-wider text-center uppercase text-slate-500">الحالة</th>
+                        <th class="px-6 py-4 text-xs font-black tracking-wider text-center uppercase text-slate-500">تاريخ التسجيل</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @forelse($latestApps as $app)
+                    <tr class="transition-colors hover:bg-slate-50/60">
+                        <td class="px-6 py-4">
+                            <div class="flex gap-3 items-center">
+                                <div class="flex justify-center items-center w-10 h-10 text-sm font-black text-white rounded-xl shadow-sm" style="background:{{ $app->color ?? '#f79009' }}">{{ mb_substr($app->name ?? 'م',0,1) }}</div>
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900">{{ $app->name ?? 'بدون اسم' }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-400">ID: {{ $app->id }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-bold text-slate-700">{{ $app->currentSubscription?->package?->name ?? 'بدون باقة' }}</td>
+                        <td class="px-6 py-4 text-center">
+                            @if($app->is_active)
+                                <span class="inline-flex gap-1 items-center px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>نشط</span>
+                            @else
+                                <span class="inline-flex gap-1 items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-full border border-red-100"><span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>معطل</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium text-center text-slate-500">{{ $app->created_at->format('Y/m/d') }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center">
+                            <div class="flex flex-col justify-center items-center">
+                                <div class="flex justify-center items-center mb-3 w-14 h-14 rounded-full bg-slate-50"><span class="material-symbols-outlined text-[32px] text-slate-400">domain_disabled</span></div>
+                                <p class="text-sm font-bold text-slate-500">لا توجد مكاتب مسجلة بعد</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
@@ -97,6 +119,6 @@
 </div>
 @endsection
 
-@section('script')
+@section('scripts')
 <script>function superAdminDashboard() { return {}; }</script>
 @endsection
