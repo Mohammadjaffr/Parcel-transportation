@@ -2,13 +2,20 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class CheckActiveSubscription
 {
     public function handle(Request $request, Closure $next)
     {
+      if (Auth::check() && Auth::user()->type === 'super_admin') {
+            return $next($request);
+        }
+
+        // 2. فحص الاشتراكات للمكاتب والشركات العادية
         $app = auth()->user()->App;
+        
         if (!$app || !$app->hasActiveSubscription()) {
             
             if ($request->expectsJson() || $request->is('api/*')) {
