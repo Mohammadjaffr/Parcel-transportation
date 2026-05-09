@@ -45,20 +45,14 @@ class PackageSeeder extends Seeder
         ]);
 
         User::create([
-            'name' => 'محمد السعدي',
-            'phone' => '967779522898',
+            'name' => 'تيار',
+            'phone' => '967780261952',
             'password' => Hash::make('123456789'),
             'type' => 'super_admin',
-            'whatsapp_number' => '967779522898',
+            'whatsapp_number' => '967780261952',
             'is_phone_verified' => true,
+
         ]);
-        User::create([
-            'name' => 'عوض لشرم',
-            'phone' => '967781152674',
-            'password' => Hash::make('123456789'),
-            'type' => 'super_admin',
-            'whatsapp_number' => '967781152674',
-            'is_phone_verified' => true,
-        ]);
+     
     }
 }

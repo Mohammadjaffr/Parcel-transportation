@@ -96,7 +96,7 @@
                         <div
                             class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                             <select x-model="statusFilter" @change="updateVisibility()"
-                                class="pr-11 pl-9 w-full h-12 text-sm font-black bg-transparent rounded-2xl border-none outline-none appearance-none focus:ring-0 text-on-surface dark:text-white">
+                                class="pr-11 pl-9 w-full h-12 text-sm font-black bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 text-on-surface dark:text-white">
                                 <option value="">كل الحالات</option>
                                 <option value="pending">قيد الانتظار</option>
                                 <option value="completed">مكتمل</option>
@@ -176,8 +176,9 @@
                                 </td>
 
                                 <td class="px-6 py-4">
-                                    <span
-                                        class="text-sm font-black text-primary font-mono dir-ltr">{{ $passenger->passenger_number }}</span>
+                                    <span class="font-mono text-sm font-black text-primary dir-ltr">
+                                        {{ $passenger->passenger_number }}
+                                    </span>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -387,22 +388,22 @@
                     <div class="grid grid-cols-1 gap-5">
 
                         <div
-                            class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-gray-50/50 dark:bg-boxdark-2/50 border border-gray-100 dark:border-boxdark-2">
+                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
                                         class="text-error">*</span></label>
                                 <input type="date" name="date" required value="{{ now()->format('Y-m-d') }}"
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
                                         class="text-error">*</span></label>
                                 <input type="text" name="location" required placeholder="مثلاً: عدن - كريتر"
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
                                     <span class="text-error">*</span></label>
@@ -448,7 +449,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم العميل
@@ -462,7 +463,7 @@
                                     style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg">
                                                 <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
                                                     x-html="selectedCountry.svg"></div>
@@ -524,7 +525,7 @@
                                 <div class="relative">
                                     <input type="text" name="customer_name"x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
                                         placeholder="اسم العميل"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
                                         :class="selectedRecordId ?
                                             'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
                                             ''">
@@ -535,7 +536,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق
@@ -549,7 +550,7 @@
                                     style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg">
                                                 <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
                                                     x-html="selectedCountry.svg"></div>
@@ -611,7 +612,7 @@
                                 <div class="relative">
                                     <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
                                         placeholder="اسم السائق"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
                                         :class="selectedRecordId ?
                                             'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
                                             ''">
@@ -622,7 +623,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -634,7 +635,7 @@
                                     <span class="text-error">*</span></label>
                                 <input type="number" name="total_commission" min="0" step="0.01" required
                                     placeholder="0.00"
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-amber-600 font-black">
+                                    class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
@@ -680,24 +681,24 @@
 
                     <div class="grid grid-cols-1 gap-5">
                         <div
-                            class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-gray-50/50 dark:bg-boxdark-2/50 border border-gray-100 dark:border-boxdark-2">
+                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
                                         class="text-error">*</span></label>
                                 <input type="date" name="date" x-model="editPassengerData.date" required
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
                                         class="text-error">*</span></label>
                                 <input type="text" name="location" x-model="editPassengerData.location" required
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الحالة <span
                                         class="text-error">*</span></label>
                                 <select name="status" x-model="editPassengerData.status" required
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                                     <option value="pending">قيد الانتظار</option>
                                     <option value="completed">مكتمل</option>
                                     <option value="cancel">ملغي</option>
@@ -705,7 +706,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
                                 x-effect="loadInitial(editPassengerData.passenger_number)">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
@@ -752,7 +753,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))"
                             x-effect="loadInitial({ id: editPassengerData.customer_id, name: editPassengerData.customer_name, phone: editPassengerData.customer_phone })">
                             <div class="relative">
@@ -767,7 +768,7 @@
                                     style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg">
                                                 <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
                                                     x-html="selectedCountry.svg"></div>
@@ -829,7 +830,7 @@
                                 <div class="relative">
                                     <input type="text" name="customer_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
                                         placeholder="اسم العميل"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
                                         :class="selectedRecordId ?
                                             'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
                                             ''">
@@ -840,7 +841,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))"
                             x-effect="loadInitial({ id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
                             <div class="relative">
@@ -855,7 +856,7 @@
                                     style="direction: ltr;">
                                     <div class="relative h-full" @click.away="openCountryDropdown = false">
                                         <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
                                             <template x-if="selectedCountry?.svg">
                                                 <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
                                                     x-html="selectedCountry.svg"></div>
@@ -917,7 +918,7 @@
                                 <div class="relative">
                                     <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
                                         placeholder="اسم السائق"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30 transition-all"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
                                         :class="selectedRecordId ?
                                             'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
                                             ''">
@@ -928,7 +929,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -941,7 +942,7 @@
                                     <span class="text-error">*</span></label>
                                 <input type="number" name="total_commission" min="0" step="0.01"
                                     x-model="editPassengerData.total_commission" required
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-amber-600 font-black">
+                                    class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
 
@@ -970,7 +971,7 @@
             <div
                 class="relative w-full max-w-md bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto text-center">
                 <div
-                    class="flex justify-between items-center pb-4 mb-6 border-b border-gray-50 dark:border-boxdark-2 text-right">
+                    class="flex justify-between items-center pb-4 mb-6 text-right border-b border-gray-50 dark:border-boxdark-2">
                     <h3 class="text-xl font-black text-on-surface dark:text-white">تعيين حالة الراكب</h3>
                     <button type="button" @click="closeModals()"
                         class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-xl transition-colors bg-surface dark:bg-boxdark-2 hover:text-error active:scale-95">
@@ -998,18 +999,18 @@
                         <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">تحديث الحالة
                             إلى:</label>
                         <select name="status" x-model="statusPassengerData.status" required
-                            class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 text-sm font-bold">
+                            class="px-4 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             <option value="pending">قيد الانتظار</option>
                             <option value="completed">مكتمل</option>
                             <option value="cancel">ملغي</option>
                         </select>
                     </div>
 
-                    <div class="flex gap-3 w-full pt-2">
+                    <div class="flex gap-3 pt-2 w-full">
                         <button type="button" @click="closeModals()"
                             class="flex-1 h-12 text-sm font-bold text-gray-600 rounded-xl transition-all bg-surface dark:bg-boxdark-2 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-boxdark active:scale-95">إلغاء</button>
                         <button type="submit"
-                            class="flex-1 h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30 active:scale-95">حفظ
+                            class="flex-1 h-12 text-sm font-bold text-white bg-emerald-500 rounded-xl shadow-lg transition-all hover:bg-emerald-600 shadow-emerald-500/30 active:scale-95">حفظ
                             الحالة</button>
                     </div>
                 </form>
