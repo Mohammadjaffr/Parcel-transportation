@@ -112,4 +112,23 @@ class CustomerTransactionService
             'shipment_id' => null, // دفعة عامة غير مرتبطة بطرد معين
         ]);
     }
+
+    /**
+     * تسجيل عمولة للعميل مقابل جلب راكب
+     */
+    public function recordPassengerCommission($passenger)
+    {
+        // نتحقق أولاً أن الراكب مرتبط بعميل وأن له عمولة
+        if ($passenger->customer_id && $passenger->total_commission > 0) {
+            
+            return CustomerTransaction::create([
+                'customer_id'  => $passenger->customer_id,
+                'passenger_id' => $passenger->id, // تأكد من إضافة هذا الحقل في الميجريشن إذا أردت ربط دقيق
+                'amount'       => $passenger->total_commission,
+                'type'         => 'credit', // رصيد لصالح العميل
+                'description'  => "عمولة جلب راكب رقم #{$passenger->passenger_number} - المكان: {$passenger->location}",
+            ]);
+        }
+        return false;
+    }
 }

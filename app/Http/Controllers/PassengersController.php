@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
-use App\Models\Passengers;
-use App\Models\Driver;
-use App\Models\Customer;
-use App\Models\Branch;
-use Illuminate\Http\Request;
 use App\Classes\WebResponseClass;
+use App\Models\Branch;
+use App\Models\Customer;
+use App\Models\Driver;
+use App\Models\Passengers;
 use App\Services\AdminLoggerService;
-use Illuminate\Support\Facades\Validator;
+use App\Services\CustomerTransactionService;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
 
 class PassengersController extends Controller
 {
@@ -157,6 +159,10 @@ class PassengersController extends Controller
     public function update(Request $request, $id)
     {
         $passenger = Passengers::findOrFail($id);
+        $oldStatus = $passenger->status;
+        if($oldStatus == 'completed'){
+            return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+        }
 
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
@@ -180,6 +186,7 @@ class PassengersController extends Controller
         }
 
         try {
+            DB::beginTransaction();
             $data = $validator->validated();
 
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
@@ -197,8 +204,12 @@ class PassengersController extends Controller
             unset($data['customer_name'], $data['customer_phone'], $data['driver_phone'], $data['driver_name']);
 
             $passenger->update($data);
-
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب بنجاح.', 'حسناً', 'passengers.index');
+            if ($passenger->status === 'completed' && $oldStatus !== 'completed') {
+                $transactionService = new CustomerTransactionService();
+                $transactionService->recordPassengerCommission($passenger);
+            }
+            DB::commit();
+           return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
