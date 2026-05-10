@@ -11,11 +11,10 @@ window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
-    wsHost: window.location.hostname, // الأهم: يجبره على الاتصال بسيرفرك (arta.tiyar.cc)
-    wsPort: 6001,
+    wsHost: window.location.hostname,
+    wsPort: 443, // نستخدم منفذ الموقع نفسه
     wssPort: 443,
-    forceTLS: false, // يمنع المتصفح من محاولة استخدام تشفير معقد يبطئ الاتصال
-    disableStats: true, // يمنع إرسال إحصائيات تبطئ التحميل
-    enabledTransports: ['ws', 'wss'], // يحدد نوع الاتصال مباشرة بدون تخمين
+    forceTLS: true, // إجبار التشفير ليتوافق مع HTTPS
+    enabledTransports: ['ws', 'wss'],
+    disableStats: true,
 });
