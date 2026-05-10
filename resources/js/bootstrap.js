@@ -11,10 +11,11 @@ window.Pusher = Pusher;
 window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: 'mt1', // أضف هذا السطر ليتوقف الخطأ الأول
     wsHost: window.location.hostname,
-    wsPort: 443, // نستخدم منفذ الموقع نفسه
+    wsPort: 443,
     wssPort: 443,
-    forceTLS: true, // إجبار التشفير ليتوافق مع HTTPS
+    forceTLS: true, // لأن الموقع يعمل بـ HTTPS
     enabledTransports: ['ws', 'wss'],
     disableStats: true,
 });

@@ -7,43 +7,30 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/js/app.js'])
     <script type="module">
-    document.addEventListener('DOMContentLoaded', function () {
-        
-        // إعداد شكل الإشعار (Toast) ليكون منبثقاً في الأعلى جانباً ولا يوقف عمل الشاشة
+    // ننتظر حتى يتم تحميل الصفحة وملفات Vite بالكامل
+    window.onload = function() {
+        if (typeof window.Echo === 'undefined') {
+            console.error("خطأ: Echo لم يتم تحميله بعد!");
+            return;
+        }
+
         const Toast = Swal.mixin({
             toast: true,
-            position: 'top-end', // سيظهر في أعلى يسار/يمين الشاشة
+            position: 'top-end',
             showConfirmButton: false,
-            timer: 5000, // يختفي تلقائياً بعد 5 ثواني
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
+            timer: 5000,
+            timerProgressBar: true
         });
 
         window.Echo.channel('admin-channel')
             .listen('.new-shipment', (data) => {
-                console.log("رابط الطرد الجديد:", data.action_url);
-
-                // إطلاق الإشعار الجمالي
                 Toast.fire({
                     icon: 'success',
                     title: 'عملية جديدة',
-                    text: data.message,
-                    // جعل الإشعار قابلاً للضغط للانتقال إلى تفاصيل الطرد
-                    customClass: {
-                        popup: 'cursor-pointer'
-                    }
-                }).then(() => {
-                    // إذا أردت توجيه المستخدم فوراً عند اختفاء الإشعار أو الضغط عليه
-                    // window.location.href = data.action_url;
+                    text: data.message
                 });
-                
-                // يمكنك إضافة سطر لتشغيل صوت "رنين" بسيط هنا إذا رغبت
-                // new Audio('{{ asset("assets/sounds/notification.mp3") }}').play();
             });
-    });
+    };
 </script>
     <title>@yield('title', 'لوحة التحكم')</title>
 
