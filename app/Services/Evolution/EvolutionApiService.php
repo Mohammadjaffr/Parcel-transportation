@@ -38,28 +38,34 @@ class EvolutionApiService
 
     
     public function sendText(string $number, string $text, ?string $instanceName = null): array|bool
-    {
-        $instance = $instanceName ?? $this->defaultInstance;
-        $url = "{$this->baseUrl}/message/sendText/{$instance}";
+{
+    $instance = $instanceName ?? $this->defaultInstance;
+    $url = "{$this->baseUrl}/message/sendText/{$instance}";
 
-        try {
-            $response = Http::withHeaders($this->getHeaders())->post($url, [
-                'number' => $number,
-                'text' => $text,
-            ]);
+    $randomDelay = rand(1500, 3500);
 
-            if ($response->successful()) {
-                return $response->json();
-            }
+    try {
+        $response = Http::withHeaders($this->getHeaders())->post($url, [
+            'number' => $number,
+            'text' => $text,
+            'options' => [
+                'delay' => $randomDelay,
+                'presence' => 'composing', // إظهار حالة "يكتب..." للمستلم
+            ]
+        ]);
 
-            Log::error("WhatsApp SendText Error: " . $response->body());
-            return false;
-
-        } catch (\Exception $e) {
-            Log::error("WhatsApp SendText Exception: " . $e->getMessage());
-            return false;
+        if ($response->successful()) {
+            return $response->json();
         }
+
+        Log::error("WhatsApp SendText Error: " . $response->body());
+        return false;
+
+    } catch (\Exception $e) {
+        Log::error("WhatsApp SendText Exception: " . $e->getMessage());
+        return false;
     }
+}
 
     
     public function checkNumberExists(string $number, ?string $instanceName = null): bool
