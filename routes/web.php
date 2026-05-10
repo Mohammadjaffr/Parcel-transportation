@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
         // 2. العملاء (محمية بـ Customers)
         Route::resource('customers', CustomerController::class)->middleware('check.service:Customers');
         Route::resource('passengers', PassengersController::class)->middleware('check.service:Passengers');
+        Route::post('/passengers/{id}/status', [PassengersController::class, 'updateStatus'])->name('passengers.updateStatus');
 
         // لازم يكون قبل resource offices
         Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');

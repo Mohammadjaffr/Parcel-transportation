@@ -4,7 +4,7 @@
 
 {{-- السايد بار --}}
 <aside
-    class="fixed {{ app()->getLocale() == 'ar' ? 'right-0 border-l' : 'left-0 border-r' }} top-0 bottom-0 z-[9999] flex w-72 flex-col bg-white transition-transform duration-300 ease-in-out dark:border-gray-800 dark:bg-boxdark lg:static lg:translate-x-0 font-outfit shadow-2xl border-gray-100"
+    class="fixed {{ app()->getLocale() == 'ar' ? 'right-0 border-l' : 'left-0 border-r' }} top-0 bottom-0 z-[9999] flex w-72 flex-col bg-white transition-transform duration-300 ease-in-out dark:border-gray-800 dark:bg-boxdark lg:static lg:translate-x-0 font-outfit shadow-2xl border-gray-100 lg:shadow-none"
     :class="sidebarToggle ? 'translate-x-0' : '{{ app()->getLocale() == 'ar' ? 'translate-x-full' : '-translate-x-full' }}'"
     @click.outside="sidebarToggle = false">
 

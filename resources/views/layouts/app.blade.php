@@ -122,17 +122,11 @@
 
         @include('layouts.sidebar')
 
-        <div class="flex overflow-y-auto overflow-x-hidden relative flex-col flex-1">
-
-            <div @click="sidebarToggle = false" x-show="sidebarToggle"
-                class="fixed inset-0 z-[998] transition-opacity bg-black/50 lg:hidden" x-transition:enter="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="opacity-100"
-                x-transition:leave-end="opacity-0">
-            </div>
+        <div class="flex flex-col flex-1 relative overflow-x-hidden overflow-y-auto bg-surface dark:bg-boxdark-2">
 
             @include('layouts.header')
 
-            <main class="container p-4 mx-auto md:p-6 2xl:p-10">
+            <main class="container p-4 mx-auto md:p-6 2xl:p-10 flex-1 flex flex-col">
                 @include('layouts.Breadcrumb')
 
                 @yield('content')

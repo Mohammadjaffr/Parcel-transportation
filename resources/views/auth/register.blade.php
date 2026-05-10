@@ -425,7 +425,7 @@
                                         placeholder="7XXXXXXXX" />
 
                                     <div class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-secondary">
-                                        <span class="material-symbols-outlined">desk_phone</span>
+                                        <span class="material-symbols-outlined">phone</span>
                                     </div>
 
                                     <button type="button" @click="open = !open"

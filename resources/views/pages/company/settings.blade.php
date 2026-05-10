@@ -556,17 +556,21 @@
                                     class="flex gap-4 items-center p-3 w-full transition-all rounded-2xl border-2 border-dashed bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
                                     <div
                                         class="flex justify-center items-center w-12 h-12 transition-all rounded-xl bg-white shadow-sm text-slate-400 border border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
-                                        <span class="material-symbols-outlined" x-show="!fileName">add_photo_alternate</span>
-                                        <span class="material-symbols-outlined text-emerald-500" x-show="fileName" x-cloak>check_circle</span>
+                                        <span class="material-symbols-outlined"
+                                            x-show="!fileName">add_photo_alternate</span>
+                                        <span class="material-symbols-outlined text-emerald-500" x-show="fileName"
+                                            x-cloak>check_circle</span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-bold truncate transition-colors text-slate-700 font-headline group-hover:text-primary"
                                             x-show="!fileName">انقر لرفع الشعار الجديد</p>
                                         <p class="text-sm font-bold truncate text-emerald-600 font-headline"
                                             x-show="fileName" x-text="fileName" x-cloak></p>
-                                        <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP</p>
+                                        <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP
+                                        </p>
                                     </div>
-                                    <div class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                    <div
+                                        class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
                                         <span class="text-[18px] material-symbols-outlined">upload</span>
                                     </div>
                                 </div>

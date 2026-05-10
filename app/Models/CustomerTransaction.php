@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Passengers;
 
 class CustomerTransaction extends Model
 {
@@ -12,6 +13,7 @@ class CustomerTransaction extends Model
         'amount',
         'type',
         'description',
+        'passenger_id'
     ];
 
     public function customer()
@@ -22,5 +24,9 @@ class CustomerTransaction extends Model
     public function shipment()
     {
         return $this->belongsTo(Shipment::class);
+    }
+    public function passenger()
+    {
+        return $this->belongsTo(Passengers::class);
     }
 }

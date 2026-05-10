@@ -92,7 +92,7 @@ class PassengersController extends Controller
             'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
-            'total_commission' => ['required', 'numeric', 'min:0'],
+            'total_commission' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'note' => ['nullable', 'string'],
         ]);
 
@@ -177,7 +177,7 @@ class PassengersController extends Controller
             'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
-            'total_commission' => ['required', 'numeric', 'min:0'],
+            'total_commission' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
             'note' => ['nullable', 'string'],
         ]);
 
@@ -209,8 +209,53 @@ class PassengersController extends Controller
                 $transactionService->recordPassengerCommission($passenger);
             }
             DB::commit();
-           return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة.', 'حسناً', 'passengers.index');
+            return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $passenger = Passengers::findOrFail($id);
+            $oldStatus = $passenger->status;
+            $newStatus = $request->status;
+
+            if ($oldStatus === 'completed') {
+                return back()->with('error', 'لا يمكنك تحديث حالة الراكب المكتمل رحلته.');
+            }
+
+            if ($oldStatus === $newStatus) {
+                return back();
+            }
+
+            $passenger->update(['status' => $newStatus]);
+
+            if ($newStatus === 'completed' && $oldStatus !== 'completed') {
+                $transactionService = new CustomerTransactionService();
+                $transactionService->recordPassengerCommission($passenger);
+            }
+
+            DB::commit();
+
+            $successMessages = [
+                'confirmed' => 'تم تأكيد الحجز ✅',
+                'completed' => 'تم إكمال الرحلة وتسجيل العمولة ✅',
+                'cancel'    => 'تم إلغاء الحجز 🚫',
+                'pending'   => 'تم إعادة الراكب لقيد الانتظار 🔄',
+            ];
+
+            return WebResponseClass::sendResponse('تم التحديث!', $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح', 'حسناً', 'passengers.index');
+
+        } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }

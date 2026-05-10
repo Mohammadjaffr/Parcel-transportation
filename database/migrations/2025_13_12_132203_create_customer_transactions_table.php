@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('customer_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->nullable()->constrained();
-            $table->foreignId('shipment_id')->constrained();
+            $table->foreignId('shipment_id')->nullable()->constrained();
             $table->foreignId('passenger_id')->nullable()->constrained();
             $table->decimal('amount', 12, 2);
             $table->enum('type', ['debit', 'credit']);   
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

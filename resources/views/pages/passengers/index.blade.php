@@ -981,20 +981,6 @@
 
                 <form :action="statusPassengerData.url" method="POST" class="space-y-6 text-right">
                     @csrf
-                    @method('PUT')
-
-                    {{-- Hidden Fields Required By Controller to avoid 404 and Validation Errors --}}
-                    <input type="hidden" name="date" :value="statusPassengerData.date">
-                    <input type="hidden" name="passenger_number" :value="statusPassengerData.passenger_number">
-                    <input type="hidden" name="location" :value="statusPassengerData.location">
-                    <input type="hidden" name="count" :value="statusPassengerData.count">
-                    <input type="hidden" name="total_commission" :value="statusPassengerData.total_commission">
-                    <input type="hidden" name="customer_phone" :value="statusPassengerData.customer_phone">
-                    <input type="hidden" name="customer_name" :value="statusPassengerData.customer_name">
-                    <input type="hidden" name="driver_phone" :value="statusPassengerData.driver_phone">
-                    <input type="hidden" name="driver_name" :value="statusPassengerData.driver_name">
-                    <input type="hidden" name="note" :value="statusPassengerData.note">
-
                     <div>
                         <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">تحديث الحالة
                             إلى:</label>
@@ -1131,7 +1117,7 @@
                     // نمرر كل البيانات كمدخلات مخفية حتى ينجح الـ Validation في الكنترولر بدون 404
                     this.statusPassengerData = {
                         ...passenger,
-                        url: '{{ route('passengers.index') }}/' + passenger.id
+                        url: '{{ route('passengers.index') }}/' + passenger.id + '/status'
                     };
                     this.showStatusModal = true;
                 },

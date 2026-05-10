@@ -338,23 +338,28 @@
                 this.fullPhone = this.localPhone ? dCode + this.localPhone : '';
             }
         }" x-show="showAddBranchModal" x-cloak
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+            class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center pointer-events-none sm:p-4">
 
             <div x-show="showAddBranchModal" x-transition.opacity.duration.300ms
                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto"
                 @click="showAddBranchModal = false"></div>
 
             <div x-show="showAddBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 translate-y-full"
-                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 pointer-events-auto flex flex-col max-h-[90vh]">
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
                 <div @click="showAddBranchModal = false"
-                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95">
+                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95 sm:hidden">
                 </div>
 
-                <div class="flex gap-3 items-center mb-6">
+                <!-- Close Button for Desktop -->
+                <button @click="showAddBranchModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+
+                <div class="flex gap-3 items-center mb-6 pr-2">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">add_business</span>
@@ -416,21 +421,22 @@
                               
                                 :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
                                 @input="localPhone = localPhone.replace(/\D/g, '')"
-                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                                class="flex-1 px-2 py-3 pr-3 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
                                 <span class="text-lg material-symbols-outlined">call</span>
                             </div>
 
-                            <button type="button" @click="openCountry = !openCountry"
+                            <button type="button" @click="openCountry = !openCountry" dir="ltr"
                                 class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
-                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                <span class="text-xs font-bold text-slate-700 dir-ltr"
-                                    x-text="selectedCountry?.dial_code"></span>
                                 <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg"></div>
+                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="selectedCountry.svg">
+                                    </div>
                                 </template>
+                                <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
+                                    x-text="selectedCountry?.dial_code"></span>
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                             </button>
                         </div>
 
@@ -446,10 +452,10 @@
                                     :key="country.code">
                                     <div @click="selectedCountry = country; openCountry = false; search = ''"
                                         class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
+                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="country.svg"></div>
                                         <span class="flex-grow text-xs font-medium truncate text-slate-700"
                                             x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
+                                        <span class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
                                             x-text="country.dial_code"></span>
                                     </div>
                                 </template>
@@ -494,23 +500,28 @@
             isSubmittingCompany: false,
             terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
         }" x-show="showEditCompanyModal" x-cloak
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+            class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center pointer-events-none sm:p-4">
 
             <div x-show="showEditCompanyModal" x-transition.opacity.duration.300ms
                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto"
                 @click="showEditCompanyModal = false"></div>
 
             <div x-show="showEditCompanyModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 translate-y-full"
-                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 pointer-events-auto flex flex-col max-h-[90vh]">
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
                 <div @click="showEditCompanyModal = false"
-                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95">
+                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95 sm:hidden">
                 </div>
 
-                <div class="flex gap-3 items-center mb-6">
+                <!-- Close Button for Desktop -->
+                <button @click="showEditCompanyModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+
+                <div class="flex gap-3 items-center mb-6 pr-2">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_document</span>
@@ -700,23 +711,28 @@
                                                     updatePhone();
                                                  "
             x-show="showEditBranchModal" x-cloak
-            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+            class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center pointer-events-none sm:p-4">
 
             <div x-show="showEditBranchModal" x-transition.opacity.duration.300ms
                 class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto"
                 @click="showEditBranchModal = false"></div>
 
             <div x-show="showEditBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-                x-transition:leave-end="opacity-0 translate-y-full"
-                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 pointer-events-auto flex flex-col max-h-[90vh]">
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
                 <div @click="showEditBranchModal = false"
-                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95">
+                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95 sm:hidden">
                 </div>
 
-                <div class="flex gap-3 items-center mb-6">
+                <!-- Close Button for Desktop -->
+                <button @click="showEditBranchModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+
+                <div class="flex gap-3 items-center mb-6 pr-2">
                     <div class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_square</span>
@@ -786,14 +802,15 @@
                                 <span class="text-lg material-symbols-outlined">call</span>
                             </div>
 
-                            <button type="button" @click="openCountry = !openCountry"
+                            <button type="button" @click="openCountry = !openCountry" dir="ltr"
                                 class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
-                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
-                                <span class="text-xs font-bold text-slate-700 dir-ltr"
-                                    x-text="selectedCountry?.dial_code"></span>
                                 <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden w-5 h-auto rounded-sm" x-html="selectedCountry.svg"></div>
+                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="selectedCountry.svg">
+                                    </div>
                                 </template>
+                                <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
+                                    x-text="selectedCountry?.dial_code"></span>
+                                <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                             </button>
                         </div>
 
@@ -809,10 +826,10 @@
                                     :key="country.code">
                                     <div @click="selectedCountry = country; openCountry = false; search = ''"
                                         class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="w-5 h-auto shrink-0" x-html="country.svg"></div>
+                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="country.svg"></div>
                                         <span class="flex-grow text-xs font-medium truncate text-slate-700"
                                             x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 dir-ltr"
+                                        <span class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
                                             x-text="country.dial_code"></span>
                                     </div>
                                 </template>
