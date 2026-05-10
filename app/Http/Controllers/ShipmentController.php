@@ -348,7 +348,7 @@ class ShipmentController extends Controller
             if ($admins->isNotEmpty()) {
                 Notification::send(
                     $admins,
-                    new \App\Notifications\AdminShipmentCreated(
+                    new AdminShipmentCreated(
                         $user->name,
                         $user->branch->name ?? 'غير محدد الفرع',
                         $shipment->bond_number,

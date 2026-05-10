@@ -41,11 +41,11 @@ class AdminShipmentCreated extends Notification implements ShouldBroadcastNow
 
     public function toBroadcast(object $notifiable): BroadcastMessage
     {
-        return new BroadcastMessage([
-            'type'       => 'admin_new_shipment',
-            'message'    => "➕ طرد جديد: قام [{$this->creatorName}] في فرع [{$this->branchName}] بإنشاء الطرد رقم ({$this->bondNumber}).",
-            'action_url' => route('shipment.outgoing.show', $this->shipmentId),
-        ]);
+        return (new BroadcastMessage([
+        'type'       => 'admin_new_shipment',
+        'message'    => "➕ طرد جديد: قام [{$this->creatorName}] في فرع [{$this->branchName}] بإنشاء الطرد رقم ({$this->bondNumber}).",
+        'action_url' => route('shipment.outgoing.show', $this->shipmentId),
+        ]))->onConnection('sync');
     }
     public function broadcastOn()
     {
