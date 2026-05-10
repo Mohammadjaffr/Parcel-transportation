@@ -4,6 +4,47 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @vite(['resources/js/app.js'])
+    <<script type="module">
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        // إعداد شكل الإشعار (Toast) ليكون منبثقاً في الأعلى جانباً ولا يوقف عمل الشاشة
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end', // سيظهر في أعلى يسار/يمين الشاشة
+            showConfirmButton: false,
+            timer: 5000, // يختفي تلقائياً بعد 5 ثواني
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        window.Echo.channel('admin-channel')
+            .listen('.new-shipment', (data) => {
+                console.log("رابط الطرد الجديد:", data.action_url);
+
+                // إطلاق الإشعار الجمالي
+                Toast.fire({
+                    icon: 'success',
+                    title: 'عملية جديدة',
+                    text: data.message,
+                    // جعل الإشعار قابلاً للضغط للانتقال إلى تفاصيل الطرد
+                    customClass: {
+                        popup: 'cursor-pointer'
+                    }
+                }).then(() => {
+                    // إذا أردت توجيه المستخدم فوراً عند اختفاء الإشعار أو الضغط عليه
+                    // window.location.href = data.action_url;
+                });
+                
+                // يمكنك إضافة سطر لتشغيل صوت "رنين" بسيط هنا إذا رغبت
+                // new Audio('{{ asset("assets/sounds/notification.mp3") }}').play();
+            });
+    });
+</script>
     <title>@yield('title', 'لوحة التحكم')</title>
 
     <link
