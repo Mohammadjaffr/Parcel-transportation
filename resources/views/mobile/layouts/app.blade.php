@@ -4,34 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @vite(['resources/js/app.js'])
-    <script type="module">
-    // ننتظر حتى يتم تحميل الصفحة وملفات Vite بالكامل
-    window.onload = function() {
-        if (typeof window.Echo === 'undefined') {
-            console.error("خطأ: Echo لم يتم تحميله بعد!");
-            return;
-        }
 
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 5000,
-            timerProgressBar: true
-        });
-
-        window.Echo.channel('admin-channel')
-            .listen('.new-shipment', (data) => {
-                Toast.fire({
-                    icon: 'success',
-                    title: 'عملية جديدة',
-                    text: data.message
-                });
-            });
-    };
-</script>
     <title>@yield('title', 'لوحة التحكم')</title>
 
     <link
