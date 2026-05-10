@@ -6,7 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     @vite(['resources/js/app.js'])
-    <<script type="module">
+    <script type="module">
     document.addEventListener('DOMContentLoaded', function () {
         
         // إعداد شكل الإشعار (Toast) ليكون منبثقاً في الأعلى جانباً ولا يوقف عمل الشاشة
