@@ -14,7 +14,7 @@ window.Echo = new Echo({
     cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
     wsHost: window.location.hostname, // الأهم: يجبره على الاتصال بسيرفرك (arta.tiyar.cc)
     wsPort: 6001,
-    wssPort: 6001,
+    wssPort: 443,
     forceTLS: false, // يمنع المتصفح من محاولة استخدام تشفير معقد يبطئ الاتصال
     disableStats: true, // يمنع إرسال إحصائيات تبطئ التحميل
     enabledTransports: ['ws', 'wss'], // يحدد نوع الاتصال مباشرة بدون تخمين
