@@ -135,7 +135,11 @@
                     </li>
 
                     {{-- إدارة الأفراد (تظهر فقط إذا كان أحد الموديولات مفعل) --}}
-                    
+                    @php
+                        $app = auth()->user()->app;
+                        $hasPeople = $app && ($app->hasService('Drivers') || (auth()->user()->type != 'user' && $app->hasService('Users')) || $app->hasService('Customers') || $app->hasService('Passengers'));
+                    @endphp
+                    @if($hasPeople)
                     <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*') || request()->routeIs('passengers.*')) selected = 'People' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'People' ? '' : 'People')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
@@ -147,7 +151,7 @@
                                 :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*', 'passengers.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 group
                             </span>
-                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة الأفراد</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الأفراد</span>
 
                             <span
                                 class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
@@ -209,6 +213,7 @@
                             </div>
                         </div>
                     </li>
+                    @endif
                     
 
                     {{-- إدارة المكاتب (المكاتب الموثوقة/غير الموثوقة) --}}
@@ -223,7 +228,7 @@
                                 :class="{{ request()->routeIs('app.*', 'branch.*', 'offices.*', 'offices.unverified.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 apartment
                             </span>
-                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة المكاتب</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">المكاتب</span>
 
                             <span
                                 class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
@@ -243,14 +248,14 @@
                                     <li>
                                         <a href="{{ route('app.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('app.index') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            المكاتب الموثوقة
+                                    
+                                            مكاتب داخل النظام
                                         </a>
                                     </li>
                                     <li>
                                         <a href="{{ route('offices.unverified.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('offices.unverified.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            المكاتب غير الموثوقة
-                                        </a>
+                                            مكاتب خارجية                                        </a>
                                     </li>
                                 </ul>
                             </div>
@@ -258,7 +263,11 @@
                     </li>
 
                     {{-- إدارة الطرود --}}
-                    
+                    @php
+                        $app = auth()->user()->app;
+                        $hasShipments = $app && ($app->hasService('Shipment_Out') || $app->hasService('Shipment_In'));
+                    @endphp
+                    @if($hasShipments)
                     <li x-init="@if (request()->routeIs('shipment.outgoing.*') ||
                             request()->routeIs('shipment.incoming.*') ||
                             request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
@@ -272,7 +281,7 @@
                                 :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 inventory_2
                             </span>
-                            <span :class="{ 'lg:hidden': sidebarToggle }">إدارة الطرود</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الطرود</span>
 
                             <span
                                 class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
@@ -294,7 +303,7 @@
                                     <li>
                                         <a href="{{ route('shipment.outgoing.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.outgoing.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            الطرود الصادرة
+                                            الطرود المرسلة
                                         </a>
                                     </li>
                                     @endhasservice
@@ -303,7 +312,7 @@
                                     <li>
                                         <a href="{{ route('shipment.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            الطرود الواردة
+                                            الطرود المستلمة
                                         </a>
                                     </li>
                                     @endhasservice
@@ -312,10 +321,16 @@
                             </div>
                         </div>
                     </li>
+                    @endif
                     
 
                     
                     
+                    @php
+                        $app = auth()->user()->app;
+                        $hasPackages = $app && ($app->hasService('Package_Out') || $app->hasService('Package_In'));
+                    @endphp
+                    @if($hasPackages)
                     <li x-init="@if (request()->routeIs('shipmentpackage.*') || request()->routeIs('receipts.*')) selected = 'ShipmentsOps' @endif">
                         <a href="#"
                             @click.prevent="selected = (selected === 'ShipmentsOps' ? '' : 'ShipmentsOps')"
@@ -329,7 +344,7 @@
                                 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 local_shipping
                             </span>
-                            <span :class="{ 'lg:hidden': sidebarToggle }">حركة الشحنات</span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الشحنات</span>
 
                             <span
                                 class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
@@ -356,7 +371,8 @@
                                     </li>
                                     @endhasservice
 
-                                    @hasService('Package_In')
+                                    @hasservice('Package_In')
+
                                     <li>
                                         <a href="{{ route('shipmentpackage.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
@@ -364,14 +380,17 @@
                                         </a>
                                     </li>
                                     @endhasservice
+                                    
 
                                 </ul>
                             </div>
                         </div>
                     </li>
+                    @endif
                     
 
                     
+                    @endif
                 </ul>
             </div>
         </nav>

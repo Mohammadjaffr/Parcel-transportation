@@ -1,362 +1,222 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+@extends('receipts.layout')
 
-<head>
-    <meta charset="UTF-8">
-    <style>
-        /* إعدادات الخط والصفحة */
-        body {
-            font-family: {!! $design['font_family'] ?? "'aealarabiya', 'dejavusans', sans-serif" !!};
-            direction: rtl;
-            margin: 0;
-            padding: 0;
-            color: #333;
-            line-height: 1.4;
-        }
+@section('title', 'كشف حمولة السائق - ' . ($driver_name ?? ''))
 
-        @page {
-            margin: 10mm;
-        }
+@push('styles')
+<style>
+    @media print {
+        @page { size: A4 landscape; }
+    }
+</style>
+@endpush
 
-        /* الهيدر الاحترافي متوافق مع TCPDF */
-        .header-table {
-            width: 100%;
-            border-bottom: 3px solid {{ $design['primary_color'] ?? '#fb6514' }};
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-        }
-
-        .brand-name {
-            color: {{ $design['primary_color'] ?? '#fb6514' }};
-            font-size: 45pt;
-            font-weight: bold;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .brand-subtitle {
-            color: #333;
-            font-size: 15pt;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        .document-title-badge {
-            background-color: {{ $design['secondary_color'] ?? '#333' }};
-            color: #fff;
-            padding: 4px 15px;
-            font-size: 13pt;
-            display: inline-block;
-            margin-top: 10px;
-            border-radius: 4px;
-        }
-
-        .header-info-text {
-            font-size: 11pt;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .header-phones {
-            color: {{ $design['primary_color'] ?? '#fb6514' }};
-            font-weight: bold;
-            font-size: 12pt;
-            margin-top: 5px;
-        }
-
-        /* بيانات السند (تم تغييرها من بيانات رحلة) */
-        .trip-info-box {
-            width: 100%;
-            background-color: {{ $design['bg_color'] ?? '#fcfcfc' }};
-            border: 1px solid #eee;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-
-        .trip-info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .label {
-            color: {{ $design['primary_color'] ?? '#fb6514' }};
-            font-weight: bold;
-            width: 90px;
-            font-size: 12pt;
-        }
-
-        .value {
-            font-weight: bold;
-            font-size: 13pt;
-            color: #222;
-        }
-
-        /* جدول الطرود */
-        .manifest-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-        }
-
-        .manifest-table th {
-            background-color: {{ $design['secondary_color'] ?? '#333' }};
-            color: #ffffff;
-            font-weight: bold;
-            text-align: center;
-            border: 1px solid {{ $design['secondary_color'] ?? '#333' }};
-            padding: 6px 2px;
-            font-size: 9.5pt;
-        }
-
-        .manifest-table td {
-            border: 1px solid #ddd;
-            padding: 6px 2px;
-            text-align: center;
-            font-size: 9.5pt;
-            vertical-align: middle;
-            word-wrap: break-word;
-        }
-
-        /* قسم التواقيع المصغر - 3 أعمدة */
-        .signatures-container {
-            width: 100%;
-            margin-top: 25px;
-            border-collapse: collapse;
-        }
-
-        .sig-cell {
-            width: 33.33%;
-            text-align: center;
-            padding: 5px;
-            vertical-align: top;
-        }
-
-        .sig-title {
-            font-size: 11pt;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 25px;
-            display: block;
-        }
-
-        .sig-line {
-            width: 70%;
-            margin: 5px auto;
-            border-bottom: 1px solid #000;
-        }
-
-        .notes-cell {
-            font-size: 9.5pt;
-            color: #666;
-            text-align: right !important;
-            /* لمنداخذ الملاحظات يمين */
-            padding-right: 5px !important;
-        }
-    </style>
-</head>
-
-<body>
-
-    <table class="header-table">
-        <tr>
-            <td width="35%" style="vertical-align: top;">
-                <h1 class="brand-name">{{ $company['name'] }}</h1>
-                <div class="brand-subtitle">للنقل والشحن السريع</div>
-                <div class="document-title-badge">{{ $title }}</div>
-                <div style="font-size: 9.5pt; margin-top: 8px; color: #666; line-height: 1.5;">
-                    تاريخ الطباعة: <span dir="ltr">{{ $print_date }}</span><br>
-                    رقم التتبع: <span
-                        style="background-color: {{ $design['bg_color'] ?? '#ffd8b1' }}; padding: 1px 6px; border-radius: 4px; color:#000; font-weight:bold;">{{ $package_number }}</span>
+@section('content')
+<div class="max-w-6xl w-full mx-auto bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] print-no-shadow overflow-hidden border border-slate-100 print-border my-8 print:my-0">
+    
+    <!-- Header -->
+    <div class="bg-gradient-to-l from-slate-50 to-white p-6 sm:p-8 border-b border-slate-100">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div class="flex items-center gap-4">
+                @if(!empty($company['logo']))
+                <div class="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 border border-slate-100">
+                    <img src="{{ $company['logo'] }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
-            </td>
-
-            <td width="30%" align="center" valign="top">
-                <img src="{{ $company['logo'] }}" height="85" alt="Logo" />
-
-                <div style="height: 38px; line-height: 38px; ">&nbsp;</div>
-
-                <table width="100%" border="0" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td style="width: 25px;"></td> 
-                        <td align="center" style="width: 200px;">
-                            <table border="1" cellpadding="3" style="border-color: #333333; width: 200px; border-collapse: collapse;">
-                                <tr>
-                                    <td align="center" style="font-weight: bold; font-size: 13pt; background-color: #ffffff; color: #333;">
-                                        كشف السائق
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                        <td style="width: 0px;"></td> 
-                    </tr>
-                </table>
-            </td>
-
-            <td width="35%" align="center" valign="top" style="line-height: 1.4;">
-                @if (!empty($company['main_branch']))
-                    <div style="font-size: 10pt; font-weight: bold; color: #333;">
-                        {{ $company['main_branch']['title'] }}</div>
-                    <div style="font-size: 10pt; color: #555; margin-bottom: 6px;">
-                        <span dir="ltr" style="font-weight: bold;">{{ $company['main_branch']['phones'] }}</span>
-                    </div>
                 @endif
-
-                @if (!empty($company['headquarters']))
-                    <div
-                        style="font-size: 10pt; font-weight: bold; color: {{ $design['primary_color'] ?? '#fb6514' }};">
-                        {{ $company['headquarters']['title'] }}</div>
-                    <div style="font-size: 11pt; margin-bottom: 6px;">
-                        <span dir="ltr"
-                            style="font-weight: bold; color: {{ $design['primary_color'] ?? '#fb6514' }};">{{ $company['headquarters']['phones'] }}</span>
-                    </div>
-                @endif
-
-                @if (!empty($company['other_phones']))
-                    <div style="font-size: 9pt; color: #777; margin-bottom: 6px;">
-                        أرقام الفروع:
-                        <span dir="ltr"
-                            style="font-weight: bold; color: {{ $design['primary_color'] ?? '#fb6514' }}; line-height: 1.5;">{{ $company['other_phones'] }}</span>
-                    </div>
-                @endif
-
-                <div style="font-size: 9pt; font-weight: bold; color: #333; margin-top: 8px;">خدمة الشحن إلى جميع
-                    المحافظات ودول الخليج</div>
-            </td>
-        </tr>
-    </table>
-
-    <table
-        style="width: 100%; border-top: 2px solid {{ $design['primary_color'] ?? '#fb6514' }}; margin-bottom: 10px; margin-top: -5px; padding-top: 5px;">
-        <tr>
-            <td width="50%" style="text-align: right; padding: 3px 5px; border: none;">
-                <span
-                    style="color: {{ $design['primary_color'] ?? '#fb6514' }}; font-weight: bold; font-size: 10pt;">اسم
-                    السائق:</span>
-                <span style="font-weight: bold; font-size: 11pt; color: #333;">{{ $driver_name }}</span>
-            </td>
-            <td width="50%" style="text-align: right; padding: 3px 5px; border: none;">
-                <span
-                    style="color: {{ $design['primary_color'] ?? '#fb6514' }}; font-weight: bold; font-size: 10pt;">رقم
-                    الجوال:</span>
-                <span dir="ltr"
-                    style="font-weight: bold; font-size: 10pt; color: #333;">{{ $driver_phone }}</span>
-            </td>
-        </tr>
-        <tr>
-            <td width="50%" style="text-align: right; padding: 3px 5px; border: none;">
-                <span
-                    style="color: {{ $design['primary_color'] ?? '#fb6514' }}; font-weight: bold; font-size: 10pt;">فرع
-                    المرسل:</span>
-                <span style="font-weight: bold; font-size: 11pt; color: #333;">{{ $package_sender_branch }}</span>
-            </td>
-            <td width="50%" style="text-align: right; padding: 3px 5px; border: none;">
-                <span
-                    style="color: {{ $design['primary_color'] ?? '#fb6514' }}; font-weight: bold; font-size: 10pt;">إجمالي
-                    الطرود:</span>
-                <span style="font-weight: bold; font-size: 11pt; color: #333;">{{ $total_shipments }} <span
-                        style="font-size: 9pt;">طرد صادر</span></span>
-            </td>
-        </tr>
-    </table>
-
-    <table class="manifest-table">
-        <thead>
-            <tr>
-                <th width="12%">السند</th>
-                <th width="10%">المرسل</th>
-                <th width="10%">جوال المرسل</th>
-                <th width="9%">المستلم</th>
-                <th width="10%">جوال المستلم</th>
-                <th width="9%">من</th>
-                <th width="10%">إلى</th>
-                <th width="10%">نوع الطرد</th>
-                <th width="10%">المبلغ</th>
-                <th width="10%">ملاحظات</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($shipments as $s)
-                <tr>
-                    <td style="font-weight: bold; color: {{ $design['primary_color'] ?? '#fb6514' }};" dir="ltr"
-                        nowrap="nowrap">{{ $s['bond_number'] }}<br><span
-                            style="font-size:10px;">{{ $s['tracking_code'] }}</span></td>
-                    <td>{{ $s['sender_name'] }}</td>
-                    <td style="direction: ltr;" nowrap="nowrap">{{ $s['sender_phone'] }}</td>
-
-                    <td style="font-weight: bold;">{{ $s['receiver_name'] }}</td>
-                    <td style="direction: ltr;" nowrap="nowrap">{{ $s['receiver_phone'] }}</td>
-
-                    <td>{{ $s['sender_branch'] }}</td>
-                    <td style="font-weight: bold; background-color: {{ $design['bg_color'] ?? '#fff4ee' }};">{{ $s['receiver_branch'] }}</td>
-
-                    <td>
-                        <div style="font-weight: bold;">{{ $s['package_type'] }}</div>
-                        @if ($s['weight'])
-                            <div style="font-size: 8pt; color: #666; margin-top:2px;">({{ $s['weight'] }})</div>
-                        @endif
-                    </td>
-
-                    <td>
-                        @if ($s['payment_key'] === 'prepaid')
-                            <span style="font-weight: bold; color: green;">محاسب</span>
-                        @elseif($s['payment_key'] === 'cod')
-                            <div style="font-size: 9pt;">الإجمالي:</div>
-                            <div style="font-weight: bold;">{{ $s['total_amount'] }}</div>
-                        @elseif($s['payment_key'] === 'partial_payment')
-                            <div style="font-size: 8pt;">الإجمالي: <span
-                                    style="font-weight: bold;">{{ $s['total_amount'] }}</span></div>
-                            <div style="font-size: 8pt; color: green;">م: {{ $s['partial_amount'] }}</div>
-                            <div style="font-size: 8pt; color: red;">ب: {{ $s['remaining_amount'] }}</div>
-                        @elseif($s['payment_key'] === 'customer_credit')
-                            <span style="font-weight: bold; color: {{ $design['primary_color'] ?? '#fb6514' }};">على
-                                الحساب</span>
-                        @else
-                            {{ $s['payment_method'] }}
-                        @endif
-                    </td>
-
-                    <td class="notes-cell">
-                        {{ $s['notes'] }}
-                        @if ($s['honey_details'])
-                            <div style="font-size: 8pt; color: #777; text-align: left; margin-top: 10px; width: 100%;">
-                                {{ $s['honey_details'] }}
-                            </div>
-                        @endif
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="10" style="padding: 15px; font-weight: bold; color: #777;">لا توجد طرود في هذه
-                        الإرسالية.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <table class="signatures-container">
-        <tr>
-            <td class="sig-cell">
-                <span class="sig-title">توقيع السائق</span>
-                <div class="sig-line"></div>
-            </td>
-            <td class="sig-cell">
-                <span class="sig-title">مسؤول الصادر</span>
-                <div class="sig-line"></div>
-            </td>
-            <td class="sig-cell">
-                <span class="sig-title">ختم الفرع</span>
-                <div class="sig-line" style="border: none;"></div>
-            </td>
-        </tr>
-    </table>
-
-    <div
-        style="position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10pt; color: #999; border-top: 1px solid #eee; padding-top: 5px;">
-        نظام {{ $company['name'] }} الذكي - طبع بواسطة: {{ $creator_name }} - التاريخ: <span
-            dir="ltr">{{ $print_date }}</span>
+                <div>
+                    <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
+                    <p class="text-slate-500 font-medium text-sm mt-1">{{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="inline-flex items-center justify-center px-4 py-2 bg-amber-50 text-amber-700 rounded-xl font-bold text-sm mb-2 border border-amber-100">
+                    {{ $title ?? 'كشف حمولة الرسائل' }}
+                </div>
+                <div class="text-slate-400 text-xs font-medium flex items-center gap-1.5 justify-end mt-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span dir="ltr">{{ $print_date ?? date('Y-m-d H:i') }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-</body>
+    <div class="p-6 sm:p-8">
+        <!-- Driver & Package Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+            <!-- Driver Card -->
+            <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-5">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                    <h3 class="text-sm font-bold text-blue-600 uppercase tracking-wider">بيانات السائق</h3>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500 text-sm">الاسم</span>
+                        <span class="text-slate-800 font-black">{{ $driver_name ?? '---' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500 text-sm">الهاتف</span>
+                        <span class="text-slate-800 font-bold" dir="ltr">{{ $driver_phone ?? '---' }}</span>
+                    </div>
+                </div>
+            </div>
 
-</html>
+            <!-- Package Card -->
+            <div class="bg-emerald-50/50 rounded-2xl border border-emerald-100 p-5">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    </div>
+                    <h3 class="text-sm font-bold text-emerald-600 uppercase tracking-wider">بيانات الإرسالية</h3>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500 text-sm">رقم الإرسالية</span>
+                        <span class="text-slate-800 font-black" dir="ltr">{{ $package_number ?? '---' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500 text-sm">فرع الإرسال</span>
+                        <span class="text-slate-800 font-bold">{{ $package_sender_branch ?? '---' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-500 text-sm">عدد الطرود</span>
+                        <span class="text-slate-800 font-black text-lg">{{ $total_shipments ?? 0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipments Table -->
+        <div class="mb-8">
+            <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                <span class="w-2 h-6 rounded-full bg-amber-500"></span>
+                تفاصيل الطرود
+            </h2>
+            
+            <div class="rounded-2xl border border-slate-200 overflow-x-auto">
+                <table class="w-full text-sm text-right premium-table">
+                    <thead>
+                        <tr>
+                            <th class="w-10 text-center">#</th>
+                            <th class="w-24">رقم السند</th>
+                            <th>المرسل</th>
+                            <th>المستلم</th>
+                            <th class="w-28">الوجهة</th>
+                            <th class="w-24">نوع الطرد</th>
+                            <th class="w-28">طريقة الدفع</th>
+                            <th class="w-24 text-center">المبلغ</th>
+                            <th class="w-20 text-center">المتبقي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($shipments ?? [] as $shipment)
+                            <tr class="transition-colors hover:bg-slate-50">
+                                <td class="text-center font-bold text-slate-400">{{ $loop->iteration }}</td>
+                                <td class="font-bold text-slate-700" dir="ltr">{{ $shipment['bond_number'] }}</td>
+                                <td>
+                                    <div class="text-slate-800 font-bold">{{ $shipment['sender_name'] }}</div>
+                                    <div class="text-xs text-slate-400" dir="ltr">{{ $shipment['sender_phone'] }}</div>
+                                </td>
+                                <td>
+                                    <div class="text-slate-800 font-bold">{{ $shipment['receiver_name'] }}</div>
+                                    <div class="text-xs text-slate-400" dir="ltr">{{ $shipment['receiver_phone'] }}</div>
+                                </td>
+                                <td class="text-slate-600 font-medium">{{ $shipment['receiver_branch'] }}</td>
+                                <td>
+                                    <span class="text-slate-700 font-bold">{{ $shipment['package_type'] }}</span>
+                                    @if(!empty($shipment['weight']))
+                                        <div class="text-xs text-slate-400">{{ $shipment['weight'] }}</div>
+                                    @endif
+                                    @if(!empty($shipment['honey_details']))
+                                        <div class="text-xs text-amber-600">{{ $shipment['honey_details'] }}</div>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $paymentColors = [
+                                            'prepaid' => 'bg-emerald-50 text-emerald-700',
+                                            'cod' => 'bg-blue-50 text-blue-700',
+                                            'partial_payment' => 'bg-amber-50 text-amber-700',
+                                            'customer_credit' => 'bg-rose-50 text-rose-700',
+                                        ];
+                                        $colorClass = $paymentColors[$shipment['payment_key']] ?? 'bg-slate-50 text-slate-700';
+                                    @endphp
+                                    <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold {{ $colorClass }}">
+                                        {{ $shipment['payment_method'] }}
+                                    </span>
+                                </td>
+                                <td class="text-center font-black text-slate-800" dir="ltr">{{ $shipment['total_amount'] }}</td>
+                                <td class="text-center font-bold {{ $shipment['remaining_amount'] !== '0' ? 'text-rose-600' : 'text-emerald-600' }}" dir="ltr">
+                                    {{ $shipment['remaining_amount'] }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="p-8 text-center text-slate-400 font-medium bg-slate-50/50">
+                                    لا توجد طرود في هذه الإرسالية.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+
+                <!-- Totals -->
+                @if(!empty($shipments))
+                <div class="bg-slate-50 border-t border-slate-200 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-1">عدد الطرود</p>
+                        <p class="text-slate-800 font-black text-lg">{{ $total_shipments ?? 0 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي المبالغ</p>
+                        <p class="text-slate-800 font-black text-lg" dir="ltr">
+                            @php
+                                $totalAmounts = collect($shipments)->sum(function($s) { return (float) str_replace(',', '', $s['total_amount']); });
+                            @endphp
+                            {{ number_format($totalAmounts, 0) }} ر.ي
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-1">المدفوع</p>
+                        <p class="text-emerald-600 font-black text-lg" dir="ltr">
+                            @php
+                                $totalPaid = collect($shipments)->sum(function($s) { return (float) str_replace(',', '', $s['partial_amount']); });
+                            @endphp
+                            {{ number_format($totalPaid, 0) }} ر.ي
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-1">المتبقي للتحصيل</p>
+                        <p class="text-rose-600 font-black text-lg" dir="ltr">
+                            {{ number_format($totalAmounts - $totalPaid, 0) }} ر.ي
+                        </p>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="grid grid-cols-3 gap-8 mt-12 mb-4">
+            <div class="text-center">
+                <p class="text-sm font-bold text-slate-500 mb-8">توقيع مسؤول الفرع</p>
+                <div class="border-b border-dashed border-slate-300 w-3/4 mx-auto"></div>
+            </div>
+            <div class="text-center">
+                <p class="text-sm font-bold text-slate-500 mb-8">توقيع السائق</p>
+                <div class="border-b border-dashed border-slate-300 w-3/4 mx-auto"></div>
+            </div>
+            <div class="text-center">
+                <p class="text-sm font-bold text-slate-500 mb-8">ختم الفرع</p>
+                <div class="border-b border-dashed border-slate-300 w-3/4 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="bg-slate-800 text-slate-400 p-4 text-center text-xs font-medium rounded-b-[2rem]">
+        تم الإنشاء إلكترونياً عبر نظام {{ $company['name'] ?? 'مرسال' }} | بواسطة: {{ $creator_name ?? 'مسؤول النظام' }}
+    </div>
+</div>
+@endsection

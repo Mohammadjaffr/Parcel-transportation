@@ -399,14 +399,11 @@ class CustomerController extends Controller
 
             DB::commit();
 
-            return back()->with([
-                'success_title'   => 'تمت العملية!',
-                'success_message' => $successMsg
-            ]);
+            return WebResponseClass::sendResponse('تمت العملية!', $successMsg, 'حسناً');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'حدث خطأ أثناء العملية: ' . $e->getMessage());
+            return WebResponseClass::sendExceptionError($e);
         }
     }
     /** البحث */
@@ -546,14 +543,7 @@ class CustomerController extends Controller
         $receivedCount = $receivedShipments->count();
         $totalShipments = $sentCount + $receivedCount;
 
-        $pdf = new \TCPDF('P', 'mm', 'A4', true, 'UTF-8', false);
-        $pdf->setRTL(true);
-        $pdf->SetMargins(8, 8, 8);
-        $pdf->SetAutoPageBreak(true, 10);
-        $pdf->SetFont('dejavusans', '', 10);
-        $pdf->AddPage();
-
-        $html = view('receipts.templates.CoustomerAcoountDetection', compact(
+        return view('receipts.templates.CustomerAccountStatement', compact(
             'customer',
             'entries',
             'totalDebit',
@@ -563,11 +553,7 @@ class CustomerController extends Controller
             'sentCount',
             'receivedCount',
             'totalShipments'
-        ))->render();
-
-        $pdf->writeHTML($html, true, false, true, false, '');
-
-        return $pdf->Output("customer_account_statement_{$customer->id}.pdf", 'I');
+        ));
     }
 
 

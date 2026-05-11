@@ -29,9 +29,16 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         $app = auth()->user()->app;
 
-        $logoPath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
+           $imagePath = $app?->logo
+    ? public_path('storage/' . $app->logo)
+    : public_path('assets/image/icon_without_bg.png');
+
+$logoBase64 = null;
+if (file_exists($imagePath)) {
+    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+    $data = file_get_contents($imagePath);
+    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+}
 
         // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
@@ -122,7 +129,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
         return [
             'company' => [
                 'name'        => $app?->name ?? 'اسم الشركة غير محدد',
-                'logo'        => $logoPath,
+                'logo'        => $logoBase64,
                 'main_branch' => $mainBranchData,
                 'headquarters'=> $headquartersData,
                 'other_phones'=> $otherPhonesStr,

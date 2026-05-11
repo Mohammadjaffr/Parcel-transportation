@@ -27,9 +27,16 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
         $app = auth()->user()->app;
 
         // 3. تجهيز مسار الشعار الديناميكي
-        $logoPath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
+           $imagePath = $app?->logo
+    ? public_path('storage/' . $app->logo)
+    : public_path('assets/image/icon_without_bg.png');
+
+$logoBase64 = null;
+if (file_exists($imagePath)) {
+    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+    $data = file_get_contents($imagePath);
+    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+}
 
         // 4. إعداد فرع السند وأرقام الفروع
         $senderBranch = $shipment->senderBranch;
@@ -96,7 +103,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             // --- معلومات الشركة والفرع ---
             'company' => [
                 'name'        => $app?->name ?? 'اسم الشركة غير محدد',
-                'logo'        => $logoPath,
+                'logo'        => $logoBase64,
                 'main_branch' => $mainBranchData,
                 'headquarters'=> $headquartersData,
                 'other_phones'=> $otherPhonesStr,

@@ -1,171 +1,133 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <style>
+@extends('receipts.layout')
+
+@section('title', 'إيصال حراري - ' . ($bond_number ?? ''))
+
+@push('styles')
+<style>
+    /* Thermal Receipt: Narrow width */
+    @media print {
         @page { 
-            size: 70mm 120mm; 
-            margin: 2mm; /* هوامش صغيرة جداً لاستغلال المساحة */
+            size: 80mm auto;
+            margin: 2mm;
         }
-        body { 
-            font-family: {!! $design['font_family'] ?? "'aealarabiya', 'dejavusans', sans-serif" !!};
-            font-size: 6.5pt;
-            direction: rtl;
-            color: #0f172a;
-            background: #fff;
-            margin: 0;
-            padding: 0;
-        }
-        table { width: 100%; border-collapse: collapse; }
-        td { padding: 0.5mm; line-height: 1.2; }
+        body { padding: 0 !important; }
+    }
+    .thermal-receipt {
+        max-width: 320px;
+    }
+</style>
+@endpush
 
-        .text-brand { color: {{ $design['primary_color'] ?? '#ea580c' }}; }
-        .bg-brand { background-color: {{ $design['primary_color'] ?? '#ea580c' }}; color: #ffffff; }
+@section('content')
+<div class="thermal-receipt w-full mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] print-no-shadow overflow-hidden border border-slate-100 print-border my-8 print:my-0 print:rounded-none print:border-none print:shadow-none">
+    
+    <!-- Header -->
+    <div class="text-center p-4 border-b border-dashed border-slate-300">
+        @if(!empty($company['logo']))
+        <div class="w-12 h-12 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center p-1 border border-slate-100 mb-2">
+            <img src="{{ $company['logo'] }}" alt="Logo" class="w-full h-full object-contain">
+        </div>
+        @endif
+        <h1 class="text-base font-black text-slate-800">{{ $company['name'] ?? 'مرسال' }}</h1>
+        <p class="text-xs text-slate-500 font-medium mt-0.5">{{ $company['main_branch']['title'] ?? '' }}</p>
+        @if(!empty($company['main_branch']['phones']))
+        <p class="text-xs text-slate-400 mt-1" dir="ltr">{{ $company['main_branch']['phones'] }}</p>
+        @endif
+    </div>
 
-        .box-border { border: 0.5px solid #cbd5e1; }
-        .box-header { background-color: #f1f5f9; text-align: center; font-weight: bold; border-bottom: 0.5px solid #cbd5e1; padding: 1mm 0; }
-        
-        .label { color: {{ $design['primary_color'] ?? '#ea580c' }}; font-weight: bold; width: 28%; }
-        .value { font-weight: bold; width: 72%; }
-        
-        /* مربع رقم السند المميز */
-        .bond-box { border: 1px solid {{ $design['primary_color'] ?? '#ea580c' }}; text-align: center; }
-        .bond-header { background-color: {{ $design['primary_color'] ?? '#ea580c' }}; color: #fff; font-weight: bold; font-size: 6.5pt; padding: 0.5mm; }
-        .bond-value { font-size: 11pt; font-weight: bold; padding: 1mm; }
-    </style>
-</head>
-<body>
+    <div class="p-4 space-y-3">
+        <!-- Bond Info -->
+        <div class="text-center bg-slate-800 text-white px-3 py-2 rounded-xl">
+            <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">رقم السند</p>
+            <p class="text-lg font-black tracking-widest" dir="ltr">{{ $bond_number ?? '---' }}</p>
+        </div>
 
-    <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td width="40%" align="right" valign="top">
-                <span style="font-size: 13pt; font-weight: bold;" class="text-brand">{{ $company['name'] ?? 'اسم الشركة' }}</span><br>
-                <span style="font-size: 6pt; color: #64748b;">للنقل والشحن السريع</span><br>
-                <span style="font-size: 6.5pt; font-weight: bold;" dir="ltr">{{ $company['headquarters']['phones'] ?? '---' }}</span>
-            </td>
-            
-            <td width="25%" align="center" valign="middle">
-                @if(isset($company['logo']) && $company['logo'])
-                    <img src="{{ $company['logo'] }}" height="22" />
-                @endif
-            </td>
-            
-            <td width="35%" align="left" valign="top">
-                <table class="bond-box" cellpadding="0" cellspacing="0">
-                    <tr><td class="bond-header">رقم السند</td></tr>
-                    <tr><td class="bond-value" dir="ltr">{{ $bond_number ?? '---' }}</td></tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+        <div class="text-center text-xs text-slate-400" dir="ltr">{{ $date ?? date('Y-m-d H:i') }}</div>
 
-    <table><tr><td height="2"></td></tr></table>
+        <!-- Divider -->
+        <div class="border-t border-dashed border-slate-200"></div>
 
-    <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td width="48%" valign="top">
-                <table class="box-border" cellpadding="1" cellspacing="0">
-                    <tr><td colspan="2" class="box-header">بيانات المستلم</td></tr>
-                    <tr>
-                        <td class="label">الاسم:</td>
-                        <td class="value">{{ $receiver_name ?? '---' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">الجوال:</td>
-                        <td class="value" dir="ltr">{{ $receiver_phone ?? '---' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">الوجهة:</td>
-                        <td class="value text-brand">{{ $receiver_branch ?? '---' }}</td>
-                    </tr>
-                </table>
-            </td>
-            
-            <td width="4%"></td> <td width="48%" valign="top">
-                <table class="box-border" cellpadding="1" cellspacing="0">
-                    <tr><td colspan="2" class="box-header">بيانات المرسل</td></tr>
-                    <tr>
-                        <td class="label">الاسم:</td>
-                        <td class="value">{{ $sender_name ?? '---' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">الجوال:</td>
-                        <td class="value" dir="ltr">{{ $sender_phone ?? '---' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">الفرع:</td>
-                        <td class="value">{{ $sender_branch ?? '---' }}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+        <!-- Sender -->
+        <div class="text-sm">
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">المرسل</p>
+            <div class="flex justify-between">
+                <span class="font-bold text-slate-800">{{ $sender_name ?? '---' }}</span>
+                <span class="text-slate-500" dir="ltr">{{ $sender_phone ?? '---' }}</span>
+            </div>
+            <p class="text-xs text-slate-400">{{ $sender_branch ?? '' }}</p>
+        </div>
 
-    <table><tr><td height="2"></td></tr></table>
+        <div class="border-t border-dashed border-slate-200"></div>
 
-    <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td width="48%" valign="top">
-                <table class="box-border" cellpadding="1" cellspacing="0">
-                    <tr><td colspan="2" class="box-header">المالية</td></tr>
-                    <tr>
-                        <td class="label">الدفع:</td>
-                        <td class="value text-brand">{{ $payment_method ?? '---' }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">الإجمالي:</td>
-                        <td class="value" style="font-size: 8pt;">{{ $total_amount ?? '0' }}</td>
-                    </tr>
-                </table>
-            </td>
-            
-            <td width="4%"></td> <td width="48%" valign="top">
-                <table class="box-border" cellpadding="1" cellspacing="0">
-                    <tr><td colspan="2" class="box-header">تفاصيل الشحنة</td></tr>
-                    <tr>
-                        <td class="label">التاريخ:</td>
-                        <td class="value">{{ \Carbon\Carbon::parse($date ?? now())->format('Y-m-d') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">النوع/الوزن:</td>
-                        <td class="value" dir="ltr">{{ $package_type ?? '-' }} | {{ $weight ?? '0.00' }} كجم</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+        <!-- Receiver -->
+        <div class="text-sm">
+            <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">المستلم</p>
+            <div class="flex justify-between">
+                <span class="font-bold text-slate-800">{{ $receiver_name ?? '---' }}</span>
+                <span class="text-slate-500" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
+            </div>
+            <p class="text-xs text-slate-400">{{ $receiver_branch ?? '' }}</p>
+        </div>
 
-    <table><tr><td height="2"></td></tr></table>
+        <div class="border-t border-dashed border-slate-200"></div>
 
-    <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-            <td style="font-size: 6.5pt;">
-                <span class="font-bold text-brand">ملاحظات:</span> 
-                <span style="font-weight: bold;">{{ (isset($notes) && $notes !== '-' && $notes !== '') ? $notes : 'لا توجد ملاحظات إضافية' }}</span>
-            </td>
-        </tr>
-        <tr>
-            <td align="center" class="footer-text" style="color: #475569; padding-top: 1.5mm;">
-                @if(!empty($terms_and_conditions) && is_array($terms_and_conditions))
-                    @foreach($terms_and_conditions as $term)
-                        * {{ $term }} &nbsp;
-                    @endforeach
-                @else
-                    * نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا. * نحن غير مسؤولين عن الأشياء الثمينة الممنوع إرسالها في الطرود. * التأكد من بيانات السند قبل المغادرة.
-                @endif
-            </td>
-        </tr>
-    </table>
+        <!-- Package -->
+        <div class="text-sm space-y-1.5">
+            <div class="flex justify-between">
+                <span class="text-slate-500">نوع الطرد</span>
+                <span class="font-bold text-slate-800">{{ $package_type ?? '---' }}</span>
+            </div>
+            @if(!empty($weight))
+            <div class="flex justify-between">
+                <span class="text-slate-500">الوزن</span>
+                <span class="font-bold text-slate-800">{{ $weight }}</span>
+            </div>
+            @endif
+            @if(!empty($honey_details))
+            <div class="flex justify-between">
+                <span class="text-slate-500">العسل</span>
+                <span class="font-bold text-amber-700">{{ $honey_details }}</span>
+            </div>
+            @endif
+        </div>
 
-    <table><tr><td height="4"></td></tr></table>
+        <div class="border-t border-dashed border-slate-200"></div>
 
-    <table width="100%" cellpadding="0" cellspacing="0" style="text-align: center; font-weight: bold; font-size: 6.5pt; color: #334155;">
-        <tr>
-            <td width="33%" class="text-brand">توقيع المستلم<br><span style="color:#cbd5e1">.............</span></td>
-            <td width="34%">الموظف: {{ $creator_name ?? '---' }}<br><span style="color:#cbd5e1">.............</span></td>
-            <td width="33%" class="text-brand">توقيع المرسل<br><span style="color:#cbd5e1">.............</span></td>
-        </tr>
-    </table>
+        <!-- Financial -->
+        <div class="text-sm space-y-1.5">
+            <div class="flex justify-between">
+                <span class="text-slate-500">طريقة الدفع</span>
+                <span class="font-bold text-slate-800">{{ $payment_method ?? '---' }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-500">الإجمالي</span>
+                <span class="font-black text-slate-800" dir="ltr">{{ $total_amount ?? 0 }} ر.ي</span>
+            </div>
+            @if(($payment_key ?? 'prepaid') === 'partial_payment')
+            <div class="flex justify-between">
+                <span class="text-slate-500">المدفوع</span>
+                <span class="font-bold text-emerald-600" dir="ltr">{{ $partial_amount ?? 0 }} ر.ي</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-500">المتبقي</span>
+                <span class="font-bold text-rose-600" dir="ltr">{{ $remaining_amount ?? 0 }} ر.ي</span>
+            </div>
+            @endif
+        </div>
 
-</body>
-</html>
+        @if(!empty($notes) && $notes !== 'لا توجد ملاحظات إضافية')
+        <div class="border-t border-dashed border-slate-200"></div>
+        <div class="text-xs text-slate-500">
+            <p class="font-bold text-slate-600 mb-0.5">ملاحظات:</p>
+            <p>{{ $notes }}</p>
+        </div>
+        @endif
+    </div>
+    
+    <!-- Footer -->
+    <div class="text-center p-3 border-t border-dashed border-slate-300">
+        <p class="text-[10px] text-slate-400">شكراً لتعاملكم مع {{ $company['name'] ?? 'مرسال' }}</p>
+        <p class="text-[9px] text-slate-300 mt-0.5">{{ $creator_name ?? '' }}</p>
+    </div>
+</div>
+@endsection

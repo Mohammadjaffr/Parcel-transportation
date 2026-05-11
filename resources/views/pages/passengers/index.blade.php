@@ -128,9 +128,9 @@
                         <tr
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">التاريخ</th>
-                            <th class="px-6 py-4">رقم الراكب</th>
-                            <th class="px-6 py-4">رقم واسم العميل</th>
-                            <th class="px-6 py-4 text-center">السائق</th>
+                            <th class="px-6 py-4 text-center">بيانات الراكب</th>
+                            <th class="px-6 py-4">اسم العميل ورقمه</th>
+                            <th class="px-6 py-4 text-center">بيانات السائق</th>
                             <th class="px-6 py-4 text-center">المكان</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
                             <th class="px-6 py-4 text-center">العدد والعمولة</th>
@@ -176,9 +176,9 @@
                                 </td>
 
                                 <td class="px-6 py-4">
-                                    <span class="font-mono text-sm font-black text-primary dir-ltr">
-                                        {{ $passenger->passenger_number }}
-                                    </span>
+                                    <div class="font-mono text-sm font-black text-primary dir-ltr">
+                                        <x-phone-number :value="$passenger->passenger_number" class="text-primary" />
+                                    </div>
                                 </td>
 
                                 <td class="px-6 py-4">
@@ -250,9 +250,9 @@
                                                     <span class="material-symbols-outlined text-[18px]">visibility</span>
                                                     عرض التفاصيل
                                                 </a>
-
-                                                <button type="button"
-                                                    @click="open = false; openEditModal({
+                                                @if ($statusKey === 'pending')
+                                                    <button type="button"
+                                                        @click="open = false; openEditModal({
         id: {{ $passenger->id }},
         date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
         passenger_number: @js($passenger->passenger_number),
@@ -273,7 +273,7 @@
                                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                                     تعديل البيانات
                                                 </button>
-
+                                                @endif
                                                 <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
                                                 {{-- زر تعيين الحالة يظهر فقط إذا كانت الحالة قيد الانتظار --}}
@@ -305,12 +305,7 @@
 
 
 
-                                                <button type="button"
-                                                    @click="open = false; openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                                                    <span class="material-symbols-outlined text-[18px]">delete</span> حذف
-                                                    الراكب
-                                                </button>
+                                             
                                             </div>
                                         </div>
                                     </div>

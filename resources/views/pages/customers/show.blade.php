@@ -19,12 +19,13 @@
         x-data="{
             activeTab: new URLSearchParams(window.location.search).has('ship_page') || new URLSearchParams(window.location.search).has('direction') ? 'shipments' : 'financials',
             showPaymentModal: false,
-            amountToPay: {{ abs($balance) }}
+            amountToPay: {{ abs($balance) }},
+            searchQuery: ''
         }"
         class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12"
         dir="rtl">
 
-        {{-- ================= Modal: تسديد مديونية ================= --}}
+        {{-- ================= Modal: تسديد مديونية / صرف رصيد ================= --}}
         <div x-show="showPaymentModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
             <div
                 x-show="showPaymentModal"
@@ -45,8 +46,10 @@
 
                 <div class="flex justify-between items-center mb-5">
                     <h3 class="flex gap-2 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
-                        <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
-                        تسديد مديونية
+                        <span class="material-symbols-outlined {{ $balance < 0 ? 'text-primary' : 'text-emerald-500' }}">
+                            account_balance_wallet
+                        </span>
+                        {{ $balance < 0 ? 'تسديد مديونية' : 'صرف رصيد للعميل' }}
                     </h3>
 
                     <button type="button" @click="showPaymentModal = false" class="transition-colors text-slate-400 hover:text-rose-500">
@@ -56,10 +59,13 @@
 
                 <form action="{{ route('customers.addPayment', $customer->id) }}" method="POST">
                     @csrf
+                    
+                    {{-- حقل مخفي يخبر الكنترولر بنوع العملية (سداد أم صرف) --}}
+                    <input type="hidden" name="transaction_action" value="{{ $balance < 0 ? 'pay_debt' : 'withdraw_balance' }}">
 
                     <div class="mb-4">
                         <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
-                            المبلغ المراد سداده
+                            {{ $balance < 0 ? 'المبلغ المراد سداده' : 'المبلغ المراد صرفه للعميل' }}
                         </label>
 
                         <div class="relative">
@@ -71,7 +77,7 @@
                                 min="1"
                                 max="{{ abs($balance) }}"
                                 required
-                                class="px-4 py-3 pl-12 w-full text-lg font-black rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20">
+                                class="px-4 py-3 pl-12 w-full text-lg font-black rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-800 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
 
                             <span class="absolute left-4 top-1/2 text-sm font-bold -translate-y-1/2 text-slate-400">
                                 ريال
@@ -79,27 +85,27 @@
                         </div>
 
                         <p class="mt-1.5 text-[10px] text-slate-400">
-                            يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.
+                            {{ $balance < 0 ? 'يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.' : 'يمكنك صرف الرصيد كاملاً أو سحب جزء منه.' }}
                         </p>
                     </div>
 
                     <div class="mb-6">
                         <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
-                            ملاحظات
+                            ملاحظات (اختياري)
                         </label>
 
                         <input
                             type="text"
                             name="notes"
                             placeholder="مثال: تحويل بنكي، كاش للمندوب..."
-                            class="px-4 py-3 w-full text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-700 dark:text-white focus:ring-2 focus:ring-primary/20">
+                            class="px-4 py-3 w-full text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-700 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
                     </div>
 
                     <button
                         type="submit"
-                        class="flex gap-2 justify-center items-center w-full py-3.5 text-sm font-black text-white rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] transition-all bg-slate-800 dark:bg-primary dark:shadow-primary/30 hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95">
+                        class="flex gap-2 justify-center items-center w-full py-3.5 text-sm font-black text-white rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] transition-all active:scale-95 {{ $balance < 0 ? 'bg-slate-800 dark:bg-primary dark:shadow-primary/30 hover:bg-slate-900 dark:hover:bg-primary-hover' : 'bg-emerald-600 hover:bg-emerald-700' }}">
                         <span class="material-symbols-outlined text-[18px]">done_all</span>
-                        تأكيد السداد
+                        {{ $balance < 0 ? 'تأكيد السداد' : 'تأكيد الصرف' }}
                     </button>
                 </form>
             </div>
@@ -134,6 +140,14 @@
                 </div>
 
                 <div class="flex gap-2 items-center">
+                    {{-- زر مراسلة العميل واتساب --}}
+                    <a href="https://wa.me/{{ str_starts_with(ltrim($customer->phone, '+'), '7') ? '967' . ltrim($customer->phone, '+') : ltrim($customer->phone, '+') }}" target="_blank"
+                        class="flex justify-center items-center w-10 h-10 text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform active:scale-95 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 hover:shadow-md">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                        </svg>
+                    </a>
+
                     <a href="{{ route('whatsapp.customer.account.statement', $customer->id) }}"
                         target="_blank"
                         class="flex gap-2 justify-center items-center px-3 h-10 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform md:px-4 dark:bg-emerald-500/10 dark:text-emerald-400 active:scale-95 dark:border-emerald-500/20 hover:shadow-md hover:bg-emerald-100 dark:hover:bg-emerald-500/20">
@@ -145,40 +159,39 @@
                         target="_blank"
                         class="flex gap-2 justify-center items-center px-3 h-10 text-xs font-bold rounded-xl border transition-transform text-primary bg-primary-container border-primary/10 md:px-4 dark:bg-primary/10 dark:text-primary active:scale-95 hover:shadow-md hover:bg-primary/10 dark:hover:bg-primary/20">
                         <span class="material-symbols-outlined text-[18px]">receipt_long</span>
-                        <span class="hidden md:inline">كشف حساب</span>
+                        <span class="hidden md:inline">التقرير المالي</span>
                     </a>
                 </div>
             </div>
         </div>
 
         {{-- ================= Page Content ================= --}}
-        <div x-data="{ searchQuery: '' }" class="flex flex-col gap-6 p-4 mx-auto max-w-7xl md:p-6">
+        <div class="flex flex-col gap-6 p-4 mx-auto max-w-7xl md:p-6">
 
-            {{-- ================= بطاقة العميل ================= --}}
-         
-            {{-- ================= الملخص المالي - صف كامل ================= --}}
+            {{-- ================= الملخص المالي ================= --}}
             <div class="p-6 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
                 <div class="flex flex-col gap-4 justify-between mb-5 md:flex-row md:items-center">
                     <div>
-                        <h3 class="flex gap-2 items-center text-lg font-black text-on-surface dark:text-white">
+                        <h3 class="flex gap-2 items-center text-lg font-black text-on-surface dark:text-white font-headline">
                             <span class="material-symbols-outlined text-primary bg-primary-container dark:bg-primary/10 p-1.5 rounded-lg text-[18px]">
                                 account_balance_wallet
                             </span>
                             الملخص المالي
                         </h3>
-
                         <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">
                             ملخص الرصيد والمتحصلات وأجور الشحن الخاصة بالعميل
                         </p>
                     </div>
 
-                    @if ($balance < 0)
+                    @if ($balance != 0)
                         <button
                             @click="showPaymentModal = true"
                             type="button"
-                            class="flex gap-2 items-center px-4 h-10 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-slate-800 dark:bg-white dark:text-slate-800 hover:bg-slate-700 dark:hover:bg-gray-100 active:scale-95">
-                            <span class="material-symbols-outlined text-[16px]">payments</span>
-                            تسديد مبلغ
+                            class="flex gap-2 items-center px-4 h-10 text-xs font-black text-white rounded-xl shadow-sm transition-all active:scale-95 {{ $balance < 0 ? 'bg-slate-800 hover:bg-slate-700 dark:bg-white dark:text-slate-800 dark:hover:bg-gray-100' : 'bg-emerald-600 hover:bg-emerald-700' }}">
+                            <span class="material-symbols-outlined text-[16px]">
+                                {{ $balance < 0 ? 'payments' : 'request_quote' }}
+                            </span>
+                            {{ $balance < 0 ? 'تسديد مبلغ' : 'صرف رصيد' }}
                         </button>
                     @endif
                 </div>
@@ -208,7 +221,6 @@
                                 <p class="text-xs font-bold text-gray-500 dark:text-bodydark">
                                     متحصلات العميل (له)
                                 </p>
-
                                 <p class="mt-2 text-2xl font-black text-emerald-500 dark:text-emerald-400 font-headline">
                                     {{ number_format($credit, 0) }}
                                 </p>
@@ -226,7 +238,6 @@
                                 <p class="text-xs font-bold text-gray-500 dark:text-bodydark">
                                     أجور شحن (عليه)
                                 </p>
-
                                 <p class="mt-2 text-2xl font-black text-rose-500 dark:text-rose-400 font-headline">
                                     {{ number_format($debit, 0) }}
                                 </p>
@@ -286,7 +297,6 @@
                                 <span class="material-symbols-outlined text-primary text-[22px]">history</span>
                                 الحركات المالية الأخيرة
                             </h3>
-
                             <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">
                                 كشف مختصر لآخر الحركات المالية على حساب العميل
                             </p>
@@ -305,7 +315,6 @@
                                     <th class="px-5 py-4 text-left">المبلغ</th>
                                 </tr>
                             </thead>
-
                             <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                                 @forelse($transactions as $trans)
                                     <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-boxdark-2/50">
@@ -314,7 +323,6 @@
                                                 {{ $loop->iteration }}
                                             </span>
                                         </td>
-
                                         <td class="px-5 py-4">
                                             <div class="flex flex-col gap-1">
                                                 <span class="text-xs font-black text-gray-700 dark:text-gray-200">
@@ -325,7 +333,6 @@
                                                 </span>
                                             </div>
                                         </td>
-
                                         <td class="px-5 py-4">
                                             @if($trans->type == 'credit')
                                                 <span class="inline-flex gap-1.5 items-center px-3 py-1.5 text-[10px] font-black rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
@@ -339,13 +346,11 @@
                                                 </span>
                                             @endif
                                         </td>
-
                                         <td class="px-5 py-4">
                                             <p class="max-w-[460px] text-xs font-bold leading-6 text-gray-600 dark:text-gray-300">
                                                 {{ $trans->description }}
                                             </p>
                                         </td>
-
                                         <td class="px-5 py-4 text-left">
                                             <span class="text-sm font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                                 {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
@@ -386,11 +391,9 @@
                                             <p class="text-xs font-black text-gray-800 dark:text-white">
                                                 {{ $trans->type == 'credit' ? 'تحصيل / سداد' : 'مديونية / رسوم' }}
                                             </p>
-
                                             <p class="mt-1 text-[11px] font-bold leading-5 text-gray-500 dark:text-bodydark">
                                                 {{ $trans->description }}
                                             </p>
-
                                             <p class="mt-2 text-[10px] font-bold text-gray-400">
                                                 {{ $trans->created_at->format('Y-m-d h:i A') }}
                                             </p>
@@ -451,20 +454,20 @@
                     </div>
 
                     <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar">
-                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'all', 'page' => null]) }}"
+                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'all', 'ship_page' => null]) }}"
                             class="shrink-0 px-5 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border
                             {{ $direction == 'all' ? 'bg-primary text-white border-primary shadow-md dark:bg-primary dark:border-primary dark:shadow-primary/20' : 'bg-surface text-gray-500 border-gray-100 hover:bg-gray-100 dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
                             الكل
                         </a>
 
-                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'sent', 'page' => null]) }}"
+                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'sent', 'ship_page' => null]) }}"
                             class="shrink-0 px-5 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border
                             {{ $direction == 'sent' ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-surface text-gray-500 border-gray-100 hover:bg-gray-100 dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
                             <span class="material-symbols-outlined text-[16px] mr-1.5">arrow_upward</span>
                             مرسلة منه
                         </a>
 
-                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'received', 'page' => null]) }}"
+                        <a href="{{ request()->fullUrlWithQuery(['direction' => 'received', 'ship_page' => null]) }}"
                             class="shrink-0 px-5 h-10 flex items-center justify-center rounded-xl text-xs font-bold transition-all border
                             {{ $direction == 'received' ? 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/20 dark:bg-emerald-600 dark:border-emerald-600' : 'bg-surface text-gray-500 border-gray-100 hover:bg-gray-100 dark:bg-boxdark-2 dark:text-gray-400 dark:border-boxdark dark:hover:bg-boxdark' }}">
                             <span class="material-symbols-outlined text-[16px] mr-1.5">arrow_downward</span>
@@ -483,6 +486,7 @@
                                     <th class="px-6 py-4">رقم التتبع</th>
                                     <th class="px-6 py-4">الاتجاه</th>
                                     <th class="px-6 py-4 text-center">المبلغ المالي</th>
+                                    <th class="px-6 py-4 text-center">الحالة</th>
                                     <th class="px-6 py-4 text-center">التاريخ</th>
                                     <th class="px-6 py-4 text-center">التفاصيل</th>
                                 </tr>
@@ -526,7 +530,6 @@
                                                 <span class="text-sm font-black text-on-surface dark:text-white">
                                                     {{ number_format($shipment->total_amount, 0) }} ريال
                                                 </span>
-
                                                 <span class="text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded {{ $shipment->payment_method == 'customer_credit' ? 'text-rose-500 bg-rose-50 dark:bg-rose-500/10 dark:text-rose-400' : 'text-gray-500 bg-gray-50 dark:bg-boxdark-2 dark:text-gray-400' }}">
                                                     @if($shipment->payment_method == 'customer_credit')
                                                         آجل
@@ -539,6 +542,24 @@
                                                     @endif
                                                 </span>
                                             </div>
+                                        </td>
+
+                                        <td class="px-6 py-4 text-center">
+                                            @php
+                                                $statusLabels = [
+                                                    'pending' => ['name' => 'قيد التجهيز', 'class' => 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'],
+                                                    'in_transit' => ['name' => 'في الطريق', 'class' => 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'],
+                                                    'received_at_branch' => ['name' => 'بالمستودع', 'class' => 'bg-purple-50 text-purple-600 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20'],
+                                                    'out_for_delivery' => ['name' => 'خرج للتوصيل', 'class' => 'bg-indigo-50 text-indigo-600 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20'],
+                                                    'delivered' => ['name' => 'مكتملة', 'class' => 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'],
+                                                    'returned' => ['name' => 'مرتجعة', 'class' => 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20'],
+                                                    'cancelled' => ['name' => 'ملغاة', 'class' => 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20'],
+                                                ];
+                                                $currentStatus = $statusLabels[$shipment->status] ?? ['name' => 'غير محدد', 'class' => 'bg-gray-50 text-gray-600 border-gray-200'];
+                                            @endphp
+                                            <span class="px-2 py-0.5 rounded-md text-[9px] font-black border {{ $currentStatus['class'] }}">
+                                                {{ $currentStatus['name'] }}
+                                            </span>
                                         </td>
 
                                         <td class="px-6 py-4 text-center">
@@ -558,13 +579,13 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="py-20 text-center">
+                                        <td colspan="6" class="py-20 text-center">
                                             <div class="flex flex-col justify-center items-center">
                                                 <div class="flex justify-center items-center mb-4 w-16 h-16 rounded-full bg-surface dark:bg-boxdark-2">
                                                     <span class="material-symbols-outlined text-[32px] text-gray-300 dark:text-gray-600">package_2</span>
                                                 </div>
                                                 <p class="text-sm font-bold text-gray-500 dark:text-bodydark">
-                                                    لا توجد شحنات مطابقة للفلتر أو البحث
+                                                    لا توجد شحنات مطابقة للبحث أو الفلتر
                                                 </p>
                                             </div>
                                         </td>
@@ -584,13 +605,11 @@
                                 <div class="flex justify-between items-center px-4 py-2.5 bg-white border-b border-gray-100 dark:border-boxdark dark:bg-boxdark">
                                     @if($shipment->sender_customer_id == $customer->id)
                                         <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-primary-container dark:bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
-                                            مرسل
+                                            <span class="material-symbols-outlined text-[12px]">arrow_upward</span> مرسل
                                         </span>
                                     @else
                                         <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 flex items-center gap-1">
-                                            <span class="material-symbols-outlined text-[12px]">arrow_downward</span>
-                                            مستلم
+                                            <span class="material-symbols-outlined text-[12px]">arrow_downward</span> مستلم
                                         </span>
                                     @endif
 
@@ -604,7 +623,6 @@
                                         <h3 class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">
                                             {{ $shipment->bond_number }}
                                         </h3>
-
                                         <p class="text-[10px] font-bold text-gray-500 dark:text-bodydark mt-1 flex items-center gap-1.5">
                                             @if($shipment->payment_method == 'customer_credit')
                                                 <span class="px-1.5 py-0.5 text-rose-500 bg-rose-50 rounded dark:bg-rose-500/10 dark:text-rose-400">آجل</span>
@@ -615,15 +633,12 @@
                                             @else
                                                 دفع جزئي
                                             @endif
-
                                             <span class="text-gray-300 dark:text-gray-600">•</span>
-
                                             <span class="font-black text-on-surface dark:text-gray-200">
                                                 {{ number_format($shipment->total_amount, 0) }} ريال
                                             </span>
                                         </p>
                                     </div>
-
                                     <a href="{{ route('shipment.outgoing.show', $shipment->id) }}"
                                         class="flex justify-center items-center w-10 h-10 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark hover:bg-primary hover:text-white dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
@@ -634,7 +649,7 @@
                             <div class="flex flex-col justify-center items-center py-12 text-center bg-white rounded-[2rem] border-2 border-gray-100 border-dashed dark:bg-boxdark dark:border-boxdark-2">
                                 <span class="mb-3 text-4xl text-gray-300 material-symbols-outlined dark:text-gray-600">package_2</span>
                                 <p class="text-sm font-bold text-gray-500 dark:text-bodydark">
-                                    لا توجد شحنات مطابقة للفلتر
+                                    لا توجد شحنات مطابقة
                                 </p>
                             </div>
                         @endforelse

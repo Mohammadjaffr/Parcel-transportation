@@ -176,18 +176,18 @@
                             {{ mb_substr($passenger->customer->name ?? 'ع', 0, 1, 'UTF-8') }}
                         </div>
                         <div class="flex-1 min-w-0 pr-1">
-                            <h3 class="mb-1 text-sm font-bold leading-none truncate font-headline text-slate-800">
+                            <h3 class="text-base font-black truncate text-slate-800 font-headline pr-2">
                                 {{ $passenger->customer->name ?? 'عميل غير محدد' }}
                             </h3>
-                            <div class="flex gap-1.5 items-center text-slate-500 mt-1.5">
-                                <span class="material-symbols-outlined text-[14px]">pin</span>
-                                <span class="text-xs font-bold font-mono dir-ltr text-primary">
-                                    {{ $passenger->passenger_number }}
-                                </span>
+                            <div class="flex gap-1.5 items-center text-slate-500 mt-1.5 pr-2">
+                                <span class="material-symbols-outlined text-[14px]">person</span>
+                                <span class="text-[11px] font-bold text-slate-500">العميل</span>
+                                <span class="mx-1 text-slate-300">|</span>
+                                <div class="font-mono text-xs font-bold text-slate-500 dir-ltr">
+                                    <x-phone-number :value="$passenger->customer->phone ?? ''" class="text-slate-500" />
+                                </div>
                             </div>
                         </div>
-
-
                     </div>
 
                     <div
@@ -223,6 +223,19 @@
 
                         <div class="flex flex-col gap-1 col-span-2 pt-3 border-t border-slate-200/60">
                             <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                                <span class="material-symbols-outlined text-[14px]">airline_seat_recline_normal</span> بيانات الراكب
+                            </span>
+                            <div
+                                class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm mt-1">
+                                <span class="text-xs font-bold text-slate-700 truncate pr-1">رقم هاتف الراكب</span>
+                                <span class="text-primary font-mono text-xs dir-ltr font-black bg-primary/5 px-2 py-1 rounded-lg">
+                                    <x-phone-number :value="$passenger->passenger_number" class="text-primary" />
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-1 col-span-2 pt-3 border-t border-slate-200/60">
+                            <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
                                 <span class="material-symbols-outlined text-[14px]">local_taxi</span> بيانات السائق
                             </span>
                             <div
@@ -233,7 +246,7 @@
                                 @if ($passenger->driver && $passenger->driver->phone)
                                     <span
                                         class="text-slate-500 font-mono text-xs dir-ltr font-bold bg-slate-50 px-2 py-1 rounded-lg">
-                                        {{ $passenger->driver->phone }}
+                                        <x-phone-number :value="$passenger->driver->phone" class="text-primary" />
                                     </span>
                                 @endif
                             </div>
