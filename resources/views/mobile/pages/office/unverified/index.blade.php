@@ -1,6 +1,6 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'المكاتب غير الموثوقة')
+@section('title', 'المكاتب خارجية ')
 
 @section('content')
 
@@ -26,7 +26,7 @@
 
         <div class="flex justify-between items-center px-2">
             <div>
-                <h1 class="text-2xl font-black font-headline text-slate-800">المكاتب غير الموثوقة</h1>
+                <h1 class="text-2xl font-black font-headline text-slate-800">المكاتب خارجية </h1>
                 <p class="text-xs font-semibold text-slate-400">إجمالي المكاتب: <span
                         class="font-bold text-primary">{{ $offices->total() }}</span></p>
             </div>

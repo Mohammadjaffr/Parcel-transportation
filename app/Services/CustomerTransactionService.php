@@ -112,6 +112,19 @@ class CustomerTransactionService
             'shipment_id' => null, // دفعة عامة غير مرتبطة بطرد معين
         ]);
     }
+    /**
+     * صرف رصيد مستحق للعميل (سحب نقدي من الفرع)
+     */
+    public function withdrawBalance($customer, $amount, $notes = null)
+    {
+        return CustomerTransaction::create([
+            'customer_id' => $customer->id,
+            'amount'      => $amount,
+            'type'        => 'debit', 
+            'description' => 'صرف رصيد نقدي للعميل' . ($notes ? ' - ' . $notes : ''),
+            'shipment_id' => null, 
+        ]);
+    }
 
     /**
      * تسجيل عمولة للعميل مقابل جلب راكب

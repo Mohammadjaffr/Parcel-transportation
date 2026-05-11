@@ -89,6 +89,7 @@
     </div>
 
     {{-- ================= الجزء الثاني: قائمة الإشعارات ================= --}}
+    @hasservice('Notifications')
     <div class="flex gap-1 items-center sm:gap-2">
         <div class="relative">
             <button @click="notifOpen = !notifOpen; profileOpen = false"
@@ -281,4 +282,5 @@
             </div>
         </div>
     </div>
+    @endhasservice
 </header>

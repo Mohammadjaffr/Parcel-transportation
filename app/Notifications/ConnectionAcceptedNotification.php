@@ -17,6 +17,10 @@ class ConnectionAcceptedNotification extends Notification
 
     public function via(object $notifiable): array
     {
+        $app = $notifiable->app;
+        if ($app && !$app->hasService(class_basename($this))) {
+            return [];
+        }
         return ['database'];
     }
 

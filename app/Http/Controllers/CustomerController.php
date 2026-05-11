@@ -337,16 +337,17 @@ class CustomerController extends Controller
     // معتمد
     public function addPayment(Request $request, $id)
     {
-        // 1. التحقق من المدخلات الأساسية
+        // 1. التحقق من المدخلات الأساسية + نوع العملية المخفي
         $request->validate([
-            'amount' => 'required|numeric|min:1',
-            'notes'  => 'nullable|string|max:255',
+            'amount'             => 'required|numeric|min:1',
+            'notes'              => 'nullable|string|max:255',
+            'transaction_action' => 'required|in:pay_debt,withdraw_balance', // نتحقق من نوع العملية
         ]);
 
         try {
             DB::beginTransaction();
 
-            // 2. جلب العميل مع حساب أرصدته الحالية من دفتر الأستاذ 🧮
+            // 2. جلب العميل وحساب الرصيد الصافي
             $customer = Customer::withSum(['transactions as sum_credit' => function ($q) {
                     $q->where('type', 'credit');
                 }], 'amount')
@@ -357,33 +358,55 @@ class CustomerController extends Controller
 
             $credit = $customer->sum_credit ?? 0;
             $debit = $customer->sum_debit ?? 0;
-            $balance = $credit - $debit; // الرصيد الصافي
+            $balance = $credit - $debit;
 
-            // 3. جدار الحماية الأول: هل العميل عليه دين أساساً؟ 🛑
-            if ($balance >= 0) {
-                return back()->with('error', 'عفواً، هذا العميل ليس عليه أي مديونية لسدادها.');
-            }
-
-            // 4. جدار الحماية الثاني: هل المبلغ المدخل أكبر من المديونية؟ 🛑
-            $maxAmountToPay = abs($balance); // نحول الدين لقيمة موجبة للمقارنة
-            if ($request->amount > $maxAmountToPay) {
-                return back()->with('error', 'لا يمكن سداد مبلغ أكبر من المديونية! المتبقي عليه هو: ' . number_format($maxAmountToPay, 2) . ' ريال.');
-            }
-            
-            // 5. استدعاء السيرفيس للقيام بالعملية المالية 💰
             $transactionService = new CustomerTransactionService();
-            $transactionService->addPayment($customer, $request->amount, $request->notes);
+
+            // =========================================================
+            // 3. التفريع المنطقي بناءً على نوع العملية
+            // =========================================================
+            if ($request->transaction_action === 'pay_debt') {
+                
+                // --- الحالة الأولى: العميل يسدد ديونه ---
+                if ($balance >= 0) {
+                    return back()->with('error', 'عفواً، هذا العميل ليس عليه أي مديونية لسدادها.');
+                }
+
+                $maxAmountToPay = abs($balance);
+                if ($request->amount > $maxAmountToPay) {
+                    return back()->with('error', 'لا يمكن سداد مبلغ أكبر من المديونية! المتبقي عليه هو: ' . number_format($maxAmountToPay, 2) . ' ريال.');
+                }
+                
+                // استدعاء دالة السداد
+                $transactionService->addPayment($customer, $request->amount, $request->notes);
+                $successMsg = 'تم تسجيل الدفعة بنجاح وإضافتها لكشف الحساب.';
+
+            } else {
+                
+                // --- الحالة الثانية: الفرع يصرف رصيد للعميل ---
+                if ($balance <= 0) {
+                    return back()->with('error', 'عفواً، هذا العميل ليس له أي رصيد لصرفه.');
+                }
+
+                if ($request->amount > $balance) {
+                    return back()->with('error', 'لا يمكن صرف مبلغ أكبر من رصيد العميل! رصيده الحالي هو: ' . number_format($balance, 2) . ' ريال.');
+                }
+
+                // استدعاء دالة الصرف التي أنشأناها قبل قليل
+                $transactionService->withdrawBalance($customer, $request->amount, $request->notes);
+                $successMsg = 'تم صرف الرصيد للعميل بنجاح وخصمه من حسابه.';
+            }
 
             DB::commit();
 
             return back()->with([
-                'success_title' => 'تم السداد!',
-                'success_message' => 'تم تسجيل الدفعة بنجاح وإضافتها لكشف الحساب.'
+                'success_title'   => 'تمت العملية!',
+                'success_message' => $successMsg
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'حدث خطأ أثناء تسجيل السداد: ' . $e->getMessage());
+            return back()->with('error', 'حدث خطأ أثناء العملية: ' . $e->getMessage());
         }
     }
     /** البحث */

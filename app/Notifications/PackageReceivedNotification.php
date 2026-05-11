@@ -30,6 +30,10 @@ class PackageReceivedNotification extends Notification
      */
     public function via($notifiable): array
     {
+        $app = $notifiable->app;
+        if ($app && !$app->hasService(class_basename($this))) {
+            return [];
+        }
         return ['database'];
     }
 

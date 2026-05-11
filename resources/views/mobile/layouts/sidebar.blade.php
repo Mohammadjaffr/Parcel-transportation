@@ -15,15 +15,15 @@
     </a>
 
     <a href="{{ route('people.index') }}"
-        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
+        class="flex flex-col items-center justify-center px-4 py-2 transition-all active:scale-90 rounded-2xl {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*', 'passengers.*']) ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
 
         <span class="material-symbols-outlined"
-            style="font-variation-settings: 'FILL' {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*']) ? 1 : 0 }};">
+            style="font-variation-settings: 'FILL' {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*', 'passengers.*']) ? 1 : 0 }};">
             group
         </span>
 
         <span
-            class="font-headline text-[10px] {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*']) ? 'font-bold' : 'font-medium' }} mt-1">
+            class="font-headline text-[10px] {{ Route::is(['people.*', 'drivers.*', 'users.*', 'customers.*', 'passengers.*']) ? 'font-bold' : 'font-medium' }} mt-1">
             الأفراد
         </span>
     </a>

@@ -5,8 +5,8 @@
 @section('content')
     @php
         // الحسابات المالية الدقيقة من دفتر الأستاذ
-        $credit  = $customer->sum_credit ?? 0; // متحصلاته
-        $debit   = $customer->sum_debit ?? 0;  // ديونه (أجور الشحن)
+        $credit = $customer->sum_credit ?? 0; // متحصلاته
+        $debit = $customer->sum_debit ?? 0;  // ديونه (أجور الشحن)
         $balance = $credit - $debit;           // الصافي
     @endphp
 
@@ -61,29 +61,33 @@
 
         {{-- ================= الداشبورد المالي ================= --}}
         {{-- 💡 أضفنا x-data هنا للتحكم في النافذة المنبثقة للسداد --}}
-        <div x-data="{ showPaymentModal: false, amountToPay: {{ abs($balance) }} }">
+       <div x-data="{ showPaymentModal: false, amountToPay: {{ abs($balance) }} }">
             <div class="grid grid-cols-2 gap-3">
                 {{-- الرصيد الصافي --}}
                 <div class="col-span-2 bg-white p-5 rounded-[1.5rem] border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden">
                     <div class="absolute right-0 top-0 bottom-0 w-1.5 {{ $balance >= 0 ? 'bg-emerald-400' : 'bg-rose-400' }}"></div>
-                    
+
                     <div class="pr-2">
                         <p class="text-[10px] font-bold text-slate-400 mb-1">الرصيد الصافي للعميل</p>
                         <p class="text-2xl font-black font-headline {{ $balance >= 0 ? 'text-emerald-600' : 'text-rose-600' }}">
                             {{ number_format(abs($balance), 0) }} <span class="text-xs {{ $balance >= 0 ? 'text-emerald-400' : 'text-rose-400' }}">ريال</span>
                         </p>
                     </div>
-                    
+
                     <div class="flex flex-col items-end gap-2">
                         <div class="px-3 py-1.5 rounded-lg text-[10px] font-black {{ $balance >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100' }}">
                             {{ $balance >= 0 ? 'رصيد لصالحه (له)' : 'مطلوب سداده (عليه)' }}
                         </div>
-                        
-                        {{-- 💡 زر السداد (يظهر فقط إذا كان عليه ديون $balance < 0) --}}
-                        @if ($balance < 0)
-                            <button @click="showPaymentModal = true" type="button" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 text-white rounded-lg text-[10px] font-bold shadow-sm hover:bg-slate-700 active:scale-95 transition-all">
-                                <span class="material-symbols-outlined text-[14px]">payments</span>
-                                تسديد مبلغ
+
+                        {{-- 💡 زر السداد/الصرف (يظهر إذا كان الرصيد لا يساوي صفر) --}}
+                        @if ($balance != 0)
+                            <button @click="showPaymentModal = true" type="button" 
+                                class="flex items-center gap-1 px-3 py-1.5 text-white rounded-lg text-[10px] font-bold shadow-sm active:scale-95 transition-all 
+                                {{ $balance < 0 ? 'bg-slate-800 hover:bg-slate-700' : 'bg-emerald-600 hover:bg-emerald-700' }}">
+                                <span class="material-symbols-outlined text-[14px]">
+                                    {{ $balance < 0 ? 'payments' : 'request_quote' }}
+                                </span>
+                                {{ $balance < 0 ? 'تسديد مبلغ' : 'صرف رصيد' }}
                             </button>
                         @endif
                     </div>
@@ -108,12 +112,12 @@
                 </div>
             </div>
 
-            {{-- ================= النافذة المنبثقة (Modal) للسداد ================= --}}
+            {{-- ================= النافذة المنبثقة (Modal) للسداد أو الصرف ================= --}}
             <div x-show="showPaymentModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
                 {{-- خلفية ضبابية --}}
                 <div x-show="showPaymentModal" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showPaymentModal = false"></div>
 
-                {{-- صندوق السداد --}}
+                {{-- صندوق العملية --}}
                 <div x-show="showPaymentModal" 
                      x-transition:enter="transition ease-out duration-300"
                      x-transition:enter-start="opacity-0 scale-90 translate-y-4"
@@ -122,41 +126,50 @@
                      x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                      x-transition:leave-end="opacity-0 scale-90 translate-y-4"
                      class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10 border border-slate-100">
-                    
+
                     <div class="flex justify-between items-center mb-5">
                         <h3 class="text-lg font-black text-slate-800 font-headline flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary">account_balance_wallet</span>
-                            تسديد مديونية
+                            <span class="material-symbols-outlined {{ $balance < 0 ? 'text-primary' : 'text-emerald-500' }}">
+                                account_balance_wallet
+                            </span>
+                            {{ $balance < 0 ? 'تسديد مديونية' : 'صرف رصيد للعميل' }}
                         </h3>
                         <button @click="showPaymentModal = false" class="text-slate-400 hover:text-rose-500 transition-colors">
                             <span class="material-symbols-outlined">close</span>
                         </button>
                     </div>
-                    
+
                     <form action="{{ route('customers.addPayment', $customer->id) }}" method="POST">
                         @csrf
-                        
+
+                        {{-- حقل مخفي يخبر الكنترولر بنوع العملية (سداد أم صرف) --}}
+                        <input type="hidden" name="transaction_action" value="{{ $balance < 0 ? 'pay_debt' : 'withdraw_balance' }}">
+
                         {{-- حقل المبلغ --}}
                         <div class="mb-4">
-                            <label class="block text-xs font-bold text-slate-500 mb-2">المبلغ المراد سداده (ريال)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-2">
+                                {{ $balance < 0 ? 'المبلغ المراد سداده (ريال)' : 'المبلغ المراد صرفه للعميل (ريال)' }}
+                            </label>
                             <div class="relative">
                                 <input type="number" name="amount" x-model="amountToPay" step="0.01" min="1" max="{{ abs($balance) }}" required
-                                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-lg font-black rounded-xl px-4 py-3 pl-12 focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                    class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-lg font-black rounded-xl px-4 py-3 pl-12 focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }} outline-none transition-all">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">ريال</span>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-1.5">يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.</p>
+                            <p class="text-[10px] text-slate-400 mt-1.5">
+                                {{ $balance < 0 ? 'يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.' : 'يمكنك صرف الرصيد كاملاً أو سحب جزء منه.' }}
+                            </p>
                         </div>
 
                         {{-- حقل الملاحظات (اختياري) --}}
                         <div class="mb-6">
                             <label class="block text-xs font-bold text-slate-500 mb-2">ملاحظات (اختياري)</label>
                             <input type="text" name="notes" placeholder="مثال: تحويل بنكي، كاش للمندوب..."
-                                class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                                class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-3 focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }} outline-none transition-all">
                         </div>
 
-                        <button type="submit" class="w-full py-3.5 bg-slate-800 text-white text-sm font-black rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] hover:bg-slate-900 transition-all active:scale-95 flex justify-center items-center gap-2">
+                        <button type="submit" class="w-full py-3.5 text-white text-sm font-black rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] transition-all active:scale-95 flex justify-center items-center gap-2 {{ $balance < 0 ? 'bg-slate-800 hover:bg-slate-900' : 'bg-emerald-600 hover:bg-emerald-700' }}">
                             <span class="material-symbols-outlined text-[18px]">done_all</span>
-                            تأكيد السداد
+                            {{ $balance < 0 ? 'تأكيد السداد' : 'تأكيد الصرف' }}
                         </button>
                     </form>
                 </div>
@@ -181,7 +194,7 @@
 
         {{-- ================= التبويب الأول: كشف الحساب (المالية) ================= --}}
         <div x-show="activeTab === 'financials'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
-            
+
             <h3 class="text-sm font-black text-slate-800 mb-2">الحركات المالية الأخيرة</h3>
 
             <div class="space-y-3">
@@ -193,7 +206,7 @@
                                 {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
                             </span>
                         </div>
-                        
+
                         {{-- تفاصيل الحركة --}}
                         <div class="flex-1 min-w-0">
                             <p class="text-xs font-bold text-slate-700 truncate">{{ $trans->description }}</p>
@@ -225,7 +238,7 @@
 
         {{-- ================= التبويب الثاني: سجل الطرود ================= --}}
         <div x-show="activeTab === 'shipments'" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-            
+
             {{-- شريط الفلترة الأفقي --}}
             <div class="flex overflow-x-auto gap-2 pb-2 mb-3 custom-scrollbar snap-x snap-mandatory">
                 <a href="{{ request()->fullUrlWithQuery(['direction' => 'all', 'ship_page' => null]) }}"
@@ -250,7 +263,7 @@
                 @forelse($shipments as $shipment)
                     <div class="bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative">
                         <div class="flex justify-between items-center px-4 py-2 border-b border-slate-100 bg-slate-50/50">
-                            
+
                             <div class="flex items-center gap-2">
                                 {{-- شارة مرسل / مستلم --}}
                                 @if ($shipment->sender_customer_id == $customer->id)
@@ -268,13 +281,13 @@
                                 {{-- شارة حالة الطرد (ملونة ديناميكياً) --}}
                                 @php
                                     $statusLabels = [
-                                        'pending'            => ['name' => 'قيد التجهيز', 'class' => 'bg-amber-50 text-amber-600 border-amber-200'],
-                                        'in_transit'         => ['name' => 'في الطريق', 'class' => 'bg-blue-50 text-blue-600 border-blue-200'],
+                                        'pending' => ['name' => 'قيد التجهيز', 'class' => 'bg-amber-50 text-amber-600 border-amber-200'],
+                                        'in_transit' => ['name' => 'في الطريق', 'class' => 'bg-blue-50 text-blue-600 border-blue-200'],
                                         'received_at_branch' => ['name' => 'بالمستودع', 'class' => 'bg-purple-50 text-purple-600 border-purple-200'],
-                                        'out_for_delivery'   => ['name' => 'خرج للتوصيل', 'class' => 'bg-indigo-50 text-indigo-600 border-indigo-200'],
-                                        'delivered'          => ['name' => 'مكتملة', 'class' => 'bg-emerald-50 text-emerald-600 border-emerald-200'],
-                                        'returned'           => ['name' => 'مرتجعة', 'class' => 'bg-rose-50 text-rose-600 border-rose-200'],
-                                        'cancelled'          => ['name' => 'ملغاة', 'class' => 'bg-slate-50 text-slate-600 border-slate-200'],
+                                        'out_for_delivery' => ['name' => 'خرج للتوصيل', 'class' => 'bg-indigo-50 text-indigo-600 border-indigo-200'],
+                                        'delivered' => ['name' => 'مكتملة', 'class' => 'bg-emerald-50 text-emerald-600 border-emerald-200'],
+                                        'returned' => ['name' => 'مرتجعة', 'class' => 'bg-rose-50 text-rose-600 border-rose-200'],
+                                        'cancelled' => ['name' => 'ملغاة', 'class' => 'bg-slate-50 text-slate-600 border-slate-200'],
                                     ];
                                     $currentStatus = $statusLabels[$shipment->status] ?? ['name' => 'غير محدد', 'class' => 'bg-gray-50 text-gray-600 border-gray-200'];
                                 @endphp

@@ -3,7 +3,8 @@
 @section('title', 'الركاب')
 
 @section('content')
-    <div x-data="passengerMobileRegistry()" class="flex relative flex-col gap-6 pb-24 min-h-screen font-body bg-slate-50/50">
+    <div x-data="passengerMobileRegistry()"
+        class="flex relative flex-col gap-6 pb-24 min-h-screen font-body bg-slate-50/50">
 
         <div class="flex justify-between items-center px-4 mt-4">
             <div>
@@ -44,27 +45,23 @@
                     }
                 </style>
 
-                <button type="button" @click="selectedStatus = ''"
-                    :class="selectedStatus === '' ? 'bg-slate-800 text-white shadow-md' :
-                        'bg-white text-slate-500 border border-slate-200'"
+                <button type="button" @click="selectedStatus = ''" :class="selectedStatus === '' ? 'bg-slate-800 text-white shadow-md' :
+                            'bg-white text-slate-500 border border-slate-200'"
                     class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
                     الكل
                 </button>
-                <button type="button" @click="selectedStatus = 'pending'"
-                    :class="selectedStatus === 'pending' ? 'bg-slate-500 text-white shadow-md' :
-                        'bg-white text-slate-500 border border-slate-200'"
+                <button type="button" @click="selectedStatus = 'pending'" :class="selectedStatus === 'pending' ? 'bg-slate-500 text-white shadow-md' :
+                            'bg-white text-slate-500 border border-slate-200'"
                     class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
                     قيد الانتظار
                 </button>
-                <button type="button" @click="selectedStatus = 'completed'"
-                    :class="selectedStatus === 'completed' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' :
-                        'bg-white text-slate-500 border border-slate-200'"
+                <button type="button" @click="selectedStatus = 'completed'" :class="selectedStatus === 'completed' ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' :
+                            'bg-white text-slate-500 border border-slate-200'"
                     class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
                     مكتمل
                 </button>
-                <button type="button" @click="selectedStatus = 'cancel'"
-                    :class="selectedStatus === 'cancel' ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20' :
-                        'bg-white text-slate-500 border border-slate-200'"
+                <button type="button" @click="selectedStatus = 'cancel'" :class="selectedStatus === 'cancel' ? 'bg-rose-500 text-white shadow-md shadow-rose-500/20' :
+                            'bg-white text-slate-500 border border-slate-200'"
                     class="px-4 py-2.5 text-xs font-bold rounded-[1rem] whitespace-nowrap transition-all font-headline active:scale-95">
                     ملغي
                 </button>
@@ -94,67 +91,81 @@
                     class="bg-white rounded-[1.75rem] p-5 shadow-sm border border-slate-100 relative active:scale-[0.98] transition-all passenger-card">
 
                     <div class="absolute top-5 left-5 z-20 flex gap-2 items-center">
-                        <span class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
+                        <span
+                            class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
                             {{ $statusLabel }}
                         </span>
 
                         <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open" type="button" class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 active:scale-95 transition-all shadow-sm border border-slate-100">
+                            <button @click="open = !open" type="button"
+                                class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 active:scale-95 transition-all shadow-sm border border-slate-100">
                                 <span class="material-symbols-outlined text-[20px]">more_vert</span>
                             </button>
-                            <div x-show="open" @click.away="open = false" x-cloak x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute left-0 top-full mt-2 z-[60] w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-1">
-                                <a href="{{ route('passengers.show', $passenger->id) }}" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-600 font-headline">
+                            <div x-show="open" @click.away="open = false" x-cloak
+                                x-transition:enter="transition ease-out duration-100"
+                                x-transition:enter-start="transform opacity-0 scale-95"
+                                x-transition:enter-end="transform opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-75"
+                                x-transition:leave-start="transform opacity-100 scale-100"
+                                x-transition:leave-end="transform opacity-0 scale-95"
+                                class="absolute left-0 top-full mt-2 z-[60] w-48 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden py-1">
+                                <a href="{{ route('passengers.show', $passenger->id) }}"
+                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-600 font-headline">
                                     <span class="material-symbols-outlined text-[18px]">visibility</span>
                                     عرض التفاصيل
                                 </a>
-
-                                <button type="button" @click="open = false; openEditModal({
-                                    id: {{ $passenger->id }},
-                                    date: {{ json_encode($passenger->date) }},
-                                    status: {{ json_encode($statusKey) }},
-                                    passenger_number: {{ json_encode($passenger->passenger_number) }},
-                                    customer_id: {{ json_encode($passenger->customer_id) }},
-                                    customer_name: {{ json_encode($passenger->customer->name ?? '') }},
-                                    customer_phone: {{ json_encode($passenger->customer->phone ?? '') }},
-                                    driver_id: {{ json_encode($passenger->driver_id) }},
-                                    driver_name: {{ json_encode($passenger->driver->name ?? '') }},
-                                    driver_phone: {{ json_encode($passenger->driver->phone ?? '') }},
-                                    location: {{ json_encode($passenger->location) }},
-                                    count: {{ $passenger->count ?? 1 }},
-                                    total_commission: {{ $passenger->total_commission ?? 0 }},
-                                    note: {{ json_encode($passenger->note) }}
-                                })" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-primary/10 hover:text-primary font-headline">
-                                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                                    تعديل البيانات
-                                </button>
-
+                                @if ($statusKey === 'pending')
+                                    <button type="button" @click="open = false; openEditModal({
+                                                id: {{ $passenger->id }},
+                                                date: {{ json_encode($passenger->date) }},
+                                                status: {{ json_encode($statusKey) }},
+                                                passenger_number: {{ json_encode($passenger->passenger_number) }},
+                                                customer_id: {{ json_encode($passenger->customer_id) }},
+                                                customer_name: {{ json_encode($passenger->customer->name ?? '') }},
+                                                customer_phone: {{ json_encode($passenger->customer->phone ?? '') }},
+                                                driver_id: {{ json_encode($passenger->driver_id) }},
+                                                driver_name: {{ json_encode($passenger->driver->name ?? '') }},
+                                                driver_phone: {{ json_encode($passenger->driver->phone ?? '') }},
+                                                location: {{ json_encode($passenger->location) }},
+                                                count: {{ $passenger->count ?? 1 }},
+                                                total_commission: {{ $passenger->total_commission ?? 0 }},
+                                                note: {{ json_encode($passenger->note) }}
+                                            })"
+                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-primary/10 hover:text-primary font-headline">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        تعديل البيانات
+                                    </button>
+                                @endif
                                 <div class="mx-3 my-1 h-px bg-slate-100"></div>
 
                                 @if ($statusKey === 'pending')
                                     <button type="button" @click="open = false; openStatusModal({
-                                        id: {{ $passenger->id }},
-                                        date: {{ json_encode($passenger->date) }},
-                                        status: {{ json_encode($statusKey) }},
-                                        passenger_number: {{ json_encode($passenger->passenger_number) }},
-                                        location: {{ json_encode($passenger->location) }},
-                                        count: {{ $passenger->count ?? 1 }},
-                                        total_commission: {{ $passenger->total_commission ?? 0 }},
-                                        customer_phone: {{ json_encode($passenger->customer->phone ?? '') }},
-                                        customer_name: {{ json_encode($passenger->customer->name ?? '') }},
-                                        driver_phone: {{ json_encode($passenger->driver->phone ?? '') }},
-                                        driver_name: {{ json_encode($passenger->driver->name ?? '') }},
-                                        note: {{ json_encode($passenger->note) }}
-                                    })" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-600 font-headline">
+                                                    id: {{ $passenger->id }},
+                                                    date: {{ json_encode($passenger->date) }},
+                                                    status: {{ json_encode($statusKey) }},
+                                                    passenger_number: {{ json_encode($passenger->passenger_number) }},
+                                                    location: {{ json_encode($passenger->location) }},
+                                                    count: {{ $passenger->count ?? 1 }},
+                                                    total_commission: {{ $passenger->total_commission ?? 0 }},
+                                                    customer_phone: {{ json_encode($passenger->customer->phone ?? '') }},
+                                                    customer_name: {{ json_encode($passenger->customer->name ?? '') }},
+                                                    driver_phone: {{ json_encode($passenger->driver->phone ?? '') }},
+                                                    driver_name: {{ json_encode($passenger->driver->name ?? '') }},
+                                                    note: {{ json_encode($passenger->note) }}
+                                                })"
+                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-slate-700 transition-colors hover:bg-emerald-50 hover:text-emerald-600 font-headline">
                                         <span class="material-symbols-outlined text-[18px]">fact_check</span>
                                         تعيين الحالة
                                     </button>
                                     <div class="mx-3 my-1 h-px bg-slate-100"></div>
                                 @endif
 
-                                <button type="button" @click="open = false; openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})" class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 font-headline">
+                                {{-- <button type="button"
+                                    @click="open = false; openDeleteModal({{ $passenger->id }}, {{ json_encode($passenger->passenger_number) }})"
+                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 font-headline">
                                     <span class="material-symbols-outlined text-[18px]">delete</span>
                                     حذف الراكب
-                                </button>
+                                </button> --}}
                             </div>
                         </div>
                     </div>
@@ -179,7 +190,8 @@
 
                     </div>
 
-                    <div class="grid grid-cols-2 gap-y-3 gap-x-4 p-4 mb-4 rounded-[1.25rem] bg-slate-50/80 border border-slate-100/60">
+                    <div
+                        class="grid grid-cols-2 gap-y-3 gap-x-4 p-4 mb-4 rounded-[1.25rem] bg-slate-50/80 border border-slate-100/60">
                         <div class="flex flex-col gap-1">
                             <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
                                 <span class="material-symbols-outlined text-[14px]">location_on</span> المكان
@@ -205,19 +217,22 @@
                             <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
                                 <span class="material-symbols-outlined text-[14px]">payments</span> العمولة
                             </span>
-                            <span class="text-xs font-black text-amber-500 pr-1">{{ number_format($passenger->total_commission, 0) }}</span>
+                            <span
+                                class="text-xs font-black text-amber-500 pr-1">{{ number_format($passenger->total_commission, 0) }}</span>
                         </div>
 
                         <div class="flex flex-col gap-1 col-span-2 pt-3 border-t border-slate-200/60">
                             <span class="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
                                 <span class="material-symbols-outlined text-[14px]">local_taxi</span> بيانات السائق
                             </span>
-                            <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm mt-1">
+                            <div
+                                class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm mt-1">
                                 <span class="text-xs font-bold text-primary truncate">
                                     {{ $passenger->driver->name ?? 'غير محدد' }}
                                 </span>
                                 @if ($passenger->driver && $passenger->driver->phone)
-                                    <span class="text-slate-500 font-mono text-xs dir-ltr font-bold bg-slate-50 px-2 py-1 rounded-lg">
+                                    <span
+                                        class="text-slate-500 font-mono text-xs dir-ltr font-bold bg-slate-50 px-2 py-1 rounded-lg">
                                         {{ $passenger->driver->phone }}
                                     </span>
                                 @endif
@@ -310,7 +325,8 @@
                     <div class="space-y-3">
                         <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">رقم الراكب <span
                                 class="text-rose-500">*</span></label>
-                        <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }} })" class="relative">
+                        <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }} })"
+                            class="relative">
                             <input type="hidden" name="passenger_number" :value="fullPhone">
 
                             <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary ring-slate-200"
@@ -325,8 +341,7 @@
                                         x-text="selectedCountry?.dial_code"></span>
                                 </button>
 
-                                <input type="tel" x-model="phone" @input="handlePhoneInput" placeholder="7XXXXXXXX"
-                                    required
+                                <input type="tel" x-model="phone" @input="handlePhoneInput" placeholder="7XXXXXXXX" required
                                     class="flex-1 px-4 w-full h-14 text-base font-bold text-left bg-transparent border-none outline-none font-headline text-slate-800 placeholder-slate-300">
 
                                 <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak
@@ -353,9 +368,9 @@
                         <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العميل <span
                                 class="text-rose-500">*</span></label>
                         <div x-data="recordSelect({
-                            records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }},
-                            countries: {{ Js::from(array_values(config('countries', []))) }}
-                        })" class="space-y-3">
+                                records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }},
+                                countries: {{ Js::from(array_values(config('countries', []))) }}
+                            })" class="space-y-3">
 
                             <input type="hidden" name="customer_id" :value="selectedId">
                             <input type="hidden" name="customer_phone" :value="fullPhone">
@@ -374,8 +389,8 @@
                                             x-text="selectedCountry?.dial_code"></span>
                                     </button>
 
-                                    <input type="tel" x-model="phone" @input="handlePhoneInput"
-                                        @focus="showDropdown = true" placeholder="رقم العميل" required
+                                    <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true"
+                                        placeholder="رقم العميل" required
                                         class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300"
                                         :class="isExisting ? 'font-bold text-primary' : 'font-bold text-slate-800'">
 
@@ -425,8 +440,8 @@
                             <input type="text" name="customer_name" x-model="nameInput" :readonly="isExisting"
                                 :required="!isExisting" placeholder="اسم العميل"
                                 :class="isExisting ?
-                                    'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
-                                    'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                        'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
+                                        'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
                                 class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
                         </div>
                     </div>
@@ -436,9 +451,9 @@
                         <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">السائق <span
                                 class="text-rose-500">*</span></label>
                         <div x-data="recordSelect({
-                            records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }},
-                            countries: {{ Js::from(array_values(config('countries', []))) }}
-                        })" class="space-y-3">
+                                records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }},
+                                countries: {{ Js::from(array_values(config('countries', []))) }}
+                            })" class="space-y-3">
 
                             <input type="hidden" name="driver_id" :value="selectedId">
                             <input type="hidden" name="driver_phone" :value="fullPhone">
@@ -457,8 +472,8 @@
                                             x-text="selectedCountry?.dial_code"></span>
                                     </button>
 
-                                    <input type="tel" x-model="phone" @input="handlePhoneInput"
-                                        @focus="showDropdown = true" placeholder="رقم السائق" required
+                                    <input type="tel" x-model="phone" @input="handlePhoneInput" @focus="showDropdown = true"
+                                        placeholder="رقم السائق" required
                                         class="flex-1 px-4 w-full h-14 text-base text-left bg-transparent border-none outline-none font-headline placeholder-slate-300"
                                         :class="isExisting ? 'font-bold text-primary' : 'font-bold text-slate-800'">
 
@@ -508,8 +523,8 @@
                             <input type="text" name="driver_name" x-model="nameInput" :readonly="isExisting"
                                 :required="!isExisting" placeholder="اسم السائق"
                                 :class="isExisting ?
-                                    'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
-                                    'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                        'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
+                                        'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
                                 class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
                         </div>
                     </div>
@@ -609,7 +624,8 @@
                         <div class="space-y-3">
                             <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">رقم الراكب <span
                                     class="text-rose-500">*</span></label>
-                            <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }}, initialPhone: editPassengerData.passenger_number })" class="relative">
+                            <div x-data="phonePickerOnly({ countries: {{ Js::from(array_values(config('countries', []))) }}, initialPhone: editPassengerData.passenger_number })"
+                                class="relative">
                                 <input type="hidden" name="passenger_number" :value="fullPhone">
 
                                 <div class="flex relative rounded-[1rem] ring-1 transition-all bg-white focus-within:ring-2 focus-within:ring-primary ring-slate-200"
@@ -624,8 +640,8 @@
                                             x-text="selectedCountry?.dial_code"></span>
                                     </button>
 
-                                    <input type="tel" x-model="phone" @input="handlePhoneInput"
-                                        placeholder="7XXXXXXXX" required
+                                    <input type="tel" x-model="phone" @input="handlePhoneInput" placeholder="7XXXXXXXX"
+                                        required
                                         class="flex-1 px-4 w-full h-14 text-base font-bold text-left bg-transparent border-none outline-none font-headline text-slate-800 placeholder-slate-300">
 
                                     <div x-show="openDropdown" @click.outside="openDropdown = false" x-transition x-cloak
@@ -652,12 +668,12 @@
                             <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العميل <span
                                     class="text-rose-500">*</span></label>
                             <div x-data="recordSelect({
-                                records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }},
-                                countries: {{ Js::from(array_values(config('countries', []))) }},
-                                initialId: editPassengerData.customer_id,
-                                initialName: editPassengerData.customer_name,
-                                initialPhone: editPassengerData.customer_phone
-                            })" class="space-y-3">
+                                    records: {{ Js::from($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()) }},
+                                    countries: {{ Js::from(array_values(config('countries', []))) }},
+                                    initialId: editPassengerData.customer_id,
+                                    initialName: editPassengerData.customer_name,
+                                    initialPhone: editPassengerData.customer_phone
+                                })" class="space-y-3">
 
                                 <input type="hidden" name="customer_id" :value="selectedId">
                                 <input type="hidden" name="customer_phone" :value="fullPhone">
@@ -729,8 +745,8 @@
                                 <input type="text" name="customer_name" x-model="nameInput" :readonly="isExisting"
                                     :required="!isExisting" placeholder="اسم العميل"
                                     :class="isExisting ?
-                                        'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
-                                        'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                            'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
+                                            'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
                                     class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
                             </div>
                         </div>
@@ -740,12 +756,12 @@
                             <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">السائق <span
                                     class="text-rose-500">*</span></label>
                             <div x-data="recordSelect({
-                                records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }},
-                                countries: {{ Js::from(array_values(config('countries', []))) }},
-                                initialId: editPassengerData.driver_id,
-                                initialName: editPassengerData.driver_name,
-                                initialPhone: editPassengerData.driver_phone
-                            })" class="space-y-3">
+                                    records: {{ Js::from($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()) }},
+                                    countries: {{ Js::from(array_values(config('countries', []))) }},
+                                    initialId: editPassengerData.driver_id,
+                                    initialName: editPassengerData.driver_name,
+                                    initialPhone: editPassengerData.driver_phone
+                                })" class="space-y-3">
 
                                 <input type="hidden" name="driver_id" :value="selectedId">
                                 <input type="hidden" name="driver_phone" :value="fullPhone">
@@ -817,8 +833,8 @@
                                 <input type="text" name="driver_name" x-model="nameInput" :readonly="isExisting"
                                     :required="!isExisting" placeholder="اسم السائق"
                                     :class="isExisting ?
-                                        'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
-                                        'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
+                                            'bg-slate-100 text-slate-500 cursor-not-allowed border-none ring-1 ring-slate-200' :
+                                            'bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/40 ring-1 ring-slate-200 text-slate-800'"
                                     class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] transition-all outline-none font-headline">
                             </div>
                         </div>
@@ -836,8 +852,8 @@
                                 <div>
                                     <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">العمولة
                                         <span class="text-rose-500">*</span></label>
-                                    <input type="number" name="total_commission" step="0.01" required
-                                        placeholder="0.00" x-model="editPassengerData.total_commission"
+                                    <input type="number" name="total_commission" step="0.01" required placeholder="0.00"
+                                        x-model="editPassengerData.total_commission"
                                         class="px-4 w-full h-14 text-sm rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-amber-600 font-black">
                                 </div>
                             </div>
@@ -845,7 +861,8 @@
                             <div>
                                 <label
                                     class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">ملاحظات</label>
-                                <textarea name="note" rows="2" placeholder="ملاحظات إضافية..." x-model="editPassengerData.note"
+                                <textarea name="note" rows="2" placeholder="ملاحظات إضافية..."
+                                    x-model="editPassengerData.note"
                                     class="py-4 px-4 w-full text-sm rounded-[1rem] border-none ring-1 transition-all outline-none resize-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline"></textarea>
                             </div>
                         </div>
@@ -869,7 +886,8 @@
 
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
 
-            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto text-right">
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto text-right">
                 <div @click="closeModals()"
                     class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
                 </div>
@@ -886,7 +904,8 @@
                     @csrf
 
                     <div>
-                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">تحديث الحالة إلى:</label>
+                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">تحديث الحالة
+                            إلى:</label>
                         <select name="status" x-model="statusPassengerData.status" required
                             class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
                             <option value="pending">قيد الانتظار</option>
@@ -913,18 +932,21 @@
 
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
 
-            <div class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 text-center pointer-events-auto">
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 text-center pointer-events-auto">
                 <div @click="closeModals()"
                     class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
                 </div>
 
-                <div class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-rose-50 text-rose-500 rounded-[1.5rem] shadow-sm">
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-rose-50 text-rose-500 rounded-[1.5rem] shadow-sm">
                     <span class="text-4xl material-symbols-outlined">delete_forever</span>
                 </div>
                 <h3 class="mb-3 text-2xl font-black font-headline text-slate-800">تأكيد الحذف</h3>
                 <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
                     هل أنت متأكد من حذف الراكب رقم:<br>
-                    <span class="text-base font-bold text-slate-800 font-mono dir-ltr inline-block" x-text="deletePassengerData.passenger_number"></span>؟<br>
+                    <span class="text-base font-bold text-slate-800 font-mono dir-ltr inline-block"
+                        x-text="deletePassengerData.passenger_number"></span>؟<br>
                     <span class="inline-block mt-2 text-rose-500/80">لا يمكن التراجع عن هذا الإجراء.</span>
                 </p>
 
@@ -934,12 +956,13 @@
                     <button type="button" @click="closeModals()"
                         class="flex-1 h-14 text-sm font-bold text-slate-600 rounded-[1rem] transition-all bg-slate-50 hover:bg-slate-100 active:scale-95 font-headline">تراجع</button>
                     <button type="submit"
-                        class="flex-1 h-14 text-sm font-bold text-white rounded-[1rem] shadow-lg transition-all bg-rose-500 hover:bg-rose-600 shadow-rose-500/30 active:scale-95 font-headline">نعم، احذف</button>
+                        class="flex-1 h-14 text-sm font-bold text-white rounded-[1rem] shadow-lg transition-all bg-rose-500 hover:bg-rose-600 shadow-rose-500/30 active:scale-95 font-headline">نعم،
+                        احذف</button>
                 </form>
             </div>
         </div>
-            </div>
-        </div>
+    </div>
+    </div>
 
     </div>
 
@@ -1080,7 +1103,7 @@
 
                         let matchedCountry = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length)
                             .find(c => phoneStr.startsWith(c.dial_code));
-                            
+
                         if (matchedCountry) {
                             this.selectedCountry = matchedCountry;
                             this.phone = phoneStr.substring(matchedCountry.dial_code.length);
@@ -1196,7 +1219,7 @@
 
                         let matchedCountry = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length)
                             .find(c => phoneStr.startsWith(c.dial_code));
-                            
+
                         if (matchedCountry) {
                             this.selectedCountry = matchedCountry;
                             this.phone = phoneStr.substring(matchedCountry.dial_code.length);

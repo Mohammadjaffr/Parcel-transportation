@@ -150,7 +150,7 @@
         @endif
 
         {{-- ================= تفاصيل السجل ================= --}}
-        <div class="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+        {{-- <div class="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
             <div class="space-y-3">
                 <div class="flex justify-between items-center pb-3 border-b border-slate-50 dark:border-boxdark">
                     <span class="flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-gray-400">
@@ -171,7 +171,7 @@
                     <span class="text-xs font-black text-slate-800 dark:text-white font-mono dir-ltr">{{ $passenger->updated_at ? $passenger->updated_at->format('Y-m-d h:i A') : 'غير متوفر' }}</span>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
     </div>
 </div>
