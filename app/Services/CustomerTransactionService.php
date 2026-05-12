@@ -43,8 +43,7 @@ class CustomerTransactionService
         // مستقبلاً، سنستخدم هذه الدالة لتسجيل المبالغ التي بعهدة الفرع المستلم.
         // الفرع المستلم سيأخذ كاش من الزبون في حالتين فقط (COD أو الدفع الجزئي).
         
-        /* 
-        $collectedAmount = 0;
+        /* $collectedAmount = 0;
 
         if ($shipment->payment_method === 'cod') {
             // الفرع سيستلم كامل المبلغ
@@ -62,7 +61,8 @@ class CustomerTransactionService
                  'shipment_id' => $shipment->id,
                  'amount'      => $collectedAmount,
                  'type'        => 'debit', // دين على الفرع المستلم (عهدة الكاش التي لديه)
-                 'description' => "متحصلات أجور شحن بوليصة #{$shipment->bond_number} لصالح الإدارة"
+                 'description' => "متحصلات أجور شحن بوليصة #{$shipment->bond_number} لصالح الإدارة",
+                 'created_by'  => auth()->id(), // 👈 تسجيل الموظف هنا مستقبلاً
              ]);
         }
         */
@@ -72,9 +72,6 @@ class CustomerTransactionService
 
     /**
      * 3. إلغاء الحركات المالية (إذا أصبح الطرد مرتجعاً للتاجر)
-     */
-    /**
-     * إلغاء القيود المالية عند إرجاع الطرد أو إلغائه
      */
     public function cancelTransactions(Shipment $shipment)
     {
@@ -96,11 +93,12 @@ class CustomerTransactionService
             'amount'      => $amount,
             'type'        => $type,
             'description' => $description,
+            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف الذي أنشأ الحركة
         ]);
     }
 
     /**
-     * . تسجيل دفعة نقدية (سداد مديونية) لحساب العميل بشكل عام
+     * 4. تسجيل دفعة نقدية (سداد مديونية) لحساب العميل بشكل عام
      */
     public function addPayment($customer, $amount, $notes = null)
     {
@@ -110,10 +108,12 @@ class CustomerTransactionService
             'type'        => 'credit', // رصيد موجب يقلص الديون
             'description' => 'سداد نقدي لحساب العميل' . ($notes ? ' - ' . $notes : ''),
             'shipment_id' => null, // دفعة عامة غير مرتبطة بطرد معين
+            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف
         ]);
     }
+
     /**
-     * صرف رصيد مستحق للعميل (سحب نقدي من الفرع)
+     * 5. صرف رصيد مستحق للعميل (سحب نقدي من الفرع)
      */
     public function withdrawBalance($customer, $amount, $notes = null)
     {
@@ -123,11 +123,12 @@ class CustomerTransactionService
             'type'        => 'debit', 
             'description' => 'صرف رصيد نقدي للعميل' . ($notes ? ' - ' . $notes : ''),
             'shipment_id' => null, 
+            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف
         ]);
     }
 
     /**
-     * تسجيل عمولة للعميل مقابل جلب راكب
+     * 6. تسجيل عمولة للعميل مقابل جلب راكب
      */
     public function recordPassengerCommission($passenger)
     {
@@ -136,10 +137,11 @@ class CustomerTransactionService
             
             return CustomerTransaction::create([
                 'customer_id'  => $passenger->customer_id,
-                'passenger_id' => $passenger->id, // تأكد من إضافة هذا الحقل في الميجريشن إذا أردت ربط دقيق
+                'passenger_id' => $passenger->id, 
                 'amount'       => $passenger->total_commission,
                 'type'         => 'credit', // رصيد لصالح العميل
                 'description'  => "عمولة جلب راكب رقم #{$passenger->passenger_number} - المكان: {$passenger->location}",
+                'created_by'   => auth()->id(), // 👈 تم إضافة الموظف
             ]);
         }
         return false;

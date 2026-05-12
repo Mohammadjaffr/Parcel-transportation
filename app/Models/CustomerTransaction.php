@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Passengers;
+use App\Models\User;
 
 class CustomerTransaction extends Model
 {
@@ -13,7 +14,8 @@ class CustomerTransaction extends Model
         'amount',
         'type',
         'description',
-        'passenger_id'
+        'passenger_id',
+        'created_by'
     ];
 
     public function customer()
@@ -28,5 +30,9 @@ class CustomerTransaction extends Model
     public function passenger()
     {
         return $this->belongsTo(Passengers::class);
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }
