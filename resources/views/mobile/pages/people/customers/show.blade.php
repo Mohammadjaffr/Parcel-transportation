@@ -283,7 +283,7 @@
                                     </a>
 
                                     {{-- زر الطباعة (تأكد من وضع مسار الراوت الصحيح للطباعة) --}}
-                                    <a href="#" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 active:scale-95 transition-all">
+                                    <a href="{{ route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 active:scale-95 transition-all">
                                         <span class="material-symbols-outlined text-[16px]">print</span>
                                         طباعة السند
                                     </a>
