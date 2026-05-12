@@ -59,9 +59,9 @@
 
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
                 <div class="flex items-center gap-2 mb-3">
-                    <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                    {{-- <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
                         <span class="material-symbols-outlined text-[16px] text-slate-600">receipt_long</span>
-                    </div>
+                    </div> --}}
                     <h3 class="text-xs font-bold text-slate-600 uppercase tracking-wider">تفاصيل الحركة</h3>
                 </div>
                 <div class="space-y-2">
