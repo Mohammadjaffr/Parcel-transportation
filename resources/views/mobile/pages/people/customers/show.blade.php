@@ -192,32 +192,104 @@
             </button>
         </div>
 
-        {{-- ================= التبويب الأول: كشف الحساب (المالية) ================= --}}
+       {{-- ================= التبويب الأول: كشف الحساب (المالية) ================= --}}
         <div x-show="activeTab === 'financials'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
 
             <h3 class="text-sm font-black text-slate-800 mb-2">الحركات المالية الأخيرة</h3>
 
             <div class="space-y-3">
                 @forelse($transactions as $trans)
-                    <div class="bg-white p-4 rounded-[1.5rem] border border-slate-100 shadow-sm flex items-center gap-3">
-                        {{-- أيقونة الحركة --}}
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500' }}">
-                            <span class="material-symbols-outlined text-[20px]">
-                                {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
-                            </span>
+                    {{-- تهيئة رسالة الواتساب --}}
+                    @php
+                        $waMessage = "مرحباً، نرفق لكم تفاصيل الحركة المالية:\n\n"
+                            . "نوع الحركة: " . ($trans->type == 'credit' ? 'إيداع/لصالحك' : 'خصم/عليك') . "\n"
+                            . "المبلغ: " . number_format($trans->amount, 2) . " ريال\n"
+                            . "البيان: " . $trans->description . "\n"
+                            . "التاريخ: " . $trans->created_at->format('Y-m-d h:i A');
+                        $waUrl = "https://wa.me/?text=" . urlencode($waMessage);
+                    @endphp
+
+                    {{-- تغليف الحركة بـ x-data للتحكم بالنافذة المنبثقة --}}
+                    <div x-data="{ showTransactionDetails: false }">
+
+                        {{-- البطاقة المصغرة (قابلة للضغط) --}}
+                        <div @click="showTransactionDetails = true" class="bg-white p-4 rounded-[1.5rem] border border-slate-100 shadow-sm flex items-center gap-3 cursor-pointer active:scale-95 transition-transform">
+                            {{-- أيقونة الحركة --}}
+                            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500' }}">
+                                <span class="material-symbols-outlined text-[20px]">
+                                    {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
+                                </span>
+                            </div>
+
+                            {{-- تفاصيل الحركة (مختصرة) --}}
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-bold text-slate-700 truncate">{{ $trans->description }}</p>
+                                <p class="text-[9px] font-bold text-slate-400 mt-0.5">{{ $trans->created_at->format('Y-m-d (h:i A)') }}</p>
+                            </div>
+
+                            {{-- المبلغ --}}
+                            <div class="text-right shrink-0">
+                                <p class="text-sm font-black font-mono {{ $trans->type == 'credit' ? 'text-emerald-600' : 'text-rose-600' }}">
+                                    {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
+                                </p>
+                            </div>
                         </div>
 
-                        {{-- تفاصيل الحركة --}}
-                        <div class="flex-1 min-w-0">
-                            <p class="text-xs font-bold text-slate-700 truncate">{{ $trans->description }}</p>
-                            <p class="text-[9px] font-bold text-slate-400 mt-0.5">{{ $trans->created_at->format('Y-m-d (h:i A)') }}</p>
-                        </div>
+                        {{-- ================= النافذة المنبثقة (Modal) للتفاصيل ================= --}}
+                        <div x-show="showTransactionDetails" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
+                            {{-- خلفية ضبابية --}}
+                            <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @click="showTransactionDetails = false"></div>
 
-                        {{-- المبلغ --}}
-                        <div class="text-right shrink-0">
-                            <p class="text-sm font-black font-mono {{ $trans->type == 'credit' ? 'text-emerald-600' : 'text-rose-600' }}">
-                                {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
-                            </p>
+                            {{-- صندوق التفاصيل --}}
+                            <div x-show="showTransactionDetails" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+                                 class="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10 border border-slate-100">
+
+                                {{-- زر الإغلاق --}}
+                                <button @click="showTransactionDetails = false" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center bg-slate-50 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">close</span>
+                                </button>
+
+                                {{-- رأس النافذة --}}
+                                <div class="text-center mb-6 mt-2">
+                                    <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500' }}">
+                                        <span class="material-symbols-outlined text-[28px]">
+                                            {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
+                                        </span>
+                                    </div>
+                                    <h3 class="text-lg font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600' : 'text-rose-600' }}">
+                                        {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }} <span class="text-sm">ريال</span>
+                                    </h3>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-1">{{ $trans->created_at->format('Y-m-d - h:i A') }}</p>
+                                </div>
+
+                                {{-- البيان الكامل --}}
+                                <div class="bg-slate-50 rounded-xl p-4 mb-6">
+                                    <p class="text-[10px] font-bold text-slate-400 mb-1">البيان (التفاصيل الكاملة):</p>
+                                    <p class="text-sm font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">{{ $trans->description }}</p>
+                                </div>
+
+                                {{-- أزرار الإجراءات --}}
+                                <div class="grid grid-cols-2 gap-3">
+                                    {{-- زر الواتساب --}}
+                                    <a href="{{ $waUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-[#25D366] text-white rounded-xl text-xs font-black shadow-sm hover:bg-[#20bd5a] active:scale-95 transition-all">
+                                        <i class="fa-brands fa-whatsapp text-[16px]"></i>
+                                        إرسال واتساب
+                                    </a>
+
+                                    {{-- زر الطباعة (تأكد من وضع مسار الراوت الصحيح للطباعة) --}}
+                                    <a href="#" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 active:scale-95 transition-all">
+                                        <span class="material-symbols-outlined text-[16px]">print</span>
+                                        طباعة السند
+                                    </a>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 @empty

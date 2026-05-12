@@ -5,6 +5,7 @@ namespace App\Services\Receipts\Types;
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
 use Carbon\Carbon;
+
 class DriverDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -14,11 +15,11 @@ class DriverDetection implements ReceiptStrategyInterface
 
     public function fetchData(string $referenceId): array
     {
-        // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها
+        // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها وعلاقة الشركة (.app)
         $package = ShipmentPackage::with([
-            'senderBranch',
+            'senderBranch.app', // 👈 إضافة .app
             'driver',
-            'creator',
+            'creator.app',      // 👈 إضافة .app
             'shipments.senderCustomer',
             'shipments.receiverCustomer',
             'shipments.senderBranch',
@@ -26,20 +27,22 @@ class DriverDetection implements ReceiptStrategyInterface
             'shipments.receiverOfficeBranch',
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        $app = auth()->user()->app;
+        // 2. جلب بيانات التطبيق (الشركة) من الرحلة - آمن جداً
+        $app = $package->senderBranch?->app ?? $package->creator?->app;
 
-           $imagePath = $app?->logo
-    ? public_path('storage/' . $app->logo)
-    : public_path('assets/image/icon_without_bg.png');
+        // 3. تجهيز مسار الشعار الديناميكي - محمي
+        $imagePath = $app?->logo
+            ? public_path('storage/' . $app->logo)
+            : public_path('assets/image/icon_without_bg.png');
 
-$logoBase64 = null;
-if (file_exists($imagePath)) {
-    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-    $data = file_get_contents($imagePath);
-    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-}
+        $logoBase64 = null;
+        if (file_exists($imagePath)) {
+            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+            $data = file_get_contents($imagePath);
+            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        }
 
-        // 2. إعداد أرقام الفروع
+        // 4. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
 
         $mainBranchData = null;
@@ -53,6 +56,7 @@ if (file_exists($imagePath)) {
         $otherPhonesList = [];
         $headquartersData = null;
 
+        // 🛡️ حماية: لن يدخل هنا إلا لو كان $app موجوداً
         if ($app) {
             if ($app->phone) {
                 $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
@@ -75,7 +79,7 @@ if (file_exists($imagePath)) {
         }
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
-        // 3. القواميس
+        // 5. القواميس
         $paymentMethods = [
             'prepaid'         => 'مدفوع مقدماً',
             'cod'             => 'الدفع عند الاستلام',
@@ -83,7 +87,7 @@ if (file_exists($imagePath)) {
             'customer_credit' => 'آجل (ذمة)'
         ];
 
-        // 4. تجهيز الطرود
+        // 6. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
         foreach ($package->shipments as $shipment) {
@@ -117,19 +121,19 @@ if (file_exists($imagePath)) {
             $totalShipmentsCount++;
         }
 
-        // 5. الثيم والألوان
-        $theme = $app ? $app->theme : [
+        // 7. الثيم والألوان - آمن
+        $theme = $app?->theme ?? [
             'primary'   => '#fb6514',
             'secondary' => '#333333',
             'bg_light'  => '#fcfcfc',
         ];
 
-        // 6. إرجاع البيانات المنظمة
+        // 8. إرجاع البيانات المنظمة
         return [
             'company' => [
-                'name'        => $app?->name ?? 'اسم الشركة غير محدد',
-                'logo'        => $logoBase64,
-                'main_branch' => $mainBranchData,
+                'name'         => $app?->name ?? 'اسم الشركة غير محدد',
+                'logo'         => $logoBase64,
+                'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
             ],
@@ -146,9 +150,7 @@ if (file_exists($imagePath)) {
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date' => Carbon::now()
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i'),
+            'print_date'        => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
                 
             'design' => [
                 'primary_color'   => $theme['primary'],
