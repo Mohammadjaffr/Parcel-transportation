@@ -17,33 +17,29 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         $shipment = Shipment::with([
             'senderCustomer',
             'receiverCustomer',
-            'senderBranch',
+            'senderBranch.app',
             'receiverBranch',
             'receiverOfficeBranch',
-            'creator'
+            'creator.app'
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) من المستخدم الحالي
-        $app = auth()->user()->app;
+        // 2. جلب بيانات التطبيق (الشركة) - محمي
+        $app = $shipment->senderBranch?->app ?? $shipment->creator?->app;
 
-        // 3. تجهيز مسار الشعار الديناميكي
-       // 3. تجهيز مسار الشعار الديناميكي
-$imagePath = $app?->logo
-    ? public_path('storage/' . $app->logo)
-    : public_path('assets/image/icon_without_bg.png');
+        // 3. تجهيز مسار الشعار الديناميكي - محمي بـ ?->
+        $imagePath = $app?->logo
+            ? public_path('storage/' . $app->logo)
+            : public_path('assets/image/icon_without_bg.png');
 
-$logoBase64 = null;
-if (file_exists($imagePath)) {
-    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-    $data = file_get_contents($imagePath);
-    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-}
-
-// سيتم الآن تمرير $logoBase64 إلى المصفوفة النهائية
+        $logoBase64 = null;
+        if (file_exists($imagePath)) {
+            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+            $data = file_get_contents($imagePath);
+            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        }
 
         // 4. إعداد فرع السند وأرقام الفروع
         $senderBranch = $shipment->senderBranch;
-        
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
@@ -55,6 +51,7 @@ if (file_exists($imagePath)) {
         $otherPhonesList = [];
         $headquartersData = null;
         
+        // 🛡️ حماية كافية هنا: لا ندخل العمليات إلا إذا كان $app موجوداً
         if ($app) {
             if ($app->phone) {
                 $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
@@ -66,6 +63,7 @@ if (file_exists($imagePath)) {
                 }
             }
 
+            // جلب الفروع الأخرى فقط إذا كان التطبيق موجوداً
             $allBranches = $app->branches()->get();
             foreach($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
@@ -75,9 +73,10 @@ if (file_exists($imagePath)) {
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
+        
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
-        // 5. تجهيز القواميس والمتغيرات المساعدة
+        // 5. القواميس
         $paymentMethods = [
             'prepaid'         => 'مدفوع مقدماً',
             'cod'             => 'الدفع عند الاستلام',
@@ -92,10 +91,9 @@ if (file_exists($imagePath)) {
         $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
             ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
             : null;
-        
 
-        // 6. الثيم والألوان
-        $theme = $app ? $app->theme : [
+        // 6. الثيم والألوان - محمي
+        $theme = $app?->theme ?? [
             'primary'   => '#ea580c',
             'secondary' => '#1e293b',
             'bg_light'  => '#fffaf5',
@@ -103,56 +101,48 @@ if (file_exists($imagePath)) {
 
         // 7. إرجاع البيانات المنظمة
         return [
-            // --- معلومات الشركة والفرع ---
             'company' => [
-                'name'        => $app?->name ?? 'اسم الشركة غير محدد',
-                'logo'        => $logoBase64,
-                'main_branch' => $mainBranchData,
-                'headquarters'=> $headquartersData,
-                'other_phones'=> $otherPhonesStr,
+                'name'         => $app?->name ?? 'اسم الشركة غير محدد',
+                'logo'         => $logoBase64,
+                'main_branch'  => $mainBranchData,
+                'headquarters' => $headquartersData,
+                'other_phones' => $otherPhonesStr,
             ],
 
-            // --- معلومات السند ---
             'title'             => 'سند استلام طرد',
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
             'tracking_code'     => $shipment->code ?? 'بدون تتبع',
-            'date'              => Carbon::now()
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i'),
+            'date'              => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
 
-            // --- بيانات المرسل والمستلم ---
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
-            'sender_office'     => $app->name ?? 'الفرع الرئيسي',
+            'sender_office'     => $app?->name ?? 'الفرع الرئيسي', // 👈 استخدمنا ?-> هنا
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
             'receiver_branch'   => $receiverDestination,
-            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app->name ?? 'الفرع الرئيسي',
+            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app?->name ?? 'الفرع الرئيسي',
 
-            // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? 'طرد عادي',
             'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
             'honey_details'     => $honeyDetails,
             'notes'             => $shipment->notes ?? 'لا توجد ملاحظات إضافية',
 
-            // --- الحسابات والمبالغ ---
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
             'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
             'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
 
-            // --- معلومات النظام والتصميم ---
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
-            'terms_and_conditions' => is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0 
+            'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0)
                 ? $app->terms_and_conditions 
-                : ['لا توجد شروط وأحكام'],
+                : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
             'design' => [
-                'primary_color'   => $theme['primary'],
-                'secondary_color' => $theme['secondary'],
-                'bg_color'        => $theme['bg_light'],
+                'primary_color'   => $theme['primary'] ?? '#ea580c',
+                'secondary_color' => $theme['secondary'] ?? '#1e293b',
+                'bg_color'        => $theme['bg_light'] ?? '#fffaf5',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'a4',
             ]

@@ -17,9 +17,9 @@ class ShipmentDetection implements ReceiptStrategyInterface
     {
         // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها
         $package = ShipmentPackage::with([
-            'senderBranch',
+            'senderBranch.app',
             'driver',
-            'creator',
+            'creator.app',
             'shipments.senderCustomer',
             'shipments.receiverCustomer',
             'shipments.senderBranch',
@@ -27,7 +27,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'shipments.receiverOfficeBranch',
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        $app = auth()->user()->app;
+        $app = $package->senderBranch?->app ?? $package->creator?->app;
 
            $imagePath = $app?->logo
     ? public_path('storage/' . $app->logo)
