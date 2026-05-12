@@ -24,7 +24,8 @@
                     <div>
                         <h1 class="text-xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'الشركة' }}</h1>
                         <p class="text-slate-500 font-medium text-xs mt-1">
-                            {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}</p>
+                            {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
+                        </p>
                         <p class="text-slate-500 font-bold text-xs mt-1">رقم الحركة: {{ $transaction_id }}</p>
                     </div>
                 </div>
@@ -118,8 +119,21 @@
             </div>
         </div>
 
-        <div class="bg-slate-800 text-slate-400 p-4 text-center text-xs font-medium rounded-b-[2rem]">
-            تم الإنشاء إلكترونياً عبر النظام | بواسطة: {{ $creator_name }} | تاريخ الطباعة: {{ $print_date }}
+        <div class="bg-slate-800 p-4 text-center rounded-b-[2rem]">
+            {{-- بيانات الفاتورة --}}
+            <p class="text-xs font-medium text-slate-300">
+                تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
+                {{ $creator_name ?? 'مسؤول النظام' }} | الطباعة: {{ $print_date ?? now()->format('Y-m-d H:i') }}
+            </p>
+
+            {{-- الخط الفاصل التسويقي لشركة تيار --}}
+            <div class="mt-3 pt-3 border-t border-slate-700/50">
+                <p class="text-[10px] font-bold text-slate-500">
+                    تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
+                    <span class="mx-1">|</span>
+                    لطلب النظام: <span dir="ltr" class="text-slate-400 font-mono">+967 780 261 952</span>
+                </p>
+            </div>
         </div>
     </div>
 @endsection
