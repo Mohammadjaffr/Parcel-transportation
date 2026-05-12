@@ -282,9 +282,9 @@
         <div class="bg-slate-800 p-4 text-center rounded-b-[2rem]">
             {{-- بيانات الفاتورة --}}
             <p class="text-xs font-medium text-slate-300">
-                تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
-                {{ $creator_name ?? 'مسؤول النظام' }} | الطباعة: {{ $print_date ?? now()->format('Y-m-d H:i') }}
-            </p>
+    تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
+    {{ $creator_name ?? 'مسؤول النظام' }} | الطباعة: {{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}
+</p>
 
             {{-- الخط الفاصل التسويقي لشركة تيار --}}
             <div class="mt-3 pt-3 border-t border-slate-700/50">
