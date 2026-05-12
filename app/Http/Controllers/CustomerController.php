@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use App\Models\TransactionCategory;
 use App\Services\AdminLoggerService;
 use App\Services\CustomerTransactionService;
+use App\Services\WhatsApp\WhatsAppLinkService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -164,6 +165,15 @@ class CustomerController extends Controller
         ->orderBy('id', 'desc') // 💡 كاسر التعادل: الترتيب بالـ ID الأكبر في حال تشابه الوقت
         ->paginate(10, ['*'], 'trans_page') 
         ->withQueryString();
+    $transactions->through(function ($trans) {
+        // تجهيز رابط الواتساب من السيرفيس
+        $trans->waUrl = WhatsAppLinkService::generate($trans, 'transaction');
+        
+        // تجهيز رابط الطباعة
+        $trans->printUrl = route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]);
+        
+        return $trans;
+    });
 
     // ==========================================
     // 3. سجل الشحنات (History) مع الفلترة 📦

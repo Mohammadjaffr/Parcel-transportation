@@ -277,15 +277,15 @@
                                 {{-- أزرار الإجراءات --}}
                                 <div class="grid grid-cols-2 gap-3">
                                     {{-- زر الواتساب --}}
-                                    <a href="{{ $waUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-[#25D366] text-white rounded-xl text-xs font-black shadow-sm hover:bg-[#20bd5a] active:scale-95 transition-all">
+                                    <a href="{{ $trans->waUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-[#25D366] text-white rounded-xl text-xs font-black shadow-sm hover:bg-[#20bd5a] active:scale-95 transition-all">
                                         <i class="fa-brands fa-whatsapp text-[16px]"></i>
-                                        إرسال واتساب
+                                     إرسال واتساب
                                     </a>
 
-                                    {{-- زر الطباعة (تأكد من وضع مسار الراوت الصحيح للطباعة) --}}
-                                    <a href="{{ route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 active:scale-95 transition-all">
+                                    {{-- زر الطباعة --}}
+                                    <a href="{{ $trans->printUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 active:scale-95 transition-all">
                                         <span class="material-symbols-outlined text-[16px]">print</span>
-                                        طباعة السند
+                                     طباعة السند
                                     </a>
                                 </div>
 

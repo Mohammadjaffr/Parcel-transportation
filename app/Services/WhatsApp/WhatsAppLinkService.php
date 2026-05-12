@@ -2,26 +2,25 @@
 
 namespace App\Services\WhatsApp;
 
-
 use App\Services\WhatsApp\Messages\DriverMessage;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\DriverDetection;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
+use App\Services\WhatsApp\Messages\CustomerTransactionMessage; 
 use Illuminate\Database\Eloquent\Model;
-
 
 class WhatsAppLinkService
 {
-    
     public static function generate(Model $entity, string $target): ?string
     {
         $strategy = match ($target) {
             'sender'   => new SenderMessage(),
             'driver'   => new DriverMessage(),
-            'DriverDetection'   => new DriverDetection(),
-            'receiver'   => new ReceiverMessage(),
-             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
+            'DriverDetection' => new DriverDetection(),
+            'receiver' => new ReceiverMessage(),
+            'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
+            'transaction' => new CustomerTransactionMessage(), 
             default    => null,
         };
 
@@ -36,9 +35,11 @@ class WhatsAppLinkService
 
         $receiptUrl = null;
         if ($strategy->getReceiptType()) {
+            $entityId = $entity->uuid ?? $entity->id;
+            
             $receiptUrl = route('receipt.generate', [
                 'type' => $strategy->getReceiptType(), 
-                'id'   => $entity->uuid
+                'id'   => $entityId
             ]);
         }
 
