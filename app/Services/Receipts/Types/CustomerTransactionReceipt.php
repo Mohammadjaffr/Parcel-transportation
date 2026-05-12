@@ -10,7 +10,7 @@ class CustomerTransactionReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return 'A4'; // أو يمكنك تغييره لمقاس حراري لاحقاً إذا أردت
+        return 'A5'; // أو يمكنك تغييره لمقاس حراري لاحقاً إذا أردت
     }
 
     public function fetchData(string $referenceId): array
