@@ -50,13 +50,13 @@
                     </div>
                     <h3 class="text-sm font-bold text-blue-600 uppercase tracking-wider">بيانات السائق</h3>
                 </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-slate-500 text-sm">الاسم</span>
+                <div class="space-y-2 ">
+                    <div class="flex justify-between text-left">
+                        <span class="text-slate-500 text-sm text-right">الاسم</span>
                         <span class="text-slate-800 font-black">{{ $driver_name ?? '---' }}</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-500 text-sm">الهاتف</span>
+                    <div class="flex justify-between text-left">
+                        <span class="text-slate-500 text-sm text-right">الهاتف</span>
                         <span class="text-slate-800 font-bold" dir="ltr">{{ $driver_phone ?? '---' }}</span>
                     </div>
                 </div>

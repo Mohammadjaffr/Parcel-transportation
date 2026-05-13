@@ -148,7 +148,7 @@
             @endif
 
             {{-- زر الطباعة --}}
-            <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}" target="_blank"
+            <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->uuid]) }}" target="_blank"
                 class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 طباعة
