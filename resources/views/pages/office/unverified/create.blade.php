@@ -26,7 +26,7 @@
     }" x-init="if(errorIndices.length > 0) activeItem = errorIndices[0];">
 
         {{-- ================= الشريط العلوي العائم (الإصلاح الجذري هنا) ================= --}}
-        <div class="sticky top-0 z-[100] w-full bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
+        <div class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
             <div class="flex justify-between items-center px-4 mx-auto max-w-7xl h-20 sm:px-6 lg:px-8">
                 
                 {{-- جهة العنوان --}}
@@ -101,7 +101,7 @@
 
                         <div class="px-6 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start bg-slate-50/30 rounded-b-[2.5rem] pt-6">
                             <template x-for="(branch, index) in branches" :key="index">
-                                <div :class="activeItem === index ? 'ring-2 ring-primary/40 shadow-xl z-30 scale-[1.02]' : 'border border-slate-100 z-10 opacity-90'"
+                                <div :class="activeItem === index ? 'ring-2 ring-primary/40 shadow-xl z-20 scale-[1.02]' : 'border border-slate-100 z-10 opacity-90'"
                                     class="branch-card relative bg-white rounded-[2rem] transition-all duration-500 overflow-visible">
 
                                     {{-- هيدر الفرع --}}
@@ -151,6 +151,8 @@
                                                         <input type="hidden" :name="`branches[${index}][phone]`" :value="branch.phone">
                                                         <div class="flex overflow-hidden items-center w-full h-12 rounded-2xl border border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 bg-slate-50/50">
                                                             <input type="tel" x-model="localPhoneNumber" dir="ltr" placeholder="7XXXXXXXX"
+                                                            :maxlength="9" 
+                                                            inputmode="numeric"
                                                                 @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')"
                                                                 class="flex-grow px-4 h-full font-mono text-xs font-bold text-left bg-transparent border-none outline-none focus:ring-0 text-slate-700">
                                                             <button type="button" @click="open = !open" class="flex gap-1 items-center px-3 h-full bg-white border-r transition-colors border-slate-200 hover:bg-slate-50">

@@ -21,6 +21,10 @@ class Passengers extends Model
         'status'
     ];
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
     public function driver()
     {
         return $this->belongsTo(Driver::class);

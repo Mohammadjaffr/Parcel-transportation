@@ -10,6 +10,7 @@ use App\Services\Receipts\Types\ReceiverShipmentReceipt;
 use App\Services\Receipts\Types\ThermalShipmentReceipt;
 use App\Services\Receipts\Types\CustomerAccountStatementReceipt;
 use App\Services\Receipts\Types\CustomerTransactionReceipt;
+use App\Services\Receipts\Types\ReportPassanger;
 use Exception;
 
 class ReceiptFactory
@@ -24,6 +25,7 @@ class ReceiptFactory
             'thermal' => new ThermalShipmentReceipt(),
             'CustomerAccountStatementReceipt' => new CustomerAccountStatementReceipt(),
             'transaction' => new CustomerTransactionReceipt(),
+            'passenger' => new ReportPassanger(),
             default    => throw new Exception("نوع السند غير مدعوم: {$type}")
         };
     }

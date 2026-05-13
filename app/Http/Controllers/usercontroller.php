@@ -55,70 +55,70 @@ class UserController extends Controller
      * إضافة مستخدم جديد (يدعم AJAX)
      */
     public function store(Request $request)
-{
-    // 1. التحقق من البيانات
-    $validator = Validator::make($request->all(), [
-        'name' => ['required', 'string', 'max:255'],
-        'phone' => ['required', 'string', 'unique:users,phone'],
-        'password' => ['required', 'string', 'min:6'],
-        'branch_id' => ['required', 'exists:branches,id']
-    ], [
-        'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
-        'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
-        'branch_id.exists' => 'الفرع المحدد غير موجود في النظام.',
-    ]);
-
-    if ($validator->fails()) {
-        // إذا كان الطلب AJAX/JSON نرسل الأخطاء بصيغة JSON مع كود 422
-        if ($request->expectsJson()) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-        return WebResponseClass::sendValidationError($validator);
-    }
-
-    try {
-        DB::beginTransaction(); // أفضل ممارسة عند الإضافة
-
-        User::create([
-            'app_id'    => auth()->user()->app_id,
-            'branch_id' => $request->branch_id,
-            'name'      => $request->name,
-            'phone'     => $request->phone,
-            'whatsapp_number' => $request->whatsapp_number,
-            'password'  => Hash::make($request->password),
-            'type'      => 'user',
-            'is_banned' => false,
+    {
+        // 1. التحقق من البيانات
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'unique:users,phone'],
+            'password' => ['required', 'string', 'min:6'],
+            'branch_id' => ['required', 'exists:branches,id']
+        ], [
+            'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
+            'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
+            'branch_id.exists' => 'الفرع المحدد غير موجود في النظام.',
         ]);
 
-        DB::commit();
+        if ($validator->fails()) {
+            // إذا كان الطلب AJAX/JSON نرسل الأخطاء بصيغة JSON مع كود 422
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
 
-        // 2. الرد في حالة النجاح
-        if ($request->expectsJson()) {
-            return response()->json([
-                'status'  => 'success',
-                'title'   => 'تمت الإضافة!',
-                'message' => 'تم إضافة المستخدم بنجاح إلى النظام.',
-                'redirect' => route('users.index') // نرسل الرابط لتقوم الجافاسكريبت بالتحويل إذا أردت
-            ], 200);
+            return WebResponseClass::sendValidationError($validator);
         }
 
-        return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
+        try {
+            DB::beginTransaction(); // أفضل ممارسة عند الإضافة
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        
-        if ($request->expectsJson()) {
-            return response()->json([
-                'status'  => 'error',
-                'message' => 'حدث خطأ غير متوقع: ' . $e->getMessage()
-            ], 500);
+            User::create([
+                'app_id'    => auth()->user()->app_id,
+                'branch_id' => $request->branch_id,
+                'name'      => $request->name,
+                'phone'     => $request->phone,
+                'whatsapp_number' => $request->whatsapp_number,
+                'password'  => Hash::make($request->password),
+                'type'      => 'user',
+                'is_banned' => false,
+            ]);
+
+            DB::commit();
+
+            // 2. الرد في حالة النجاح
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status'  => 'success',
+                    'title'   => 'تمت الإضافة!',
+                    'message' => 'تم إضافة المستخدم بنجاح إلى النظام.',
+                    'redirect' => route('users.index') // نرسل الرابط لتقوم الجافاسكريبت بالتحويل إذا أردت
+                ], 200);
+            }
+
+            return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'حدث خطأ غير متوقع: ' . $e->getMessage()
+                ], 500);
+            }
+            return WebResponseClass::sendExceptionError($e);
         }
-        return WebResponseClass::sendExceptionError($e);
     }
-}
 
     /**
      * Display the specified resource.
@@ -139,7 +139,7 @@ class UserController extends Controller
             // إذا كان 'all' لن يتم إضافة أي شرط
         };
 
-       $manifestsCount = ShipmentPackage::where('created_by', $user->id)->where($dateFilter)->count();
+        $manifestsCount = ShipmentPackage::where('created_by', $user->id)->where($dateFilter)->count();
         $shipmentsCount = Shipment::where('created_by', $user->id)->where($dateFilter)->count();
         $customersCount = Customer::where('created_by', $user->id)->where($dateFilter)->count();
         $recentManifests = ShipmentPackage::with('driver')->where('created_by', $user->id)->latest()->take(5)->get();
@@ -147,8 +147,8 @@ class UserController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.people.users.show', compact('user', 'manifestsCount', 'shipmentsCount', 'customersCount', 'recentManifests', 'period'));
         }
-        
-        return view('pages.users.show', compact('user', 'manifestsCount', 'shipmentsCount','customersCount', 'recentManifests', 'period'));
+
+        return view('pages.users.show', compact('user', 'manifestsCount', 'shipmentsCount', 'customersCount', 'recentManifests', 'period'));
     }
 
     /**
@@ -173,50 +173,68 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // 1. جلب المستخدم مع التأكد من عزل البيانات (SaaS)
         $query = User::query();
         if (auth()->user()->type !== 'super_admin') {
             $query->where('app_id', auth()->user()->app_id);
         }
         $user = $query->findOrFail($id);
 
-        // 2. التحقق من البيانات (تأكد من مطابقة الأسماء تماماً)
         $validator = Validator::make($request->all(), [
             'name'      => 'required|string|max:255',
             'phone'     => 'required|string|unique:users,phone,' . $id,
-            'branch_id' => 'required', // سنكتفي بـ required هنا لأننا سنفحص الشركة يدوياً أدناه
+            'branch_id' => 'required',
         ], [
             'name.required'      => 'يرجى إدخال الاسم.',
             'phone.unique'       => 'رقم الهاتف مسجل مسبقاً.',
             'branch_id.required' => 'يرجى تحديد الفرع.',
         ]);
 
+        // معالجة أخطاء التحقق لطلبات الـ AJAX
         if ($validator->fails()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
             return WebResponseClass::sendValidationError($validator);
         }
 
         try {
-            // 3. تحديث البيانات
             $user->update([
                 'name'            => $request->name,
                 'phone'           => $request->phone,
                 'branch_id'       => $request->branch_id,
                 'whatsapp_number' => $request->whatsapp_number,
                 'is_banned'       => $request->is_banned ?? 0,
-                // تحديث كلمة المرور فقط إذا تم إرسالها
                 'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
             ]);
 
-            // الفلاش ميسج للنجاح
+            // تهيئة رسائل النجاح (تظهر بعد عملية الـ Reload في الجافاسكريبت)
             session()->flash('success', true);
             session()->flash('success_title', 'تم التحديث!');
             session()->flash('success_message', 'تم تحديث بيانات المستخدم بنجاح.');
 
- return WebResponseClass::sendResponse('تم الإضافة!', 'تم تحديث بيانات المستخدم بنجاح', 'حسناً', 'users.index');        } catch (\Exception $e) {
+            // إرجاع رد JSON مخصص للـ AJAX
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status'  => 'success',
+                    'title'   => 'تم التحديث!',
+                    'message' => 'تم تحديث بيانات المستخدم بنجاح.'
+                ], 200);
+            }
+
+            return WebResponseClass::sendResponse('تم التحديث!', 'تم تحديث بيانات المستخدم بنجاح', 'حسناً', 'users.index');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'حدث خطأ غير متوقع: ' . $e->getMessage()
+                ], 500);
+            }
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
     /**
      * حذف مستخدم (يدعم AJAX)
      */

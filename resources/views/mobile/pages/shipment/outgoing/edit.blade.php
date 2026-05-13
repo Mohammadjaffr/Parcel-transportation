@@ -379,9 +379,10 @@
                                 class="text-red-500">*</span></label>
                         <select name="payment_method" x-model="paymentMethod"
                             class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
-                            <option value="prepaid">مدفوع مقدماً</option>
+                             <option value="prepaid">مدفوع مقدماً</option>
                             <option value="cod">الدفع عند الاستلام (على حساب المستلم)</option>
-                        
+                            <option value="partial_payment">دفع جزئي</option>
+                            <option value="customer_credit">آجل (على حساب المرسل)</option>
                         </select>
                     </div>
 

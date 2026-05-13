@@ -11,6 +11,7 @@
     $customerName = $passenger->customer->name ?? 'راكب غير محدد';
     $driverName = $passenger->driver->name ?? 'سائق غير محدد';
     $branchName = $passenger->branch->name ?? 'غير محدد';
+        $custPhone = $passenger->customer->phone ?? '0';
 
     $commission = (float) ($passenger->total_commission ?? 0);
 
@@ -38,9 +39,7 @@
             </a>
             <h1 class="text-lg font-black text-slate-800 dark:text-white">تفاصيل الراكب</h1>
         </div>
-        <button type="button" onclick="window.print()" class="flex justify-center items-center w-10 h-10 bg-white dark:bg-boxdark rounded-full border shadow-sm transition-all border-slate-100 dark:border-boxdark-2 text-slate-500 dark:text-gray-400 hover:text-primary active:scale-90 print:hidden">
-            <span class="material-symbols-outlined text-[20px]">print</span>
-        </button>
+       
     </div>
 
     <div class="px-4 space-y-4 w-full">
@@ -53,7 +52,7 @@
                     {{ $statusLabel }}
                 </div>
                 <span class="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1.5 rounded-lg dark:bg-boxdark-2">
-                    #{{ $passenger->id }}
+                   #{{ $passenger->id }}
                 </span>
             </div>
 
@@ -62,9 +61,9 @@
                     {{ $customerInitial ?: 'ع' }}
                 </div>
                 <div class="min-w-0">
-                    <span class="block mb-1 text-[10px] font-black text-slate-400 dark:text-gray-500">العميل / الراكب</span>
+                    {{-- <span class="block mb-1 text-[10px] font-black text-slate-400 dark:text-gray-500">العميل / الراكب</span> --}}
                     <h2 class="text-xl font-black text-slate-800 dark:text-white truncate">
-                        {{ $customerName }}
+                      الراكب
                     </h2>
                     <x-phone-number :value="$passenger->passenger_number" class="mt-0.5 text-xs font-bold font-mono text-slate-500 dir-ltr inline-block dark:text-bodydark" />
                 </div>
@@ -129,6 +128,29 @@
                     </h3>
                     @if($passenger->driver?->phone)
                         <x-phone-number :value="$passenger->driver->phone" class="mt-0.5 text-xs font-bold text-slate-500 font-mono dir-ltr inline-block dark:text-bodydark" />
+                    @else
+                        <span class="text-[10px] font-bold text-slate-400">لا يوجد رقم</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        {{-- ================= بيانات العميل ================= --}}
+        <div class="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+            <h3 class="flex items-center gap-2 text-sm font-black text-slate-800 mb-4 dark:text-white">
+                <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+                بيانات العميل
+            </h3>
+            
+            <div class="flex gap-4 items-center p-4 rounded-2xl border border-primary/15 bg-primary-container/40 dark:bg-primary/10 dark:border-primary/20">
+                <div class="flex justify-center items-center w-12 h-12 text-lg font-black text-white rounded-[1rem] shadow-inner bg-primary shrink-0">
+                    {{ $customerInitial ?: 'ع' }}
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-sm font-black truncate text-slate-800 dark:text-white">
+                        {{ $customerName }}
+                    </h3>
+                    @if($custPhone)
+                        <x-phone-number :value="$custPhone" class="mt-0.5 text-xs font-bold text-slate-500 font-mono dir-ltr inline-block dark:text-bodydark" />
                     @else
                         <span class="text-[10px] font-bold text-slate-400">لا يوجد رقم</span>
                     @endif

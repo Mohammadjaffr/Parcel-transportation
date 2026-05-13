@@ -3,9 +3,7 @@
 @section('title', 'إدارة السائقين')
 @section('content')
 
-    <div x-data="driversRegistry()"
-        class="pb-24 space-y-6 min-h-screen font-body lg:pb-12"
-        dir="rtl">
+    <div x-data="driversRegistry()" class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
 
         {{-- ================= Header Section ================= --}}
         <div class="mx-auto w-full max-w-7xl">
@@ -20,8 +18,8 @@
                     </p>
                 </div>
 
-                <button type="button"
-                    @click="showCreateModal = true"
+
+                <button type="button" @click="showCreateModal = true"
                     class="inline-flex gap-2.5 items-center px-5 h-12 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95 shrink-0">
                     <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">
                         person_add
@@ -30,29 +28,44 @@
                 </button>
             </div>
         </div>
-
+        <div class="mb-6">
+            {{-- إجمالي السائقين --}}
+            <div
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border-primary ring-2 ring-primary/20 shadow-sm dark:bg-boxdark max-w-sm">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[24px]">group</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">إجمالي
+                        السائقين</span>
+                    <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
+                        {{ $totalCount }}
+                    </h4>
+                </div>
+            </div>
+        </div>
         {{-- ================= Search & Data Section ================= --}}
-        <div class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+        <div
+            class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
             {{-- Search Bar --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
                 <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
 
                     {{-- Search Input --}}
-                    <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
-                        <input type="text"
-                            x-model="searchQuery"
-                            @input.debounce.300ms="updateVisibility()"
+                    <div
+                        class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                        <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                             placeholder="ابحث باسم السائق أو رقم الهاتف..."
                             class="pr-12 pl-12 w-full h-12 text-sm font-bold placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
 
-                        <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                        <div
+                            class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                             <span class="material-symbols-outlined text-[22px]">search</span>
                         </div>
 
-                        <button type="button"
-                            x-show="searchQuery.length > 0"
-                            @click="searchQuery = ''; updateVisibility()"
+                        <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''; updateVisibility()"
                             x-cloak
                             class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
                             <span class="text-[18px] material-symbols-outlined">close</span>
@@ -61,7 +74,8 @@
 
                     {{-- Results Counter --}}
                     <div class="flex gap-2 items-center text-xs font-black text-gray-500 dark:text-bodydark">
-                        <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                        <span
+                            class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                         </span>
 
@@ -78,13 +92,13 @@
             {{-- ================= Mobile View ================= --}}
             <div class="flex flex-col gap-4 p-5 lg:hidden">
                 @forelse ($drivers as $driver)
-                    <div x-show="showRow(@js($driver->name), @js($driver->phone))"
-                        x-transition
+                    <div x-show="showRow(@js($driver->name), @js($driver->phone))" x-transition
                         class="overflow-hidden relative p-5 rounded-2xl border border-gray-100 shadow-sm transition-all driver-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm">
 
                         <div class="flex justify-between items-start">
                             <div class="flex gap-3 items-center min-w-0">
-                                <div class="flex justify-center items-center w-12 h-12 text-lg font-black rounded-xl bg-primary-container dark:bg-primary/10 text-primary shrink-0">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 text-lg font-black rounded-xl bg-primary-container dark:bg-primary/10 text-primary shrink-0">
                                     @php
                                         $words = explode(' ', $driver->name);
                                         echo mb_substr($words[0] ?? '', 0, 1, 'utf-8') .
@@ -104,16 +118,12 @@
 
                             {{-- Mobile Actions --}}
                             <div x-data="{ menuOpen: false }" class="relative shrink-0">
-                                <button type="button"
-                                    @click="menuOpen = !menuOpen"
-                                    @click.away="menuOpen = false"
+                                <button type="button" @click="menuOpen = !menuOpen" @click.away="menuOpen = false"
                                     class="p-2 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-colors hover:text-primary hover:border-primary/30 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2">
                                     <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                 </button>
 
-                                <div x-show="menuOpen"
-                                    x-transition
-                                    x-cloak
+                                <div x-show="menuOpen" x-transition x-cloak
                                     class="absolute left-0 top-full z-[999] py-1.5 mt-2 w-52 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark overflow-hidden">
 
                                     <a href="tel:{{ $driver->phone }}"
@@ -122,8 +132,7 @@
                                         اتصال
                                     </a>
 
-                                    <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}"
-                                        target="_blank"
+                                    <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                         <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
                                         واتساب
@@ -151,21 +160,29 @@
                         <div class="grid grid-cols-2 gap-3 pt-4 mt-4 border-t border-gray-100 dark:border-boxdark">
                             <a href="tel:{{ $driver->phone }}"
                                 class="flex gap-2 justify-center items-center px-3 py-2 text-xs font-bold rounded-xl transition-all bg-primary-container dark:bg-primary/10 text-primary hover:bg-primary/20 active:scale-95">
-                                <span class="text-[16px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">call</span>
+                                <span class="text-[16px] material-symbols-outlined"
+                                    style="font-variation-settings: 'FILL' 1;">call</span>
                                 اتصال
                             </a>
 
-                            <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}"
-                                target="_blank"
+                            <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
                                 class="flex gap-2 justify-center items-center px-3 py-2 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-xl transition-all dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 active:scale-95">
-                                <span class="text-[16px] material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+
+                                {{-- أيقونة واتساب SVG --}}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current" viewBox="0 0 16 16">
+                                    <path
+                                        d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                                </svg>
+
                                 واتساب
                             </a>
                         </div>
                     </div>
                 @empty
-                    <div class="flex flex-col gap-4 justify-center items-center py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
-                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                    <div
+                        class="flex flex-col gap-4 justify-center items-center py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                        <div
+                            class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                             <span class="material-symbols-outlined text-[28px] text-gray-400">no_accounts</span>
                         </div>
 
@@ -181,10 +198,10 @@
                     </div>
                 @endforelse
 
-                <div x-show="visibleCount === 0 && {{ $drivers->count() }} > 0"
-                    x-cloak
+                <div x-show="visibleCount === 0 && {{ $drivers->count() }} > 0" x-cloak
                     class="flex flex-col gap-4 justify-center items-center py-16 text-center rounded-2xl border-2 border-gray-100 border-dashed bg-surface dark:bg-boxdark-2 dark:border-boxdark">
-                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                    <div
+                        class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                     </div>
 
@@ -204,7 +221,8 @@
             <div class="hidden overflow-visible w-full lg:block">
                 <table class="w-full text-right border-collapse">
                     <thead>
-                        <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
+                        <tr
+                            class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">السائق</th>
                             <th class="px-6 py-4 text-center">رقم الهاتف</th>
                             <th class="px-6 py-4 text-center">تواصل سريع</th>
@@ -214,14 +232,14 @@
 
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                         @forelse ($drivers as $driver)
-                            <tr x-show="showRow(@js($driver->name), @js($driver->phone))"
-                                x-transition
+                            <tr x-show="showRow(@js($driver->name), @js($driver->phone))" x-transition
                                 class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group driver-row">
 
                                 {{-- Driver --}}
                                 <td class="px-6 py-4">
                                     <div class="flex gap-4 items-center">
-                                        <div class="flex justify-center items-center w-11 h-11 text-lg font-black rounded-lg bg-primary-container dark:bg-primary/10 text-primary">
+                                        <div
+                                            class="flex justify-center items-center w-11 h-11 text-lg font-black rounded-lg bg-primary-container dark:bg-primary/10 text-primary">
                                             @php
                                                 $words = explode(' ', $driver->name);
                                                 echo mb_substr($words[0] ?? '', 0, 1, 'utf-8') .
@@ -246,37 +264,35 @@
                                 {{-- Quick Contact --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex gap-3 justify-center items-center">
-                                        <a href="tel:{{ $driver->phone }}"
-                                            title="اتصال"
+                                        <a href="tel:{{ $driver->phone }}" title="اتصال"
                                             class="flex justify-center items-center w-9 h-9 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2 text-primary hover:bg-primary-container dark:hover:bg-primary/10 active:scale-95">
-                                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">call</span>
+                                            <span class="material-symbols-outlined text-[18px]"
+                                                style="font-variation-settings: 'FILL' 1;">call</span>
                                         </a>
 
-                                        <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}"
-                                            target="_blank"
+                                        <a href="https://wa.me/{{ ltrim($driver->phone, '+') }}" target="_blank"
                                             title="واتساب"
                                             class="flex justify-center items-center w-9 h-9 text-emerald-500 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 active:scale-95">
-                                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">chat_bubble</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-current"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                                            </svg>
                                         </a>
                                     </div>
                                 </td>
 
                                 {{-- Actions --}}
                                 <td class="relative px-6 py-4 text-center">
-                                    <div x-data="{ open: false }"
-                                        class="inline-block relative text-right"
+                                    <div x-data="{ open: false }" class="inline-block relative text-right"
                                         @click.away="open = false">
 
-                                        <button @click="open = !open"
-                                            type="button"
-                                            title="خيارات"
+                                        {{-- <button @click="open = !open" type="button" title="خيارات"
                                             class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
                                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
-                                        </button>
+                                        </button> --}}
 
-                                        <div x-show="open"
-                                            x-cloak
-                                            x-transition:enter="transition ease-out duration-100"
+                                        {{-- <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100"
                                             x-transition:enter-start="transform opacity-0 scale-95"
                                             x-transition:enter-end="transform opacity-100 scale-100"
                                             x-transition:leave="transition ease-in duration-75"
@@ -302,7 +318,13 @@
                                                     حذف السائق
                                                 </button>
                                             </div>
-                                        </div>
+                                        </div> --}}
+                                        <button type="button"
+                                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
+                                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
+                                            <span class="text-xl material-symbols-outlined">edit_square</span>
+
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -310,8 +332,10 @@
                             <tr>
                                 <td colspan="4" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
-                                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
-                                            <span class="material-symbols-outlined text-[28px] text-gray-400">no_accounts</span>
+                                        <div
+                                            class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                            <span
+                                                class="material-symbols-outlined text-[28px] text-gray-400">no_accounts</span>
                                         </div>
 
                                         <div>
@@ -328,11 +352,11 @@
                             </tr>
                         @endforelse
 
-                        <tr x-show="visibleCount === 0 && {{ $drivers->count() }} > 0"
-                            x-cloak>
+                        <tr x-show="visibleCount === 0 && {{ $drivers->count() }} > 0" x-cloak>
                             <td colspan="4" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
-                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                    <div
+                                        class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                                     </div>
 
@@ -354,7 +378,8 @@
 
             {{-- Pagination --}}
             @if ($drivers->hasPages())
-                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                <div
+                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
                     {{ $drivers->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
@@ -363,40 +388,34 @@
         {{-- ======================== Modals ======================== --}}
 
         {{-- 1. Create Driver Modal --}}
-        <div x-show="showCreateModal"
-            x-cloak
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
+        <div x-show="showCreateModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
 
             <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
                 @click="closeModals()"></div>
 
-            <div class="relative w-full max-w-lg bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div
+                class="relative w-full max-w-lg bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
 
                 <div class="flex justify-between items-center pb-4 mb-8 border-b border-gray-50 dark:border-boxdark-2">
                     <h3 class="flex gap-2 items-center text-xl font-black font-headline text-on-surface dark:text-white">
-                        <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                        <div
+                            class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[20px]">person_add</span>
                         </div>
                         إضافة سائق جديد
                     </h3>
 
-                    <button type="button"
-                        @click="closeModals()"
+                    <button type="button" @click="closeModals()"
                         class="flex justify-center items-center w-10 h-10 text-gray-400 rounded-xl transition-colors bg-surface dark:bg-boxdark-2 hover:text-error active:scale-95">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
 
-                <form action="{{ route('drivers.store') }}"
-                    method="POST"
-                    class="space-y-6"
-                    x-data="{ isSubmitting: false }"
+                <form action="{{ route('drivers.store') }}" method="POST" class="space-y-6" x-data="{ isSubmitting: false }"
                     @submit="isSubmitting = true">
                     @csrf
 
@@ -406,14 +425,12 @@
                         </label>
 
                         <div class="relative">
-                            <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
+                            <span
+                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
                                 person
                             </span>
 
-                            <input type="text"
-                                name="name"
-                                required
-                                placeholder="مثلاً: أحمد السعيدي"
+                            <input type="text" name="name" required placeholder="مثلاً: أحمد السعيدي"
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                         </div>
                     </div>
@@ -429,7 +446,7 @@
                         },
                         get filteredCountries() {
                             if (this.search === '') return this.countries;
-
+                    
                             return this.countries.filter(c =>
                                 String(c.name || '').toLowerCase().includes(this.search.toLowerCase()) ||
                                 String(c.dial_code || '').includes(this.search)
@@ -441,19 +458,16 @@
                         </label>
 
                         <div class="relative">
-                            <input type="hidden"
-                                name="phone"
+                            <input type="hidden" name="phone"
                                 :value="(selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber">
 
-                            <div class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
+                            <div
+                                class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
 
-                                <button type="button"
-                                    @click="open = !open"
-                                    @click.away="open = false"
+                                <button type="button" @click="open = !open" @click.away="open = false"
                                     class="flex gap-2 items-center px-4 h-14 bg-white rounded-r-xl border-l border-gray-200 transition-colors dark:bg-boxdark dark:border-boxdark-2 shrink-0 hover:bg-gray-50 dark:hover:bg-boxdark-2">
 
-                                    <span x-show="selectedCountry?.svg"
-                                        x-html="selectedCountry?.svg"
+                                    <span x-show="selectedCountry?.svg" x-html="selectedCountry?.svg"
                                         class="inline-flex overflow-hidden justify-center items-center w-6 h-4 rounded-sm shadow-sm shrink-0">
                                     </span>
 
@@ -463,24 +477,16 @@
                                     <span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
                                 </button>
 
-                                <input type="tel"
-                                    x-model="localPhoneNumber"
-                                    placeholder="7XXXXXXXX"
-                                    required
-                                    inputmode="numeric"
-                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')"
                                     class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
 
-                                <div x-show="open"
-                                    x-transition
-                                    x-cloak
+                                <div x-show="open" x-transition x-cloak
                                     class="absolute top-[calc(100%+8px)] right-0 z-50 w-full bg-white dark:bg-boxdark rounded-xl border border-gray-100 dark:border-boxdark-2 shadow-xl overflow-hidden">
 
                                     <div class="p-2 border-b border-gray-50 dark:border-boxdark-2">
-                                        <input type="text"
-                                            x-model="search"
-                                            placeholder="ابحث عن الدولة أو الرمز..."
+                                        <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
                                             class="px-4 py-2 w-full text-sm rounded-lg transition-colors outline-none bg-surface dark:bg-boxdark-2 dark:text-white focus:bg-white dark:focus:bg-boxdark">
                                     </div>
 
@@ -493,7 +499,8 @@
                                                     class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm shadow-sm shrink-0">
                                                 </span>
 
-                                                <span class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200"
+                                                <span
+                                                    class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200"
                                                     x-text="country.name"></span>
 
                                                 <span class="font-mono text-xs font-bold text-gray-500 shrink-0 dir-ltr"
@@ -506,27 +513,17 @@
                         </div>
                     </div>
 
-                    <button type="submit"
-                        :disabled="isSubmitting"
+                    <button type="submit" :disabled="isSubmitting"
                         :class="isSubmitting ? 'opacity-80 cursor-wait' : 'active:scale-95 hover:shadow-xl'"
                         class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all duration-300 bg-primary shadow-primary/30">
 
                         <span x-show="!isSubmitting" class="transition-transform material-symbols-outlined">save</span>
 
-                        <svg x-cloak
-                            x-show="isSubmitting"
-                            class="w-6 h-6 text-white animate-spin"
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
+                        <svg x-cloak x-show="isSubmitting" class="w-6 h-6 text-white animate-spin"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                 stroke-width="4"></circle>
-                            <path class="opacity-75"
-                                fill="currentColor"
+                            <path class="opacity-75" fill="currentColor"
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                             </path>
                         </svg>
@@ -538,31 +535,28 @@
         </div>
 
         {{-- 2. Edit Driver Modal --}}
-        <div x-show="showEditModal"
-            x-cloak
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
+        <div x-show="showEditModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
 
             <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
                 @click="closeModals()"></div>
 
-            <div class="relative w-full max-w-lg bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div
+                class="relative w-full max-w-lg bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
 
                 <div class="flex justify-between items-center pb-4 mb-8 border-b border-gray-50 dark:border-boxdark-2">
                     <h3 class="flex gap-2 items-center text-xl font-black font-headline text-on-surface dark:text-white">
-                        <div class="flex justify-center items-center w-10 h-10 text-gray-500 rounded-xl shadow-sm bg-surface dark:bg-boxdark-2 dark:text-bodydark">
+                        <div
+                            class="flex justify-center items-center w-10 h-10 text-gray-500 rounded-xl shadow-sm bg-surface dark:bg-boxdark-2 dark:text-bodydark">
                             <span class="material-symbols-outlined text-[20px]">edit</span>
                         </div>
                         تعديل بيانات السائق
                     </h3>
 
-                    <button type="button"
-                        @click="closeModals()"
+                    <button type="button" @click="closeModals()"
                         class="flex justify-center items-center w-10 h-10 text-gray-400 rounded-xl transition-colors bg-surface dark:bg-boxdark-2 hover:text-error active:scale-95">
                         <span class="material-symbols-outlined">close</span>
                     </button>
@@ -578,14 +572,12 @@
                         </label>
 
                         <div class="relative">
-                            <span class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
+                            <span
+                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
                                 person
                             </span>
 
-                            <input type="text"
-                                name="name"
-                                x-model="editDriverData.name"
-                                required
+                            <input type="text" name="name" x-model="editDriverData.name" required
                                 class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
                         </div>
                     </div>
@@ -598,22 +590,22 @@
                         localPhoneNumber: '',
                         init() {
                             this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
-
+                    
                             const countryCodes = this.countries
                                 .map(c => String(c.dial_code || '').replace('+', ''))
                                 .sort((a, b) => b.length - a.length);
-
+                    
                             this.$watch('editDriverData.phone', newValue => {
                                 if (!newValue) {
                                     this.localPhoneNumber = '';
                                     return;
                                 }
-
+                    
                                 const currentConstructed = (this.selectedCountry?.dial_code.replace('+', '') || '') + this.localPhoneNumber;
-
+                    
                                 if (newValue !== currentConstructed) {
                                     let matched = false;
-
+                    
                                     for (let code of countryCodes) {
                                         if (String(newValue).startsWith(code)) {
                                             this.selectedCountry = this.countries.find(c => String(c.dial_code || '').replace('+', '') === code);
@@ -622,24 +614,24 @@
                                             break;
                                         }
                                     }
-
+                    
                                     if (!matched) {
                                         this.localPhoneNumber = newValue;
                                     }
                                 }
                             });
-
+                    
                             this.$watch('localPhoneNumber', value => {
                                 editDriverData.phone = (this.selectedCountry?.dial_code.replace('+', '') || '') + value;
                             });
-
+                    
                             this.$watch('selectedCountry', value => {
                                 editDriverData.phone = (value?.dial_code.replace('+', '') || '') + this.localPhoneNumber;
                             });
                         },
                         get filteredCountries() {
                             if (this.search === '') return this.countries;
-
+                    
                             return this.countries.filter(c =>
                                 String(c.name || '').toLowerCase().includes(this.search.toLowerCase()) ||
                                 String(c.dial_code || '').includes(this.search)
@@ -653,15 +645,13 @@
                         <div class="relative">
                             <input type="hidden" name="phone" :value="editDriverData.phone">
 
-                            <div class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
+                            <div
+                                class="flex relative items-center rounded-xl ring-1 ring-gray-200 transition-all group bg-surface dark:bg-boxdark-2 focus-within:bg-white dark:focus-within:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40">
 
-                                <button type="button"
-                                    @click="open = !open"
-                                    @click.away="open = false"
+                                <button type="button" @click="open = !open" @click.away="open = false"
                                     class="flex gap-2 items-center px-4 h-14 bg-white rounded-r-xl border-l border-gray-200 transition-colors dark:bg-boxdark dark:border-boxdark-2 shrink-0 hover:bg-gray-50 dark:hover:bg-boxdark-2">
 
-                                    <span x-show="selectedCountry?.svg"
-                                        x-html="selectedCountry?.svg"
+                                    <span x-show="selectedCountry?.svg" x-html="selectedCountry?.svg"
                                         class="inline-flex overflow-hidden justify-center items-center w-6 h-4 rounded-sm shadow-sm shrink-0">
                                     </span>
 
@@ -671,24 +661,16 @@
                                     <span class="material-symbols-outlined text-[18px] text-gray-400">expand_more</span>
                                 </button>
 
-                                <input type="tel"
-                                    x-model="localPhoneNumber"
-                                    placeholder="7XXXXXXXX"
-                                    required
-                                    inputmode="numeric"
-                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                                    inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')"
                                     class="flex-1 px-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-on-surface dark:text-white dir-ltr">
 
-                                <div x-show="open"
-                                    x-transition
-                                    x-cloak
+                                <div x-show="open" x-transition x-cloak
                                     class="absolute top-[calc(100%+8px)] right-0 z-50 w-full bg-white dark:bg-boxdark rounded-xl border border-gray-100 dark:border-boxdark-2 shadow-xl overflow-hidden">
 
                                     <div class="p-2 border-b border-gray-50 dark:border-boxdark-2">
-                                        <input type="text"
-                                            x-model="search"
-                                            placeholder="ابحث عن الدولة أو الرمز..."
+                                        <input type="text" x-model="search" placeholder="ابحث عن الدولة أو الرمز..."
                                             class="px-4 py-2 w-full text-sm rounded-lg transition-colors outline-none bg-surface dark:bg-boxdark-2 dark:text-white focus:bg-white dark:focus:bg-boxdark">
                                     </div>
 
@@ -701,7 +683,8 @@
                                                     class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm shadow-sm shrink-0">
                                                 </span>
 
-                                                <span class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200"
+                                                <span
+                                                    class="flex-grow text-sm font-medium text-gray-700 truncate dark:text-gray-200"
                                                     x-text="country.name"></span>
 
                                                 <span class="font-mono text-xs font-bold text-gray-500 shrink-0 dir-ltr"
@@ -724,22 +707,20 @@
         </div>
 
         {{-- 3. Delete Confirmation Modal --}}
-        <div x-show="showDeleteModal"
-            x-cloak
-            x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 scale-95"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 scale-100"
+        <div x-show="showDeleteModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
 
             <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
                 @click="closeModals()"></div>
 
-            <div class="relative w-full max-w-md bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-8 text-center pointer-events-auto flex flex-col">
+            <div
+                class="relative w-full max-w-md bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-8 text-center pointer-events-auto flex flex-col">
 
-                <div class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-rose-50 dark:bg-rose-500/10 text-error rounded-[1.5rem] shadow-sm">
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-rose-50 dark:bg-rose-500/10 text-error rounded-[1.5rem] shadow-sm">
                     <span class="text-4xl material-symbols-outlined">delete_forever</span>
                 </div>
 
@@ -760,8 +741,7 @@
                     @csrf
                     @method('DELETE')
 
-                    <button type="button"
-                        @click="closeModals()"
+                    <button type="button" @click="closeModals()"
                         class="flex-1 h-12 text-sm font-bold text-gray-600 rounded-xl transition-all bg-surface dark:bg-boxdark-2 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-boxdark font-headline active:scale-95">
                         تراجع
                     </button>
@@ -784,6 +764,7 @@
                 showEditModal: false,
                 showDeleteModal: false,
                 searchQuery: '',
+                filterStatus: 'all', // تمت إضافة متغير الفلترة هنا
                 visibleCount: {{ $drivers->count() }},
 
                 editDriverData: {
@@ -792,7 +773,6 @@
                     phone: '',
                     url: ''
                 },
-
                 deleteDriverData: {
                     id: '',
                     name: '',
@@ -803,41 +783,52 @@
                     this.updateVisibility();
                 },
 
-                showRow(name, phone) {
-                    const query = this.searchQuery.toLowerCase().trim();
+                // تحديث الدالة لتستقبل الحالة (status)
+                showRow(name, phone, status) {
+                    // 1. فحص الفلتر (الكل / نشط / غير نشط)
+                    if (this.filterStatus !== 'all' && this.filterStatus !== status) {
+                        return false;
+                    }
 
+                    // 2. فحص شريط البحث
+                    const query = this.searchQuery.toLowerCase().trim();
                     if (!query) {
                         return true;
                     }
 
-                    return String(name || '').toLowerCase().includes(query)
-                        || String(phone || '').toLowerCase().includes(query);
+                    return String(name || '').toLowerCase().includes(query) ||
+                        String(phone || '').toLowerCase().includes(query);
                 },
 
                 updateVisibility() {
                     this.$nextTick(() => {
-                        this.visibleCount = document.querySelectorAll('.driver-row:not([style*="display: none"])').length;
+                        // ملاحظة: بما أن لديك عرض للموبايل وعرض للديسك توب، قد يكون العدد مضاعفاً،
+                        // لذلك نعد فقط العناصر المرئية فعلياً في الشاشة.
+                        const visibleRows = Array.from(document.querySelectorAll('.driver-row')).filter(el => {
+                            return el.style.display !== 'none' && el.offsetParent !== null;
+                        });
+                        this.visibleCount = visibleRows.length;
                     });
                 },
 
                 openEditModal(id, name, phone) {
+                    /* الكود كما هو */
                     this.editDriverData = {
                         id: id,
                         name: name,
                         phone: phone,
                         url: '{{ route('drivers.index') }}/' + id
                     };
-
                     this.showEditModal = true;
                 },
 
                 openDeleteModal(id, name) {
+                    /* الكود كما هو */
                     this.deleteDriverData = {
                         id: id,
                         name: name,
                         url: '{{ route('drivers.index') }}/' + id
                     };
-
                     this.showDeleteModal = true;
                 },
 

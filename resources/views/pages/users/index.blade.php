@@ -268,11 +268,11 @@
 
                                             <div class="inline-flex items-center gap-2 text-[11px] font-bold text-gray-500 dark:text-bodydark"
                                                 dir="ltr">
-                                                <span
+                                                {{-- <span
                                                     class="inline-flex overflow-hidden justify-center items-center w-5 h-4 rounded-sm ring-1 shadow-sm ring-black/5 shrink-0"
                                                     x-html="getFlagSvg(user.whatsapp_number)"></span>
                                                 <span class="font-mono tracking-wider"
-                                                    x-text="cleanPhone(user.whatsapp_number) || '-'"></span>
+                                                    x-text="cleanPhone(user.whatsapp_number) || '-'"></span> --}}
                                             </div>
                                         </div>
                                     </div>

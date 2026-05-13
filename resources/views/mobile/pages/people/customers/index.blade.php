@@ -199,7 +199,7 @@
                                 </a>
 
                                 {{-- مراسلة واتساب --}}
-                                <a href="https://wa.me/{{ ltrim($customer->phone, '+') }}" target="_blank"
+                                <a href="{{ route('whatsapp.customer.account.statement', $customer->id) }}" target="_blank"
                                     class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-600">
 
                                     {{-- أيقونة واتساب الرسمية باللون الأخضر --}}

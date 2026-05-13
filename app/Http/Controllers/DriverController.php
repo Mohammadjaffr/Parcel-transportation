@@ -13,27 +13,30 @@ use Illuminate\Support\Facades\Validator;
 class DriverController extends Controller
 {
     /* ========== 1- عرض جميع السائقين مع البحث والفلترة ========== */
-    public function index(Request $request)
-    {
-        $query = Driver::latest();
+  public function index(Request $request)
+{
+    // حساب الإجمالي فقط
+    $totalCount = Driver::count();
 
-        // تفعيل ميزة البحث بالاسم أو رقم الهاتف
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
-        }
+    $query = Driver::latest();
 
-        // استخدام withQueryString للحفاظ على كلمة البحث عند التنقل عبر الـ Pagination
-        $drivers = $query->paginate(10)->withQueryString();
-
-        if ($request->isMobile) {
-            return view('mobile.pages.people.drivers.index', compact('drivers'));
-        }
-
-        return view('pages.drivers.index', compact('drivers'));
+    // البحث بالاسم ورقم الهاتف
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%");
+        });
     }
 
+    $drivers = $query->paginate(10)->withQueryString();
+
+    if ($request->isMobile) {
+        return view('mobile.pages.people.drivers.index', compact('drivers', 'totalCount'));
+    }
+
+    return view('pages.drivers.index', compact('drivers', 'totalCount'));
+}
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
     {

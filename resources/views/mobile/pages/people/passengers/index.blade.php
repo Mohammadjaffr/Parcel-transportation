@@ -20,6 +20,10 @@
                         style="font-variation-settings: 'FILL' 1;">person_add</span>
                 </button>
             </a>
+                 <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'all']) }}" target="_blank"
+                        class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">print</span>
+                    </a>
         </div>
 
         <div class="px-4">

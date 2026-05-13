@@ -19,11 +19,18 @@
                     </p>
                 </div>
 
-                <button type="button" @click="openCreateModal()"
-                    class="inline-flex gap-2.5 items-center px-5 h-12 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95 shrink-0">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
-                    <span>إضافة راكب جديد</span>
-                </button>
+                <div class="flex gap-2 items-center shrink-0">
+                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'all']) }}" target="_blank"
+                        class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">print</span>
+                        <span>تقرير الركاب</span>
+                    </a>
+                    <button type="button" @click="openCreateModal()"
+                        class="inline-flex gap-2.5 items-center px-5 h-12 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">add</span>
+                        <span>إضافة راكب جديد</span>
+                    </button>
+                </div>
             </div>
         </div>
 

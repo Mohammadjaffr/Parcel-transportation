@@ -56,11 +56,11 @@
         },
     
         {{-- ========== Dynamic Items ========== --}}
-        items: @js(old('items', [['bond_number' => '', 'sender_name' => '', 'sender_phone' => '', 'receiver_name' => '', 'receiver_phone' => '', 'package_type' => 'carton', 'item_notes' => '', 'payment_status' => 'unpaid', 'amount' => '']])),
+        items: @js(old('items', [['bond_number' => '', 'sender_name' => '', 'sender_phone' => '', 'receiver_name' => '', 'receiver_phone' => '', 'package_type' => 'كرتون', 'item_notes' => '', 'payment_status' => 'unpaid', 'amount' => '']])),
         errorIndices: @js(collect($errors->keys())->map(fn($key) => preg_match('/^items\.(\d+)/', $key, $m) ? (int) $m[1] : null)->filter(fn($v) => !is_null($v))->unique()->values()),
     
         addItem() {
-            this.items.push({ bond_number: '', sender_name: '', sender_phone: '', receiver_name: '', receiver_phone: '', package_type: 'carton', item_notes: '', payment_status: 'unpaid', amount: '' });
+            this.items.push({ bond_number: '', sender_name: '', sender_phone: '', receiver_name: '', receiver_phone: '', package_type: 'كرتون', item_notes: '', payment_status: 'unpaid', amount: '' });
             this.activeItem = this.items.length - 1;
         },
         removeItem(index) {

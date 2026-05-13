@@ -36,11 +36,13 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-black text-slate-800 font-headline">{{ $user->name }}</h2>
-                    <p class="text-xs text-slate-500 font-mono font-bold mt-1 dir-ltr text-right">{{ $user->phone }}</p>
-                    
+                    <p class="text-xs text-slate-500 font-mono font-bold mt-1 dir-ltr text-right">
+                        <x-phone-number :value="$user->phone" /></p>
+
                     {{-- 💡 الصلاحية والفرع --}}
                     <div class="mt-2 flex flex-wrap gap-2">
-                        <span class="px-2 py-1 text-[10px] font-bold rounded-md {{ $user->type == 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }}">
+                        <span
+                            class="px-2 py-1 text-[10px] font-bold rounded-md {{ $user->type == 'admin' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700' }}">
                             {{ $user->type == 'admin' ? 'مدير نظام' : 'موظف فرع' }}
                         </span>
                         

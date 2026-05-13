@@ -61,9 +61,7 @@
                             <h1 class="text-2xl font-black text-gray-900 dark:text-white font-headline">
                                 الطرد #{{ $shipment->bond_number }}
                             </h1>
-                            <span class="px-2.5 py-1 text-[11px] font-black tracking-wider text-gray-500 uppercase bg-gray-50 rounded-lg border border-gray-200 dark:bg-boxdark dark:text-gray-400 dark:border-gray-700">
-                                Code: {{ $shipment->code ?? $shipment->id }}
-                            </span>
+                          
                             
                             {{-- استخدام الـ Component الخاص بحالة الشحنة الذي أنشأناه --}}
                             <x-shipment-status :status="$shipment->status" />
@@ -336,7 +334,7 @@
                                 {{ $paymentMethodText }}
                             </span>
                         </div>
-
+{{-- 
                         <div class="flex justify-between items-center py-4 border-b border-gray-100 dark:border-gray-800">
                             <span class="text-sm font-bold text-gray-500 dark:text-gray-400">حالة الدين</span>
                             @php
@@ -351,7 +349,7 @@
                             <span class="px-3 py-1.5 text-xs font-black rounded-lg {{ $debtStatus['bg'] }} {{ $debtStatus['text'] }}">
                                 {{ $debtStatus['label'] }}
                             </span>
-                        </div>
+                        </div> --}}
 
                         @if ($shipment->payment_method === 'partial_payment' && $paidAmount > 0)
                             <div class="flex justify-between items-center py-4">

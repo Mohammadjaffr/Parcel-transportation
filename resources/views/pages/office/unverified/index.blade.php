@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'المكاتب غير الموثوقة')
+@section('title', 'المكاتب الخارجية')
 
 @section('content')
 
@@ -11,7 +11,7 @@
             <div class="flex gap-4 justify-between items-start">
                 <div class="text-right">
                     <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
-                        المكاتب غير الموثوقة
+                        المكاتب الخارجية
                     </h1>
                     <p class="mt-1 text-sm font-bold text-gray-500 dark:text-bodydark">
                         إجمالي {{ $offices->total() ?? 0 }} مكتب
