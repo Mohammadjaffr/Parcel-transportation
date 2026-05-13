@@ -345,8 +345,10 @@
                 @click="showAddBranchModal = false"></div>
 
             <div x-show="showAddBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
                 class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
@@ -355,7 +357,8 @@
                 </div>
 
                 <!-- Close Button for Desktop -->
-                <button @click="showAddBranchModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                <button @click="showAddBranchModal = false"
+                    class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
@@ -417,11 +420,10 @@
 
                         <div
                             class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
-                            <input type="tel" required x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
-                              
-                                :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
+                            <input type="tel" required x-model="localPhone" placeholder="7XXXXXXXX"
+                                inputmode="numeric" :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
                                 @input="localPhone = localPhone.replace(/\D/g, '')"
-                                class="flex-1 px-2 py-3 pr-3 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                                class="flex-1 px-2 py-3  text-sm text-left bg-transparent border-0 font-headline  focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
@@ -431,7 +433,8 @@
                             <button type="button" @click="openCountry = !openCountry" dir="ltr"
                                 class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
                                 <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="selectedCountry.svg">
+                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover"
+                                        x-html="selectedCountry.svg">
                                     </div>
                                 </template>
                                 <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
@@ -452,10 +455,12 @@
                                     :key="country.code">
                                     <div @click="selectedCountry = country; openCountry = false; search = ''"
                                         class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="country.svg"></div>
+                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover"
+                                            x-html="country.svg"></div>
                                         <span class="flex-grow text-xs font-medium truncate text-slate-700"
                                             x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
+                                        <span
+                                            class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
                                             x-text="country.dial_code"></span>
                                     </div>
                                 </template>
@@ -507,8 +512,10 @@
                 @click="showEditCompanyModal = false"></div>
 
             <div x-show="showEditCompanyModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
                 class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
@@ -517,7 +524,8 @@
                 </div>
 
                 <!-- Close Button for Desktop -->
-                <button @click="showEditCompanyModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                <button @click="showEditCompanyModal = false"
+                    class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
@@ -549,16 +557,18 @@
                                 <div
                                     class="flex justify-center items-center w-12 h-12 transition-all rounded-xl bg-white shadow-sm text-slate-400 border border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
                                     <span class="material-symbols-outlined" x-show="!fileName">add_photo_alternate</span>
-                                    <span class="material-symbols-outlined text-emerald-500" x-show="fileName" x-cloak>check_circle</span>
+                                    <span class="material-symbols-outlined text-emerald-500" x-show="fileName"
+                                        x-cloak>check_circle</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold truncate transition-colors text-slate-700 font-headline group-hover:text-primary"
                                         x-show="!fileName">انقر لرفع الشعار الجديد</p>
-                                    <p class="text-sm font-bold truncate text-emerald-600 font-headline"
-                                        x-show="fileName" x-text="fileName" x-cloak></p>
+                                    <p class="text-sm font-bold truncate text-emerald-600 font-headline" x-show="fileName"
+                                        x-text="fileName" x-cloak></p>
                                     <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP</p>
                                 </div>
-                                <div class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                <div
+                                    class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
                                     <span class="text-[18px] material-symbols-outlined">upload</span>
                                 </div>
                             </div>
@@ -718,8 +728,10 @@
                 @click="showEditBranchModal = false"></div>
 
             <div x-show="showEditBranchModal" x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
                 class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
 
@@ -728,7 +740,8 @@
                 </div>
 
                 <!-- Close Button for Desktop -->
-                <button @click="showEditBranchModal = false" class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                <button @click="showEditBranchModal = false"
+                    class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
@@ -795,7 +808,7 @@
                         <div
                             class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
                             <input type="tel" x-model="localPhone" placeholder="7XXXXXXXX" inputmode="numeric"
-                                class="flex-1 px-4 py-3 pr-11 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
+                                class="flex-1 px-4 py-3 pr-10 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
@@ -805,7 +818,8 @@
                             <button type="button" @click="openCountry = !openCountry" dir="ltr"
                                 class="flex gap-2 items-center px-3 h-12 border-r transition-colors bg-slate-100 border-slate-200 hover:bg-slate-200 shrink-0">
                                 <template x-if="selectedCountry?.svg">
-                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="selectedCountry.svg">
+                                    <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover"
+                                        x-html="selectedCountry.svg">
                                     </div>
                                 </template>
                                 <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
@@ -826,10 +840,12 @@
                                     :key="country.code">
                                     <div @click="selectedCountry = country; openCountry = false; search = ''"
                                         class="flex gap-3 items-center p-3 px-4 transition-colors cursor-pointer hover:bg-primary/5">
-                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover" x-html="country.svg"></div>
+                                        <div class="overflow-hidden flex items-center justify-center w-6 h-4 rounded-sm shrink-0 [&>svg]:w-full [&>svg]:h-full object-cover"
+                                            x-html="country.svg"></div>
                                         <span class="flex-grow text-xs font-medium truncate text-slate-700"
                                             x-text="country.name"></span>
-                                        <span class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
+                                        <span
+                                            class="font-mono text-[10px] font-bold text-slate-500 whitespace-nowrap dir-ltr"
                                             x-text="country.dial_code"></span>
                                     </div>
                                 </template>

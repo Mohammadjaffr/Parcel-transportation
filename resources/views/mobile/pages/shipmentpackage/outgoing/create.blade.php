@@ -354,7 +354,7 @@
                 searchDriver() {
                     this.selectedDriverId = null;
                     this.nameInput = '';
-                    if (this.localPhoneNumber.length < 3) {
+                    if (this.localPhoneNumber.length === 0) {
                         this.filteredDrivers = [];
                         return;
                     }

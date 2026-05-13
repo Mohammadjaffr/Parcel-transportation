@@ -133,7 +133,7 @@
                                 class="flex justify-center items-center w-12 h-12 text-gray-600 bg-white rounded-xl border border-gray-200 transition-all hover:bg-gray-50 hover:text-primary dark:bg-boxdark-2 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-boxdark hover:shadow-sm active:scale-95">
                                 <span class="material-symbols-outlined text-[22px]">print</span>
                             </a>
-                            <a href="{{ route('receipt.generate', ['type' => 'thermal', 'id' => $shipment->uuid]) }}" target="_blank" title="طباعة بوليصة حرارية"
+                            <a href="{{ route('receipt.generate', ['type' => 'thermal', 'id' => $shipment->uuid]) }}" target="_blank" title="طباعة سند حرارية"
                                 class="flex justify-center items-center w-12 h-12 text-gray-600 bg-white rounded-xl border border-gray-200 transition-all hover:bg-gray-50 hover:text-primary dark:bg-boxdark-2 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-boxdark hover:shadow-sm active:scale-95">
                                 <span class="material-symbols-outlined text-[22px]">receipt_long</span>
                             </a>
@@ -143,12 +143,12 @@
                                     <span class="material-symbols-outlined text-[22px]">link_off</span>
                                 </button>
                             @endif
-                            @if (in_array($shipment->status, ['pending']))
+                            {{-- @if (in_array($shipment->status, ['pending']))
                                 <button @click="cancelModalOpen = true" title="إلغاء الطرد"
                                     class="flex justify-center items-center w-12 h-12 bg-white rounded-xl border border-gray-200 transition-all text-error-500 hover:bg-error-50 hover:border-error-200 dark:bg-boxdark-2 dark:border-gray-700 dark:hover:bg-error-500/10 hover:shadow-sm active:scale-95">
                                     <span class="material-symbols-outlined text-[22px]">cancel</span>
                                 </button>
-                            @endif
+                            @endif --}}
                         </div>
 
                         <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"

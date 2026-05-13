@@ -125,6 +125,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'sender_office'     => $shipment->senderBranch?->app?->name ?? $app?->name ?? 'الفرع الرئيسي', // 👈 إضافة ?-> لحماية $app->name
+            'sender_branch_phone'     => $shipment->senderBranch?->phone ?? '---',
             
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',

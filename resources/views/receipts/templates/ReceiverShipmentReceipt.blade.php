@@ -7,26 +7,35 @@
     
     <!-- Header -->
     <div class="bg-gradient-to-l from-teal-50/50 to-white p-6 sm:p-8 border-b border-slate-100">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
-            <div class="flex items-center gap-4">
-                @if(!empty($company['logo']))
-                <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 border border-slate-100">
-                    <img src="{{ $company['logo'] }}" alt="Logo" class="w-full h-full object-contain">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
+                <div class="flex items-center gap-4">
+                    @if (!empty($company['logo']))
+                        <div
+                            class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 border border-slate-100">
+                            <img src="{{ $company['logo'] }}" alt="Logo" class="w-full h-full object-contain">
+                        @else
+                            <div
+                                class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 border border-slate-100">
+                                <img src="{{ public_path('assets/image/icon_without_bg.png') }}" alt="Logo"
+                                    class="w-full h-full object-contain">
+                            </div>
+                    @endif
                 </div>
-                @else
-                <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center p-2 border border-slate-100">
-                    <img src="{{ public_path('assets/image/icon_without_bg.png') }}" alt="Logo" class="w-full h-full object-contain">
-                </div>
-                @endif
                 <div>
-                    <h1 class="text-xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                    <p class="text-slate-500 font-medium text-xs mt-1">{{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}</p>
-                    <p class="text-slate-500 font-bold text-xs mt-1" dir="ltr">{{ $bond_number ?? '---' }}</p>
+                    <h1 class="text-xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'شركة مرسال' }}
+                    </h1>
+                    <p class="text-slate-500 font-medium text-xs mt-1">
+                        {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}</p>
+                    <p class="text-slate-500 font-bold text-xs mt-1">رقم السند :{{ $bond_number ?? '---' }}</p>
+                    <p class="text-slate-500 font-medium text-xs mt-1">رقم الفرع :{{ $sender_branch_phone ?? '---' }}</p>
+
+
                 </div>
             </div>
-            <div class="text-right">
-                <div class="inline-flex items-center px-3 py-1.5 bg-teal-50 text-teal-700 rounded-xl font-bold text-xs border border-teal-100">
-                    {{ $title ?? 'سند تسليم طرد' }}
+            <div class="text-left">
+                <div
+                    class="inline-flex items-center px-3 py-1.5 bg-orange-50 text-orange-700 rounded-xl font-bold text-xs border border-orange-100">
+                    {{ $title ?? 'سند استلام طرد' }}
                 </div>
                 <div class="text-slate-400 text-xs font-medium mt-1.5" dir="ltr">{{ $date ?? date('Y-m-d H:i') }}</div>
             </div>
@@ -35,12 +44,7 @@
 
     <div class="p-6 sm:p-8 space-y-6">
         <!-- Bond Number Badge -->
-        <div class="flex items-center justify-center">
-            <div class="bg-slate-800 text-white px-6 py-3 rounded-2xl text-center">
-                <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">رقم السند</p>
-                <p class="text-2xl font-black tracking-widest" dir="ltr">{{ $bond_number ?? '---' }}</p>
-            </div>
-        </div>
+    
 
         <!-- Sender & Receiver -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,8 +173,22 @@
         </div>
     </div>
     
-    <div class="bg-slate-800 text-slate-400 p-4 text-center text-xs font-medium rounded-b-[2rem]">
-        تم الإنشاء إلكترونياً عبر نظام {{ $company['name'] ?? 'مرسال' }} | بواسطة: {{ $creator_name ?? 'مسؤول النظام' }}
+    <div class="bg-slate-800 p-4 text-center rounded-b-[2rem]">
+        {{-- بيانات الفاتورة --}}
+        <p class="text-xs font-medium text-slate-300">
+            تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
+            {{ $creator_name ?? 'مسؤول النظام' }} | الطباعة:
+            {{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}
+        </p>
+
+        {{-- الخط الفاصل التسويقي لشركة تيار --}}
+        <div class="mt-3 pt-3 border-t border-slate-700/50">
+            <p class="text-[10px] font-bold text-slate-500">
+                تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
+                <span class="mx-1">|</span>
+                لطلب النظام: <span dir="ltr" class="text-slate-400 font-mono">+967 780 261 952</span>
+            </p>
+        </div>
     </div>
 </div>
 @endsection

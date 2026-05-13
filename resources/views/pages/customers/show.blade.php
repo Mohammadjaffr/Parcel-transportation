@@ -26,90 +26,92 @@
         dir="rtl">
 
         {{-- ================= Modal: تسديد مديونية / صرف رصيد ================= --}}
-        <div x-show="showPaymentModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
-            <div
-                x-show="showPaymentModal"
-                x-transition.opacity
-                class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 dark:bg-black/60"
-                @click="showPaymentModal = false">
-            </div>
-
-            <div
-                x-show="showPaymentModal"
-                x-transition:enter="transition ease-out duration-300"
-                x-transition:enter-start="opacity-0 scale-90 translate-y-4"
-                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-200"
-                x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 scale-90 translate-y-4"
-                class="relative z-10 p-6 w-full max-w-sm bg-white rounded-[2rem] border border-slate-100 shadow-2xl dark:bg-boxdark dark:border-boxdark-2">
-
-                <div class="flex justify-between items-center mb-5">
-                    <h3 class="flex gap-2 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
-                        <span class="material-symbols-outlined {{ $balance < 0 ? 'text-primary' : 'text-emerald-500' }}">
-                            account_balance_wallet
-                        </span>
-                        {{ $balance < 0 ? 'تسديد مديونية' : 'صرف رصيد للعميل' }}
-                    </h3>
-
-                    <button type="button" @click="showPaymentModal = false" class="transition-colors text-slate-400 hover:text-rose-500">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+        <template x-teleport="body">
+            <div x-show="showPaymentModal" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" dir="rtl">
+                <div
+                    x-show="showPaymentModal"
+                    x-transition.opacity
+                    class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 dark:bg-black/60"
+                    @click="showPaymentModal = false">
                 </div>
 
-                <form action="{{ route('customers.addPayment', $customer->id) }}" method="POST">
-                    @csrf
-                    
-                    {{-- حقل مخفي يخبر الكنترولر بنوع العملية (سداد أم صرف) --}}
-                    <input type="hidden" name="transaction_action" value="{{ $balance < 0 ? 'pay_debt' : 'withdraw_balance' }}">
+                <div
+                    x-show="showPaymentModal"
+                    x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+                    class="relative z-10 p-6 w-full max-w-sm bg-white rounded-[2rem] border border-slate-100 shadow-2xl dark:bg-boxdark dark:border-boxdark-2">
 
-                    <div class="mb-4">
-                        <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
-                            {{ $balance < 0 ? 'المبلغ المراد سداده' : 'المبلغ المراد صرفه للعميل' }}
-                        </label>
-
-                        <div class="relative">
-                            <input
-                                type="number"
-                                name="amount"
-                                x-model="amountToPay"
-                                step="0.01"
-                                min="1"
-                                max="{{ abs($balance) }}"
-                                required
-                                class="px-4 py-3 pl-12 w-full text-lg font-black rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-800 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
-
-                            <span class="absolute left-4 top-1/2 text-sm font-bold -translate-y-1/2 text-slate-400">
-                                ريال
+                    <div class="flex justify-between items-center mb-5">
+                        <h3 class="flex gap-2 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
+                            <span class="material-symbols-outlined {{ $balance < 0 ? 'text-primary' : 'text-emerald-500' }}">
+                                account_balance_wallet
                             </span>
+                            {{ $balance < 0 ? 'تسديد مديونية' : 'صرف رصيد للعميل' }}
+                        </h3>
+
+                        <button type="button" @click="showPaymentModal = false" class="transition-colors text-slate-400 hover:text-rose-500">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    <form action="{{ route('customers.addPayment', $customer->id) }}" method="POST">
+                        @csrf
+                        
+                        {{-- حقل مخفي يخبر الكنترولر بنوع العملية (سداد أم صرف) --}}
+                        <input type="hidden" name="transaction_action" value="{{ $balance < 0 ? 'pay_debt' : 'withdraw_balance' }}">
+
+                        <div class="mb-4">
+                            <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
+                                {{ $balance < 0 ? 'المبلغ المراد سداده' : 'المبلغ المراد صرفه للعميل' }}
+                            </label>
+
+                            <div class="relative">
+                                <input
+                                    type="number"
+                                    name="amount"
+                                    x-model="amountToPay"
+                                    step="0.01"
+                                    min="1"
+                                    max="{{ abs($balance) }}"
+                                    required
+                                    class="px-4 py-3 pl-12 w-full text-lg font-black rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-800 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
+
+                                <span class="absolute left-4 top-1/2 text-sm font-bold -translate-y-1/2 text-slate-400">
+                                    ريال
+                                </span>
+                            </div>
+
+                            <p class="mt-1.5 text-[10px] text-slate-400">
+                                {{ $balance < 0 ? 'يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.' : 'يمكنك صرف الرصيد كاملاً أو سحب جزء منه.' }}
+                            </p>
                         </div>
 
-                        <p class="mt-1.5 text-[10px] text-slate-400">
-                            {{ $balance < 0 ? 'يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.' : 'يمكنك صرف الرصيد كاملاً أو سحب جزء منه.' }}
-                        </p>
-                    </div>
+                        <div class="mb-6">
+                            <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
+                                ملاحظات (اختياري)
+                            </label>
 
-                    <div class="mb-6">
-                        <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
-                            ملاحظات (اختياري)
-                        </label>
+                            <input
+                                type="text"
+                                name="notes"
+                                placeholder="مثال: تحويل بنكي، كاش للمندوب..."
+                                class="px-4 py-3 w-full text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-700 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
+                        </div>
 
-                        <input
-                            type="text"
-                            name="notes"
-                            placeholder="مثال: تحويل بنكي، كاش للمندوب..."
-                            class="px-4 py-3 w-full text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 dark:bg-boxdark-2 border-slate-200 dark:border-boxdark text-slate-700 dark:text-white focus:ring-2 {{ $balance < 0 ? 'focus:ring-primary/20' : 'focus:ring-emerald-500/20' }}">
-                    </div>
-
-                    <button
-                        type="submit"
-                        class="flex gap-2 justify-center items-center w-full py-3.5 text-sm font-black text-white rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] transition-all active:scale-95 {{ $balance < 0 ? 'bg-slate-800 dark:bg-primary dark:shadow-primary/30 hover:bg-slate-900 dark:hover:bg-primary-hover' : 'bg-emerald-600 hover:bg-emerald-700' }}">
-                        <span class="material-symbols-outlined text-[18px]">done_all</span>
-                        {{ $balance < 0 ? 'تأكيد السداد' : 'تأكيد الصرف' }}
-                    </button>
-                </form>
+                        <button
+                            type="submit"
+                            class="flex gap-2 justify-center items-center w-full py-3.5 text-sm font-black text-white rounded-xl shadow-[0_4px_12px_rgba(30,41,59,0.3)] transition-all active:scale-95 {{ $balance < 0 ? 'bg-slate-800 dark:bg-primary dark:shadow-primary/30 hover:bg-slate-900 dark:hover:bg-primary-hover' : 'bg-emerald-600 hover:bg-emerald-700' }}">
+                            <span class="material-symbols-outlined text-[18px]">done_all</span>
+                            {{ $balance < 0 ? 'تأكيد السداد' : 'تأكيد الصرف' }}
+                        </button>
+                    </form>
+                </div>
             </div>
-        </div>
+        </template>
 
         {{-- ================= Header ================= --}}
         <div class="sticky top-0 z-40 border-b border-gray-100 shadow-sm backdrop-blur-md bg-white/90 dark:bg-boxdark/90 dark:border-boxdark-2">
@@ -139,9 +141,10 @@
                     </div>
                 </div>
 
+                
                 <div class="flex gap-2 items-center">
                     {{-- زر مراسلة العميل واتساب --}}
-                    <a href="https://wa.me/{{ str_starts_with(ltrim($customer->phone, '+'), '7') ? '967' . ltrim($customer->phone, '+') : ltrim($customer->phone, '+') }}" target="_blank"
+                    <a href="{{ $customer->waUrl }}" target="_blank"
                         class="flex justify-center items-center w-10 h-10 text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 transition-transform active:scale-95 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 hover:shadow-md">
                         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
@@ -289,7 +292,8 @@
                 x-transition:enter-start="opacity-0 translate-y-2"
                 x-transition:enter-end="opacity-100 translate-y-0">
 
-                <div class="overflow-hidden bg-white border border-gray-100 shadow-sm dark:bg-boxdark rounded-[2rem] dark:border-boxdark-2">
+                {{-- تمت إزالة overflow-hidden للسماح للقائمة بالظهور بحرية --}}
+                <div class="bg-white border border-gray-100 shadow-sm dark:bg-boxdark rounded-[2rem] dark:border-boxdark-2 relative">
 
                     <div class="flex flex-col gap-3 justify-between p-5 border-b border-gray-100 md:flex-row md:items-center dark:border-boxdark-2">
                         <div>
@@ -298,13 +302,13 @@
                                 الحركات المالية الأخيرة
                             </h3>
                             <p class="mt-1 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                كشف مختصر لآخر الحركات المالية على حساب العميل
+                                كشف مختصر لآخر الحركات المالية على حساب العميل.
                             </p>
                         </div>
                     </div>
 
-                    {{-- Desktop Table --}}
-                    <div class="hidden overflow-x-auto md:block">
+                    {{-- Desktop Table: تمت إزالة overflow-x-auto لكي لا تقص القوائم --}}
+                    <div class="hidden md:block pb-4">
                         <table class="w-full text-right border-collapse">
                             <thead>
                                 <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
@@ -313,16 +317,27 @@
                                     <th class="px-5 py-4">نوع الحركة</th>
                                     <th class="px-5 py-4">البيان</th>
                                     <th class="px-5 py-4 text-left">المبلغ</th>
+                                    <th class="px-5 py-4 text-center">الإجراءات</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                                 @forelse($transactions as $trans)
-                                    <tr class="transition-colors hover:bg-gray-50/70 dark:hover:bg-boxdark-2/50">
+                                    @php
+                                        $waMessage = "مرحباً، نرفق لكم تفاصيل الحركة المالية:\n\n"
+                                            . "نوع الحركة: " . ($trans->type == 'credit' ? 'إيداع/لصالحك' : 'خصم/عليك') . "\n"
+                                            . "المبلغ: " . number_format($trans->amount, 2) . " ريال\n"
+                                            . "البيان: " . $trans->description . "\n"
+                                            . "التاريخ: " . $trans->created_at->format('Y-m-d h:i A');
+                                        $waUrl = "https://wa.me/?text=" . urlencode($waMessage);
+                                    @endphp
+                                    <tr x-data="{ showTransactionDetails: false }" class="transition-colors hover:bg-gray-50/70 dark:hover:bg-boxdark-2/50 group">
+                                        
                                         <td class="px-5 py-4">
                                             <span class="text-xs font-black text-gray-400">
                                                 {{ $loop->iteration }}
                                             </span>
                                         </td>
+                                        
                                         <td class="px-5 py-4">
                                             <div class="flex flex-col gap-1">
                                                 <span class="text-xs font-black text-gray-700 dark:text-gray-200">
@@ -333,6 +348,7 @@
                                                 </span>
                                             </div>
                                         </td>
+                                        
                                         <td class="px-5 py-4">
                                             @if($trans->type == 'credit')
                                                 <span class="inline-flex gap-1.5 items-center px-3 py-1.5 text-[10px] font-black rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
@@ -346,20 +362,102 @@
                                                 </span>
                                             @endif
                                         </td>
+                                        
                                         <td class="px-5 py-4">
-                                            <p class="max-w-[460px] text-xs font-bold leading-6 text-gray-600 dark:text-gray-300">
+                                            <p class="max-w-[360px] text-xs font-bold leading-6 text-gray-600 dark:text-gray-300 truncate" title="{{ $trans->description }}">
                                                 {{ $trans->description }}
                                             </p>
                                         </td>
+                                        
                                         <td class="px-5 py-4 text-left">
                                             <span class="text-sm font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                                 {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
                                             </span>
                                         </td>
+                                        
+                                        <td class="px-5 py-4 text-center">
+                                            {{-- Dropdown الإجراءات --}}
+                                            <div x-data="{ open: false }" @click.outside="open = false" class="relative inline-block text-right">
+                                                <button @click="open = !open" type="button" class="p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-boxdark-2 dark:hover:text-white">
+                                                    <span class="material-symbols-outlined text-[20px]">more_vert</span>
+                                                </button>
+                                                
+                                                {{-- تم توحيد الاتجاه للأسفل (top-full mt-1) دائماً، لأننا أزلنا القيود (overflow-hidden) --}}
+                                                <div x-show="open" 
+                                                     x-transition.opacity.duration.200ms
+                                                     style="display: none;"
+                                                     class="absolute left-0 top-full mt-1 w-44 bg-white dark:bg-boxdark-2 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-gray-100 dark:border-boxdark z-[99] py-1.5">
+                                                     
+                                                    <button @click="showTransactionDetails = true; open = false" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark transition-colors hover:text-primary">
+                                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                                        عرض التفاصيل
+                                                    </button>
+                                                    
+                                                    <a href="{{ $trans->waUrl ?? $waUrl }}" target="_blank" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-[#25D366]/10 hover:text-[#25D366] transition-colors">
+                                                        <i class="fa-brands fa-whatsapp text-[16px]"></i>
+                                                        إرسال واتساب
+                                                    </a>
+                                                    
+                                                    <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark hover:text-slate-900 dark:hover:text-white transition-colors">
+                                                        <span class="material-symbols-outlined text-[16px]">print</span>
+                                                        طباعة السند
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            {{-- Modal التفاصيل مع x-teleport لضمان ظهوره بشكل سليم فوق كامل الصفحة --}}
+                                            <template x-teleport="body">
+                                                <div x-show="showTransactionDetails" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" dir="rtl" @click.stop>
+                                                    <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-black/60" @click="showTransactionDetails = false"></div>
+                                                    
+                                                    <div x-show="showTransactionDetails" 
+                                                         x-transition:enter="transition ease-out duration-300"
+                                                         x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                                                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                                         x-transition:leave="transition ease-in duration-200"
+                                                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                                         x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+                                                         class="bg-white dark:bg-boxdark w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-[101] border border-slate-100 dark:border-boxdark-2 text-right">
+                                                        
+                                                        <button @click="showTransactionDetails = false" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+                                                            <span class="material-symbols-outlined text-[18px]">close</span>
+                                                        </button>
+                                                        
+                                                        <div class="text-center mb-6 mt-2">
+                                                            <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
+                                                                <span class="material-symbols-outlined text-[28px]">
+                                                                    {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
+                                                                </span>
+                                                            </div>
+                                                            <h3 class="text-lg font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                                                {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }} <span class="text-sm">ريال</span>
+                                                            </h3>
+                                                            <p class="text-[10px] font-bold text-slate-400 mt-1">{{ $trans->created_at->format('Y-m-d - h:i A') }}</p>
+                                                        </div>
+                                                        
+                                                        <div class="bg-slate-50 dark:bg-boxdark-2 rounded-xl p-4 mb-6 text-right">
+                                                            <p class="text-[10px] font-bold text-slate-400 mb-1">البيان (التفاصيل الكاملة):</p>
+                                                            <p class="text-sm font-bold text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ $trans->description }}</p>
+                                                        </div>
+                                                        
+                                                        <div class="grid grid-cols-2 gap-3">
+                                                            <a href="{{ $trans->waUrl ?? $waUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-[#25D366] text-white rounded-xl text-xs font-black shadow-sm hover:bg-[#20bd5a] active:scale-95 transition-all">
+                                                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                                                                إرسال واتساب
+                                                            </a>
+                                                            <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 dark:bg-primary text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95 transition-all">
+                                                                <span class="material-symbols-outlined text-[16px]">print</span>
+                                                                طباعة السند
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="py-20 text-center">
+                                        <td colspan="6" class="py-20 text-center">
                                             <div class="flex flex-col justify-center items-center">
                                                 <div class="flex justify-center items-center mb-4 w-16 h-16 bg-gray-50 rounded-2xl dark:bg-boxdark-2">
                                                     <span class="material-symbols-outlined text-[32px] text-gray-300 dark:text-gray-600">receipt_long</span>
@@ -378,32 +476,92 @@
                     {{-- Mobile Cards --}}
                     <div class="flex flex-col gap-3 p-4 md:hidden">
                         @forelse($transactions as $trans)
-                            <div class="p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
-                                <div class="flex gap-3 justify-between items-start">
-                                    <div class="flex gap-3 items-start min-w-0">
-                                        <div class="flex justify-center items-center w-11 h-11 rounded-xl shrink-0 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
-                                            <span class="material-symbols-outlined text-[22px]">
-                                                {{ $trans->type == 'credit' ? 'south_west' : 'north_east' }}
-                                            </span>
+                            @php
+                                $waMessage = "مرحباً، نرفق لكم تفاصيل الحركة المالية:\n\n"
+                                    . "نوع الحركة: " . ($trans->type == 'credit' ? 'إيداع/لصالحك' : 'خصم/عليك') . "\n"
+                                    . "المبلغ: " . number_format($trans->amount, 2) . " ريال\n"
+                                    . "البيان: " . $trans->description . "\n"
+                                    . "التاريخ: " . $trans->created_at->format('Y-m-d h:i A');
+                                $waUrl = "https://wa.me/?text=" . urlencode($waMessage);
+                            @endphp
+                            
+                            <div x-data="{ showTransactionDetails: false }">
+                                <div @click="showTransactionDetails = true" class="p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark cursor-pointer active:scale-[0.98] transition-transform">
+                                    <div class="flex gap-3 justify-between items-start">
+                                        <div class="flex gap-3 items-start min-w-0">
+                                            <div class="flex justify-center items-center w-11 h-11 rounded-xl shrink-0 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
+                                                <span class="material-symbols-outlined text-[22px]">
+                                                    {{ $trans->type == 'credit' ? 'south_west' : 'north_east' }}
+                                                </span>
+                                            </div>
+
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-black text-gray-800 dark:text-white">
+                                                    {{ $trans->type == 'credit' ? 'تحصيل / سداد' : 'مديونية / رسوم' }}
+                                                </p>
+                                                <p class="mt-1 text-[11px] font-bold leading-5 text-gray-500 dark:text-bodydark truncate">
+                                                    {{ $trans->description }}
+                                                </p>
+                                                <p class="mt-2 text-[10px] font-bold text-gray-400">
+                                                    {{ $trans->created_at->format('Y-m-d h:i A') }}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div class="min-w-0">
-                                            <p class="text-xs font-black text-gray-800 dark:text-white">
-                                                {{ $trans->type == 'credit' ? 'تحصيل / سداد' : 'مديونية / رسوم' }}
-                                            </p>
-                                            <p class="mt-1 text-[11px] font-bold leading-5 text-gray-500 dark:text-bodydark">
-                                                {{ $trans->description }}
-                                            </p>
-                                            <p class="mt-2 text-[10px] font-bold text-gray-400">
-                                                {{ $trans->created_at->format('Y-m-d h:i A') }}
-                                            </p>
+                                        <span class="text-sm font-black shrink-0 {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                            {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- Modal التفاصيل للموبايل --}}
+                                <template x-teleport="body">
+                                    <div x-show="showTransactionDetails" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" dir="rtl" @click.stop>
+                                        <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-black/60" @click="showTransactionDetails = false"></div>
+                                        
+                                        <div x-show="showTransactionDetails" 
+                                             x-transition:enter="transition ease-out duration-300"
+                                             x-transition:enter-start="opacity-0 scale-90 translate-y-4"
+                                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                             x-transition:leave="transition ease-in duration-200"
+                                             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 scale-90 translate-y-4"
+                                             class="bg-white dark:bg-boxdark w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10 border border-slate-100 dark:border-boxdark-2 text-right">
+                                            
+                                            <button @click="showTransactionDetails = false" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+                                                <span class="material-symbols-outlined text-[18px]">close</span>
+                                            </button>
+                                            
+                                            <div class="text-center mb-6 mt-2">
+                                                <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
+                                                    <span class="material-symbols-outlined text-[28px]">
+                                                        {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
+                                                    </span>
+                                                </div>
+                                                <h3 class="text-lg font-black font-headline {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                                                    {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }} <span class="text-sm">ريال</span>
+                                                </h3>
+                                                <p class="text-[10px] font-bold text-slate-400 mt-1">{{ $trans->created_at->format('Y-m-d - h:i A') }}</p>
+                                            </div>
+                                            
+                                            <div class="bg-slate-50 dark:bg-boxdark-2 rounded-xl p-4 mb-6">
+                                                <p class="text-[10px] font-bold text-slate-400 mb-1">البيان (التفاصيل الكاملة):</p>
+                                                <p class="text-sm font-bold text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ $trans->description }}</p>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <a href="{{ $trans->waUrl ?? $waUrl }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-[#25D366] text-white rounded-xl text-xs font-black shadow-sm hover:bg-[#20bd5a] active:scale-95 transition-all">
+                                                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                                                    إرسال واتساب
+                                                </a>
+                                                <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 dark:bg-primary text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95 transition-all">
+                                                    <span class="material-symbols-outlined text-[16px]">print</span>
+                                                    طباعة السند
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <span class="text-sm font-black shrink-0 {{ $trans->type == 'credit' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                                        {{ $trans->type == 'credit' ? '+' : '-' }}{{ number_format($trans->amount, 2) }}
-                                    </span>
-                                </div>
+                                </template>
                             </div>
                         @empty
                             <div class="flex flex-col justify-center items-center py-12 text-center bg-white rounded-[2rem] border-2 border-gray-100 border-dashed dark:bg-boxdark dark:border-boxdark-2">
@@ -477,9 +635,9 @@
                 </div>
 
                 {{-- Shipments List --}}
-                <div class="overflow-hidden bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+                <div class="bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
 
-                    <div class="hidden overflow-x-auto p-5 md:block">
+                    <div class="hidden p-5 md:block">
                         <table class="w-full text-right border-collapse">
                             <thead>
                                 <tr class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] bg-surface dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark">

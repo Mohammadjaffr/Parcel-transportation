@@ -54,12 +54,13 @@ class BranchController extends Controller
         ],
         'city'     => 'required|string|max:100',
         'phone'    => 'nullable|string|max:20',
-        'address'  => 'nullable|string|max:255',
+        'address'  => 'required|string|max:255',
         'map_link' => 'nullable|url|max:500',
         'is_main'  => 'nullable|boolean',
     ], [
         'code.unique' => 'كود الفرع هذا مستخدم مسبقاً في شركتك، يرجى اختيار كود آخر.',
         'map_link.url' => 'صيغة رابط خريطة جوجل غير صحيحة.',
+        'address.required' => 'العنوان مطلوب.',
     ]);
 
     try {

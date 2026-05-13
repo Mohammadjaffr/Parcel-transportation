@@ -166,10 +166,16 @@
     @endif
 
     {{-- زر الطباعة --}}
-    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->id]) }}"
+    <a href="{{ route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid]) }}" target="_blank"
         class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
         <span class="material-symbols-outlined text-[18px]">print</span>
         طباعة
+    </a>
+        <a href="{{ route('receipt.generate', ['type' => 'thermal', 'id' => $shipment->uuid]) }}" target="_blank" title="طباعة سند حرارية"
+        class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold bg-white rounded-2xl border shadow-sm transition-all text-slate-600 border-slate-100 hover:bg-slate-50 active:scale-95">
+                                    <span class="material-symbols-outlined text-[22px]">receipt_long</span>
+
+        سند 
     </a>
 </div>
         {{-- ================= بطاقة المسار (من -> إلى) ================= --}}
@@ -233,7 +239,7 @@
                             @if($shipment->senderCustomer?->phone)
                                 <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للمرسل --}}
-                                    <a href="https://wa.me/{{ ltrim($shipment->senderCustomer->phone, '+') }}?text={{ urlencode($senderMsg) }}"
+                                    <a href="{{ $shipment->sender_whatsapp_link }}"
                                         target="_blank"
                                         class="w-10 h-10 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center hover:bg-[#25D366]/10 hover:border-[#25D366]/30 active:scale-95 transition-all group">
                                         <svg class="w-5 h-5 fill-[#25D366]" viewBox="0 0 24 24"
@@ -272,7 +278,7 @@
                             @if($shipment->receiverCustomer?->phone)
                                 <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للمستلم --}}
-                                    <a href="https://wa.me/{{ ltrim($shipment->receiverCustomer->phone, '+') }}?text={{ urlencode($receiverMsg) }}"
+                                    <a href="{{ $shipment->receiver_whatsapp_link }}"
                                         target="_blank"
                                         class="w-10 h-10 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center hover:bg-[#25D366]/10 hover:border-[#25D366]/30 active:scale-95 transition-all">
                                         <svg class="w-5 h-5 fill-[#25D366]" viewBox="0 0 24 24"

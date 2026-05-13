@@ -24,13 +24,13 @@ class AppController extends Controller
             ->when($search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
-                      ->orWhereHas('branches', function ($bQ) use ($search) {
-                          $bQ->withoutGlobalScope('app_id')
-                             ->where('name', 'like', "%{$search}%")
-                             ->orWhere('phone', 'like', "%{$search}%")
-                             ->orWhere('city', 'like', "%{$search}%")
-                             ->orWhere('address', 'like', "%{$search}%");
-                      });
+                        ->orWhereHas('branches', function ($bQ) use ($search) {
+                            $bQ->withoutGlobalScope('app_id')
+                                ->where('name', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%")
+                                ->orWhere('city', 'like', "%{$search}%")
+                                ->orWhere('address', 'like', "%{$search}%");
+                        });
                 });
             })
             ->latest()
@@ -51,39 +51,39 @@ class AppController extends Controller
         return view('pages.office.verified.index', compact('offices'));
     }
     public function settings(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    // جلب بيانات الشركة مع الفروع والاشتراك الحالي وتفاصيل الباقة
-    $company = $user->App()
-        ->with(['branches', 'currentSubscription.package']) 
-        ->withCount(['branches', 'users','drivers'])
-        ->first();
+        // جلب بيانات الشركة مع الفروع والاشتراك الحالي وتفاصيل الباقة
+        $company = $user->App()
+            ->with(['branches', 'currentSubscription.package'])
+            ->withCount(['branches', 'users', 'drivers'])
+            ->first();
 
-    $subscription = $company->currentSubscription;
-    $remainingDays = 0;
-    $shipmentsCount = 0;
-    $packagesCount = 0;
+        $subscription = $company->currentSubscription;
+        $remainingDays = 0;
+        $shipmentsCount = 0;
+        $packagesCount = 0;
 
-    if ($subscription) {
-        $remainingDays = (int) ceil(now()->diffInDays($subscription->ends_at, false));
-        $remainingDays = $remainingDays < 0 ? 0 : $remainingDays;
-        $shipmentsCount = $company->shipments()
-            ->whereBetween('shipments.created_at', [$subscription->starts_at, $subscription->ends_at])
-            ->count();
-        $packagesCount = $company->shipmentPackages()
-            ->whereBetween('shipment_packages.created_at', [$subscription->starts_at, $subscription->ends_at])
-            ->count();
+        if ($subscription) {
+            $remainingDays = (int) ceil(now()->diffInDays($subscription->ends_at, false));
+            $remainingDays = $remainingDays < 0 ? 0 : $remainingDays;
+            $shipmentsCount = $company->shipments()
+                ->whereBetween('shipments.created_at', [$subscription->starts_at, $subscription->ends_at])
+                ->count();
+            $packagesCount = $company->shipmentPackages()
+                ->whereBetween('shipment_packages.created_at', [$subscription->starts_at, $subscription->ends_at])
+                ->count();
+        }
+
+        // إرجاع الواجهة مع الاحتفاظ بـ compact بالشكل المعتاد
+        if ($request->isMobile) {
+            return view('mobile.pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
+        }
+
+        // صفحة الديسكتوب
+        return view('pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
     }
-
-    // إرجاع الواجهة مع الاحتفاظ بـ compact بالشكل المعتاد
-    if ($request->isMobile) {
-        return view('mobile.pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
-    }
-    
-    // صفحة الديسكتوب
-    return view('pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
-}
 
     public function update(Request $request)
     {
@@ -94,6 +94,7 @@ class AppController extends Controller
             'email' => 'nullable|email|max:255',
             'color' => ['nullable', 'string', 'regex:/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$/i'],
             'logo'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
+            
             'terms_and_conditions'   => 'nullable|array',
             'terms_and_conditions.*' => 'nullable|string|max:500',
         ]);
@@ -125,13 +126,13 @@ class AppController extends Controller
             Cache::forget('app_name_' . auth()->user()->app_id);
             Cache::forget('app_terms_' . auth()->user()->app_id);
 
-           
-        return WebResponseClass::sendResponse(
-            'تم التحديث!',
-            'تم تحديث بيانات الشركة بنجاح.',
-            'حسناً',
-            'app.settings'
-        );
+
+            return WebResponseClass::sendResponse(
+                'تم التحديث!',
+                'تم تحديث بيانات الشركة بنجاح.',
+                'حسناً',
+                'app.settings'
+            );
         } catch (\Exception $e) {
             return back()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
         }

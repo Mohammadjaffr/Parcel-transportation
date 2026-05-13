@@ -60,13 +60,28 @@
         <div class="border-t border-dashed border-slate-200"></div>
 
         <!-- Receiver -->
+       <!-- Receiver -->
         <div class="text-sm">
             <p class="text-[10px] text-slate-400 font-bold uppercase mb-1">المستلم</p>
             <div class="flex justify-between">
                 <span class="font-bold text-slate-800">{{ $receiver_name ?? '---' }}</span>
                 <span class="text-slate-500" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
             </div>
-            <p class="text-xs text-slate-400">{{ $receiver_branch ?? '' }}</p>
+            
+            <div class="mt-1 space-y-0.5">
+                @if(!empty($receiver_office))
+                    <p class="text-xs text-slate-500">المكتب: <span class="font-bold text-slate-700">{{ $receiver_office }}</span></p>
+                @endif
+              
+                
+                @if(!empty($receiver_branch))
+                    <p class="text-xs text-slate-500">الفرع: <span class="font-bold text-slate-700">{{ $receiver_branch }}</span></p>
+                @endif
+
+                @if(empty($receiver_office) && empty($receiver_branch))
+                    <p class="text-xs text-slate-400">الوجهة غير محددة</p>
+                @endif
+            </div>
         </div>
 
         <div class="border-t border-dashed border-slate-200"></div>
@@ -125,9 +140,18 @@
     </div>
     
     <!-- Footer -->
-    <div class="text-center p-3 border-t border-dashed border-slate-300">
-        <p class="text-[10px] text-slate-400">شكراً لتعاملكم مع {{ $company['name'] ?? 'مرسال' }}</p>
-        <p class="text-[9px] text-slate-300 mt-0.5">{{ $creator_name ?? '' }}</p>
+   <div class="bg-slate-800 p-1 text-center rounded-b-[2rem]">
+        {{-- بيانات الفاتورة --}}
+     
+
+        {{-- الخط الفاصل التسويقي لشركة تيار --}}
+        <div class="mt-1 p-1 border-slate-700/50">
+            <p class="text-[10px] font-bold text-slate-500">
+                تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
+                <span class="mx-1">|</span>
+                لطلب النظام: <span dir="ltr" class="text-slate-400 font-mono">+967 780 261 952</span>
+            </p>
+        </div>
     </div>
 </div>
 @endsection

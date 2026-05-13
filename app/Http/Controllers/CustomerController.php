@@ -20,65 +20,65 @@ class CustomerController extends Controller
 
     // معتمد
     public function index(Request $request)
-{
-    $user = auth()->user();
-    
-    // 💡 1. استقبال الفلتر من الرابط (الافتراضي هو 'all')
-    $filter = $request->query('filter', 'all');
+    {
+        $user = auth()->user();
 
-    // ========================================================
-    // 📊 جلب العملاء مع الإحصائيات (N+1 Query Optimization)
-    // ========================================================
-    $query = Customer::with(['branch', 'creator'])
-        // 1. كم شحنة أرسلها؟ (ينشئ متغير: sent_shipments_count)
-        ->withCount('sentShipments')
-        
-        // 2. كم له؟ رصيد (ينشئ متغير: sum_credit)
-        ->withSum(['transactions as sum_credit' => function ($q) {
-            $q->where('type', 'credit');
-        }], 'amount')
-        
-        // 3. كم عليه؟ ديون (ينشئ متغير: sum_debit)
-        ->withSum(['transactions as sum_debit' => function ($q) {
-            $q->where('type', 'debit');
-        }], 'amount')
-        
-        // 4. الفلاتر الأساسية
-        ->where('branch_id', $user->branch_id)
-        ->where('app_id', $user->app_id);
+        // 💡 1. استقبال الفلتر من الرابط (الافتراضي هو 'all')
+        $filter = $request->query('filter', 'all');
 
-    // ========================================================
-    // 💰 فلترة المديونيات (بناءً على الأزرار)
-    // ========================================================
-    if ($filter === 'debtors') {
-        // عليهم ديون: (الموجب - السالب) يجب أن يكون أقل من صفر
-        $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) < 0');
-    } elseif ($filter === 'creditors') {
-        // حسابات مصفرة أو لهم رصيد: (الموجب - السالب) يجب أن يكون صفر أو أكبر
-        $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) >= 0');
+        // ========================================================
+        // 📊 جلب العملاء مع الإحصائيات (N+1 Query Optimization)
+        // ========================================================
+        $query = Customer::with(['branch', 'creator'])
+            // 1. كم شحنة أرسلها؟ (ينشئ متغير: sent_shipments_count)
+            ->withCount('sentShipments')
+
+            // 2. كم له؟ رصيد (ينشئ متغير: sum_credit)
+            ->withSum(['transactions as sum_credit' => function ($q) {
+                $q->where('type', 'credit');
+            }], 'amount')
+
+            // 3. كم عليه؟ ديون (ينشئ متغير: sum_debit)
+            ->withSum(['transactions as sum_debit' => function ($q) {
+                $q->where('type', 'debit');
+            }], 'amount')
+
+            // 4. الفلاتر الأساسية
+            ->where('branch_id', $user->branch_id)
+            ->where('app_id', $user->app_id);
+
+        // ========================================================
+        // 💰 فلترة المديونيات (بناءً على الأزرار)
+        // ========================================================
+        if ($filter === 'debtors') {
+            // عليهم ديون: (الموجب - السالب) يجب أن يكون أقل من صفر
+            $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) < 0');
+        } elseif ($filter === 'creditors') {
+            // حسابات مصفرة أو لهم رصيد: (الموجب - السالب) يجب أن يكون صفر أو أكبر
+            $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) >= 0');
+        }
+
+        // ========================================================
+        // 🔍 البحث
+        // ========================================================
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%")
+                    ->orWhere('whatsapp_number', 'like', "%{$search}%");
+            });
+        }
+
+        $customers = $query->latest()->paginate(10)->withQueryString();
+
+        // 💡 2. تمرير متغير $filter للفيو لكي تتلون الأزرار بشكل صحيح
+        if ($request->isMobile) {
+            return view('mobile.pages.people.customers.index', compact('customers', 'filter'));
+        }
+
+        return view('pages.customers.index', compact('customers', 'filter'));
     }
-
-    // ========================================================
-    // 🔍 البحث
-    // ========================================================
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-                ->orWhere('phone', 'like', "%{$search}%")
-                ->orWhere('whatsapp_number', 'like', "%{$search}%");
-        });
-    }
-
-    $customers = $query->latest()->paginate(10)->withQueryString();
-
-    // 💡 2. تمرير متغير $filter للفيو لكي تتلون الأزرار بشكل صحيح
-    if ($request->isMobile) {
-        return view('mobile.pages.people.customers.index', compact('customers', 'filter'));
-    }
-
-    return view('pages.customers.index', compact('customers', 'filter'));
-}
     public function create()
     {
         return view('pages.customers.create-customer-modal');
@@ -139,100 +139,102 @@ class CustomerController extends Controller
     }
     /** معتمد */
     public function show(Request $request, $id)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    // ==========================================
-    // 1. جلب العميل مع مجاميع أرصدته (من دفتر الأستاذ) 💰
-    // ==========================================
-    $customer = Customer::where('branch_id', $user->branch_id)
-        // كم له؟ (متحصلات ورصيد)
-        ->withSum(['transactions as sum_credit' => function ($q) {
-            $q->where('type', 'credit');
-        }], 'amount')
-        // كم عليه؟ (ديون رسوم الشحن)
-        ->withSum(['transactions as sum_debit' => function ($q) {
-            $q->where('type', 'debit');
-        }], 'amount')
-        ->findOrFail($id);
+        // ==========================================
+        // 1. جلب العميل مع مجاميع أرصدته (من دفتر الأستاذ) 💰
+        // ==========================================
+        $customer = Customer::where('branch_id', $user->branch_id)
+            // كم له؟ (متحصلات ورصيد)
+            ->withSum(['transactions as sum_credit' => function ($q) {
+                $q->where('type', 'credit');
+            }], 'amount')
+            // كم عليه؟ (ديون رسوم الشحن)
+            ->withSum(['transactions as sum_debit' => function ($q) {
+                $q->where('type', 'debit');
+            }], 'amount')
+            ->findOrFail($id);
+        $customer->waUrl = WhatsAppLinkService::generate($customer, 'CustomerAccountStatement');
+        $customer->printUrl = route('receipt.generate', ['type' => 'CustomerAccountStatement', 'id' => $customer->id]);
 
-    // ==========================================
-    // 2. جلب كشف الحساب التفصيلي (كل الحركات المالية) 🧾
-    // ==========================================
-    $transactions = CustomerTransaction::with('shipment')
-        ->where('customer_id', $id)
-        ->latest() // الترتيب بالوقت الأحدث
-        ->orderBy('id', 'desc') // 💡 كاسر التعادل: الترتيب بالـ ID الأكبر في حال تشابه الوقت
-        ->paginate(10, ['*'], 'trans_page') 
-        ->withQueryString();
-    $transactions->through(function ($trans) {
-        // تجهيز رابط الواتساب من السيرفيس
-        $trans->waUrl = WhatsAppLinkService::generate($trans, 'transaction');
-        
-        // تجهيز رابط الطباعة
-        $trans->printUrl = route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]);
-        
-        return $trans;
-    });
+        // ==========================================
+        // 2. جلب كشف الحساب التفصيلي (كل الحركات المالية) 🧾
+        // ==========================================
+        $transactions = CustomerTransaction::with('shipment')
+            ->where('customer_id', $id)
+            ->latest() // الترتيب بالوقت الأحدث
+            ->orderBy('id', 'desc') // 💡 كاسر التعادل: الترتيب بالـ ID الأكبر في حال تشابه الوقت
+            ->paginate(10, ['*'], 'trans_page')
+            ->withQueryString();
+        $transactions->getCollection()->transform(function ($trans) {
+            // تجهيز رابط الواتساب من السيرفيس
+            $trans->waUrl = WhatsAppLinkService::generate($trans, 'transaction');
 
-    // ==========================================
-    // 3. سجل الشحنات (History) مع الفلترة 📦
-    // ==========================================
-    $branchCode = $user->branch_id;
-    $direction = $request->query('direction', 'all'); // استقبال الفلتر من الرابط
+            // تجهيز رابط الطباعة
+            $trans->printUrl = route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]);
 
-    $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
-        ->where(function ($query) use ($branchCode, $id) {
-            // فرعنا هو المرسل والعميل هو المرسل
-            $query->where(function ($q) use ($branchCode, $id) {
-                $q->where('sender_branch_id', $branchCode)
-                    ->where('sender_customer_id', $id);
-            })
-            // أو فرعنا هو المستقبل والعميل هو المستقبل
-            ->orWhere(function ($q) use ($branchCode, $id) {
-                $q->where('receiver_branch_id', $branchCode)
-                    ->where('receiver_customer_id', $id);
+            return $trans;
+        });
+
+        // ==========================================
+        // 3. سجل الشحنات (History) مع الفلترة 📦
+        // ==========================================
+        $branchCode = $user->branch_id;
+        $direction = $request->query('direction', 'all'); // استقبال الفلتر من الرابط
+
+        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
+            ->where(function ($query) use ($branchCode, $id) {
+                // فرعنا هو المرسل والعميل هو المرسل
+                $query->where(function ($q) use ($branchCode, $id) {
+                    $q->where('sender_branch_id', $branchCode)
+                        ->where('sender_customer_id', $id);
+                })
+                    // أو فرعنا هو المستقبل والعميل هو المستقبل
+                    ->orWhere(function ($q) use ($branchCode, $id) {
+                        $q->where('receiver_branch_id', $branchCode)
+                            ->where('receiver_customer_id', $id);
+                    });
             });
-        });
 
-    // تطبيق فلتر (صادرة / واردة)
-    if ($direction == 'sent') {
-        $shipmentsQuery->where('sender_customer_id', $id);
-    } elseif ($direction == 'received') {
-        $shipmentsQuery->where('receiver_customer_id', $id);
-    } else {
-        $shipmentsQuery->where(function ($q) use ($id) {
-            $q->where('sender_customer_id', $id)
-                ->orWhere('receiver_customer_id', $id);
-        });
-    }
+        // تطبيق فلتر (صادرة / واردة)
+        if ($direction == 'sent') {
+            $shipmentsQuery->where('sender_customer_id', $id);
+        } elseif ($direction == 'received') {
+            $shipmentsQuery->where('receiver_customer_id', $id);
+        } else {
+            $shipmentsQuery->where(function ($q) use ($id) {
+                $q->where('sender_customer_id', $id)
+                    ->orWhere('receiver_customer_id', $id);
+            });
+        }
 
-    // فلتر طريقة الدفع (إن وجد)
-    if ($request->has('payment_method') && $request->payment_method != 'all') {
-        $shipmentsQuery->where('payment_method', $request->payment_method);
-    }
+        // فلتر طريقة الدفع (إن وجد)
+        if ($request->has('payment_method') && $request->payment_method != 'all') {
+            $shipmentsQuery->where('payment_method', $request->payment_method);
+        }
 
-    $shipments = $shipmentsQuery->latest()->paginate(10, ['*'], 'ship_page')->withQueryString();
+        $shipments = $shipmentsQuery->latest()->paginate(10, ['*'], 'ship_page')->withQueryString();
 
-    // ==========================================
-    // 4. إرسال البيانات للواجهة
-    // ==========================================
-    if ($request->isMobile) {
-        return view('mobile.pages.people.customers.show', compact(
+        // ==========================================
+        // 4. إرسال البيانات للواجهة
+        // ==========================================
+        if ($request->isMobile) {
+            return view('mobile.pages.people.customers.show', compact(
+                'customer',
+                'transactions', // 💡 أضفنا الحركات المالية هنا
+                'shipments',
+                'direction'
+            ));
+        }
+
+        return view('pages.customers.show', compact(
             'customer',
-            'transactions', // 💡 أضفنا الحركات المالية هنا
+            'transactions', // 💡 وهنا أيضاً
             'shipments',
             'direction'
         ));
     }
-
-    return view('pages.customers.show', compact(
-        'customer',
-        'transactions', // 💡 وهنا أيضاً
-        'shipments',
-        'direction'
-    ));
-}
 
     /** صفحة تعديل */
     public function edit($id)
@@ -359,8 +361,8 @@ class CustomerController extends Controller
 
             // 2. جلب العميل وحساب الرصيد الصافي
             $customer = Customer::withSum(['transactions as sum_credit' => function ($q) {
-                    $q->where('type', 'credit');
-                }], 'amount')
+                $q->where('type', 'credit');
+            }], 'amount')
                 ->withSum(['transactions as sum_debit' => function ($q) {
                     $q->where('type', 'debit');
                 }], 'amount')
@@ -376,7 +378,7 @@ class CustomerController extends Controller
             // 3. التفريع المنطقي بناءً على نوع العملية
             // =========================================================
             if ($request->transaction_action === 'pay_debt') {
-                
+
                 // --- الحالة الأولى: العميل يسدد ديونه ---
                 if ($balance >= 0) {
                     return back()->with('error', 'عفواً، هذا العميل ليس عليه أي مديونية لسدادها.');
@@ -386,13 +388,12 @@ class CustomerController extends Controller
                 if ($request->amount > $maxAmountToPay) {
                     return back()->with('error', 'لا يمكن سداد مبلغ أكبر من المديونية! المتبقي عليه هو: ' . number_format($maxAmountToPay, 2) . ' ريال.');
                 }
-                
+
                 // استدعاء دالة السداد
                 $transactionService->addPayment($customer, $request->amount, $request->notes);
                 $successMsg = 'تم تسجيل الدفعة بنجاح وإضافتها لكشف الحساب.';
-
             } else {
-                
+
                 // --- الحالة الثانية: الفرع يصرف رصيد للعميل ---
                 if ($balance <= 0) {
                     return back()->with('error', 'عفواً، هذا العميل ليس له أي رصيد لصرفه.');
@@ -410,7 +411,6 @@ class CustomerController extends Controller
             DB::commit();
 
             return WebResponseClass::sendResponse('تمت العملية!', $successMsg, 'حسناً');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return WebResponseClass::sendExceptionError($e);

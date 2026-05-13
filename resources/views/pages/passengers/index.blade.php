@@ -447,7 +447,7 @@
                         <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم hg
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم العميل
                                     <span class="text-error">*</span></label>
                                 <input type="hidden" name="customer_id" x-model="selectedRecordId">
                                 <input type="hidden" name="customer_phone" :value="fullPhoneNumber">

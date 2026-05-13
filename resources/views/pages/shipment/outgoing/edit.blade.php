@@ -421,50 +421,69 @@
                             </div>
                         </div> --}}
 
-                        
+
 
                         <div class="grid grid-cols-2 gap-4">
-                                  <div x-data="{ isCustom: false, packageType: 'carton' }">
-                                <label
-                                    class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">النوع</label>
 
-                                <div class="relative w-full">
-                                    {{-- حالة القائمة المنسدلة --}}
-                                    <select x-show="!isCustom" x-model="packageType"
-                                        :name="!isCustom ? 'package_type' : ''"
-                                        @change="if(packageType === 'other') { isCustom = true; packageType = ''; $nextTick(() => $refs.customInput.focus()); }"
-                                        class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                        <option value="carton">كرتون</option>
-                                        <option value="bag">كيس</option>
-                                        <option value="envelope">مغلف</option>
-                                        <option value="other">أخرى (كتابة يدوية...)</option>
-                                    </select>
+                            {{-- ================= 1. حقل نوع الشحنة (Combobox) ================= --}}
+                            <div class="flex flex-col gap-2" x-data="{
+                                isOpen: false,
+                                options: ['كرتون', 'كيس'],
+                                packageType: 'كرتون'
+                            }">
+                                <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
+                                        class="text-rose-500">*</span></label>
 
-                                    {{-- حالة الكتابة اليدوية (تظهر في نفس المكان وترسل نفس الاسم للسيرفر) --}}
-                                    <div x-show="isCustom" x-cloak style="display: none;" class="relative w-full">
-                                        <input x-ref="customInput" type="text" x-model="packageType"
-                                            :name="isCustom ? 'package_type' : ''" placeholder="اكتب النوع هنا..."
-                                            class="px-3 pl-10 w-full h-12 text-sm bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                <div class="relative z-[40]">
+                                    {{-- حقل الإدخال النصي --}}
+                                    <input type="text" name="package_type" x-model="packageType"
+                                        @focus="isOpen = true" @click.outside="isOpen = false"
+                                        placeholder="اختر أو اكتب النوع..." autocomplete="off" required
+                                        class="px-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
-                                        {{-- زر الإلغاء للعودة إلى القائمة --}}
-                                        <button type="button" @click="isCustom = false; packageType = 'carton'"
-                                            class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors -translate-y-1/2 hover:text-error active:bg-gray-100 dark:active:bg-boxdark">
-                                            <span class="material-symbols-outlined text-[18px]">close</span>
-                                        </button>
+                                    {{-- أيقونة السهم التفاعلية --}}
+                                    <button type="button" @click="isOpen = !isOpen" tabindex="-1"
+                                        class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
+                                        <span
+                                            class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                                            :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
+                                    </button>
+
+                                    {{-- القائمة المنسدلة الذكية --}}
+                                    <div x-show="isOpen" x-cloak x-transition.opacity.translate.y.-10px
+                                        class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
+                                        <template x-for="option in options" :key="option">
+                                            <button type="button" @click="packageType = option; isOpen = false"
+                                                class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                                <span x-text="option"></span>
+                                                <span x-show="packageType === option"
+                                                    class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                            </button>
+                                        </template>
                                     </div>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الوزن
-                                    (كجم)</label>
-                                <input type="number" step="0.1" name="weight"
-                                    value="{{ old('weight', $shipment->weight) }}" placeholder="مثال: 2.5"
-                                    class="px-4 w-full h-12 text-sm text-left rounded-xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white"
-                                    dir="ltr">
+
+                            {{-- ================= 2. حقل الوزن ================= --}}
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
+
+                                <div class="relative">
+                                    <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"
+                                        min="0" dir="ltr"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+
+                                    {{-- أيقونة الوزن الجمالية --}}
+                                    <div
+                                        class="flex absolute inset-y-0 right-0 items-center pr-3 pointer-events-none text-slate-400">
+                                        <span class="material-symbols-outlined text-[18px]">scale</span>
+                                    </div>
+                                </div>
                             </div>
+
                         </div>
 
-                      <div x-data="{ showHoneyFields: false }" class="mt-5">
+                        <div x-data="{ showHoneyFields: false }" class="mt-5">
 
                             {{-- زر الإظهار والإخفاء --}}
                             <button type="button" @click="showHoneyFields = !showHoneyFields"

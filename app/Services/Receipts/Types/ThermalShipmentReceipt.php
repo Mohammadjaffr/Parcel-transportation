@@ -127,6 +127,9 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
             'receiver_branch'   => $receiverDestination,
+            'receiver_office'   => $shipment->receiverOfficeBranch?->name, // 👈 إضافة اسم المكتب
+            'receiver_app'      => $shipment->receiverOfficeBranch->name ?? 'الفرع الرئيسي',
+            'sender_office'     => $shipment->senderOfficeBranch?->name, // 👈 إضافة اسم المكتب
 
             // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? 'طرد عادي',

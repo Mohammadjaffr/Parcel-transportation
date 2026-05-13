@@ -472,7 +472,7 @@
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
                                 التفصيلي</label>
-                            <input type="text" name="address" placeholder="الشارع، الحي، المبنى..."
+                            <input type="text" name="address" placeholder="الشارع، الحي، المبنى..." required
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
 

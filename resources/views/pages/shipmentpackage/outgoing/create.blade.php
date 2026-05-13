@@ -137,12 +137,14 @@
                                             </div>
                                         </div>
 
-                                        <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
-                                            @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                            placeholder="7XXXXXXXX" required autocomplete="off"
-                                            :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                            class="flex-1 px-3 w-full text-sm bg-transparent border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-transparent font-headline text-on-surface dark:text-white"
-                                            :class="selectedDriverId ? 'font-bold text-primary' : ''">
+                                       <input type="tel" x-model="localPhoneNumber" 
+    @input="showDriverDropdown = true; searchDriver()" 
+    @focus="showDriverDropdown = true" 
+    @click.away="showDriverDropdown = false"
+    placeholder="7XXXXXXXX" required autocomplete="off"
+    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+    class="flex-1 px-3 w-full text-sm bg-transparent border-0 ring-0 outline-none focus:outline-none focus:ring-0 focus:border-transparent font-headline text-on-surface dark:text-white"
+    :class="selectedDriverId ? 'font-bold text-primary' : ''">
 
                                         <button type="button" x-show="selectedDriverId" @click="resetSelection"
                                             class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors hover:text-error bg-white/80 dark:bg-boxdark/80">
@@ -503,7 +505,7 @@
                 searchDriver() {
                     this.selectedDriverId = null;
                     this.nameInput = '';
-                    if (this.localPhoneNumber.length < 3) {
+                    if (this.localPhoneNumber.length === 0) {
                         this.filteredDrivers = [];
                         return;
                     }
