@@ -21,7 +21,7 @@
 
                 <div class="flex gap-2 items-center shrink-0">
                     <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'all']) }}" target="_blank"
-                        class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
+                        class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl border-2 transition-all border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">print</span>
                         <span>تقرير الركاب</span>
                     </a>
@@ -85,10 +85,10 @@
                 <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
                     <div class="flex flex-col gap-3 w-full md:flex-row md:items-center">
                         <div
-                            class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                            class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                             <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                                 placeholder="ابحث برقم الراكب، المكان، السائق، العميل..."
-                                class="pr-12 pl-12 w-full h-12 text-sm font-bold placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
+                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white">
                             <div
                                 class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[22px]">search</span>
@@ -708,7 +708,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
                                 x-effect="loadInitial(editPassengerData.passenger_number)">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب

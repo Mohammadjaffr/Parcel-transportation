@@ -484,7 +484,7 @@
                                                 <span class="material-symbols-outlined text-[14px]">local_drink</span>
 
                                                 @if ($shipment->no_gallons_honey > 0)
-                                                    {{ $shipment->no_gallons_honey }} دباب
+                                                    {{ $shipment->no_gallons_honey }} جوالين
                                                 @endif
 
                                                 @if ($shipment->no_gallons_honey > 0 && $shipment->no_honey_jars > 0)
@@ -492,7 +492,7 @@
                                                 @endif
 
                                                 @if ($shipment->no_honey_jars > 0)
-                                                    {{ $shipment->no_honey_jars }} قوارير
+                                                    {{ $shipment->no_honey_jars }} قروف
                                                 @endif
                                             </span>
                                         @endif

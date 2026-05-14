@@ -271,9 +271,9 @@
                                     <div class="flex justify-between items-center">
                                         <span class="text-[10px] text-amber-500 font-bold">عسل:</span>
                                         <span class="text-[10px] font-bold text-slate-600">
-                                            @if($shipment->no_gallons_honey > 0) {{ $shipment->no_gallons_honey }} دباب @endif
+                                            @if($shipment->no_gallons_honey > 0) {{ $shipment->no_gallons_honey }} جوالين @endif
                                             @if($shipment->no_gallons_honey > 0 && $shipment->no_honey_jars > 0) + @endif
-                                            @if($shipment->no_honey_jars > 0) {{ $shipment->no_honey_jars }} قوارير @endif
+                                            @if($shipment->no_honey_jars > 0) {{ $shipment->no_honey_jars }} قروف @endif
                                         </span>
                                     </div>
                                 @endif

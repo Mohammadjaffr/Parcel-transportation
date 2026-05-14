@@ -86,7 +86,7 @@
 
                             <button type="button" @click="openStatusMenu = !openStatusMenu"
                                 @click.away="openStatusMenu = false"
-                                class="flex gap-2 items-center px-5 h-11 text-xs font-black text-white rounded-xl shadow-lg transition-all bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95">
+                                class="flex gap-2 items-center px-5 h-11 text-xs font-black text-white bg-emerald-500 rounded-xl shadow-lg transition-all hover:bg-emerald-600 shadow-emerald-500/20 active:scale-95">
                                 <span x-show="!isSubmitting"
                                     class="material-symbols-outlined text-[18px]">download_done</span>
                                 <span x-show="isSubmitting"
@@ -98,7 +98,7 @@
 
                             <div x-show="openStatusMenu" x-cloak x-transition.origin.top.right
                                 class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-2xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                <div class="px-4 py-3 bg-gray-50 dark:bg-boxdark border-b border-gray-100 dark:border-boxdark">
+                                <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 dark:bg-boxdark dark:border-boxdark">
                                     <span class="text-xs font-bold text-gray-500">بمجرد التأكيد ستصبح جميع الطرود في عهدتك.</span>
                                 </div>
                                 @foreach ($availableStatuses as $value => $data)
@@ -115,7 +115,7 @@
                     </div>
                 @else
                     <div
-                        class="flex gap-2 justify-center items-center px-5 h-11 text-xs font-bold rounded-xl bg-gray-50 text-gray-500 dark:bg-boxdark-2 dark:text-gray-400 md:w-auto">
+                        class="flex gap-2 justify-center items-center px-5 h-11 text-xs font-bold text-gray-500 bg-gray-50 rounded-xl dark:bg-boxdark-2 dark:text-gray-400 md:w-auto">
                         <span class="material-symbols-outlined text-[16px]">lock</span>
                         الرحلة مستلمة ومغلقة
                     </div>
@@ -150,7 +150,8 @@
                                 {{ $package->driver->name ?? 'غير محدد' }}</div>
                             <div
                                 class="text-[13px] font-bold text-gray-500 dark:text-gray-400 mt-1 dir-ltr text-right truncate">
-                                {{ $package->driver->phone ?? 'لا يوجد رقم' }}</div>
+                                <x-phone-number :value="$package->driver->phone ?? '---'" />
+                            </div>
                         </div>
                     </div>
 
@@ -209,7 +210,7 @@
                                 class="absolute -right-[43px] top-2 w-5 h-5 bg-white dark:bg-boxdark-2 border-4 border-gray-300 dark:border-gray-600 rounded-full shadow-sm">
                             </div>
                             <div
-                                class="p-5 rounded-2xl border transition-all bg-gray-50/80 border-gray-100 dark:bg-boxdark-2/40 dark:border-boxdark hover:bg-gray-50">
+                                class="p-5 rounded-2xl border border-gray-100 transition-all bg-gray-50/80 dark:bg-boxdark-2/40 dark:border-boxdark hover:bg-gray-50">
                                 <span class="text-[10px] font-black tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 uppercase block">
                                     مصدر الإرسالية</span>
                                 <div class="flex flex-col gap-1">
@@ -222,7 +223,7 @@
                                         {{ $package->sender_entity->name ?? 'غير معروف' }}
                                     </span>
                                     <span
-                                        class="flex gap-1.5 items-center text-xs text-gray-500 mt-2 font-bold w-fit">
+                                        class="flex gap-1.5 items-center mt-2 text-xs font-bold text-gray-500 w-fit">
                                         <span class="material-symbols-outlined text-[14px]">storefront</span>
                                         {{ $package->sender_office_branch_id ? 'مكتب وكيل خارجي' : 'فرع داخلي' }}
                                     </span>
@@ -326,13 +327,13 @@
                                         @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
                                             <div class="flex gap-1.5 items-center dir-ltr">
                                                 <span class="material-symbols-outlined text-[16px] text-gray-400">call</span>
-                                                <span class="truncate">{{ $shipment->receiverCustomer->phone }}</span>
+                                                <span class="truncate"> <x-phone-number :value="$shipment->receiverCustomer->phone ?? '---'" /></span>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
 
-                                <div class="flex gap-2 items-center pr-4 border-r border-gray-100 dark:border-boxdark shrink-0 z-20">
+                                <div class="flex z-20 gap-2 items-center pr-4 border-r border-gray-100 dark:border-boxdark shrink-0">
                                     {{-- تأكيد الوصول الفردي --}}
                                     @if ($shipment->status === 'in_transit')
                                         <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST"

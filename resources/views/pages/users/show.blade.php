@@ -52,7 +52,7 @@
                         
                         <div class="flex gap-2 justify-center items-center mt-2 text-gray-500 dark:text-bodydark">
                             <span class="material-symbols-outlined text-[16px]">call</span>
-                            <p class="font-mono text-sm font-bold dir-ltr">{{ $user->phone }}</p>
+                            <p class="font-mono text-sm font-bold dir-ltr"> <x-phone-number :value="$user->phone" /></p>
                         </div>
                         
                         <div class="flex flex-wrap gap-2 justify-center pt-5 mt-5 border-t border-gray-50 dark:border-boxdark-2">

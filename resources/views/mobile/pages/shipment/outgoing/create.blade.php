@@ -353,7 +353,7 @@
                         class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
                         <div class="flex gap-2 items-center">
                             <span class="text-[20px] material-symbols-outlined">hive</span>
-                            <span>إضافة بيانات العسل (دباب / قروف)</span>
+                            <span>إضافة بيانات العسل (جوالين / قروف)</span>
                         </div>
                         {{-- سهم يتحرك عند الفتح والإغلاق --}}
                         <span class="transition-transform duration-300 material-symbols-outlined"
@@ -371,7 +371,7 @@
                         <div
                             class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
                             <div>
-                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">دباب
+                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
                                     العسل</label>
                                 <input type="number" name="no_gallons_honey" placeholder="العدد"
                                     class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">

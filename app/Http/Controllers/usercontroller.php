@@ -33,7 +33,7 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+$users = $query->with('branch')->latest()->paginate(10)->withQueryString();
         $branches = Branch::where('app_id', auth()->user()->app_id)->get();
 
         if ($request->isMobile) {

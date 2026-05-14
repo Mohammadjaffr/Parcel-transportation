@@ -202,7 +202,7 @@
                                 <div x-show="menuOpen" x-transition x-cloak
                                     class="absolute left-0 top-full z-[999] py-1.5 mt-2 w-52 rounded-2xl border border-gray-100 shadow-lg backdrop-blur-md bg-white/95 dark:bg-boxdark-2/95 dark:border-boxdark overflow-hidden">
 
-                                    <a href="{{ route('customers.show', $customer->id) }}"
+                                    <a href="{{ route('customers.show', $customer->id ) }}"
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-boxdark dark:hover:text-blue-400">
                                         <span class="material-symbols-outlined text-[18px]">receipt_long</span>
                                         كشف الحساب
@@ -271,7 +271,7 @@
 
             {{-- ====================== Desktop View ====================== --}}
             <div class="hidden overflow-visible w-full lg:block">
-                <table class="w-full text-right border-collapse">
+                <table class="w-full text-right border-collapse">                                                                       
                     <thead>
                         <tr
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
@@ -320,18 +320,25 @@
 
                                 {{-- الرصيد --}}
                                 <td class="px-6 py-4 text-center">
-                                    <div class="flex flex-col gap-1 items-center">
-                                        <span
-                                            class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase {{ $is_debtor ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' }}">
-                                            {{ $is_debtor ? 'مديون' : 'مسدد' }}
-                                        </span>
-
-                                        @if ($is_debtor)
-                                            <span class="text-xs font-black text-rose-500">
-                                                {{ number_format($balance, 0) }} ر.ي
-                                            </span>
-                                        @endif
-                                    </div>
+                                    <div class="flex gap-2 p-3 rounded-2xl border bg-slate-50 border-slate-100/50">
+                                        <div class="flex-1 text-center">
+                                            <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
+                                            <span
+                                                class="block text-sm font-black text-slate-700">{{ $customer->sent_shipments_count ?? 0 }}</span>
+                                        </div>
+                                        <div class="w-px bg-slate-200/60"></div>
+                                        <div class="flex-1 text-center">
+                                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد له</span>
+                            <span
+                                class="block text-sm font-black text-emerald-600">{{ number_format($customer->sum_credit ?? 0, 2) }}</span>
+                        </div>
+                        <div class="w-px bg-slate-200/60"></div>
+                        <div class="flex-1 text-center">
+                            <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد عليه</span>
+                            <span
+                                class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($customer->sum_debit ?? 0, 2) }}</span>
+                        </div>
+                    </div>
                                 </td>
 
                                 {{-- الإجراءات - Desktop Fixed --}}

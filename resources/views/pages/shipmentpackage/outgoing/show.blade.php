@@ -135,7 +135,8 @@
                                 {{ $package->driver->name ?? 'غير محدد' }}</div>
                             <div
                                 class="text-[13px] font-bold text-gray-500 dark:text-gray-400 mt-1 dir-ltr text-right truncate">
-                                {{ $package->driver->phone ?? 'لا يوجد رقم' }}</div>
+                                <x-phone-number :value="$package->driver->phone ?? '---'" />
+                            </div>
                         </div>
                     </div>
 

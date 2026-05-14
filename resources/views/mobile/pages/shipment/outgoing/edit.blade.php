@@ -275,96 +275,105 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
-                <div class="flex gap-2 items-center mb-4">
-                    <span
-                        class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[20px]">inventory_2</span>
-                    <h3 class="font-bold text-slate-700 font-headline">محتويات الطرد</h3>
-                </div>
+       <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+    <div class="flex gap-2 items-center mb-4">
+        <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[20px]">inventory_2</span>
+        <h3 class="font-bold text-slate-700 font-headline">محتويات الطرد</h3>
+    </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                     <div x-data="{ isCustom: false, packageType: 'carton' }">
-                        <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">النوع</label>
+    <div class="grid grid-cols-2 gap-4">
+        
+        {{-- ================= 1. حقل نوع الشحنة (نفس أسلوب الديسكتوب الذكي) ================= --}}
+        <div class="flex flex-col gap-2" x-data="{
+            isOpen: false,
+            options: ['كرتون', 'كيس', 'مغلف'],
+            packageType: '{{ old('package_type', $shipment->package_type ?? 'كرتون') }}'
+        }">
+            <label class="text-[11px] font-bold text-slate-400">النوع <span class="text-rose-500">*</span></label>
 
-                        <div class="relative w-full">
-                            {{-- حالة القائمة المنسدلة --}}
-                            <select x-show="!isCustom" x-model="packageType" :name="!isCustom ? 'package_type' : ''"
-                                @change="if(packageType === 'other') { isCustom = true; packageType = ''; $nextTick(() => $refs.customInput.focus()); }"
-                                class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                <option value="carton">كرتون</option>
-                                <option value="bag">كيس</option>
-                                <option value="envelope">مغلف</option>
-                                <option value="other">أخرى (كتابة يدوية...)</option>
-                            </select>
+            <div class="relative z-[40]">
+                {{-- حقل الإدخال النصي --}}
+                <input type="text" name="package_type" x-model="packageType"
+                    @focus="isOpen = true" @click.outside="isOpen = false"
+                    placeholder="اختر أو اكتب..." autocomplete="off" required
+                    class="px-4 pr-10 w-full h-12 text-sm font-bold rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
 
-                            {{-- حالة الكتابة اليدوية (تظهر في نفس المكان وترسل نفس الاسم للسيرفر) --}}
-                            <div x-show="isCustom" x-cloak style="display: none;" class="relative w-full">
-                                <input x-ref="customInput" type="text" x-model="packageType"
-                                    :name="isCustom ? 'package_type' : ''" placeholder="اكتب النوع هنا..."
-                                    class="px-3 pl-10 w-full h-12 text-sm bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                {{-- أيقونة السهم التفاعلية --}}
+                <button type="button" @click="isOpen = !isOpen" tabindex="-1"
+                    class="flex absolute inset-y-0 right-0 items-center px-3 h-full rounded-r-xl transition-colors text-slate-400 hover:text-primary">
+                    <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                        :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
+                </button>
 
-                                {{-- زر الإلغاء للعودة إلى القائمة --}}
-                                <button type="button" @click="isCustom = false; packageType = 'carton'"
-                                    class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors -translate-y-1/2 hover:text-error active:bg-gray-100 dark:active:bg-boxdark">
-                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[11px] font-bold text-slate-400">الوزن (كجم)</label>
-                        <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"
-                            value="{{ old('weight', $shipment->weight) }}"
-                            class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700"
-                            dir="ltr">
-                    </div>
-                </div>
-
-               <div x-data="{ showHoneyFields: false }" class="mt-5">
-
-                    {{-- زر الإظهار والإخفاء --}}
-                    <button type="button" @click="showHoneyFields = !showHoneyFields"
-                        class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
-                        <div class="flex gap-2 items-center">
-                            <span class="text-[20px] material-symbols-outlined">hive</span>
-                            <span>إضافة بيانات العسل (دباب / قروف)</span>
-                        </div>
-                        {{-- سهم يتحرك عند الفتح والإغلاق --}}
-                        <span class="transition-transform duration-300 material-symbols-outlined"
-                            :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
-                    </button>
-
-                    {{-- الحقول (تظهر بتأثير انسيابي) --}}
-                    <div x-show="showHoneyFields" x-cloak x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2">
-
-                        <div
-                            class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
-                            <div>
-                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">دباب
-                                    العسل</label>
-                                <input type="number" name="no_gallons_honey" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
-                                    العسل</label>
-                                <input type="number" name="no_honey_jars" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-col gap-2 pt-2">
-                    <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
-                    <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
-                        class="p-4 w-full text-sm rounded-2xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">{{ old('notes', $shipment->notes) }}</textarea>
+                {{-- القائمة المنسدلة الذكية --}}
+                <div x-show="isOpen" x-cloak x-transition.opacity.translate.y.-10px
+                    class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
+                    <template x-for="option in options" :key="option">
+                        <button type="button" @click="packageType = option; isOpen = false"
+                            class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                            <span x-text="option"></span>
+                            <span x-show="packageType === option" class="material-symbols-outlined text-[18px] text-primary">check</span>
+                        </button>
+                    </template>
                 </div>
             </div>
+        </div>
+
+        {{-- ================= 2. حقل الوزن ================= --}}
+        <div class="flex flex-col gap-2">
+            <label class="text-[11px] font-bold text-slate-400">الوزن (كجم)</label>
+            <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"
+                value="{{ old('weight', $shipment->weight) }}"
+                class="px-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700"
+                dir="ltr">
+        </div>
+    </div>
+
+    {{-- ================= 3. بيانات العسل ================= --}}
+    <div x-data="{ showHoneyFields: {{ (old('no_gallons_honey', $shipment->no_gallons_honey) > 0 || old('no_honey_jars', $shipment->no_honey_jars) > 0) ? 'true' : 'false' }} }" class="mt-5">
+        {{-- زر الإظهار والإخفاء --}}
+        <button type="button" @click="showHoneyFields = !showHoneyFields"
+            class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
+            <div class="flex gap-2 items-center">
+                <span class="text-[20px] material-symbols-outlined">hive</span>
+                <span>إضافة بيانات العسل (جوالين / قروف)</span>
+            </div>
+            <span class="transition-transform duration-300 material-symbols-outlined"
+                :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
+        </button>
+
+        {{-- الحقول --}}
+        <div x-show="showHoneyFields" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 -translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-2">
+
+            <div class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
+                <div>
+                    <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين العسل</label>
+                    <input type="number" name="no_gallons_honey" placeholder="العدد"
+                        value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}"
+                        class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                </div>
+                <div>
+                    <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف العسل</label>
+                    <input type="number" name="no_honey_jars" placeholder="العدد"
+                        value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}"
+                        class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ================= 4. الملاحظات ================= --}}
+    <div class="flex flex-col gap-2 pt-2 mt-2">
+        <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
+        <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
+            class="p-4 w-full text-sm rounded-2xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">{{ old('notes', $shipment->notes) }}</textarea>
+    </div>
+</div>
 
             <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
                 <div class="flex gap-2 items-center mb-4">

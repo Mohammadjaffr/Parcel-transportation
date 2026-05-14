@@ -16,7 +16,7 @@
                 </a>
                 <div>
                     <h1 class="text-lg font-black font-headline text-slate-800">طرد وارد</h1>
-                    <p class="text-sm font-bold tracking-wider text-primary font-mono">{{ $shipment->code }}</p>
+                    <p class="font-mono text-sm font-bold tracking-wider text-primary">{{ $shipment->code }}</p>
                 </div>
             </div>
 
@@ -143,7 +143,7 @@
                                     :disabled="isSubmitting"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-rose-50 transition-all text-right group active:scale-[0.98]">
                                     <div
-                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        class="flex justify-center items-center w-8 h-8 text-rose-600 bg-rose-50 rounded-lg transition-transform group-hover:scale-110 shrink-0">
                                         <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                                     </div>
                                     <span class="text-xs font-black text-slate-700">تأكيد تسليم المرتجع للتاجر</span>
@@ -161,7 +161,7 @@
                                                                                                     " :disabled="isSubmitting"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition-all text-right group active:scale-[0.98]">
                                     <div
-                                        class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        class="flex justify-center items-center w-8 h-8 text-emerald-600 bg-emerald-50 rounded-lg transition-transform group-hover:scale-110 shrink-0">
                                         <span class="material-symbols-outlined text-[18px]">task_alt</span>
                                     </div>
                                     <span class="text-xs font-black text-slate-700">تأكيد تسليم الطرد للعميل</span>
@@ -172,7 +172,7 @@
                                     :disabled="isSubmitting"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 mt-1 rounded-xl hover:bg-rose-50 transition-all text-right group active:scale-[0.98]">
                                     <div
-                                        class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                                        class="flex justify-center items-center w-8 h-8 text-rose-600 bg-rose-50 rounded-lg transition-transform group-hover:scale-110 shrink-0">
                                         <span class="material-symbols-outlined text-[18px]">assignment_return</span>
                                     </div>
                                     <span class="text-xs font-black text-slate-700">رفض الاستلام (إرجاع الطرد)</span>
@@ -186,7 +186,7 @@
                             <div x-show="showPaymentModal" x-cloak
                                 class="fixed inset-0 z-[100] flex items-center justify-center p-4">
                                 <div x-show="showPaymentModal" x-transition.opacity duration.300ms @click="showPaymentModal = false"
-                                    class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+                                    class="absolute inset-0 backdrop-blur-sm bg-slate-900/40"></div>
 
                                 <div x-show="showPaymentModal" x-transition:enter="transition ease-out duration-300"
                                     x-transition:enter-start="opacity-0 scale-90 translate-y-8"
@@ -194,18 +194,18 @@
                                     class="relative bg-white w-full max-w-sm rounded-[2rem] shadow-2xl p-6 text-center border border-slate-100">
 
                                     <div
-                                        class="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
+                                        class="flex justify-center items-center mx-auto mb-4 w-20 h-20 text-rose-500 bg-rose-50 rounded-full animate-bounce">
                                         <span class="material-symbols-outlined text-[40px]">payments</span>
                                     </div>
 
-                                    <h3 class="text-lg font-black text-slate-800 font-headline mb-2">تنبيه تحصيل مالي!</h3>
-                                    <p class="text-xs font-bold text-slate-500 mb-6 leading-relaxed">
+                                    <h3 class="mb-2 text-lg font-black text-slate-800 font-headline">تنبيه تحصيل مالي!</h3>
+                                    <p class="mb-6 text-xs font-bold leading-relaxed text-slate-500">
                                         الرجاء استلام المبلغ التالي من العميل نقداً قبل تأكيد عملية التسليم.
                                     </p>
 
-                                    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-4 mb-6">
+                                    <div class="p-4 mb-6 bg-rose-50 rounded-2xl border border-rose-100">
                                         <p class="text-[10px] font-bold text-rose-600/70 mb-1">المبلغ المطلوب تحصيله</p>
-                                        <p class="text-3xl font-black font-mono text-rose-700 dir-ltr">
+                                        <p class="font-mono text-3xl font-black text-rose-700 dir-ltr">
                                             {{-- 💡 طباعة المبلغ المتبقي الفعلي وليس الإجمالي --}}
                                             {{ number_format($shipment->amount_to_collect_from_receiver, 0) }}
                                         </p>
@@ -213,7 +213,7 @@
 
                                     <div class="flex gap-2">
                                         <button type="button" @click="showPaymentModal = false"
-                                            class="flex-1 h-12 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-xl font-bold text-xs transition-colors">
+                                            class="flex-1 h-12 text-xs font-bold rounded-xl transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200">
                                             تراجع
                                         </button>
                                         <button type="button"
@@ -241,7 +241,7 @@
 
         {{-- ================= بطاقة المالية (الأهم في الوارد) ================= --}}
         <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-center gap-3 mb-4">
+            <div class="flex gap-3 items-center mb-4">
                 <div
                     class="flex justify-center items-center w-10 h-10 bg-gradient-to-br rounded-xl shadow-inner from-slate-100 to-slate-50 text-slate-600">
                     <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
@@ -251,8 +251,8 @@
 
             {{-- 💡 السحر هنا: نتحقق إذا كان المطلوب تحصيله يساوي 0 باستخدام دالة المودل --}}
             @if($shipment->amount_to_collect_from_receiver == 0)
-                <div class="flex items-center justify-between p-4 bg-emerald-50/50 border border-emerald-100 rounded-2xl">
-                    <div class="flex items-center gap-3">
+                <div class="flex justify-between items-center p-4 rounded-2xl border border-emerald-100 bg-emerald-50/50">
+                    <div class="flex gap-3 items-center">
                         <span class="material-symbols-outlined text-[24px] text-emerald-500">check_circle</span>
                         <div>
                             <p class="text-[10px] font-bold text-emerald-600/70">حالة التحصيل</p>
@@ -263,12 +263,12 @@
                 </div>
             @else
                 {{-- 💡 نعرض المبلغ المتبقي بناءً على الدالة الجديدة --}}
-                <div class="flex items-center justify-between p-4 bg-rose-50/50 border border-rose-100 rounded-2xl">
-                    <div class="flex items-center gap-3">
+                <div class="flex justify-between items-center p-4 rounded-2xl border border-rose-100 bg-rose-50/50">
+                    <div class="flex gap-3 items-center">
                         <span class="material-symbols-outlined text-[24px] text-rose-500">payments</span>
                         <div>
                             <p class="text-[10px] font-bold text-rose-600/70">المبلغ المطلوب تحصيله من المستلم</p>
-                            <p class="text-lg font-black font-mono text-rose-700 dir-ltr text-right">
+                            <p class="font-mono text-lg font-black text-right text-rose-700 dir-ltr">
                                 {{ number_format($shipment->amount_to_collect_from_receiver, 0) }}
                                 <span class="text-[10px] font-bold text-rose-500">ر.ي</span>
                             </p>
@@ -286,14 +286,14 @@
             }
         @endphp
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 
             {{-- 1. بطاقة المرسل (الجهة المُصدِرة) --}}
             <div
                 class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] h-full flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex gap-3 items-center">
-                        <div class="flex justify-center items-center w-10 h-10 bg-amber-50 rounded-xl text-amber-500">
+                        <div class="flex justify-center items-center w-10 h-10 text-amber-500 bg-amber-50 rounded-xl">
                             <span class="material-symbols-outlined text-[20px]">person_check</span>
                         </div>
                         <div>
@@ -303,10 +303,10 @@
                     </div>
                 </div>
 
-                <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex-1 flex flex-col justify-center">
+                <div class="flex flex-col flex-1 justify-center p-4 rounded-2xl border bg-slate-50/50 border-slate-100">
                     <p class="text-sm font-black text-slate-800">{{ $shipment->senderCustomer->name ?? 'غير مسجل' }}</p>
-                    <p class="text-xs font-bold text-slate-500 mt-1 dir-ltr text-right">
-                        {{ $shipment->senderCustomer->phone ?? 'لا يوجد رقم' }}
+                    <p class="mt-1 text-xs font-bold text-right text-slate-500 dir-ltr">
+                        <x-phone-number :value="$shipment->senderCustomer?->phone ?? '---'" />
                     </p>
                 </div>
             </div>
@@ -316,7 +316,7 @@
                 class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] h-full flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex gap-3 items-center">
-                        <div class="flex justify-center items-center w-10 h-10 bg-primary/10 rounded-xl text-primary">
+                        <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[20px]">person_pin_circle</span>
                         </div>
                         <div>
@@ -326,17 +326,17 @@
                     </div>
                 </div>
 
-                <div class="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl flex-1 flex flex-col justify-between">
+                <div class="flex flex-col flex-1 justify-between p-4 rounded-2xl border bg-slate-50/50 border-slate-100">
                     <div>
                         <p class="text-sm font-black text-slate-800">{{ $shipment->receiverCustomer->name ?? 'غير مسجل' }}
                         </p>
-                        <p class="text-xs font-bold text-slate-500 mt-1 dir-ltr text-right">
-                            {{ $shipment->receiverCustomer->phone ?? 'لا يوجد رقم' }}
+                        <p class="mt-1 text-xs font-bold text-right text-slate-500 dir-ltr">
+                            <x-phone-number :value="$shipment->receiverCustomer?->phone ?? '---'" />
                         </p>
                     </div>
 
                     @if($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
-                        <div class="flex gap-2 mt-4 pt-4 border-t border-slate-200/60">
+                        <div class="flex gap-2 pt-4 mt-4 border-t border-slate-200/60">
                             @if($whatsappUrl && $shipment->status === 'received_at_branch' && !$shipment->is_returned)
                                 <a href="{{ $whatsappUrl }}" target="_blank"
                                     class="flex-1 h-10 bg-[#25D366]/10 text-[#25D366] rounded-xl flex items-center justify-center gap-2 hover:bg-[#25D366]/20 transition-colors font-bold text-xs active:scale-95">
@@ -348,7 +348,7 @@
                                 </a>
                             @endif
                             <a href="tel:{{ $shipment->receiverCustomer->phone }}"
-                                class="flex-1 h-10 bg-slate-800 text-white rounded-xl flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors font-bold text-xs active:scale-95">
+                                class="flex flex-1 gap-2 justify-center items-center h-10 text-xs font-bold text-white rounded-xl transition-colors bg-slate-800 hover:bg-slate-700 active:scale-95">
                                 <span class="material-symbols-outlined text-[16px]">call</span>
                                 اتصال
                             </a>
@@ -360,8 +360,8 @@
 
         {{-- ================= بطاقة المصدر (من أين أتى) ================= --}}
         <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
-            <div class="flex items-center gap-3 mb-4">
-                <div class="flex justify-center items-center w-10 h-10 bg-slate-50 rounded-xl text-slate-400">
+            <div class="flex gap-3 items-center mb-4">
+                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-slate-50 text-slate-400">
                     <span class="material-symbols-outlined text-[20px]">storefront</span>
                 </div>
                 <div>
@@ -370,7 +370,7 @@
                 </div>
             </div>
 
-            <div class="p-3 bg-slate-50/50 border border-slate-100 rounded-xl flex justify-between items-center">
+            <div class="flex justify-between items-center p-3 rounded-xl border bg-slate-50/50 border-slate-100">
                 <div>
                     <p class="text-xs font-black text-slate-700">
                         {{-- 💡 إضافة اسم المكتب الرئيسي هنا --}}

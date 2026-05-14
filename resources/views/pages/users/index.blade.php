@@ -248,6 +248,7 @@
                             <th class="px-6 py-4 text-center">الهاتف</th>
                             <th class="px-6 py-4 text-center">نوع الحساب</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
+                            <th class="px-6 py-4 text-center">الفرع / المكتب</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
                     </thead>
@@ -314,6 +315,11 @@
 
                                         <span x-text="Number(user.is_banned) === 0 ? 'نشط' : 'محظور'"></span>
                                     </span>
+                                </td>
+
+                                {{-- الفرع / المكتب --}}
+                                <td class="px-6 py-4 text-center">
+                                    <span x-text="user.branch ? user.branch.name : '--'"></span>
                                 </td>
 
                                 {{-- الإجراءات --}}

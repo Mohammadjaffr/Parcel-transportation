@@ -308,7 +308,7 @@
                     </div>
 
                     {{-- Desktop Table: تمت إزالة overflow-x-auto لكي لا تقص القوائم --}}
-                    <div class="hidden md:block pb-4">
+                    <div class="hidden pb-4 md:block">
                         <table class="w-full text-right border-collapse">
                             <thead>
                                 <tr class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
@@ -377,8 +377,8 @@
                                         
                                         <td class="px-5 py-4 text-center">
                                             {{-- Dropdown الإجراءات --}}
-                                            <div x-data="{ open: false }" @click.outside="open = false" class="relative inline-block text-right">
-                                                <button @click="open = !open" type="button" class="p-2 text-gray-400 transition-colors rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-boxdark-2 dark:hover:text-white">
+                                            <div x-data="{ open: false }" @click.outside="open = false" class="inline-block relative text-right">
+                                                <button @click="open = !open" type="button" class="p-2 text-gray-400 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-boxdark-2 dark:hover:text-white">
                                                     <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                                 </button>
                                                 
@@ -388,17 +388,18 @@
                                                      style="display: none;"
                                                      class="absolute left-0 top-full mt-1 w-44 bg-white dark:bg-boxdark-2 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.12)] border border-gray-100 dark:border-boxdark z-[99] py-1.5">
                                                      
-                                                    <button @click="showTransactionDetails = true; open = false" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark transition-colors hover:text-primary">
+                                                    <button @click="showTransactionDetails = true; open = false" class="flex gap-2 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark hover:text-primary">
                                                         <span class="material-symbols-outlined text-[16px]">visibility</span>
                                                         عرض التفاصيل
                                                     </button>
                                                     
                                                     <a href="{{ $trans->waUrl ?? $waUrl }}" target="_blank" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-[#25D366]/10 hover:text-[#25D366] transition-colors">
-                                                        <i class="fa-brands fa-whatsapp text-[16px]"></i>
-                                                        إرسال واتساب
+                                                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                        </svg>                                                          إرسال واتساب
                                                     </a>
                                                     
-                                                    <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="w-full text-right flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark hover:text-slate-900 dark:hover:text-white transition-colors">
+                                                    <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex gap-2 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-gray-700 transition-colors dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark hover:text-slate-900 dark:hover:text-white">
                                                         <span class="material-symbols-outlined text-[16px]">print</span>
                                                         طباعة السند
                                                     </a>
@@ -408,7 +409,7 @@
                                             {{-- Modal التفاصيل مع x-teleport لضمان ظهوره بشكل سليم فوق كامل الصفحة --}}
                                             <template x-teleport="body">
                                                 <div x-show="showTransactionDetails" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" dir="rtl" @click.stop>
-                                                    <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-black/60" @click="showTransactionDetails = false"></div>
+                                                    <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 dark:bg-black/60" @click="showTransactionDetails = false"></div>
                                                     
                                                     <div x-show="showTransactionDetails" 
                                                          x-transition:enter="transition ease-out duration-300"
@@ -419,11 +420,11 @@
                                                          x-transition:leave-end="opacity-0 scale-90 translate-y-4"
                                                          class="bg-white dark:bg-boxdark w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-[101] border border-slate-100 dark:border-boxdark-2 text-right">
                                                         
-                                                        <button @click="showTransactionDetails = false" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+                                                        <button @click="showTransactionDetails = false" class="flex absolute top-4 left-4 justify-center items-center w-8 h-8 rounded-full transition-colors bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500">
                                                             <span class="material-symbols-outlined text-[18px]">close</span>
                                                         </button>
                                                         
-                                                        <div class="text-center mb-6 mt-2">
+                                                        <div class="mt-2 mb-6 text-center">
                                                             <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
                                                                 <span class="material-symbols-outlined text-[28px]">
                                                                     {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
@@ -435,9 +436,9 @@
                                                             <p class="text-[10px] font-bold text-slate-400 mt-1">{{ $trans->created_at->format('Y-m-d - h:i A') }}</p>
                                                         </div>
                                                         
-                                                        <div class="bg-slate-50 dark:bg-boxdark-2 rounded-xl p-4 mb-6 text-right">
+                                                        <div class="p-4 mb-6 text-right rounded-xl bg-slate-50 dark:bg-boxdark-2">
                                                             <p class="text-[10px] font-bold text-slate-400 mb-1">البيان (التفاصيل الكاملة):</p>
-                                                            <p class="text-sm font-bold text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ $trans->description }}</p>
+                                                            <p class="text-sm font-bold leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-gray-300">{{ $trans->description }}</p>
                                                         </div>
                                                         
                                                         <div class="grid grid-cols-2 gap-3">
@@ -445,7 +446,7 @@
                                                                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                                                                 إرسال واتساب
                                                             </a>
-                                                            <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 dark:bg-primary text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95 transition-all">
+                                                            <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex gap-1.5 justify-center items-center py-3 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-slate-800 dark:bg-primary hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95">
                                                                 <span class="material-symbols-outlined text-[16px]">print</span>
                                                                 طباعة السند
                                                             </a>
@@ -517,7 +518,7 @@
                                 {{-- Modal التفاصيل للموبايل --}}
                                 <template x-teleport="body">
                                     <div x-show="showTransactionDetails" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" dir="rtl" @click.stop>
-                                        <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm dark:bg-black/60" @click="showTransactionDetails = false"></div>
+                                        <div x-show="showTransactionDetails" x-transition.opacity class="fixed inset-0 backdrop-blur-sm bg-slate-900/40 dark:bg-black/60" @click="showTransactionDetails = false"></div>
                                         
                                         <div x-show="showTransactionDetails" 
                                              x-transition:enter="transition ease-out duration-300"
@@ -528,11 +529,11 @@
                                              x-transition:leave-end="opacity-0 scale-90 translate-y-4"
                                              class="bg-white dark:bg-boxdark w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10 border border-slate-100 dark:border-boxdark-2 text-right">
                                             
-                                            <button @click="showTransactionDetails = false" class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500 rounded-full transition-colors">
+                                            <button @click="showTransactionDetails = false" class="flex absolute top-4 left-4 justify-center items-center w-8 h-8 rounded-full transition-colors bg-slate-50 dark:bg-boxdark-2 text-slate-400 hover:text-rose-500">
                                                 <span class="material-symbols-outlined text-[18px]">close</span>
                                             </button>
                                             
-                                            <div class="text-center mb-6 mt-2">
+                                            <div class="mt-2 mb-6 text-center">
                                                 <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 {{ $trans->type == 'credit' ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10 dark:text-rose-400' }}">
                                                     <span class="material-symbols-outlined text-[28px]">
                                                         {{ $trans->type == 'credit' ? 'add_card' : 'credit_score' }}
@@ -544,9 +545,9 @@
                                                 <p class="text-[10px] font-bold text-slate-400 mt-1">{{ $trans->created_at->format('Y-m-d - h:i A') }}</p>
                                             </div>
                                             
-                                            <div class="bg-slate-50 dark:bg-boxdark-2 rounded-xl p-4 mb-6">
+                                            <div class="p-4 mb-6 rounded-xl bg-slate-50 dark:bg-boxdark-2">
                                                 <p class="text-[10px] font-bold text-slate-400 mb-1">البيان (التفاصيل الكاملة):</p>
-                                                <p class="text-sm font-bold text-slate-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{{ $trans->description }}</p>
+                                                <p class="text-sm font-bold leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-gray-300">{{ $trans->description }}</p>
                                             </div>
                                             
                                             <div class="grid grid-cols-2 gap-3">
@@ -554,7 +555,7 @@
                                                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
                                                     إرسال واتساب
                                                 </a>
-                                                <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex items-center justify-center gap-1.5 py-3 bg-slate-800 dark:bg-primary text-white rounded-xl text-xs font-black shadow-sm hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95 transition-all">
+                                                <a href="{{ $trans->printUrl ?? route('receipt.generate', ['type' => 'TransactionReceipt', 'id' => $trans->id]) }}" target="_blank" class="flex gap-1.5 justify-center items-center py-3 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-slate-800 dark:bg-primary hover:bg-slate-900 dark:hover:bg-primary-hover active:scale-95">
                                                     <span class="material-symbols-outlined text-[16px]">print</span>
                                                     طباعة السند
                                                 </a>

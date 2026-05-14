@@ -400,36 +400,13 @@
                             </div>
                             محتويات الطرد
                         </h3>
-                        {{-- 
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الرمز الخاص</label>
-                                <input type="text" name="code" value="{{ old('code', $shipment->code) }}"
-                                    class="px-4 w-full h-12 font-mono text-sm text-left rounded-xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white"
-                                    dir="ltr">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">الحالة</label>
-                                <select name="status"
-                                    class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                    <option value="pending" @selected(old('status', $shipment->status) == 'pending')>قيد الانتظار</option>
-                                    <option value="in_transit" @selected(old('status', $shipment->status) == 'in_transit')>في الطريق</option>
-                                    <option value="delivered" @selected(old('status', $shipment->status) == 'delivered')>تم التسليم</option>
-                                    <option value="cancelled" @selected(old('status', $shipment->status) == 'cancelled')>ملغي</option>
-                                    <option value="returned" @selected(old('status', $shipment->status) == 'returned')>مرتجع</option>
-                                </select>
-                            </div>
-                        </div> --}}
-
-
 
                         <div class="grid grid-cols-2 gap-4">
-
                             {{-- ================= 1. حقل نوع الشحنة (Combobox) ================= --}}
                             <div class="flex flex-col gap-2" x-data="{
                                 isOpen: false,
                                 options: ['كرتون', 'كيس'],
-                                packageType: 'كرتون'
+                                packageType: '{{ old('package_type', $shipment->package_type ?? 'كرتون') }}'
                             }">
                                 <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
                                         class="text-rose-500">*</span></label>
@@ -470,7 +447,7 @@
 
                                 <div class="relative">
                                     <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"
-                                        min="0" dir="ltr"
+                                        min="0" dir="ltr" value="{{ old('weight', $shipment->weight) }}"
                                         class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
                                     {{-- أيقونة الوزن الجمالية --}}
@@ -480,17 +457,17 @@
                                     </div>
                                 </div>
                             </div>
-
                         </div>
 
-                        <div x-data="{ showHoneyFields: false }" class="mt-5">
+                        {{-- هنا قمنا بجعل القائمة تفتح تلقائياً إذا كان هناك بيانات عسل سابقة --}}
+                        <div x-data="{ showHoneyFields: {{ old('no_gallons_honey', $shipment->no_gallons_honey) > 0 || old('no_honey_jars', $shipment->no_honey_jars) > 0 ? 'true' : 'false' }} }" class="mt-5">
 
                             {{-- زر الإظهار والإخفاء --}}
                             <button type="button" @click="showHoneyFields = !showHoneyFields"
                                 class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
                                 <div class="flex gap-2 items-center">
                                     <span class="text-[20px] material-symbols-outlined">hive</span>
-                                    <span>إضافة بيانات العسل (دباب / قروف)</span>
+                                    <span>إضافة بيانات العسل (جوالين / قروف)</span>
                                 </div>
                                 {{-- سهم يتحرك عند الفتح والإغلاق --}}
                                 <span class="transition-transform duration-300 material-symbols-outlined"
@@ -509,9 +486,10 @@
                                     class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
                                     <div>
                                         <label
-                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">دباب
+                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
                                             العسل</label>
                                         <input type="number" name="no_gallons_honey" placeholder="العدد"
+                                            value="{{ old('no_gallons_honey', $shipment->no_gallons_honey) }}"
                                             class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                                     </div>
                                     <div>
@@ -519,6 +497,7 @@
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
                                             العسل</label>
                                         <input type="number" name="no_honey_jars" placeholder="العدد"
+                                            value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}"
                                             class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                                     </div>
                                 </div>
@@ -554,7 +533,7 @@
                                     <option value="prepaid">مدفوع مقدماً</option>
                                     <option value="cod">الدفع عند الاستلام (على المستلم)</option>
                                     <option value="partial_payment">دفع جزئي</option>
-                                    <option value="overdue">متأخر</option>
+                                    <option value="customer_credit">آجل (على حساب المرسل)</option>
                                 </select>
                             </div>
 
