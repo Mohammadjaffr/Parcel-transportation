@@ -5,6 +5,7 @@ namespace App\Services\Receipts\Types;
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
 use Carbon\Carbon;
+
 class SenderShipmentReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -50,7 +51,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
         $otherPhonesList = [];
         $headquartersData = null;
-        
+
         // 🛡️ حماية كافية هنا: لا ندخل العمليات إلا إذا كان $app موجوداً
         if ($app) {
             if ($app->phone) {
@@ -65,7 +66,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
             // جلب الفروع الأخرى فقط إذا كان التطبيق موجوداً
             $allBranches = $app->branches()->get();
-            foreach($allBranches as $b) {
+            foreach ($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
                     continue;
                 }
@@ -73,7 +74,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
-        
+
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
         // 5. القواميس
@@ -132,13 +133,13 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-            'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
+            'partial_amount'    => number_format($shipment->total_amount - $shipment->amount_to_collect_from_receiver?? 0, 0),
+            'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
             'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0)
-                ? $app->terms_and_conditions 
+                ? $app->terms_and_conditions
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
             'design' => [
                 'primary_color'   => $theme['primary'] ?? '#ea580c',

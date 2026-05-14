@@ -43,6 +43,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
         }
 
+
         // 4. إعداد ترويسة السند (Header) لتكون باسم الفرع المُستلم
         $mainBranchData = null;
         if ($printBranch) {
@@ -143,10 +144,10 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             // --- الحسابات والمبالغ ---
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
-            'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-            
-            // 🎯 استخدام الدالة الجديدة لحساب المتبقي على (المُستلم)
+            'total_amount'      => number_format($shipment->total_amount, 0),
+            'partial_amount'    => number_format($shipment->total_amount - $shipment->amount_to_collect_from_receiver?? 0, 0),
+                
+                // 🎯 استخدام الدالة الجديدة لحساب المتبقي على (المُستلم)
             'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
 
             // --- معلومات النظام والتصميم ---
