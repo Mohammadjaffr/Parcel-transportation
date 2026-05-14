@@ -14,7 +14,8 @@ class OfficeBranch extends Model
         'name',
         'phone',
         'address',
-        'city'
+        'city',
+        'map_link',
     ];
     public function office()
     {

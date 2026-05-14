@@ -15,18 +15,21 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
     public function fetchData(string $referenceId): array
     {
-        // 1. جلب الشحنة مع العلاقات الأساسية و .app
+        // 1. جلب الشحنة مع العلاقات الأساسية
         $shipment = Shipment::with([
             'senderCustomer',
             'receiverCustomer',
-            'senderBranch.app', // 👈 تم إضافة .app
-            'receiverBranch',
+            'senderBranch.app',
+            'receiverBranch.app', // 👈 أضفنا جلب تطبيق الفرع المستلم
             'receiverOfficeBranch',
-            'creator.app'       // 👈 تم إضافة .app
+            'creator.app'
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) من الشحنة - آمن جداً
-        $app = $shipment->senderBranch?->app ?? $shipment->creator?->app;
+        // 2. 🎯 السحر هنا: تحديد الفرع الذي سيطبع السند (الفرع المُستلم)
+        $printBranch = $shipment->receiverBranch ?? $shipment->receiverOfficeBranch ?? $shipment->senderBranch;
+        
+        // جلب بيانات التطبيق (الشركة) بناءً على الفرع المُستلم
+        $app = $printBranch?->app ?? $shipment->creator?->app;
 
         // 3. تجهيز مسار الشعار الديناميكي - آمن
         $imagePath = $app?->logo
@@ -40,14 +43,12 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
         }
 
-        // 4. إعداد فرع السند وأرقام الفروع
-        $senderBranch = $shipment->senderBranch;
-        
+        // 4. إعداد ترويسة السند (Header) لتكون باسم الفرع المُستلم
         $mainBranchData = null;
-        if ($senderBranch) {
+        if ($printBranch) {
             $mainBranchData = [
-                'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'title' => 'فرع / ' . $printBranch->name . ($printBranch->address ? ' - ' . $printBranch->address : ''),
+                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $printBranch->phone ?? ''))))
             ];
         }
 
@@ -68,7 +69,8 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
             $allBranches = $app->branches()->get();
             foreach($allBranches as $b) {
-                if ($senderBranch && $b->id === $senderBranch->id) {
+                // نستثني الفرع المُستلم من قائمة الهواتف الأخرى لأنه مطبوع في الترويسة
+                if ($printBranch && $b->id === $printBranch->id) {
                     continue;
                 }
                 $phonesArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $b->phone ?? '')));
@@ -112,25 +114,25 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             // --- معلومات السند ---
-            'title'             => 'سند استلام طرد',
+            'title'             => 'سند تسليم طرد', // 👈 تعديل العنوان ليتناسب مع الوارد
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
             'tracking_code'     => $shipment->code ?? 'بدون تتبع',
             
             // 🛡️ إصلاح التاريخ ليجلب تاريخ إنشاء الشحنة بشكل آمن
-            'date'              => ($shipment->created_at ? $shipment->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'))
-                                   . ' - ' . Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'date'              => ($shipment->created_at ? $shipment->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'))
+                                   . ' - ' . Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i'),
 
             // --- بيانات المرسل والمستلم ---
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
-            'sender_office'     => $shipment->senderBranch?->app?->name ?? $app?->name ?? 'الفرع الرئيسي', // 👈 إضافة ?-> لحماية $app->name
+            'sender_office'     => $shipment->senderBranch?->app?->name ?? $app?->name ?? 'الفرع الرئيسي',
             'sender_branch_phone'     => $shipment->senderBranch?->phone ?? '---',
             
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
             'receiver_branch'   => $receiverDestination,
-            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app?->name ?? 'الفرع الرئيسي', // 👈 إضافة ?-> لحماية $app->name
+            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app?->name ?? 'الفرع الرئيسي',
 
             // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? 'طرد عادي',
@@ -143,14 +145,16 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
             'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-            'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
+            
+            // 🎯 استخدام الدالة الجديدة لحساب المتبقي على (المُستلم)
+            'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
 
             // --- معلومات النظام والتصميم ---
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => now()->format('Y-m-d H:i'),
+            'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
             'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0) 
                 ? $app->terms_and_conditions 
-                : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
+                : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'يرجى مراجعة الطرد قبل مغادرة الفرع.'], // 👈 تغيير طفيف يناسب الاستلام
             
             'design' => [
                 'primary_color'   => $theme['primary'] ?? '#ea580c',

@@ -147,16 +147,14 @@ class CustomerController extends Controller
         // ==========================================
         // 1. جلب العميل مع مجاميع أرصدته (مخصصة لفرعنا فقط 🎯)
         // ==========================================
-        $customer = Customer::where('app_id', $user->app_id) // 💡 العميل يتبع المكتب كاملاً
-            // كم له؟ (متحصلات ورصيد في فرعنا فقط)
+        $customer = Customer::where('app_id', $user->app_id)
             ->withSum(['transactions as sum_credit' => function ($q) use ($user) {
                 $q->where('type', 'credit')
-                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
+                  ->where('branch_id', $user->branch_id);
             }], 'amount')
-            // كم عليه؟ (ديون رسوم الشحن في فرعنا فقط)
             ->withSum(['transactions as sum_debit' => function ($q) use ($user) {
                 $q->where('type', 'debit')
-                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
+                  ->where('branch_id', $user->branch_id);
             }], 'amount')
             ->findOrFail($id);
 
@@ -168,51 +166,48 @@ class CustomerController extends Controller
         // ==========================================
         $transactions = CustomerTransaction::with('shipment')
             ->where('customer_id', $id)
-            ->where('branch_id', $user->branch_id) // 💡 إظهار الحركات التي تمت في هذا الفرع فقط
-            ->latest() // الترتيب بالوقت الأحدث
-            ->orderBy('id', 'desc') // 💡 كاسر التعادل: الترتيب بالـ ID الأكبر في حال تشابه الوقت
+            ->where('branch_id', $user->branch_id)
+            ->latest()
+            ->orderBy('id', 'desc')
             ->paginate(10, ['*'], 'trans_page')
             ->withQueryString();
 
         $transactions->getCollection()->transform(function ($trans) {
-            // تجهيز رابط الواتساب من السيرفيس
             $trans->waUrl = WhatsAppLinkService::generate($trans, 'transaction');
-
-            // تجهيز رابط الطباعة
             $trans->printUrl = route('receipt.generate', ['type' => 'transaction', 'id' => $trans->id]);
-
             return $trans;
         });
 
         // ==========================================
-        // 3. سجل الشحنات (History) مع الفلترة 📦
+        // 3. سجل الشحنات (History) مع الفلترة الذكية 📦
         // ==========================================
         $branchCode = $user->branch_id;
         $direction = $request->query('direction', 'all'); // استقبال الفلتر من الرابط
 
-        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch'])
-            ->where(function ($query) use ($branchCode, $id) {
-                // فرعنا هو المرسل والعميل هو المرسل
+        $shipmentsQuery = Shipment::with(['senderBranch', 'receiverBranch']);
+
+        // 💡 السحر هنا: دمجنا شرط الفرع مع شرط صفة العميل (مرسل/مستلم) بدقة لا تقبل الخطأ
+        if ($direction == 'sent') {
+            // إذا اختار "صادرة": نجلب فقط التي أُرسلت من (فرعنا) وكان (العميل) هو المرسل
+            $shipmentsQuery->where('sender_branch_id', $branchCode)
+                           ->where('sender_customer_id', $id);
+                           
+        } elseif ($direction == 'received') {
+            // إذا اختار "واردة": نجلب فقط التي وصلت إلى (فرعنا) وكان (العميل) هو المستلم
+            $shipmentsQuery->where('receiver_branch_id', $branchCode)
+                           ->where('receiver_customer_id', $id);
+                           
+        } else {
+            // "الكل": نجلب الصادرة من فرعنا (والعميل مرسل) + الواردة لفرعنا (والعميل مستلم)
+            $shipmentsQuery->where(function ($query) use ($branchCode, $id) {
                 $query->where(function ($q) use ($branchCode, $id) {
                     $q->where('sender_branch_id', $branchCode)
-                        ->where('sender_customer_id', $id);
+                      ->where('sender_customer_id', $id);
                 })
-                    // أو فرعنا هو المستقبل والعميل هو المستقبل
-                    ->orWhere(function ($q) use ($branchCode, $id) {
-                        $q->where('receiver_branch_id', $branchCode)
-                            ->where('receiver_customer_id', $id);
-                    });
-            });
-
-        // تطبيق فلتر (صادرة / واردة)
-        if ($direction == 'sent') {
-            $shipmentsQuery->where('sender_customer_id', $id);
-        } elseif ($direction == 'received') {
-            $shipmentsQuery->where('receiver_customer_id', $id);
-        } else {
-            $shipmentsQuery->where(function ($q) use ($id) {
-                $q->where('sender_customer_id', $id)
-                    ->orWhere('receiver_customer_id', $id);
+                ->orWhere(function ($q) use ($branchCode, $id) {
+                    $q->where('receiver_branch_id', $branchCode)
+                      ->where('receiver_customer_id', $id);
+                });
             });
         }
 

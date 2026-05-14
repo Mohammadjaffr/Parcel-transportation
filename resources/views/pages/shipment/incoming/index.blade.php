@@ -166,12 +166,7 @@
                     @php
                         $source = $shipment->senderBranch?->name ?? $shipment->senderOfficeBranch?->name ?? 'مصدر غير محدد';
 
-                        $packageTypeLabel = match($shipment->package_type) {
-                            'carton' => 'كرتون',
-                            'bag' => 'كيس',
-                            'envelope' => 'مغلف',
-                            default => 'أخرى',
-                        };
+                        $packageTypeLabel = $shipment->package_type;
 
                         $paymentLabel = match($shipment->payment_method) {
                             'prepaid' => 'خالص الدفع',

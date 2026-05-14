@@ -29,7 +29,9 @@ class SenderMessage implements WhatsAppMessageInterface
 
         $name       = $entity->senderCustomer->name ?? 'عميلنا العزيز';
         $bondNumber = $entity->bond_number ?? 'غير متوفر';
-        $amount     = number_format($entity->total_amount ?? 0);
+        
+        // هنا نعرض الإجمالي، وممكن نضيف المتبقي عليه لو أحببت
+        $totalAmount = number_format($entity->total_amount ?? 0);
 
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
         $msg .= "الأستاذ / {$name} المحترم،\n";
@@ -38,15 +40,14 @@ class SenderMessage implements WhatsAppMessageInterface
         $msg .= "تم استلام طلب الشحن الخاص بكم بنجاح، وجاري العمل على معالجته.\n\n";
 
         $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
-        $msg .= "💰 المبلغ : {$amount} ريال\n";
+        $msg .= "💰 إجمالي تكلفة الشحن : {$totalAmount} ريال\n"; // 👈 تغيير المسمى ليكون دقيقاً
 
         if ($receiptUrl) {
-            $msg .= "\n📄 سند الاستلام:\n{$receiptUrl}\n";
+            $msg .= "\n📄 سند الاستلام الخاص بك:\n{$receiptUrl}\n";
         }
 
         $msg .= "\nيمكنكم متابعة حالة الشحنة باستخدام رقم الشحنة أعلاه.\n\n";
         $msg .= "نشكر ثقتكم بخدماتنا.\n";
-        $msg .= "إدارة النظام";
 
         return $msg;
     }

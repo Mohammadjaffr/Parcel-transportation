@@ -331,15 +331,21 @@
                 </a>
             </div>
 
-            {{-- قائمة الطرود --}}
+           {{-- قائمة الطرود --}}
             <div class="space-y-4">
                 @forelse($shipments as $shipment)
+                    @php
+                        // 💡 السحر هنا: نتحقق هل العميل هو المرسل وهل تمت العملية من فرعنا؟
+                        $userBranchId = auth()->user()->branch_id;
+                        $isSender = ($shipment->sender_customer_id == $customer->id) && ($shipment->sender_branch_id == $userBranchId);
+                    @endphp
+
                     <div class="bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative">
                         <div class="flex justify-between items-center px-4 py-2 border-b border-slate-100 bg-slate-50/50">
 
                             <div class="flex items-center gap-2">
                                 {{-- شارة مرسل / مستلم --}}
-                                @if ($shipment->sender_customer_id == $customer->id)
+                                @if ($isSender)
                                     <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[12px]">arrow_upward</span>
                                         مرسل
@@ -390,7 +396,8 @@
                                 </p>
                             </div>
 
-                            <a href="{{ route('shipment.outgoing.show', $shipment->id) }}"
+                            {{-- 💡 التوجيه الذكي: إذا كان مرسل يذهب للصادر، وإذا كان مستلم يذهب للوارد --}}
+                            <a href="{{ $isSender ? route('shipment.outgoing.show', $shipment->id) : route('shipment.incoming.show', $shipment->id) }}"
                                 class="flex justify-center items-center w-10 h-10 rounded-full border transition-colors bg-slate-50 text-slate-400 hover:bg-primary hover:text-white border-slate-100 active:scale-90">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                             </a>

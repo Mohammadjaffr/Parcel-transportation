@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('phone')->nullable(); 
             $table->text('address')->nullable(); 
             $table->string('city');
+            $table->text('map_link')->nullable();
             $table->timestamps();
         });
     }

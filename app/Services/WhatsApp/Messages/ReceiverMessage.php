@@ -29,24 +29,42 @@ class ReceiverMessage implements WhatsAppMessageInterface
 
         $name       = $entity->receiverCustomer->name ?? 'عميلنا العزيز';
         $bondNumber = $entity->bond_number ?? 'غير متوفر';
-        $amount     = number_format($entity->total_amount ?? 0);
+        
+        // 💡 جلب اسم فرع الاستلام
+        $branchName = $entity->receiverBranch->name ?? $entity->receiverOfficeBranch->name ?? 'الفرع';
+        
+        // 📍 السحر الجديد: جلب رابط خرائط جوجل الخاص بالفرع
+        $mapLink    = $entity->receiverBranch->map_link ?? $entity->receiverOfficeBranch->map_link ?? null;
+        
+        $amountDue  = $entity->amount_to_collect_from_receiver; 
 
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
-        $msg .= "الأستاذ / {$name} المحترم،\n";
-        $msg .= "تحية طيبة وبعد،\n\n";
+        $msg .= "الأستاذ / *{$name}* المحترم،\n\n";
 
-        $msg .= "نود إشعاركم بأنه تم تسجيل الشحنة الخاصة بكم بنجاح، والبيانات كما يلي:\n\n";
-
+        $msg .= "يسعدنا إشعاركم بأن شحنتكم قد وصلت بنجاح وهي الآن *جاهزة للاستلام*.\n\n";
+        
+        $msg .= "🏢 الفرع : {$branchName}\n";
+        
+        // 💡 إضافة الرابط للرسالة إذا كان متوفراً في الداتابيز
+        if ($mapLink) {
+            $msg .= "📍 موقع الفرع (خرائط جوجل) :\n{$mapLink}\n";
+        }
+        
         $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
-        $msg .= "💰 المبلغ : {$amount} ريال\n";
-
-        if ($receiptUrl) {
-            $msg .= "\n📄 سند الاستلام:\n{$receiptUrl}\n";
+        
+        // توضيح مالي دقيق في الواتساب
+        if ($amountDue > 0) {
+            $msg .= "💰 المطلوب سداده عند الاستلام : *" . number_format($amountDue) . " ريال*\n";
+        } else {
+            $msg .= "✅ حالة الدفع : *خالص* (لا يوجد مبلغ للتحصيل)\n";
         }
 
-        $msg .= "\nيرجى الاحتفاظ برقم الشحنة للمتابعة عند الحاجة.\n\n";
-        $msg .= "نشكر ثقتكم بخدماتنا.\n";
-        $msg .= "إدارة النظام";
+        if ($receiptUrl) {
+            $msg .= "\n📄 السند الإلكتروني:\n{$receiptUrl}\n";
+        }
+
+        $msg .= "\nنرجو منكم التكرم بزيارة الفرع لاستلام الطرد في أقرب وقت.\n";
+        $msg .= "نشكر ثقتكم بخدماتنا. 🌹";
 
         return $msg;
     }

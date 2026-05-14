@@ -148,6 +148,39 @@ class Shipment extends Model
     {
         return $this->hasOne(Transaction::class);
     }
+    /**
+     * حساب المبلغ المتبقي المطلوب تحصيله كاش من (المُستلم)
+     */
+    public function getAmountToCollectFromReceiverAttribute()
+    {
+        $total = (float) ($this->total_amount ?? 0);
+        $partial = (float) ($this->partial_amount ?? 0);
+
+        return match ($this->payment_method) {
+            'prepaid'         => 0, 
+            'customer_credit' => 0, 
+            'partial_payment' => max(0, $total - $partial), 
+            'cod'             => $total, 
+            default           => $total,
+        };
+    }
+
+    /**
+     * حساب المبلغ المطلوب تحصيله كاش من (المُرسل)
+     */
+    public function getAmountToCollectFromSenderAttribute()
+    {
+        $total = (float) ($this->total_amount ?? 0);
+        $partial = (float) ($this->partial_amount ?? 0);
+
+        return match ($this->payment_method) {
+            'prepaid'         => $total,   
+            'partial_payment' => $partial, 
+            'cod'             => 0,       
+            'customer_credit' => 0,        
+            default           => 0,
+        };
+    }
 
 
 

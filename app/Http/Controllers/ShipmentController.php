@@ -726,14 +726,15 @@ class ShipmentController extends Controller
             // 💡 حماية أمنية (Authorization): التأكد أن الطرد فعلاً وارد إلى فرع المستخدم الحالي
             ->where('receiver_branch_id', $user->branch_id)
             ->findOrFail($id);
+        $whatsappUrl = WhatsAppLinkService::generate($shipment, 'receiver');
 
         // توجيه المستخدم حسب نوع الجهاز
         if ($request->isMobile) {
-            return view('mobile.pages.shipment.incoming.show', compact('shipment'));
+            return view('mobile.pages.shipment.incoming.show', compact('shipment', 'whatsappUrl'));
         }
 
         // واجهة الكمبيوتر (الدسكتوب)
-        return view('pages.shipment.incoming.show', compact('shipment'));
+        return view('pages.shipment.incoming.show', compact('shipment', 'whatsappUrl'));
     }
 
     // end incoming methods

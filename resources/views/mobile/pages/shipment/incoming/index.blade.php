@@ -318,15 +318,7 @@
                                     <span class="text-[10px] text-slate-400 font-bold">المحتوى:</span>
                                     <span
                                         class="inline-flex w-fit text-[11px] font-black text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">
-                                        @if ($shipment->package_type == 'carton')
-                                            كرتون
-                                        @elseif($shipment->package_type == 'bag')
-                                            كيس
-                                        @elseif($shipment->package_type == 'envelope')
-                                            مغلف
-                                        @else
-                                            أخرى
-                                        @endif
+                                        {{ $shipment->package_type }}
                                         @if ($shipment->weight > 0) <span
                                                 class="mr-1 text-slate-500">({{ $shipment->weight }} كجم)</span>
                                         @endif

@@ -6,6 +6,7 @@ use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+
 class ShipmentDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
@@ -29,16 +30,16 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         $app = $package->senderBranch?->app ?? $package->creator?->app;
 
-           $imagePath = $app?->logo
-    ? public_path('storage/' . $app->logo)
-    : public_path('assets/image/icon_without_bg.png');
+        $imagePath = $app?->logo
+            ? public_path('storage/' . $app->logo)
+            : public_path('assets/image/icon_without_bg.png');
 
-$logoBase64 = null;
-if (file_exists($imagePath)) {
-    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-    $data = file_get_contents($imagePath);
-    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-}
+        $logoBase64 = null;
+        if (file_exists($imagePath)) {
+            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
+            $data = file_get_contents($imagePath);
+            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        }
 
         // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
@@ -87,6 +88,7 @@ if (file_exists($imagePath)) {
         // 4. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
+        
         foreach($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
                 ?? $shipment->receiverOfficeBranch?->name
@@ -95,6 +97,22 @@ if (file_exists($imagePath)) {
             $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
                 ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
                 : null;
+
+            // 💡 الحسبة المالية الصحيحة بناءً على نوع الدفع
+            $totalAmount = (float) ($shipment->total_amount ?? 0);
+            $paymentKey = $shipment->payment_method ?? 'prepaid';
+            
+            if ($paymentKey === 'prepaid' || $paymentKey === 'customer_credit') {
+                $paidAmount = $totalAmount;
+                $remainingAmount = 0;
+            } elseif ($paymentKey === 'partial_payment') {
+                $paidAmount = (float) ($shipment->partial_amount ?? 0);
+                $remainingAmount = max(0, $totalAmount - $paidAmount);
+            } else {
+                // cod أو 
+                $paidAmount = 0;
+                $remainingAmount = $totalAmount;
+            }
 
             $shipmentsData[] = [
                 'bond_number'       => $shipment->bond_number ?? '---',
@@ -107,11 +125,14 @@ if (file_exists($imagePath)) {
                 'receiver_branch'   => $receiverDestination,
                 'package_type'      => $shipment->package_type ?? 'طرد',
                 'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
-                'payment_key'       => $shipment->payment_method ?? 'prepaid',
-                'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
-                'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-                'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-                'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
+                'payment_key'       => $paymentKey,
+                'payment_method'    => $paymentMethods[$paymentKey] ?? 'غير محدد',
+                
+                // 💡 المتغيرات بعد الحسبة الدقيقة
+                'total_amount'      => number_format($totalAmount, 0),
+                'partial_amount'    => number_format($paidAmount, 0),
+                'remaining_amount'  => number_format($remainingAmount, 0),
+                
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
             ];
@@ -137,7 +158,13 @@ if (file_exists($imagePath)) {
 
             'title'             => 'كشف حمولة الرسائل',
             'package_number'    => $package->tracking_number ?? 'غير متوفر',
-            'date'              => $package->created_at ? $package->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
+            
+            // إصلاح التوقيت للـ AM/PM والمنطقة الزمنية
+            'date'              => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], 
+                                   ($package->created_at 
+                                       ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') 
+                                       : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'))
+                               ),
             
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
@@ -147,9 +174,10 @@ if (file_exists($imagePath)) {
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date' => Carbon::now()
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i'),
+            
+            // إصلاح توقيت الطباعة
+            'print_date'        => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')),
+            
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],
