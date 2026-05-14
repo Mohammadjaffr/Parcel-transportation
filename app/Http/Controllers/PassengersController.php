@@ -19,7 +19,8 @@ class PassengersController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Passengers::with(['driver', 'customer', 'branch'])
+        $user = auth()->user();
+        $query = Passengers::with(['driver', 'customer', 'branch'])->where('branch_id', $user->branch_id)
             ->latest();
 
         if ($request->filled('search')) {
@@ -127,7 +128,8 @@ class PassengersController extends Controller
     }
     public function show(Request $request, $id)
     {
-        $passenger = Passengers::with(['driver', 'customer', 'branch'])->findOrFail($id);
+        $user = auth()->user();
+        $passenger = Passengers::with(['driver', 'customer', 'branch'])->where('branch_id', $user->branch_id)->findOrFail($id);
 
         if ($request->isMobile) {
             return view('mobile.pages.people.passengers.show', compact('passenger'));

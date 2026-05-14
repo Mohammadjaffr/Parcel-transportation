@@ -22,44 +22,47 @@ class CustomerController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-
-        // 💡 1. استقبال الفلتر من الرابط (الافتراضي هو 'all')
         $filter = $request->query('filter', 'all');
 
         // ========================================================
-        // 📊 جلب العملاء مع الإحصائيات (N+1 Query Optimization)
+        // 📊 جلب العملاء مع الإحصائيات (مخصصة للفرع الحالي)
         // ========================================================
         $query = Customer::with(['branch', 'creator'])
-            // 1. كم شحنة أرسلها؟ (ينشئ متغير: sent_shipments_count)
-            ->withCount('sentShipments')
+            
+            // 💡 1. جعل العميل مرئياً لجميع فروع المكتب (حذفنا شرط branch_id من هنا)
+            ->where('app_id', $user->app_id)
 
-            // 2. كم له؟ رصيد (ينشئ متغير: sum_credit)
-            ->withSum(['transactions as sum_credit' => function ($q) {
-                $q->where('type', 'credit');
+            // 2. عدد الشحنات التي أرسلها من (هذا الفرع فقط)
+            ->withCount(['sentShipments' => function($q) use ($user) {
+                 $q->where('sender_branch_id', $user->branch_id);
+            }])
+
+            // 3. كم له؟ رصيد (في هذا الفرع فقط 🎯)
+            ->withSum(['transactions as sum_credit' => function ($q) use ($user) {
+                $q->where('type', 'credit')
+                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
             }], 'amount')
 
-            // 3. كم عليه؟ ديون (ينشئ متغير: sum_debit)
-            ->withSum(['transactions as sum_debit' => function ($q) {
-                $q->where('type', 'debit');
-            }], 'amount')
+            // 4. كم عليه؟ ديون (في هذا الفرع فقط 🎯)
+            ->withSum(['transactions as sum_debit' => function ($q) use ($user) {
+                $q->where('type', 'debit')
+                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
+            }], 'amount');
 
-            // 4. الفلاتر الأساسية
-            ->where('branch_id', $user->branch_id)
-            ->where('app_id', $user->app_id);
 
         // ========================================================
         // 💰 فلترة المديونيات (بناءً على الأزرار)
         // ========================================================
         if ($filter === 'debtors') {
-            // عليهم ديون: (الموجب - السالب) يجب أن يكون أقل من صفر
+            // عليهم ديون لفرعنا:
             $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) < 0');
         } elseif ($filter === 'creditors') {
-            // حسابات مصفرة أو لهم رصيد: (الموجب - السالب) يجب أن يكون صفر أو أكبر
+            // مصفرين أو لهم رصيد في فرعنا:
             $query->havingRaw('(COALESCE(sum_credit, 0) - COALESCE(sum_debit, 0)) >= 0');
         }
 
         // ========================================================
-        // 🔍 البحث
+        // 🔍 البحث (يبحث في كل عملاء المكتب)
         // ========================================================
         if ($request->filled('search')) {
             $search = $request->search;
@@ -72,7 +75,6 @@ class CustomerController extends Controller
 
         $customers = $query->latest()->paginate(10)->withQueryString();
 
-        // 💡 2. تمرير متغير $filter للفيو لكي تتلون الأزرار بشكل صحيح
         if ($request->isMobile) {
             return view('mobile.pages.people.customers.index', compact('customers', 'filter'));
         }
@@ -143,30 +145,35 @@ class CustomerController extends Controller
         $user = auth()->user();
 
         // ==========================================
-        // 1. جلب العميل مع مجاميع أرصدته (من دفتر الأستاذ) 💰
+        // 1. جلب العميل مع مجاميع أرصدته (مخصصة لفرعنا فقط 🎯)
         // ==========================================
-        $customer = Customer::where('branch_id', $user->branch_id)
-            // كم له؟ (متحصلات ورصيد)
-            ->withSum(['transactions as sum_credit' => function ($q) {
-                $q->where('type', 'credit');
+        $customer = Customer::where('app_id', $user->app_id) // 💡 العميل يتبع المكتب كاملاً
+            // كم له؟ (متحصلات ورصيد في فرعنا فقط)
+            ->withSum(['transactions as sum_credit' => function ($q) use ($user) {
+                $q->where('type', 'credit')
+                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
             }], 'amount')
-            // كم عليه؟ (ديون رسوم الشحن)
-            ->withSum(['transactions as sum_debit' => function ($q) {
-                $q->where('type', 'debit');
+            // كم عليه؟ (ديون رسوم الشحن في فرعنا فقط)
+            ->withSum(['transactions as sum_debit' => function ($q) use ($user) {
+                $q->where('type', 'debit')
+                  ->where('branch_id', $user->branch_id); // 👈 الفلتر السحري
             }], 'amount')
             ->findOrFail($id);
+
         $customer->waUrl = WhatsAppLinkService::generate($customer, 'CustomerAccountStatement');
         $customer->printUrl = route('receipt.generate', ['type' => 'CustomerAccountStatement', 'id' => $customer->id]);
 
         // ==========================================
-        // 2. جلب كشف الحساب التفصيلي (كل الحركات المالية) 🧾
+        // 2. جلب كشف الحساب التفصيلي (حركات فرعنا فقط 🧾)
         // ==========================================
         $transactions = CustomerTransaction::with('shipment')
             ->where('customer_id', $id)
+            ->where('branch_id', $user->branch_id) // 💡 إظهار الحركات التي تمت في هذا الفرع فقط
             ->latest() // الترتيب بالوقت الأحدث
             ->orderBy('id', 'desc') // 💡 كاسر التعادل: الترتيب بالـ ID الأكبر في حال تشابه الوقت
             ->paginate(10, ['*'], 'trans_page')
             ->withQueryString();
+
         $transactions->getCollection()->transform(function ($trans) {
             // تجهيز رابط الواتساب من السيرفيس
             $trans->waUrl = WhatsAppLinkService::generate($trans, 'transaction');
@@ -222,7 +229,7 @@ class CustomerController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.people.customers.show', compact(
                 'customer',
-                'transactions', // 💡 أضفنا الحركات المالية هنا
+                'transactions',
                 'shipments',
                 'direction'
             ));
@@ -230,7 +237,7 @@ class CustomerController extends Controller
 
         return view('pages.customers.show', compact(
             'customer',
-            'transactions', // 💡 وهنا أيضاً
+            'transactions',
             'shipments',
             'direction'
         ));

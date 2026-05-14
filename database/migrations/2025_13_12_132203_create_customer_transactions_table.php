@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained();
             $table->foreignId('shipment_id')->nullable()->constrained();
             $table->foreignId('passenger_id')->nullable()->constrained();
+            $table->foreignId('branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->decimal('amount', 12, 2);
             $table->enum('type', ['debit', 'credit']);   

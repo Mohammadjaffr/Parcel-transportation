@@ -16,10 +16,12 @@ class ReportPassanger implements ReceiptStrategyInterface
 
     public function fetchData(string $referenceId): array
     {
+        $user = auth()->user();
+        $app = $user?->app;
         // referenceId يمكن أن يكون 'all' أو يحتوي فلاتر مثل: status:pending|from:2026-01-01|to:2026-12-31
         $filters = $this->parseFilters($referenceId);
 
-        $query = Passengers::with(['driver', 'customer', 'branch'])->latest('date');
+        $query = Passengers::with(['driver', 'customer', 'branch'])->where('branch_id', $user->branch_id)->latest('date');
 
         if (!empty($filters['from'])) {
             $query->whereDate('date', '>=', $filters['from']);

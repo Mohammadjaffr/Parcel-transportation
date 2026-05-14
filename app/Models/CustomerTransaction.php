@@ -15,7 +15,8 @@ class CustomerTransaction extends Model
         'type',
         'description',
         'passenger_id',
-        'created_by'
+        'created_by',
+        'branch_id'
     ];
 
     public function customer()

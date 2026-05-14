@@ -93,7 +93,8 @@ class CustomerTransactionService
             'amount'      => $amount,
             'type'        => $type,
             'description' => $description,
-            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف الذي أنشأ الحركة
+            'created_by'  => auth()->id(), 
+            'branch_id'  => auth()->user()->branch_id,
         ]);
     }
 
@@ -105,10 +106,11 @@ class CustomerTransactionService
         return CustomerTransaction::create([
             'customer_id' => $customer->id,
             'amount'      => $amount,
-            'type'        => 'credit', // رصيد موجب يقلص الديون
+            'type'        => 'credit',
             'description' => 'سداد نقدي لحساب العميل' . ($notes ? ' - ' . $notes : ''),
-            'shipment_id' => null, // دفعة عامة غير مرتبطة بطرد معين
-            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف
+            'shipment_id' => null, 
+            'created_by'  => auth()->id(), 
+            'branch_id'  => auth()->user()->branch_id,
         ]);
     }
 
@@ -123,7 +125,8 @@ class CustomerTransactionService
             'type'        => 'debit', 
             'description' => 'صرف رصيد نقدي للعميل' . ($notes ? ' - ' . $notes : ''),
             'shipment_id' => null, 
-            'created_by'  => auth()->id(), // 👈 تم إضافة الموظف
+            'created_by'  => auth()->id(), 
+            'branch_id'  => auth()->user()->branch_id,
         ]);
     }
 
@@ -132,16 +135,17 @@ class CustomerTransactionService
      */
     public function recordPassengerCommission($passenger)
     {
-        // نتحقق أولاً أن الراكب مرتبط بعميل وأن له عمولة
+        
         if ($passenger->customer_id && $passenger->total_commission > 0) {
             
             return CustomerTransaction::create([
                 'customer_id'  => $passenger->customer_id,
                 'passenger_id' => $passenger->id, 
                 'amount'       => $passenger->total_commission,
-                'type'         => 'credit', // رصيد لصالح العميل
+                'type'         => 'credit', 
                 'description'  => "عمولة جلب راكب رقم #{$passenger->passenger_number} - المكان: {$passenger->location}",
-                'created_by'   => auth()->id(), // 👈 تم إضافة الموظف
+                'created_by'   => auth()->id(),
+                'branch_id'  => auth()->user()->branch_id,
             ]);
         }
         return false;
