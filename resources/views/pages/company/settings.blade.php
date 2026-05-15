@@ -65,7 +65,7 @@
                         class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-amber-600 bg-amber-50 rounded-xl border border-amber-100/50 font-headline">
                         <span class="material-symbols-outlined text-[16px]"
                             style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
-                        {{ $subscription->package->name ?? 'بدون باقة' }}
+                        {{ $subscription->package?->name ?? 'بدون باقة' }}
                     </span>
                 </div>
 
@@ -89,92 +89,76 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-        @if (isset($subscription))
-            @php
-                // 1. الفروع
-                $branchLimit = $subscription->allowed_branches ?? 0;
-                $branchPercent = $branchLimit > 0 ? ($company->branches_count / $branchLimit) * 100 : 0;
+       {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+@if (isset($subscription))
+    <div class="px-4 mt-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                تفاصيل الباقة
+            </h3>
 
-                // 2. السائقين 💡 (الجديد)
-                $driverLimit = $subscription->allowed_drivers ?? 0;
-                $driverPercent = $driverLimit > 0 ? ($company->drivers_count / $driverLimit) * 100 : 0;
+            <a href="{{ route('pricing.page') }}"
+                class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                ترقية
+                <span class="material-symbols-outlined text-[14px]">upgrade</span>
+            </a>
+        </div>
 
-                // 3. الشحنات
-                $shipmentLimit = $subscription->allowed_shipments ?? 0;
-                $shipmentPercent = $shipmentLimit > 0 ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
-
-                // 4. الرحلات المجمعة 💡 (الجديد)
-                $packageLimit = $subscription->allowed_packages ?? 0;
-                $packagePercent = $packageLimit > 0 ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
-            @endphp
-
-            <div class="px-4 mt-6 space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                        تفاصيل الباقة
-                    </h3>
-                    <a href="{{ route('pricing.page') }}"
-                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                        ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
-                    </a>
-                </div>
-
-                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-                    {{-- حالة الاشتراك --}}
-                    <div class="relative z-10 mb-5">
-                        <p
-                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                            <span
-                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
-                        </p>
-                    </div>
-
-                    <div class="grid relative z-10 grid-cols-1 gap-5 md:grid-cols-2">
-                        {{-- 1. الفروع --}}
-                        @include('pages.company.partials.usage-bar', [
-                            'label' => 'عدد الفروع',
-                            'icon' => 'domain',
-                            'current' => $company->branches_count,
-                            'limit' => $branchLimit,
-                            'percent' => $branchPercent,
-                            'color' => 'bg-amber-500',
-                        ])
-
-                        {{-- 2. السائقين (الجديد) --}}
-                        @include('pages.company.partials.usage-bar', [
-                            'label' => 'عدد السائقين',
-                            'icon' => 'person_pin_circle',
-                            'current' => $company->drivers_count,
-                            'limit' => $driverLimit,
-                            'percent' => $driverPercent,
-                            'color' => 'bg-blue-500',
-                        ])
-
-                        {{-- 3. الطرود --}}
-                        @include('pages.company.partials.usage-bar', [
-                            'label' => 'عدد الطرود',
-                            'icon' => 'inventory_2',
-                            'current' => $shipmentsCount,
-                            'limit' => $shipmentLimit,
-                            'percent' => $shipmentPercent,
-                            'color' => 'bg-primary',
-                        ])
-
-                        {{-- 4. الرحلات المجمعة (الجديد) --}}
-                        @include('pages.company.partials.usage-bar', [
-                            'label' => 'عدد الشحنات',
-                            'icon' => 'local_shipping',
-                            'current' => $packagesCount,
-                            'limit' => $packageLimit,
-                            'percent' => $packagePercent,
-                            'color' => 'bg-indigo-500',
-                        ])
-                    </div>
-                </div>
+        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+            {{-- حالة الاشتراك --}}
+            <div class="relative z-10 mb-5">
+                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
+                    (متبقي {{ $remainingDays }} يوماً)
+                </p>
             </div>
-        @endif
+
+            <div class="grid relative z-10 grid-cols-1 gap-5 md:grid-cols-2">
+                {{-- 1. الفروع --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الفروع',
+                    'icon' => 'domain',
+                    'current' => $limits['branches']['used'],
+                    'limit' => $limits['branches']['limit'],
+                    'percent' => $limits['branches']['percent'],
+                    'color' => 'bg-amber-500',
+                ])
+
+                {{-- 2. السائقين --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد السائقين',
+                    'icon' => 'person_pin_circle',
+                    'current' => $limits['drivers']['used'],
+                    'limit' => $limits['drivers']['limit'],
+                    'percent' => $limits['drivers']['percent'],
+                    'color' => 'bg-blue-500',
+                ])
+
+                {{-- 3. الطرود --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الطرود',
+                    'icon' => 'inventory_2',
+                    'current' => $limits['shipments']['used'],
+                    'limit' => $limits['shipments']['limit'],
+                    'percent' => $limits['shipments']['percent'],
+                    'color' => 'bg-primary',
+                ])
+
+                {{-- 4. الشحنات / الحزم --}}
+                @include('pages.company.partials.usage-bar', [
+                    'label' => 'عدد الشحنات',
+                    'icon' => 'local_shipping',
+                    'current' => $limits['packages']['used'],
+                    'limit' => $limits['packages']['limit'],
+                    'percent' => $limits['packages']['percent'],
+                    'color' => 'bg-indigo-500',
+                ])
+            </div>
+        </div>
+    </div>
+@endif
 
         <div class="px-4 mt-6 space-y-4">
             <div class="flex justify-between items-center">
@@ -548,29 +532,29 @@
                         <div x-data="{ fileName: '' }">
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">شعار الشركة
                                 (اختياري)</label>
-                            <div class="relative group cursor-pointer">
+                            <div class="relative cursor-pointer group">
                                 <input type="file" name="logo" accept="image/*"
                                     @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
                                     class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer">
                                 <div
-                                    class="flex gap-4 items-center p-3 w-full transition-all rounded-2xl border-2 border-dashed bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
+                                    class="flex gap-4 items-center p-3 w-full rounded-2xl border-2 border-dashed transition-all bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
                                     <div
-                                        class="flex justify-center items-center w-12 h-12 transition-all rounded-xl bg-white shadow-sm text-slate-400 border border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
+                                        class="flex justify-center items-center w-12 h-12 bg-white rounded-xl border shadow-sm transition-all text-slate-400 border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
                                         <span class="material-symbols-outlined"
                                             x-show="!fileName">add_photo_alternate</span>
-                                        <span class="material-symbols-outlined text-emerald-500" x-show="fileName"
+                                        <span class="text-emerald-500 material-symbols-outlined" x-show="fileName"
                                             x-cloak>check_circle</span>
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-bold truncate transition-colors text-slate-700 font-headline group-hover:text-primary"
                                             x-show="!fileName">انقر لرفع الشعار الجديد</p>
-                                        <p class="text-sm font-bold truncate text-emerald-600 font-headline"
+                                        <p class="text-sm font-bold text-emerald-600 truncate font-headline"
                                             x-show="fileName" x-text="fileName" x-cloak></p>
                                         <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP
                                         </p>
                                     </div>
                                     <div
-                                        class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                        class="flex justify-center items-center w-8 h-8 rounded-full transition-colors bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary shrink-0">
                                         <span class="text-[18px] material-symbols-outlined">upload</span>
                                     </div>
                                 </div>

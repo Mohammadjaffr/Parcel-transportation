@@ -50,40 +50,97 @@ class AppController extends Controller
         }
         return view('pages.office.verified.index', compact('offices'));
     }
-    public function settings(Request $request)
-    {
-        $user = Auth::user();
+   public function settings(Request $request)
+{
+    $user = Auth::user();
 
-        // جلب بيانات الشركة مع الفروع والاشتراك الحالي وتفاصيل الباقة
-        $company = $user->App()
-            ->with(['branches', 'currentSubscription.package'])
-            ->withCount(['branches', 'users', 'drivers'])
-            ->first();
+    $company = $user->App()
+        ->with(['branches', 'currentSubscription.package'])
+        ->withCount(['branches', 'users', 'drivers'])
+        ->first();
 
-        $subscription = $company->currentSubscription;
-        $remainingDays = 0;
-        $shipmentsCount = 0;
-        $packagesCount = 0;
+    $subscription = $company?->currentSubscription;
+    $package = $subscription?->package;
 
-        if ($subscription) {
-            $remainingDays = (int) ceil(now()->diffInDays($subscription->ends_at, false));
-            $remainingDays = $remainingDays < 0 ? 0 : $remainingDays;
-            $shipmentsCount = $company->shipments()
-                ->whereBetween('shipments.created_at', [$subscription->starts_at, $subscription->ends_at])
-                ->count();
-            $packagesCount = $company->shipmentPackages()
-                ->whereBetween('shipment_packages.created_at', [$subscription->starts_at, $subscription->ends_at])
-                ->count();
-        }
+    $remainingDays = 0;
+    $shipmentsCount = 0;
+    $packagesCount = 0;
 
-        // إرجاع الواجهة مع الاحتفاظ بـ compact بالشكل المعتاد
-        if ($request->isMobile) {
-            return view('mobile.pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
-        }
+    if ($subscription && $subscription->starts_at && $subscription->ends_at) {
+        $remainingDays = (int) ceil(now()->diffInDays($subscription->ends_at, false));
+        $remainingDays = max($remainingDays, 0);
 
-        // صفحة الديسكتوب
-        return view('pages.company.settings', compact('company', 'subscription', 'remainingDays', 'shipmentsCount', 'packagesCount'));
+        $shipmentsCount = $company->shipments()
+            ->whereBetween('shipments.created_at', [
+                $subscription->starts_at,
+                $subscription->ends_at,
+            ])
+            ->count();
+
+        $packagesCount = $company->shipmentPackages()
+            ->whereBetween('shipment_packages.created_at', [
+                $subscription->starts_at,
+                $subscription->ends_at,
+            ])
+            ->count();
     }
+
+    $limits = [
+        'branches' => [
+            'used'    => (int) ($company->branches_count ?? 0),
+            'limit'   => (int) ($package?->max_branches ?? 0),
+            'percent' => ($package?->max_branches ?? 0) > 0
+                ? min(100, (($company->branches_count ?? 0) / $package->max_branches) * 100)
+                : 0,
+        ],
+
+        'drivers' => [
+            'used'    => (int) ($company->drivers_count ?? $company->users_count ?? 0),
+            'limit'   => (int) ($package?->max_drivers ?? 0),
+            'percent' => ($package?->max_drivers ?? 0) > 0
+                ? min(100, (($company->drivers_count ?? $company->users_count ?? 0) / $package->max_drivers) * 100)
+                : 0,
+        ],
+
+        'shipments' => [
+            'used'    => (int) $shipmentsCount,
+            'limit'   => (int) ($package?->max_shipments ?? 0),
+            'percent' => ($package?->max_shipments ?? 0) > 0
+                ? min(100, ($shipmentsCount / $package->max_shipments) * 100)
+                : 0,
+        ],
+
+        'packages' => [
+            'used'    => (int) $packagesCount,
+            'limit'   => (int) ($package?->max_packages ?? 0),
+            'percent' => ($package?->max_packages ?? 0) > 0
+                ? min(100, ($packagesCount / $package->max_packages) * 100)
+                : 0,
+        ],
+    ];
+
+    if ($request->isMobile) {
+        return view('mobile.pages.company.settings', compact(
+            'company',
+            'subscription',
+            'package',
+            'remainingDays',
+            'shipmentsCount',
+            'packagesCount',
+            'limits'
+        ));
+    }
+
+    return view('pages.company.settings', compact(
+        'company',
+        'subscription',
+        'package',
+        'remainingDays',
+        'shipmentsCount',
+        'packagesCount',
+        'limits'
+    ));
+}
 
     public function update(Request $request)
     {

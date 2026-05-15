@@ -29,24 +29,27 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\TenantController as SuperAdminTenantController;
+use App\Http\Controllers\SuperAdmin\PackageController as SuperAdminPackageController;
+use App\Http\Controllers\SuperAdmin\SubscriptionController as SuperAdminSubscriptionController;
 
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', [LandingPageController::class,'index'])->name('welcome');
+Route::get('/', [LandingPageController::class, 'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
 Route::middleware('guest')->group(function () {
-    
+
     // صفحة عرض إدخال الكود
     Route::get('/verify-otp', [OtpController::class, 'showVerifyForm'])->name('otp.verify.form');
-    
+
     // إرسال الكود للتحقق منه
     Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
-    
+
     // مسار إعادة إرسال الكود (الذي كان يسبب المشكلة)
     Route::post('/verify-otp/resend', [OtpController::class, 'resend'])->name('otp.resend');
-    
 });
 
 Route::middleware('auth')->group(function () {
@@ -55,43 +58,43 @@ Route::middleware('auth')->group(function () {
         $app = auth()->user()->App ?? null;
         if ($app && $app->hasActiveSubscription()) {
             return redirect()->route('dashboard.index')
-                             ->with('info', 'تم تفعيل حسابك بنجاح! أهلاً بك.');
+                ->with('info', 'تم تفعيل حسابك بنجاح! أهلاً بك.');
         }
         $adminPhone = "967780261952";
         return view('auth.pending', compact('adminPhone'));
     })->name('account.pending');
-    
+
     // ==============================================================
     // 2. نظام إدارة الشحن (محمي: يتطلب أن يكون التطبيق مفعل is_active = true)
     // ==============================================================
-    Route::middleware(['app.active','active.Subscription'])->group(function () {
-        
+    Route::middleware(['app.active', 'active.Subscription'])->group(function () {
+
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-        
+
         // 1. إدارة المستخدمين محمية بـ Users
         Route::resource('users', UserController::class)->middleware(['admin', 'check.service:Users']);
 
         // Branch routes with super admin middleware for create and store
         Route::get('branch', [BranchController::class, 'index'])->name('branch.index');
         Route::get('branch/create', [BranchController::class, 'create'])->name('branch.create')->middleware('admin');
-        Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware(['admin','check.limit:branches']);
+        Route::post('branch', [BranchController::class, 'store'])->name('branch.store')->middleware(['admin', 'check.limit:branches']);
         Route::get('branch/{branch}', [BranchController::class, 'show'])->name('branch.show');
         Route::get('branch/{branch}/edit', [BranchController::class, 'edit'])->name('branch.edit');
         Route::put('branch/{branch}', [BranchController::class, 'update'])->name('branch.update');
         Route::delete('branch/{branch}', [BranchController::class, 'destroy'])->name('branch.destroy');
 
         //==================================================================   معتمد   ===================================================
-        
+
         // 4. الطرود المرسلة (محمية بـ Shipment_Out)
         Route::middleware('check.service:Shipment_Out')->group(function () {
             Route::get('/shipment/outgoing', [ShipmentController::class, 'outgoingIndex'])->name('shipment.outgoing.index');
-            Route::get('/shipment/outgoing/create', [ShipmentController::class,'outgoingCreate'])->name('shipment.outgoing.create');
-            Route::post('/shipment/outgoing/store',[ShipmentController::class,'outgoingStore'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
-            Route::get('/shipment/outgoing/show/{id}', [ShipmentController::class,'outgoingShow'])->name('shipment.outgoing.show');
+            Route::get('/shipment/outgoing/create', [ShipmentController::class, 'outgoingCreate'])->name('shipment.outgoing.create');
+            Route::post('/shipment/outgoing/store', [ShipmentController::class, 'outgoingStore'])->name('shipment.outgoing.store')->middleware(['check.limit:shipments']);
+            Route::get('/shipment/outgoing/show/{id}', [ShipmentController::class, 'outgoingShow'])->name('shipment.outgoing.show');
             Route::get('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingEdit'])->name('shipment.outgoing.edit');
             Route::put('/shipments/outgoing/{id}', [ShipmentController::class, 'outgoingUpdate'])->name('shipment.outgoing.update');
         });
@@ -110,17 +113,17 @@ Route::middleware('auth')->group(function () {
         // لازم يكون قبل resource offices
         Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
         Route::resource('offices', OfficeController::class);
-        
+
         Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])->name('customers.addPayment');
 
         // 6. حزم الترحيل المرسلة (محمية بـ Package_Out)
         Route::middleware('check.service:Package_Out')->group(function () {
-            Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class,'sentIndex'])->name('shipmentpackage.outgoing.index');
-            Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class,'sentCreate'])->name('shipmentpackage.outgoing.create');
-            Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class,'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
-            Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class,'sentShow'])->name('shipmentpackage.outgoing.show');
-            Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class,'updateStatus'])->name('shipmentpackage.updateStatus');
+            Route::get('shipmentpackage/outgoing/index', [ShipmentPackagesController::class, 'sentIndex'])->name('shipmentpackage.outgoing.index');
+            Route::get('shipmentpackage/outgoing/create', [ShipmentPackagesController::class, 'sentCreate'])->name('shipmentpackage.outgoing.create');
+            Route::post('shipmentpackage/outgoing/store', [ShipmentPackagesController::class, 'sentStore'])->middleware(['check.limit:packages'])->name('shipmentpackage.outgoing.store');
+            Route::get('shipmentpackage/outgoing/show/{id}', [ShipmentPackagesController::class, 'sentShow'])->name('shipmentpackage.outgoing.show');
+            Route::post('shipmentpackage/outgoing/updateStatus/{id}', [ShipmentPackagesController::class, 'updateStatus'])->name('shipmentpackage.updateStatus');
             Route::post('shipmentpackage/{package}/remove-shipment/{shipment}', [ShipmentPackagesController::class, 'removeShipment'])->name('shipmentpackage.removeShipment');
             Route::post('shipmentpackage/add-shipment/{package}', [ShipmentPackagesController::class, 'addShipment'])->name('shipmentpackage.addShipment');
         });
@@ -129,15 +132,15 @@ Route::middleware('auth')->group(function () {
         Route::middleware('check.service:Package_In')->group(function () {
             Route::get('shipmentpackage/incoming/index', [ShipmentPackagesController::class, 'incomingIndex'])->name('shipmentpackage.incoming.index');
             Route::get('shipmentpackage/incoming/create', [ShipmentPackagesController::class, 'incomingCreate'])->name('shipmentpackage.incoming.create');
-            Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class,'incomingStore'])->name('shipmentpackage.incoming.store');
-            Route::get('shipmentpackage/incoming/show/{id}', [ShipmentPackagesController::class,'incomingShow'])->name('shipmentpackage.incoming.show');
+            Route::post('shipmentpackage/incoming/store', [ShipmentPackagesController::class, 'incomingStore'])->name('shipmentpackage.incoming.store');
+            Route::get('shipmentpackage/incoming/show/{id}', [ShipmentPackagesController::class, 'incomingShow'])->name('shipmentpackage.incoming.show');
         });
 
         // mobile routes
         Route::view('/mobile/people', 'mobile.pages.people.index')->name('people.index');
         Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
-        Route::view('/mobile/office','mobile.pages.office.index')->name('mobile.office');
-        Route::view('/mobile/shipment','mobile.pages.shipment.index')->name('mobile.shipment');
+        Route::view('/mobile/office', 'mobile.pages.office.index')->name('mobile.office');
+        Route::view('/mobile/shipment', 'mobile.pages.shipment.index')->name('mobile.shipment');
 
         //=============================================================================   معتمد   ======================================
 
@@ -156,7 +159,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/whatsapp/driver-manifest/{id}', [WhatsAppController::class, 'sendDriverManifest'])->name('whatsapp.driverManifest');
 
         Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])->name('shipment.adminlog');
-        
+
         // 3. السائقين (محمية بـ Drivers)
         Route::resource('drivers', DriverController::class)->middleware('check.service:Drivers');
         Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])->name('drivers.shipments')->middleware('check.service:Drivers');
@@ -184,7 +187,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'createSettlement'])->name('finance.customers.settle');
         Route::post('/finance/customers/{customer}/settle', [CustomerFinanceController::class, 'storeSettlement'])->name('finance.customers.storeSettlement');
         Route::get('/finance/customers/{customer}', [CustomerFinanceController::class, 'show'])->name('finance.customers.show');
-        
+
         // مالية الفروع
         Route::get('/finance/branches', [BranchFinanceController::class, 'index'])->name('finance.branches.index');
         Route::get('/finance/branches/{branch}', [BranchFinanceController::class, 'show'])->name('finance.branches.show');
@@ -242,17 +245,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/receipts/{receipt}/add-item', [ReceiptHeaderController::class, 'addItem'])->name('receipts.add-item');
         Route::put('/receipt-items/{item}', [ReceiptHeaderController::class, 'updateItem'])->name('receipt-items.update');
         Route::delete('/receipt-items/{item}', [ReceiptHeaderController::class, 'destroyItem'])->name('receipt-items.destroy');
-  
+
         Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
         Route::get('/app', [AppController::class, 'index'])->name('app.index');
         Route::PUT('/app/update', [AppController::class, 'update'])->name('app.update');
         Route::post('/connect/send/{receiverAppId}', [ConnectionController::class, 'sendRequest'])->name('offices.connect');
         Route::post('/connect/accept/{id}', [ConnectionController::class, 'accept'])->name('connections.accept');
         Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
-        
-        Route::get('/whatsapp/customer-account-statement/{id}', [WhatsAppController::class, 'sendCustomerAccountStatement'])->name('whatsapp.customer.account.statement');
 
-    
+        Route::get('/whatsapp/customer-account-statement/{id}', [WhatsAppController::class, 'sendCustomerAccountStatement'])->name('whatsapp.customer.account.statement');
     });
 });
 
@@ -263,22 +264,64 @@ Route::middleware(['auth', 'super.admin'])
     ->prefix('superadmin')
     ->name('superadmin.')
     ->group(function () {
-        Route::get('/dashboard', [\App\Http\Controllers\SuperAdmin\DashboardController::class, 'index'])->name('dashboard');
 
-        // Offices / Tenants
-        Route::get('/offices', [\App\Http\Controllers\SuperAdmin\TenantController::class, 'index'])->name('offices.index');
-        Route::get('/offices/{app}', [\App\Http\Controllers\SuperAdmin\TenantController::class, 'show'])->name('offices.show');
-        Route::post('/offices/{app}/toggle-status', [\App\Http\Controllers\SuperAdmin\TenantController::class, 'toggleStatus'])->name('offices.toggleStatus');
-        Route::post('/offices/{app}/toggle-service', [\App\Http\Controllers\SuperAdmin\TenantController::class, 'toggleService'])->name('offices.toggleService');
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
+        Route::redirect('/', '/superadmin/dashboard');
 
-        // Packages
-        Route::get('/packages', [\App\Http\Controllers\SuperAdmin\PackageController::class, 'index'])->name('packages.index');
-        Route::post('/packages', [\App\Http\Controllers\SuperAdmin\PackageController::class, 'store'])->name('packages.store');
-        Route::post('/packages/{package}/toggle-status', [\App\Http\Controllers\SuperAdmin\PackageController::class, 'toggleStatus'])->name('packages.toggleStatus');
+        Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])
+            ->name('dashboard');
 
-        // Subscriptions
-        Route::get('/subscriptions', [\App\Http\Controllers\SuperAdmin\SubscriptionController::class, 'index'])->name('subscriptions.index');
-        Route::post('/subscriptions/{subscription}/update-status', [\App\Http\Controllers\SuperAdmin\SubscriptionController::class, 'updateStatus'])->name('subscriptions.updateStatus');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Offices / Tenants
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/offices', [SuperAdminTenantController::class, 'index'])
+            ->name('offices.index');
+
+        Route::get('/offices/{app}', [SuperAdminTenantController::class, 'show'])
+            ->name('offices.show');
+
+        Route::post('/offices/{app}/toggle-status', [SuperAdminTenantController::class, 'toggleStatus'])
+            ->name('offices.toggleStatus');
+
+        Route::post('/offices/{app}/toggle-service', [SuperAdminTenantController::class, 'toggleService'])
+            ->name('offices.toggleService');
+
+        Route::post('/offices/{app}/toggle-all-services', [SuperAdminTenantController::class, 'toggleAllServices'])
+            ->name('offices.toggleAllServices');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Packages
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/packages', [SuperAdminPackageController::class, 'index'])
+            ->name('packages.index');
+
+        Route::post('/packages', [SuperAdminPackageController::class, 'store'])
+            ->name('packages.store');
+        Route::put('/packages/{package}', [SuperAdminPackageController::class, 'update'])
+            ->name('packages.update');
+        Route::post('/packages/{package}/toggle-status', [SuperAdminPackageController::class, 'toggleStatus'])
+            ->name('packages.toggleStatus');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Subscriptions
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/subscriptions', [SuperAdminSubscriptionController::class, 'index'])
+            ->name('subscriptions.index');
+
+        Route::post('/subscriptions/{subscription}/update-status', [SuperAdminSubscriptionController::class, 'updateStatus'])
+            ->name('subscriptions.updateStatus');
     });
-
 require __DIR__ . '/auth.php';

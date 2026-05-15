@@ -20,6 +20,11 @@ class Package extends Model
         'max_packages',
         'is_active',
     ];
+    protected $casts = [
+    'is_active' => 'boolean',
+    'price' => 'decimal:2',
+];
+
     public function subscriptions()
     {
         return $this->hasMany(Subscription::class);

@@ -69,7 +69,7 @@
                             style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
 
                         {{-- عرض اسم الباقة بشكل ديناميكي --}}
-                        {{ $subscription->package->name ?? 'بدون باقة' }}
+                        {{ $subscription->package?->name ?? 'بدون باقة' }}
                     </span>
                 </div>
 
@@ -93,92 +93,76 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-        @if (isset($subscription))
-            @php
-                // 1. الفروع
-                $branchLimit = $subscription->allowed_branches ?? 0;
-                $branchPercent = $branchLimit > 0 ? ($company->branches_count / $branchLimit) * 100 : 0;
+       {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+@if (isset($subscription))
+    <div class="px-4 mt-6 space-y-4">
+        <div class="flex justify-between items-center">
+            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                تفاصيل الباقة
+            </h3>
 
-                // 2. السائقين 💡 (الجديد)
-                $driverLimit = $subscription->allowed_drivers ?? 0;
-                $driverPercent = $driverLimit > 0 ? ($company->drivers_count / $driverLimit) * 100 : 0;
+            <a href="{{ route('pricing.page') }}"
+                class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                ترقية
+                <span class="material-symbols-outlined text-[14px]">upgrade</span>
+            </a>
+        </div>
 
-                // 3. الشحنات
-                $shipmentLimit = $subscription->allowed_shipments ?? 0;
-                $shipmentPercent = $shipmentLimit > 0 ? (($shipmentsCount ?? 0) / $shipmentLimit) * 100 : 0;
-
-                // 4. الرحلات المجمعة 💡 (الجديد)
-                $packageLimit = $subscription->allowed_packages ?? 0;
-                $packagePercent = $packageLimit > 0 ? (($packagesCount ?? 0) / $packageLimit) * 100 : 0;
-            @endphp
-
-            <div class="px-4 mt-6 space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                        تفاصيل الباقة
-                    </h3>
-                    <a href="{{ route('pricing.page') }}"
-                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                        ترقية <span class="material-symbols-outlined text-[14px]">upgrade</span>
-                    </a>
-                </div>
-
-                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-                    {{-- حالة الاشتراك --}}
-                    <div class="relative z-10 mb-5">
-                        <p
-                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                            <span
-                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }} (متبقي {{ $remainingDays }} يوماً)
-                        </p>
-                    </div>
-
-                    <div class="relative z-10 space-y-5">
-                        {{-- 1. الفروع --}}
-                        @include('mobile.pages.company.partials.usage-bar', [
-                            'label' => 'عدد الفروع',
-                            'icon' => 'domain',
-                            'current' => $company->branches_count,
-                            'limit' => $branchLimit,
-                            'percent' => $branchPercent,
-                            'color' => 'bg-amber-500',
-                        ])
-
-                        {{-- 2. السائقين (الجديد) --}}
-                        @include('mobile.pages.company.partials.usage-bar', [
-                            'label' => 'عدد السائقين',
-                            'icon' => 'person_pin_circle',
-                            'current' => $company->drivers_count,
-                            'limit' => $driverLimit,
-                            'percent' => $driverPercent,
-                            'color' => 'bg-blue-500',
-                        ])
-
-                        {{-- 3. الطرود --}}
-                        @include('mobile.pages.company.partials.usage-bar', [
-                            'label' => 'عدد الطرود',
-                            'icon' => 'inventory_2',
-                            'current' => $shipmentsCount,
-                            'limit' => $shipmentLimit,
-                            'percent' => $shipmentPercent,
-                            'color' => 'bg-primary',
-                        ])
-
-                        {{-- 4. الرحلات المجمعة (الجديد) --}}
-                        @include('mobile.pages.company.partials.usage-bar', [
-                            'label' => 'عدد الشحنات',
-                            'icon' => 'local_shipping',
-                            'current' => $packagesCount,
-                            'limit' => $packageLimit,
-                            'percent' => $packagePercent,
-                            'color' => 'bg-indigo-500',
-                        ])
-                    </div>
-                </div>
+        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+            {{-- حالة الاشتراك --}}
+            <div class="relative z-10 mb-5">
+                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
+                    (متبقي {{ $remainingDays }} يوماً)
+                </p>
             </div>
-        @endif
+
+            <div class="relative z-10 space-y-5">
+                {{-- 1. الفروع --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الفروع',
+                    'icon' => 'domain',
+                    'current' => $limits['branches']['used'],
+                    'limit' => $limits['branches']['limit'],
+                    'percent' => $limits['branches']['percent'],
+                    'color' => 'bg-amber-500',
+                ])
+
+                {{-- 2. السائقين --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد السائقين',
+                    'icon' => 'person_pin_circle',
+                    'current' => $limits['drivers']['used'],
+                    'limit' => $limits['drivers']['limit'],
+                    'percent' => $limits['drivers']['percent'],
+                    'color' => 'bg-blue-500',
+                ])
+
+                {{-- 3. الطرود --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الطرود',
+                    'icon' => 'inventory_2',
+                    'current' => $limits['shipments']['used'],
+                    'limit' => $limits['shipments']['limit'],
+                    'percent' => $limits['shipments']['percent'],
+                    'color' => 'bg-primary',
+                ])
+
+                {{-- 4. الشحنات / الحزم --}}
+                @include('mobile.pages.company.partials.usage-bar', [
+                    'label' => 'عدد الشحنات',
+                    'icon' => 'local_shipping',
+                    'current' => $limits['packages']['used'],
+                    'limit' => $limits['packages']['limit'],
+                    'percent' => $limits['packages']['percent'],
+                    'color' => 'bg-indigo-500',
+                ])
+            </div>
+        </div>
+    </div>
+@endif
 
         <div class="px-4 space-y-4">
             <div class="flex justify-between items-center">
@@ -362,7 +346,7 @@
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6 pr-2">
+                <div class="flex gap-3 items-center pr-2 mb-6">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">add_business</span>
@@ -423,7 +407,7 @@
                             <input type="tel" required x-model="localPhone" placeholder="7XXXXXXXX"
                                 inputmode="numeric" :maxlength="selectedCountry?.dial_code === '+967' ? 9 : 15"
                                 @input="localPhone = localPhone.replace(/\D/g, '')"
-                                class="flex-1 px-2 py-3  text-sm text-left bg-transparent border-0 font-headline  focus:ring-0">
+                                class="flex-1 px-2 py-3 text-sm text-left bg-transparent border-0 font-headline focus:ring-0">
 
                             <div
                                 class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-primary">
@@ -437,7 +421,7 @@
                                         x-html="selectedCountry.svg">
                                     </div>
                                 </template>
-                                <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
+                                <span class="text-xs font-bold whitespace-nowrap text-slate-700"
                                     x-text="selectedCountry?.dial_code"></span>
                                 <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                             </button>
@@ -529,7 +513,7 @@
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6 pr-2">
+                <div class="flex gap-3 items-center pr-2 mb-6">
                     <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_document</span>
@@ -548,27 +532,27 @@
                     <div x-data="{ fileName: '' }">
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">شعار الشركة
                             (اختياري)</label>
-                        <div class="relative group cursor-pointer">
+                        <div class="relative cursor-pointer group">
                             <input type="file" name="logo" accept="image/*"
                                 @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''"
                                 class="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer">
                             <div
-                                class="flex gap-4 items-center p-3 w-full transition-all rounded-2xl border-2 border-dashed bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
+                                class="flex gap-4 items-center p-3 w-full rounded-2xl border-2 border-dashed transition-all bg-slate-50/50 border-slate-200 group-hover:border-primary/40 group-hover:bg-primary/5 focus-within:border-primary/40 focus-within:ring-4 focus-within:ring-primary/10">
                                 <div
-                                    class="flex justify-center items-center w-12 h-12 transition-all rounded-xl bg-white shadow-sm text-slate-400 border border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
+                                    class="flex justify-center items-center w-12 h-12 bg-white rounded-xl border shadow-sm transition-all text-slate-400 border-slate-100 group-hover:text-primary group-hover:scale-105 group-hover:shadow-md shrink-0">
                                     <span class="material-symbols-outlined" x-show="!fileName">add_photo_alternate</span>
-                                    <span class="material-symbols-outlined text-emerald-500" x-show="fileName"
+                                    <span class="text-emerald-500 material-symbols-outlined" x-show="fileName"
                                         x-cloak>check_circle</span>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-bold truncate transition-colors text-slate-700 font-headline group-hover:text-primary"
                                         x-show="!fileName">انقر لرفع الشعار الجديد</p>
-                                    <p class="text-sm font-bold truncate text-emerald-600 font-headline" x-show="fileName"
+                                    <p class="text-sm font-bold text-emerald-600 truncate font-headline" x-show="fileName"
                                         x-text="fileName" x-cloak></p>
                                     <p class="mt-0.5 text-[10px] font-bold text-slate-400">صيغ مدعومة: JPG, PNG, WEBP</p>
                                 </div>
                                 <div
-                                    class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors shrink-0">
+                                    class="flex justify-center items-center w-8 h-8 rounded-full transition-colors bg-slate-100 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary shrink-0">
                                     <span class="text-[18px] material-symbols-outlined">upload</span>
                                 </div>
                             </div>
@@ -745,7 +729,7 @@
                     <span class="material-symbols-outlined text-[20px]">close</span>
                 </button>
 
-                <div class="flex gap-3 items-center mb-6 pr-2">
+                <div class="flex gap-3 items-center pr-2 mb-6">
                     <div class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl shrink-0">
                         <span class="material-symbols-outlined"
                             style="font-variation-settings: 'FILL' 1;">edit_square</span>
@@ -822,7 +806,7 @@
                                         x-html="selectedCountry.svg">
                                     </div>
                                 </template>
-                                <span class="text-xs font-bold text-slate-700 whitespace-nowrap"
+                                <span class="text-xs font-bold whitespace-nowrap text-slate-700"
                                     x-text="selectedCountry?.dial_code"></span>
                                 <span class="material-symbols-outlined text-[18px] text-slate-400">expand_more</span>
                             </button>

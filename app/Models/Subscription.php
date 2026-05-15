@@ -20,19 +20,21 @@ class Subscription extends Model
         'starts_at',
         'ends_at',
         'status',
+        
     ];
     protected $casts = [
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+         'price_paid' => 'decimal:2',
     ];
 
     public function app()
     {
-        return $this->belongsTo(App::class);
+        return $this->belongsTo(App::class,'app_id','id');
     }
 
     public function package()
     {
-        return $this->belongsTo(Package::class);
+        return $this->belongsTo(Package::class,'package_id','id');
     }
 }
