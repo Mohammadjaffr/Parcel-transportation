@@ -577,155 +577,155 @@
 @endsection
 
 @section('script')
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
-                offices: officesList || [],
+  <script>
+    document.addEventListener('alpine:init', () => {
+        
+        // ==========================================
+        // 1. منطق تحديد الوجهة (المكتب والفرع)
+        // ==========================================
+        Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
+            offices: officesList || [],
+            selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
+            selectedBranchId: initialBranchId ? String(initialBranchId) : '',
+            availableBranches: [],
 
-                selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
-                selectedBranchId: initialBranchId ? String(initialBranchId) : '',
-                availableBranches: [],
+            init() {
+                // الحالة الأولى: إذا كان المكتب ممرراً مسبقاً (في حالة التعديل أو وجود خطأ في الفورم)
+                if (this.selectedOfficeId) {
+                    this.populateBranches();
+                    return; // نخرج من الدالة لكي لا نغير التحديد
+                }
 
-                init() {
-                    if (this.selectedOfficeId) {
-                        const office = this.offices.find(
-                            o => String(o.id) === String(this.selectedOfficeId)
+                // الحالة الثانية: إذا كان الفرع ممرراً ولكن المكتب غير معروف
+                if (this.selectedBranchId) {
+                    const foundOffice = this.offices.find(office => {
+                        return (office.branches || []).some(
+                            branch => String(branch.id) === String(this.selectedBranchId)
                         );
-
-                        if (office) {
-                            this.availableBranches = office.branches || [];
-
-                            const branchExists = this.availableBranches.some(
-                                b => String(b.id) === String(this.selectedBranchId)
-                            );
-
-                            if (this.selectedBranchId && !branchExists) {
-                                this.selectedBranchId = '';
-                            }
-                        }
-
-                        return;
-                    }
-
-                    if (this.selectedBranchId) {
-                        const foundOffice = this.offices.find(office => {
-                            return (office.branches || []).some(
-                                branch => String(branch.id) === String(this
-                                    .selectedBranchId)
-                            );
-                        });
-
-                        if (foundOffice) {
-                            this.selectedOfficeId = String(foundOffice.id);
-                            this.availableBranches = foundOffice.branches || [];
-                            return;
-                        }
-                    }
-
-                    const internalOffice = this.offices.find(
-                        o => String(o.id).startsWith('internal_')
-                    );
-
-                    if (internalOffice) {
-                        this.selectedOfficeId = String(internalOffice.id);
-                        this.availableBranches = internalOffice.branches || [];
-                    }
-                },
-
-                updateBranches() {
-                    const office = this.offices.find(
-                        o => String(o.id) === String(this.selectedOfficeId)
-                    );
-
-                    this.availableBranches = office ? (office.branches || []) : [];
-
-                    const branchExists = this.availableBranches.some(
-                        b => String(b.id) === String(this.selectedBranchId)
-                    );
-
-                    if (!branchExists) {
-                        this.selectedBranchId = '';
-                    }
-                }
-            }));
-            Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
-                customers: customersList || [],
-                countries: countriesList || [],
-                filteredCustomers: [],
-                localPhoneNumber: '',
-                nameInput: '',
-                selectedCustomerId: null,
-                selectedCountry: null,
-                openCountryDropdown: false,
-                searchCountryQuery: '',
-                showCustomerDropdown: false,
-
-                init() {
-                    if (initialData && initialData.phone) {
-                        let phone = initialData.phone;
-                        if (/^\d/.test(phone)) phone = '+' + phone;
-
-                        this.selectedCountry = this.countries.find(c => phone.startsWith(c
-                                .dial_code)) || this.countries.find(c => c.code === 'YE') || this
-                            .countries[
-                                0];
-                        if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
-                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code
-                                .length);
-                        } else {
-                            this.localPhoneNumber = initialData.phone;
-                        }
-                        this.selectedCustomerId = initialData.id;
-                        this.nameInput = initialData.name || '';
-                    } else {
-                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this
-                            .countries[0];
-                    }
-                },
-                get filteredCountries() {
-                    if (this.searchCountryQuery === '') return this.countries;
-                    const query = this.searchCountryQuery.toLowerCase();
-                    return this.countries.filter(c => c.name.toLowerCase().includes(query) || c
-                        .dial_code.includes(query));
-                },
-                get fullPhoneNumber() {
-                    if (!this.localPhoneNumber) return '';
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace(
-                        '+', '') : '';
-                    return dialCode + this.localPhoneNumber;
-                },
-                searchCustomer() {
-                    this.selectedCustomerId = null;
-                    let query = this.fullPhoneNumber.trim();
-                    if (this.localPhoneNumber.trim() === '') {
-                        this.filteredCustomers = [];
-                        this.showCustomerDropdown = false;
-                        return;
-                    }
-                    this.filteredCustomers = this.customers.filter(c => {
-                        return c.phone && String(c.phone).includes(query);
                     });
-                    this.showCustomerDropdown = true;
-                },
-                selectCustomer(customer) {
-                    this.selectedCustomerId = customer.id;
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
-                        '') : '';
-                    if (customer.phone && customer.phone.startsWith(dialCode)) {
-                        this.localPhoneNumber = customer.phone.substring(dialCode.length);
-                    } else {
-                        this.localPhoneNumber = customer.phone;
+
+                    if (foundOffice) {
+                        this.selectedOfficeId = String(foundOffice.id);
+                        this.populateBranches();
+                        return;
                     }
-                    this.nameInput = customer.name;
-                    this.showCustomerDropdown = false;
-                },
-                resetSelection() {
-                    this.selectedCustomerId = null;
-                    this.localPhoneNumber = '';
-                    this.nameInput = '';
-                    this.showCustomerDropdown = false;
                 }
-            }));
-        });
-    </script>
+
+                // الحالة الثالثة (الافتراضية لطرد جديد): تحديد "مكتبنا الحالي" تلقائياً
+                const internalOffice = this.offices.find(
+                    o => String(o.id).startsWith('internal_')
+                );
+
+                if (internalOffice) {
+                    this.selectedOfficeId = String(internalOffice.id);
+                    this.populateBranches();
+                }
+            },
+
+            // دالة مساعدة لتعبئة الفروع بناءً على المكتب المحدد
+            populateBranches() {
+                const office = this.offices.find(
+                    o => String(o.id) === String(this.selectedOfficeId)
+                );
+                this.availableBranches = office ? (office.branches || []) : [];
+            },
+
+            // تُستدعى من الواجهة عند تغيير المكتب @change
+            updateBranches() {
+                this.populateBranches();
+                // ملاحظة: لا نحتاج لتفريغ selectedBranchId هنا لأنك تقوم بتفريغه 
+                // في الواجهة مباشرة عبر @change="selectedBranchId = ''; updateBranches()"
+            }
+        }));
+
+        // ==========================================
+        // 2. منطق تحديد العميل (المرسل والمستلم)
+        // ==========================================
+        Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
+            customers: customersList || [],
+            countries: countriesList || [],
+            filteredCustomers: [],
+            localPhoneNumber: '',
+            nameInput: '',
+            selectedCustomerId: null,
+            selectedCountry: null,
+            openCountryDropdown: false,
+            searchCountryQuery: '',
+            showCustomerDropdown: false,
+
+            init() {
+                if (initialData && initialData.phone) {
+                    let phone = initialData.phone;
+                    if (/^\d/.test(phone)) phone = '+' + phone;
+
+                    this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code)) 
+                        || this.countries.find(c => c.code === 'YE') 
+                        || this.countries[0];
+
+                    if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                        this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                    } else {
+                        this.localPhoneNumber = initialData.phone;
+                    }
+
+                    this.selectedCustomerId = initialData.id;
+                    this.nameInput = initialData.name || '';
+                } else {
+                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                }
+            },
+
+            get filteredCountries() {
+                if (this.searchCountryQuery === '') return this.countries;
+                const query = this.searchCountryQuery.toLowerCase();
+                return this.countries.filter(c => 
+                    c.name.toLowerCase().includes(query) || c.dial_code.includes(query)
+                );
+            },
+
+            get fullPhoneNumber() {
+                if (!this.localPhoneNumber) return '';
+                let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                return dialCode + this.localPhoneNumber;
+            },
+
+            searchCustomer() {
+                this.selectedCustomerId = null;
+                let query = this.fullPhoneNumber.trim();
+                
+                if (this.localPhoneNumber.trim() === '') {
+                    this.filteredCustomers = [];
+                    this.showCustomerDropdown = false;
+                    return;
+                }
+
+                this.filteredCustomers = this.customers.filter(c => {
+                    return c.phone && String(c.phone).includes(query);
+                });
+                this.showCustomerDropdown = true;
+            },
+
+            selectCustomer(customer) {
+                this.selectedCustomerId = customer.id;
+                let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                
+                if (customer.phone && customer.phone.startsWith(dialCode)) {
+                    this.localPhoneNumber = customer.phone.substring(dialCode.length);
+                } else {
+                    this.localPhoneNumber = customer.phone;
+                }
+                
+                this.nameInput = customer.name;
+                this.showCustomerDropdown = false;
+            },
+
+            resetSelection() {
+                this.selectedCustomerId = null;
+                this.localPhoneNumber = '';
+                this.nameInput = '';
+                this.showCustomerDropdown = false;
+            }
+        }));
+    });
+</script>
 @endsection

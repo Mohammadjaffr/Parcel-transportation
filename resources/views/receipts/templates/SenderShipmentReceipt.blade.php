@@ -166,12 +166,12 @@
 
                 </div>
                 <div>
-                    
+
                     <p class="mb-1 text-xs font-bold text-slate-400">المتبقي</p>
-                    @if($payment_key == 'customer_credit')
-                    <p class="text-lg font-black text-rose-600" dir="ltr">{{ $total_amount ?? 0 }} ر.ي</p>
+                    @if ($payment_key == 'customer_credit')
+                        <p class="text-lg font-black text-rose-600" dir="ltr">{{ $total_amount ?? 0 }} ر.ي</p>
                     @else
-                    <p class="text-lg font-black text-rose-600" dir="ltr">{{ $remaining_amount ?? 0 }} ر.ي</p>
+                        <p class="text-lg font-black text-rose-600" dir="ltr">{{ $remaining_amount ?? 0 }} ر.ي</p>
                     @endif
                 </div>
             </div>

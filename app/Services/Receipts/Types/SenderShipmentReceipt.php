@@ -99,7 +99,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'secondary' => '#1e293b',
             'bg_light'  => '#fffaf5',
         ];
-        
+
         // 7. إرجاع البيانات المنظمة
         return [
             'company' => [
@@ -133,8 +133,8 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount'    => number_format($shipment->total_amount - $shipment->amount_to_collect_from_receiver?? 0, 0),
-            
+            'partial_amount'    => number_format($shipment->total_amount - $shipment->amount_to_collect_from_receiver ?? 0, 0),
+
             'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',

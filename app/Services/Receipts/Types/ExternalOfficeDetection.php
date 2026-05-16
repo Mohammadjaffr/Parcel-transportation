@@ -111,24 +111,48 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
                 ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
+            $paymentMethod = $shipment->payment_method ?? 'prepaid';
+            $totalAmount = $shipment->total_amount ?? 0;
+            $partialAmount = $shipment->partial_amount ?? 0;
+
+            if ($paymentMethod === 'prepaid') {
+                $paidAmount = $totalAmount;
+                $remainingAmount = 0;
+            } elseif ($paymentMethod === 'cod') {
+                $paidAmount = 0;
+                $remainingAmount = $totalAmount;
+            } elseif ($paymentMethod === 'partial_payment') {
+                $paidAmount = $partialAmount;
+                $remainingAmount = $totalAmount - $partialAmount;
+            } elseif ($paymentMethod === 'customer_credit') {
+                $paidAmount = 0;
+                $remainingAmount = 0;
+            } else {
+                $paidAmount = 0;
+                $remainingAmount = 0;
+            }
+
             $shipmentsData[] = [
-                'bond_number'       => $shipment->bond_number ?? '---',
-                'tracking_code'     => $shipment->code ?? '---',
-                'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
-                'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
-                'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-                'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
-                'sender_branch'     => $shipment->senderBranch?->name ?? '---',
-                'receiver_branch'   => $receiverDestination,
-                'package_type'      => $shipment->package_type ?? 'طرد',
-                'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
-                'payment_key'       => $shipment->payment_method ?? 'prepaid',
-                'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
-                'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-                'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-                'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
-                'notes'             => $shipment->notes,
-                'honey_details'     => $honeyDetails,
+                'bond_number'          => $shipment->bond_number ?? '---',
+                'tracking_code'        => $shipment->code ?? '---',
+                'sender_name'          => $shipment->senderCustomer?->name ?? 'عميل نقدي',
+                'sender_phone'         => $shipment->senderCustomer?->phone ?? '---',
+                'receiver_name'        => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
+                'receiver_phone'       => $shipment->receiverCustomer?->phone ?? '---',
+                'sender_branch'        => $shipment->senderBranch?->name ?? '---',
+                'receiver_branch'      => $receiverDestination,
+                'package_type'         => $shipment->package_type ?? 'طرد',
+                'weight'               => $shipment->weight ? $shipment->weight . ' كجم' : null,
+                'payment_key'          => $paymentMethod,
+                'payment_method'       => $paymentMethods[$paymentMethod] ?? 'غير محدد',
+                'total_amount'         => number_format($totalAmount, 0),
+                'paid_amount'          => number_format($paidAmount, 0),
+                'remaining_amount'     => $paymentMethod === 'customer_credit' ? 'على حساب المرسل' : number_format($remainingAmount, 0),
+                'raw_total_amount'     => $totalAmount,
+                'raw_paid_amount'      => $paidAmount,
+                'raw_remaining_amount' => $remainingAmount,
+                'notes'                => $shipment->notes,
+                'honey_details'        => $honeyDetails,
             ];
             $totalShipmentsCount++;
         }
@@ -161,6 +185,8 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
+            'package_receiver_office' => $officeBranch ? 'مكتب ' . ($officeBranch->office->name ?? '') . ' - ' . $officeBranch->name : 'غير محدد',
+            'package_receiver_phone' => $officeBranch->phone ?? '---',
             'total_shipments'   => $totalShipmentsCount,
 
             'shipments'         => $shipmentsData,

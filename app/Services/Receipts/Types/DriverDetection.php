@@ -151,7 +151,7 @@ class DriverDetection implements ReceiptStrategyInterface
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
-                
+
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

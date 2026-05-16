@@ -43,7 +43,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
-        
+
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
@@ -54,7 +54,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         $otherPhonesList = [];
         $headquartersData = null;
-        
+
         if ($app) {
             if ($app->phone) {
                 $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
@@ -67,7 +67,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             }
 
             $allBranches = $app->branches()->get();
-            foreach($allBranches as $b) {
+            foreach ($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
                     continue;
                 }
@@ -88,8 +88,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
         // 4. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
-        
-        foreach($package->shipments as $shipment) {
+
+        foreach ($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
                 ?? $shipment->receiverOfficeBranch?->name
                 ?? 'الوجهة غير محددة';
@@ -101,7 +101,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             // 💡 الحسبة المالية الصحيحة بناءً على نوع الدفع
             $totalAmount = (float) ($shipment->total_amount ?? 0);
             $paymentKey = $shipment->payment_method ?? 'prepaid';
-            
+
             if ($paymentKey === 'prepaid' || $paymentKey === 'customer_credit') {
                 $paidAmount = $totalAmount;
                 $remainingAmount = 0;
@@ -127,12 +127,12 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
                 'payment_key'       => $paymentKey,
                 'payment_method'    => $paymentMethods[$paymentKey] ?? 'غير محدد',
-                
+
                 // 💡 المتغيرات بعد الحسبة الدقيقة
                 'total_amount'      => number_format($totalAmount, 0),
                 'partial_amount'    => number_format($paidAmount, 0),
                 'remaining_amount'  => number_format($remainingAmount, 0),
-                
+
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
             ];
@@ -152,20 +152,22 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'name'        => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo'        => $logoBase64,
                 'main_branch' => $mainBranchData,
-                'headquarters'=> $headquartersData,
-                'other_phones'=> $otherPhonesStr,
+                'headquarters' => $headquartersData,
+                'other_phones' => $otherPhonesStr,
             ],
 
             'title'             => 'كشف حمولة الرسائل',
             'package_number'    => $package->tracking_number ?? 'غير متوفر',
-            
+
             // إصلاح التوقيت للـ AM/PM والمنطقة الزمنية
-            'date'              => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], 
-                                   ($package->created_at 
-                                       ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') 
-                                       : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'))
-                               ),
-            
+            'date'              => str_replace(
+                ['AM', 'PM'],
+                ['صباحاً', 'مساءً'],
+                ($package->created_at
+                    ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A')
+                    : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'))
+            ),
+
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
@@ -174,10 +176,10 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            
+
             // إصلاح توقيت الطباعة
             'print_date'        => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')),
-            
+
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

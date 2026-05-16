@@ -76,8 +76,16 @@
                         <span class="font-black text-slate-800">: {{ $package_number ?? '---' }}</span>
                     </div>
                     <div>
-                        <span class="text-sm text-slate-500">فرع الإرسال</span>
+                        <span class="text-sm text-slate-500">الفرع المسلم للارساليه</span>
                         <span class="font-bold text-slate-800">: {{ $package_sender_branch ?? '---' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm text-slate-500">المكتب المستلم للارساليه</span>
+                        <span class="font-bold text-slate-800">: {{ $package_receiver_office ?? '---' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-sm text-slate-500">رقم التواصل</span>
+                        <span class="font-bold text-slate-800" dir="ltr"> {{ $package_receiver_phone ?? '---' }}:</span>
                     </div>
                     <div>
                         <span class="text-sm text-slate-500">عدد الطرود</span>
@@ -106,7 +114,8 @@
                             <th class="w-24">نوع الطرد</th>
                             <th class="w-28">طريقة الدفع</th>
                             <th class="w-24 text-center">المبلغ</th>
-                            <th class="w-20 text-center">المتبقي</th>
+                            <th class="w-24 text-center">المدفوع</th>
+                            <th class="w-24 text-center">المتبقي</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,13 +156,14 @@
                                     </span>
                                 </td>
                                 <td class="font-black text-center text-slate-800" dir="ltr">{{ $shipment['total_amount'] }}</td>
-                                <td class="text-center font-bold {{ $shipment['remaining_amount'] !== '0' ? 'text-rose-600' : 'text-emerald-600' }}" dir="ltr">
+                                <td class="font-bold text-center text-emerald-600" dir="ltr">{{ $shipment['paid_amount'] }}</td>
+                                <td class="text-center font-bold {{ $shipment['remaining_amount'] !== '0' ? 'text-rose-600' : 'text-slate-400' }}" dir="ltr">
                                     {{ $shipment['remaining_amount'] }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="p-8 font-medium text-center text-slate-400 bg-slate-50/50">
+                                <td colspan="10" class="p-8 font-medium text-center text-slate-400 bg-slate-50/50">
                                     لا توجد طرود في هذه الإرسالية.
                                 </td>
                             </tr>
@@ -172,7 +182,7 @@
                         <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي المبالغ</p>
                         <p class="text-lg font-black text-slate-800" dir="ltr">
                             @php
-                                $totalAmounts = collect($shipments)->sum(function($s) { return (float) str_replace(',', '', $s['total_amount']); });
+                                $totalAmounts = collect($shipments)->sum('raw_total_amount');
                             @endphp
                             {{ number_format($totalAmounts, 0) }} ر.ي
                         </p>
@@ -181,7 +191,7 @@
                         <p class="mb-1 text-xs font-bold uppercase text-slate-400">المدفوع</p>
                         <p class="text-lg font-black text-emerald-600" dir="ltr">
                             @php
-                                $totalPaid = collect($shipments)->sum(function($s) { return (float) str_replace(',', '', $s['partial_amount']); });
+                                $totalPaid = collect($shipments)->sum('raw_paid_amount');
                             @endphp
                             {{ number_format($totalPaid, 0) }} ر.ي
                         </p>
@@ -189,7 +199,10 @@
                     <div>
                         <p class="mb-1 text-xs font-bold uppercase text-slate-400">المتبقي للتحصيل</p>
                         <p class="text-lg font-black text-rose-600" dir="ltr">
-                            {{ number_format($totalAmounts - $totalPaid, 0) }} ر.ي
+                            @php
+                                $totalRemaining = collect($shipments)->sum('raw_remaining_amount');
+                            @endphp
+                            {{ number_format($totalRemaining, 0) }} ر.ي
                         </p>
                     </div>
                 </div>
@@ -215,8 +228,22 @@
     </div>
     
     <!-- Footer -->
-    <div class="bg-slate-800 text-slate-400 p-4 text-center text-xs font-medium rounded-b-[2rem]">
-        تم الإنشاء إلكترونياً عبر نظام {{ $company['name'] ?? 'مرسال' }} | بواسطة: {{ $creator_name ?? 'مسؤول النظام' }}
+    <div class="bg-slate-800 p-4 text-center rounded-b-[2rem]">
+        {{-- بيانات الفاتورة --}}
+        <p class="text-xs font-medium text-slate-300">
+            تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
+            {{ $creator_name ?? 'مسؤول النظام' }} | الطباعة:
+            {{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}
+        </p>
+
+        {{-- الخط الفاصل التسويقي لشركة تيار --}}
+        <div class="pt-3 mt-3 border-t border-slate-700/50">
+            <p class="text-[10px] font-bold text-slate-500">
+                تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
+                <span class="mx-1">|</span>
+                لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">+967 780 261 952</span>
+            </p>
+        </div>
     </div>
 </div>
 @endsection
