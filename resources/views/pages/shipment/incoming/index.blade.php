@@ -593,7 +593,7 @@
                                                 @if($whatsappLink)
                                                     <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                                    <a href="{{ $whatsappLink }}"
+                                                    <a href="{{ $shipment->whatsappUrl }}"
                                                         target="_blank"
                                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                         <span class="material-symbols-outlined text-[18px]">send</span>

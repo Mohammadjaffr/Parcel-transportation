@@ -89,7 +89,7 @@
                                 {{ $balance < 0 ? 'يمكنك تسديد المبلغ كاملاً أو إدخال دفعة جزئية.' : 'يمكنك صرف الرصيد كاملاً أو سحب جزء منه.' }}
                             </p>
                         </div>
-
+                        
                         <div class="mb-6">
                             <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-bodydark">
                                 ملاحظات (اختياري)

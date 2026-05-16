@@ -13,24 +13,32 @@
     <div class="pb-28 min-h-screen bg-slate-50/50 font-body" dir="rtl" x-data="{
         isSubmitting: false,
         activeItem: 0,
-
-        branches: @js(old('branches', $office->branches->count() > 0
-            ? $office->branches->map(fn($branch) => [
-                'id' => $branch->id,
-                'name' => $branch->name,
-                'city' => $branch->city,
-                'phone' => $branch->phone,
-                'address' => $branch->address,
-            ])->values()
-            : [['name' => '', 'city' => '', 'phone' => '', 'address' => '']]
-        )),
-
+    
+        branches: @js(
+    old(
+        'branches',
+        $office->branches->count() > 0
+            ? $office->branches
+                ->map(
+                    fn($branch) => [
+                        'id' => $branch->id,
+                        'name' => $branch->name,
+                        'city' => $branch->city,
+                        'phone' => $branch->phone,
+                        'address' => $branch->address,
+                    ],
+                )
+                ->values()
+            : [['name' => '', 'city' => '', 'phone' => '', 'address' => '']],
+    ),
+),
+    
         errorIndices: @js(collect($errors->keys())->map(fn($key) => preg_match('/^branches\.(\d+)/', $key, $m) ? (int) $m[1] : null)->filter(fn($v) => !is_null($v))->unique()->values()),
-
+    
         addBranch() {
             this.branches.push({ name: '', city: '', phone: '', address: '' });
             this.activeItem = this.branches.length - 1;
-
+    
             this.$nextTick(() => {
                 const cards = document.querySelectorAll('.branch-card');
                 if (cards.length > 0) {
@@ -38,11 +46,11 @@
                 }
             });
         },
-
+    
         removeBranch(index) {
             if (this.branches.length > 1) {
                 this.branches.splice(index, 1);
-
+    
                 if (this.activeItem === index) {
                     this.activeItem = Math.max(0, index - 1);
                 } else if (this.activeItem > index) {
@@ -50,7 +58,7 @@
                 }
             }
         }
-    }" x-init="if(errorIndices.length > 0) activeItem = errorIndices[0];">
+    }" x-init="if (errorIndices.length > 0) activeItem = errorIndices[0];">
 
         {{-- ================= الشريط العلوي العائم ================= --}}
         <div class="sticky top-0 z-[100] w-full bg-white/90 backdrop-blur-md border-b border-slate-100 shadow-sm">
@@ -101,10 +109,12 @@
                 <div class="space-y-8">
 
                     {{-- ================= 1. كارد البيانات الأساسية ================= --}}
-                    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden max-w-3xl mx-auto w-full">
+                    <div
+                        class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden max-w-3xl mx-auto w-full">
                         <div class="p-8">
                             <div class="flex flex-col items-center mb-8 text-center">
-                                <div class="flex justify-center items-center mb-3 w-12 h-12 rounded-2xl bg-primary/10 text-primary">
+                                <div
+                                    class="flex justify-center items-center mb-3 w-12 h-12 rounded-2xl bg-primary/10 text-primary">
                                     <span class="material-symbols-outlined text-[28px]">corporate_fare</span>
                                 </div>
 
@@ -127,7 +137,8 @@
                                     placeholder="مثال: مكتب الإنجاز السريع"
                                     class="pr-12 pl-4 w-full h-14 text-sm font-bold rounded-2xl border transition-all outline-none border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 bg-slate-50/50 focus:bg-white text-slate-700">
 
-                                <span class="absolute right-4 bottom-4 transition-colors text-slate-400 material-symbols-outlined group-focus-within:text-primary">
+                                <span
+                                    class="absolute right-4 bottom-4 transition-colors text-slate-400 material-symbols-outlined group-focus-within:text-primary">
                                     domain
                                 </span>
 
@@ -140,9 +151,11 @@
 
                     {{-- ================= 2. قسم الفروع ================= --}}
                     <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-visible">
-                        <div class="flex flex-col gap-4 justify-between items-start px-6 py-6 mb-6 border-b border-slate-50 sm:flex-row sm:items-center md:px-8">
+                        <div
+                            class="flex flex-col gap-4 justify-between items-start px-6 py-6 mb-6 border-b border-slate-50 sm:flex-row sm:items-center md:px-8">
                             <div class="flex gap-3 items-center">
-                                <div class="flex justify-center items-center w-10 h-10 text-emerald-500 bg-emerald-50 rounded-xl">
+                                <div
+                                    class="flex justify-center items-center w-10 h-10 text-emerald-500 bg-emerald-50 rounded-xl">
                                     <span class="material-symbols-outlined">share_location</span>
                                 </div>
 
@@ -163,9 +176,11 @@
                             </button>
                         </div>
 
-                        <div class="px-4 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start bg-slate-50/30 rounded-b-[2.5rem] pt-6 md:px-6">
+                        <div
+                            class="px-4 pb-8 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start bg-slate-50/30 rounded-b-[2.5rem] pt-6 md:px-6">
                             <template x-for="(branch, index) in branches" :key="index">
-                                <div :class="activeItem === index ? 'ring-2 ring-primary/40 shadow-xl z-30 scale-[1.02]' : 'border border-slate-100 z-10 opacity-90'"
+                                <div :class="activeItem === index ? 'ring-2 ring-primary/40 shadow-xl z-30 scale-[1.02]' :
+                                    'border border-slate-100 z-10 opacity-90'"
                                     class="branch-card relative bg-white rounded-[2rem] transition-all duration-500 overflow-visible">
 
                                     {{-- هيدر الفرع --}}
@@ -173,7 +188,8 @@
                                         class="flex justify-between items-center p-5 cursor-pointer select-none">
                                         <div class="flex gap-4 items-center min-w-0">
                                             <div class="flex justify-center items-center w-10 h-10 text-xs font-black rounded-xl shadow-inner transition-colors shrink-0"
-                                                :class="activeItem === index ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'"
+                                                :class="activeItem === index ? 'bg-primary text-white' :
+                                                    'bg-slate-100 text-slate-400'"
                                                 x-text="index + 1">
                                             </div>
 
@@ -188,12 +204,13 @@
                                         </div>
 
                                         <div class="flex gap-2 items-center shrink-0">
-                                            <button type="button" @click.stop="removeBranch(index)" x-show="branches.length > 1"
+                                            <button type="button" @click.stop="removeBranch(index)" x-show="!branch.id"
                                                 class="flex justify-center items-center w-9 h-9 text-rose-400 rounded-xl transition-all hover:bg-rose-50 hover:text-rose-600">
                                                 <span class="material-symbols-outlined text-[20px]">delete</span>
                                             </button>
 
-                                            <span class="transition-transform duration-300 material-symbols-outlined text-slate-300"
+                                            <span
+                                                class="transition-transform duration-300 material-symbols-outlined text-slate-300"
                                                 :class="activeItem === index ? 'rotate-180 text-primary' : ''">
                                                 expand_more
                                             </span>
@@ -239,20 +256,18 @@
                                                         رقم الهاتف
                                                     </label>
 
-                                                    <div x-data="phoneComponent()"
-                                                        x-init="initPhone(branch.phone)"
+                                                    <div x-data="phoneComponent()" x-init="initPhone(branch.phone)"
                                                         x-effect="branch.phone = localPhoneNumber ? ((selectedCountry?.dial_code.replace('+', '') || '') + localPhoneNumber) : ''"
-                                                        class="relative z-[60]"
-                                                        @click.outside="open = false">
+                                                        class="relative z-[60]" @click.outside="open = false">
 
-                                                        <input type="hidden"
-                                                            :name="`branches[${index}][phone]`"
+                                                        <input type="hidden" :name="`branches[${index}][phone]`"
                                                             :value="branch.phone">
 
-                                                        <div class="flex overflow-hidden items-center w-full h-12 rounded-2xl border border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 bg-slate-50/50 focus-within:bg-white">
+                                                        <div
+                                                            class="flex overflow-hidden items-center w-full h-12 rounded-2xl border border-slate-200 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10 bg-slate-50/50 focus-within:bg-white">
 
-                                                            <input type="tel" x-model="localPhoneNumber" dir="ltr"
-                                                                placeholder="7XXXXXXXX"
+                                                            <input type="tel" x-model="localPhoneNumber"
+                                                                dir="ltr" placeholder="7XXXXXXXX"
                                                                 @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')"
                                                                 class="flex-grow px-4 h-full font-mono text-xs font-bold text-left bg-transparent border-none outline-none focus:ring-0 text-slate-700">
 
@@ -263,7 +278,8 @@
                                                                         x-html="selectedCountry.svg"></div>
                                                                 </template>
 
-                                                                <span class="material-symbols-outlined text-[16px] text-slate-400">
+                                                                <span
+                                                                    class="material-symbols-outlined text-[16px] text-slate-400">
                                                                     expand_more
                                                                 </span>
                                                             </button>
@@ -272,18 +288,21 @@
                                                         {{-- قائمة الدول --}}
                                                         <div x-show="open" x-transition x-cloak
                                                             class="absolute left-0 right-0 top-full mt-2 max-h-48 overflow-y-auto bg-white border border-slate-100 shadow-2xl rounded-2xl z-[100] p-1">
-                                                            <template x-for="country in filteredCountries" :key="country.code">
+                                                            <template x-for="country in filteredCountries"
+                                                                :key="country.code">
                                                                 <button type="button"
                                                                     @click="selectedCountry = country; open = false;"
                                                                     class="flex justify-between items-center px-4 py-3 w-full text-right rounded-xl transition-colors hover:bg-primary/5 group">
                                                                     <div class="flex gap-3 items-center">
                                                                         <div class="flex overflow-hidden items-center w-5 h-3.5 rounded-sm"
                                                                             x-html="country.svg"></div>
-                                                                        <span class="text-xs font-bold text-slate-700 group-hover:text-primary"
+                                                                        <span
+                                                                            class="text-xs font-bold text-slate-700 group-hover:text-primary"
                                                                             x-text="country.name"></span>
                                                                     </div>
 
-                                                                    <span class="font-mono text-[10px] text-slate-400 group-hover:text-primary/70"
+                                                                    <span
+                                                                        class="font-mono text-[10px] text-slate-400 group-hover:text-primary/70"
                                                                         x-text="country.dial_code"></span>
                                                                 </button>
                                                             </template>
@@ -307,7 +326,8 @@
                                             <div class="flex justify-end pt-1">
                                                 <button type="button" @click="activeItem = null"
                                                     class="hidden sm:flex gap-1 items-center px-4 h-10 text-[11px] font-bold rounded-xl text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all">
-                                                    <span class="material-symbols-outlined text-[16px]">keyboard_arrow_up</span>
+                                                    <span
+                                                        class="material-symbols-outlined text-[16px]">keyboard_arrow_up</span>
                                                     إغلاق البطاقة
                                                 </button>
                                             </div>
@@ -319,7 +339,7 @@
                     </div>
 
                     {{-- أزرار أسفل الصفحة للموبايل والاحتياط --}}
-            
+
                 </div>
             </form>
         </div>

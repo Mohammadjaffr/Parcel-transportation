@@ -113,7 +113,7 @@
         </div>
         {{-- ================= شريط فلترة المديونية ================= --}}
         <div class="flex overflow-x-auto gap-3 px-2 py-1 custom-scrollbar snap-x">
-            
+
             {{-- زر الكل --}}
             <a href="{{ request()->fullUrlWithQuery(['filter' => 'all']) }}"
                 class="snap-start shrink-0 px-5 h-11 flex items-center justify-center rounded-[1rem] text-[13px] font-black transition-all duration-200 border active:scale-95
@@ -136,7 +136,7 @@
                 <span class="material-symbols-outlined text-[18px] ml-1.5">task_alt</span>
                 حسابات مصفّرة
             </a>
-            
+
         </div>
 
         <div class="px-2 space-y-4">
@@ -179,7 +179,7 @@
                         <div>
                             <span class="text-xs text-gray-500">{{ $customer->created_at->diffForHumans() }}</span>
                         </div>
-                    
+
 
                         {{-- 💡 القائمة المنسدلة للإجراءات (Kebab Menu) --}}
                         <div class="relative z-50 shrink-0">
@@ -233,23 +233,44 @@
                         </div>
                     </div>
 
+                    @php
+                        // حساب إجمالي الدائن والمدين
+                        $totalCredit = $customer->sum_credit ?? 0;
+                        $totalDebit = $customer->sum_debit ?? 0;
+
+                        // استخراج الرصيد الصافي (الفرق بينهما)
+                        $netBalance = $totalCredit - $totalDebit;
+
+                        // تحديد من له ومن عليه بناءً على الصافي
+                        $displayCredit = $netBalance > 0 ? $netBalance : 0;
+                        $displayDebit = $netBalance < 0 ? abs($netBalance) : 0;
+                    @endphp
+
                     <div class="flex gap-2 p-3 rounded-2xl border bg-slate-50 border-slate-100/50">
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">الشحنات</span>
                             <span
                                 class="block text-sm font-black text-slate-700">{{ $customer->sent_shipments_count ?? 0 }}</span>
                         </div>
+
                         <div class="w-px bg-slate-200/60"></div>
+
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد له</span>
                             <span
-                                class="block text-sm font-black text-emerald-600">{{ number_format($customer->sum_credit ?? 0, 2) }}</span>
+                                class="block text-sm font-black {{ $displayCredit > 0 ? 'text-emerald-600' : 'text-slate-400' }}">
+                                {{ number_format($displayCredit, 2) }}
+                            </span>
                         </div>
+
                         <div class="w-px bg-slate-200/60"></div>
+
                         <div class="flex-1 text-center">
                             <span class="block text-[10px] font-bold text-slate-400 mb-1">رصيد عليه</span>
                             <span
-                                class="block text-sm font-black {{ $balance > 0 ? 'text-rose-500' : 'text-slate-700' }}">{{ number_format($customer->sum_debit ?? 0, 2) }}</span>
+                                class="block text-sm font-black {{ $displayDebit > 0 ? 'text-rose-500' : 'text-slate-400' }}">
+                                {{ number_format($displayDebit, 2) }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -283,7 +304,8 @@
             x-transition:leave-end="opacity-0 translate-y-full"
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()"></div>
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
+            </div>
 
             <div
                 class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto">
@@ -491,7 +513,6 @@
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
                                     inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div

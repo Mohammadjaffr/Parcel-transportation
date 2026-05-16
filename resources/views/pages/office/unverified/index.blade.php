@@ -210,9 +210,9 @@
                                         تعديل البيانات
                                     </a>
 
-                                    <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+                                    {{-- <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div> --}}
 
-                                    <button type="button"
+                                    {{-- <button type="button"
                                         @click="
                                             menuOpen = false;
                                             openDeleteModal({ id: {{ $office->id }}, name: @js($office->name) });
@@ -220,7 +220,7 @@
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors text-error hover:bg-error/10 dark:hover:bg-error/10">
                                         <span class="material-symbols-outlined text-[18px]">delete</span>
                                         حذف المكتب
-                                    </button>
+                                    </button> --}}
                                 </div>
                             </div>
                         </div>
@@ -444,7 +444,7 @@
                                                     <span class="material-symbols-outlined text-[18px]">edit_square</span>
                                                     تعديل البيانات
                                                 </a>
-
+{{-- 
                                                 <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
                                                 <button type="button"
@@ -455,7 +455,7 @@
                                                     class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors text-error hover:bg-error/10 dark:hover:bg-error/10">
                                                     <span class="material-symbols-outlined text-[18px]">delete</span>
                                                     حذف المكتب
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </div>
                                     </div>

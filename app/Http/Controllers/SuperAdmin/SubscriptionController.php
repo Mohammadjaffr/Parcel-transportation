@@ -7,6 +7,7 @@ use App\Models\Package;
 use App\Models\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class SubscriptionController extends Controller
 {
@@ -48,7 +49,7 @@ class SubscriptionController extends Controller
         ));
     }
 
-    public function updateStatus(Request $request, Subscription $subscription)
+  public function updateStatus(Request $request, Subscription $subscription)
     {
         $validated = $request->validate([
             'status'      => 'required|in:active,pending,expired,cancelled',
@@ -66,11 +67,19 @@ class SubscriptionController extends Controller
 
             $package = $subscription->package;
 
+            // هنا الجزء الأهم الذي قمنا بتعديله بناءً على صورة قاعدة البيانات
             if (!empty($validated['package_id'])) {
                 $package = Package::findOrFail($validated['package_id']);
 
                 $data['package_id'] = $package->id;
                 $data['price_paid'] = $validated['price_paid'] ?? $package->price;
+                
+                // تحديث أعمدة الصلاحيات (الـ Snapshot) بالقيم الجديدة من الباقة
+                $data['allowed_branches']   = $package->max_branches;
+                $data['allowed_drivers']    = $package->max_drivers;
+                $data['allowed_shipments']  = $package->max_shipments;
+                $data['allowed_packages']   = $package->max_packages;
+                
             } elseif (array_key_exists('price_paid', $validated) && $validated['price_paid'] !== null) {
                 $data['price_paid'] = $validated['price_paid'];
             }
@@ -91,6 +100,7 @@ class SubscriptionController extends Controller
                     ->update(['status' => 'expired']);
             }
 
+            // تنفيذ التحديث في قاعدة البيانات
             $subscription->update($data);
 
             if ($subscription->app) {
@@ -108,6 +118,14 @@ class SubscriptionController extends Controller
                         ]);
                     }
                 }
+            }
+            
+            // مسح الكاش لضمان قراءة الصلاحيات الجديدة فوراً
+            if ($subscription->app_id) {
+                Cache::forget('app_services_' . $subscription->app_id);
+                Cache::forget('app_limits_' . $subscription->app_id);
+                Cache::forget('app_subscription_' . $subscription->app_id);
+                Cache::forget('subscription_limits_' . $subscription->app_id);
             }
         });
 

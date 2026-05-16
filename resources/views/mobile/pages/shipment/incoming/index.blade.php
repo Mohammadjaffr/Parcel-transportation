@@ -224,7 +224,7 @@
                                             }
                                         @endphp
 
-                                        <a href="https://wa.me/{{ ltrim($targetCustomer->phone, '+') }}?text={{ urlencode($whatsappMsg) }}"
+                                        <a href="{{ $shipment->whatsappUrl }}"
                                             target="_blank"
                                             class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-emerald-50 hover:text-emerald-700">
                                             <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"

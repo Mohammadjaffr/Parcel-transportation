@@ -93,76 +93,78 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-       {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-@if (isset($subscription))
-    <div class="px-4 mt-6 space-y-4">
-        <div class="flex justify-between items-center">
-            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                تفاصيل الباقة
-            </h3>
+        {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+        @if (isset($subscription))
+            <div class="px-4 mt-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                        تفاصيل الباقة
+                    </h3>
 
-            <a href="{{ route('pricing.page') }}"
-                class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                ترقية
-                <span class="material-symbols-outlined text-[14px]">upgrade</span>
-            </a>
-        </div>
+                    <a href="{{ route('pricing.page') }}"
+                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                        ترقية
+                        <span class="material-symbols-outlined text-[14px]">upgrade</span>
+                    </a>
+                </div>
 
-        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-            {{-- حالة الاشتراك --}}
-            <div class="relative z-10 mb-5">
-                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
-                    (متبقي {{ $remainingDays }} يوماً)
-                </p>
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+                    {{-- حالة الاشتراك --}}
+                    <div class="relative z-10 mb-5">
+                        <p
+                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                            <span
+                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
+                            (متبقي {{ $remainingDays }} يوماً)
+                        </p>
+                    </div>
+
+                    <div class="relative z-10 space-y-5">
+                        {{-- 1. الفروع --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الفروع',
+                            'icon' => 'domain',
+                            'current' => $limits['branches']['used'],
+                            'limit' => $limits['branches']['limit'],
+                            'percent' => $limits['branches']['percent'],
+                            'color' => 'bg-amber-500',
+                        ])
+
+                        {{-- 2. السائقين --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد السائقين',
+                            'icon' => 'person_pin_circle',
+                            'current' => $limits['drivers']['used'],
+                            'limit' => $limits['drivers']['limit'],
+                            'percent' => $limits['drivers']['percent'],
+                            'color' => 'bg-blue-500',
+                        ])
+
+                        {{-- 3. الطرود --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الطرود',
+                            'icon' => 'inventory_2',
+                            'current' => $limits['shipments']['used'],
+                            'limit' => $limits['shipments']['limit'],
+                            'percent' => $limits['shipments']['percent'],
+                            'color' => 'bg-primary',
+                        ])
+
+                        {{-- 4. الشحنات / الحزم --}}
+                        @include('mobile.pages.company.partials.usage-bar', [
+                            'label' => 'عدد الشحنات',
+                            'icon' => 'local_shipping',
+                            'current' => $limits['packages']['used'],
+                            'limit' => $limits['packages']['limit'],
+                            'percent' => $limits['packages']['percent'],
+                            'color' => 'bg-indigo-500',
+                        ])
+                    </div>
+                </div>
             </div>
-
-            <div class="relative z-10 space-y-5">
-                {{-- 1. الفروع --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الفروع',
-                    'icon' => 'domain',
-                    'current' => $limits['branches']['used'],
-                    'limit' => $limits['branches']['limit'],
-                    'percent' => $limits['branches']['percent'],
-                    'color' => 'bg-amber-500',
-                ])
-
-                {{-- 2. السائقين --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد السائقين',
-                    'icon' => 'person_pin_circle',
-                    'current' => $limits['drivers']['used'],
-                    'limit' => $limits['drivers']['limit'],
-                    'percent' => $limits['drivers']['percent'],
-                    'color' => 'bg-blue-500',
-                ])
-
-                {{-- 3. الطرود --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الطرود',
-                    'icon' => 'inventory_2',
-                    'current' => $limits['shipments']['used'],
-                    'limit' => $limits['shipments']['limit'],
-                    'percent' => $limits['shipments']['percent'],
-                    'color' => 'bg-primary',
-                ])
-
-                {{-- 4. الشحنات / الحزم --}}
-                @include('mobile.pages.company.partials.usage-bar', [
-                    'label' => 'عدد الشحنات',
-                    'icon' => 'local_shipping',
-                    'current' => $limits['packages']['used'],
-                    'limit' => $limits['packages']['limit'],
-                    'percent' => $limits['packages']['percent'],
-                    'color' => 'bg-indigo-500',
-                ])
-            </div>
-        </div>
-    </div>
-@endif
+        @endif
 
         <div class="px-4 space-y-4">
             <div class="flex justify-between items-center">
@@ -622,32 +624,32 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    {{-- <div>
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب (التمييز
-                            البصري)</label>
+                            البصري)</label> --}}
 
-                        <div
-                            class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
+                        {{-- <div
+                            class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"> --}}
 
                             {{-- حقل اختيار اللون --}}
-                            <input type="color" name="color" x-model="editBranchForm.color"
-                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
+                            {{-- <input type="color" name="color" x-model="editBranchForm.color"
+                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm"> --}}
 
                             {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
-                            <div class="flex-1 px-3">
+                            {{-- <div class="flex-1 px-3">
                                 <input type="text" x-model="editBranchForm.color" placeholder="#000000"
                                     dir="ltr"
                                     class="w-full font-mono text-sm text-left uppercase bg-transparent border-none outline-none text-slate-600 focus:ring-0 placeholder:text-slate-400">
-                            </div>
+                            </div> --}}
 
                             {{-- أيقونة جمالية --}}
-                            <div class="pr-2 pointer-events-none text-slate-400">
+                            {{-- <div class="pr-2 pointer-events-none text-slate-400">
                                 <span class="text-lg material-symbols-outlined">palette</span>
                             </div>
-                        </div>
+                        </div> --}}
 
                         {{-- 💡 الرسالة التوضيحية الأنيقة --}}
-                        <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
+                        {{-- <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
                             <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
                             <p class="text-[10px] leading-relaxed font-medium">
                                 سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
@@ -655,7 +657,7 @@
                                 المكتب.
                             </p>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <button type="submit" :disabled="isSubmittingCompany"

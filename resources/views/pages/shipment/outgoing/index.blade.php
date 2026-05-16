@@ -387,12 +387,7 @@
                                     }
                                 }
 
-                                $packageTypeLabel = match ($shipment->package_type) {
-                                    'carton' => 'كرتون',
-                                    'bag' => 'كيس',
-                                    'envelope' => 'مغلف',
-                                    default => 'أخرى',
-                                };
+                                $packageTypeLabel = $shipment->package_type;
 
                                 $paymentLabel = match ($shipment->payment_method) {
                                     'prepaid' => 'مدفوع مقدماً',
@@ -550,7 +545,8 @@
                                                     <span class="material-symbols-outlined text-[18px]">visibility</span>
                                                     التفاصيل
                                                 </a>
-     @if (!in_array($shipment->status, ['returned', 'cancelled']))
+                             @if (!in_array($shipment->status, ['returned', 'cancelled']))
+                              @if (!in_array($shipment->status, ['delivered']))
                                                 @if (auth()->user()->type === 'admin' || $shipment->status === 'pending')
                                                     <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
                                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
@@ -558,6 +554,7 @@
                                                             class="material-symbols-outlined text-[18px]">edit_square</span>
                                                         تعديل البيانات
                                                     </a>
+                                                @endif
                                                 @endif
 
                                            

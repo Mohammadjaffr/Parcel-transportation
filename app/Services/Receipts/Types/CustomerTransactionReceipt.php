@@ -80,7 +80,7 @@ class CustomerTransactionReceipt implements ReceiptStrategyInterface
 
             'title'             => $receiptTitle,
             'transaction_id'    => $transaction->id,
-            'reference_number'  => $transaction->reference_number ?? '---',
+            'reference_number'  => $transaction->id ?? '---',
             'date'              => ($transaction->created_at ? $transaction->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A')),
 
             'customer_name'     => $customer->name ?? 'عميل غير محدد',

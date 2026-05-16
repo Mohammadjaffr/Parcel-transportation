@@ -176,7 +176,7 @@
                             </div>
 
                             <input type="text" name="sender_name" x-model="nameInput"
-                                :readonly="selectedCustomerId !== null" placeholder="اسم المرسل (اختياري)..."
+                                :readonly="selectedCustomerId !== null" placeholder="اسم المرسل "
                                 class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
                                 :class="selectedCustomerId ?
                                     'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' :

@@ -223,7 +223,7 @@
                                     {{-- الاسم --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
-                                            المرسل (اختياري)</label>
+                                            المرسل </label>
                                         <input type="text" name="sender_name" x-model="nameInput"
                                             :readonly="selectedCustomerId !== null" placeholder="الاسم..."
                                             class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"

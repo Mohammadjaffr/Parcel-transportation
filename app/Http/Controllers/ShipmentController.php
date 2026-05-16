@@ -700,10 +700,16 @@ class ShipmentController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-
             ->latest()
             ->paginate(10)
-            ->withQueryString(); // 💡 مهم جداً: للاحتفاظ بالفلتر عند الانتقال للصفحة 2 و 3
+            ->withQueryString();
+  $shipments->getCollection()->transform(function ($shipment) {
+
+            $shipment->whatsappUrl = WhatsAppLinkService::generate($shipment, 'receiver');
+
+            return $shipment;
+        });
+
 
         if ($request->isMobile) {
             return view('mobile.pages.shipment.incoming.index', compact('shipments'));

@@ -5,6 +5,7 @@ namespace App\Services\WhatsApp;
 use App\Services\WhatsApp\Messages\DriverMessage;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\DriverDetection;
+use App\Services\WhatsApp\Messages\ExternalOfficeDetection;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
 use App\Services\WhatsApp\Messages\CustomerTransactionMessage; 
@@ -18,6 +19,7 @@ class WhatsAppLinkService
             'sender'   => new SenderMessage(),
             'driver'   => new DriverMessage(),
             'DriverDetection' => new DriverDetection(),
+            'ExternalOfficeDetection' => new ExternalOfficeDetection(),
             'receiver' => new ReceiverMessage(),
             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
             'transaction' => new CustomerTransactionMessage(), 

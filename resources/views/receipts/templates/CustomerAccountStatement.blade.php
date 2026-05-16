@@ -82,7 +82,7 @@
                 </div>
                 <div class="pr-6 w-full border-r sm:w-1/3 border-slate-100">
                     <p class="mb-1 text-xs font-bold tracking-wider uppercase text-slate-400">الفرع المرتبط</p>
-                    <p class="font-bold text-slate-800">{{ $custBranchName }}</p>
+                    <p class="font-bold text-slate-800">{{ $mainBranchTitle }}</p>
                 </div>
             </div>
 

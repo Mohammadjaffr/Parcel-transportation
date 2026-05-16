@@ -124,7 +124,7 @@
 
                                     {{-- 💡 إخفاء باقي الخيارات إذا كان الطرد ملغي أو مرتجع --}}
                                     @if(!in_array($shipment->status, ['returned', 'cancelled', 'canceled']))
-
+ @if (!in_array($shipment->status, ['delivered']))
                                         {{-- ================= زر التعديل (باللوجيك المطلوب) ================= --}}
                                         @if(auth()->user()->type === 'admin' || $shipment->status === 'pending')
                                             <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
@@ -132,6 +132,7 @@
                                                 <span class="material-symbols-outlined text-[18px]">edit_square</span>
                                                 تعديل البيانات
                                             </a>
+                                        @endif
                                         @endif
 
                                         {{-- طباعة السند --}}
