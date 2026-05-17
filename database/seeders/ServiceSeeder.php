@@ -136,6 +136,31 @@ class ServiceSeeder extends Seeder
                 'description' => 'يصل عند وصول شحنة لفرع التسليم',
                 'is_global_active' => true,
             ],
+
+            [
+                'name' => 'دفع: مدفوع مقدماً',
+                'slug' => 'Payment_Prepaid',
+                'description' => 'صلاحية استخدام الدفع المسبق (كامل المبلغ)',
+                'is_global_active' => true,
+            ],
+            [
+                'name' => 'دفع: جزئي',
+                'slug' => 'Payment_Partial',
+                'description' => 'صلاحية استخدام الدفع الجزئي عند الإرسال',
+                'is_global_active' => true,
+            ],
+            [
+                'name' => 'دفع: عند الاستلام',
+                'slug' => 'Payment_COD',
+                'description' => 'صلاحية إرسال طرود الدفع عند الاستلام (على المستلم)',
+                'is_global_active' => true,
+            ],
+            [
+                'name' => 'دفع: آجل (ذمة)',
+                'slug' => 'Payment_Credit',
+                'description' => 'صلاحية إنشاء طرود آجلة الدفع للعملاء المسجلين',
+                'is_global_active' => true,
+            ],
         ];
 
         foreach ($services as $service) {
