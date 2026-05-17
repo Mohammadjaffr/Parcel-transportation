@@ -158,6 +158,8 @@
             </div>
         </a>
 
+        {{-- 🛡️ حماية الواجهة: لا يظهر كرت الركاب إلا لمن يملك خدمة الركاب --}}
+        @hasservice('Passengers')
         {{-- تنبيه الركاب (يأخذ مساحة عمودين) --}}
         <a href="{{ route('passengers.index') }}" class="xl:col-span-2 relative overflow-hidden p-5 rounded-[1.5rem] shadow-[0_8px_20px_rgba(99,102,241,0.2)] bg-indigo-500 transition-transform active:scale-[0.99] group flex items-center justify-between">
             <div class="absolute -right-8 -bottom-8 w-32 h-32 rounded-full transition-transform bg-white/10 group-hover:scale-150"></div>
@@ -179,6 +181,7 @@
                 <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_forward</span>
             </div>
         </a>
+        @endhasservice
     </div>
 
     {{-- ================= 4. Shipments KPI Grid (إحصائيات الطرود) ================= --}}

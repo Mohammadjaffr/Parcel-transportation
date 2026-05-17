@@ -133,6 +133,7 @@
                 </div>
 
                 {{-- ================= تنبيه الركاب (يأخذ عرض عمودين) ================= --}}
+                @hasservice('Passengers')
                 <a href="{{ route('passengers.index') }}"
                     class="col-span-2 bg-indigo-500 rounded-[1.5rem] p-5 shadow-[0_8px_20px_rgba(99,102,241,0.2)] flex items-center justify-between relative overflow-hidden group transition-transform active:scale-95 block mt-1">
                     {{-- تأثيرات الخلفية --}}
@@ -159,6 +160,7 @@
                         <span class="material-symbols-outlined text-[20px] rtl:rotate-180">arrow_forward_ios</span>
                     </div>
                 </a>
+                @endhasservice
             </div>
         </div>
 
