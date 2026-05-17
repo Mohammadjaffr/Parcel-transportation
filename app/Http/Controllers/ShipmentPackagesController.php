@@ -436,7 +436,7 @@ class ShipmentPackagesController extends Controller
                 'driver_id' => $driverId,
                 'created_by' => $user->id,
                 'sender_office_branch_id' => $request->sender_office_branch_id,
-                'status' => 'pending',
+                'status' => 'delivered',
                 'notes' => $request->notes,
             ]);
 
