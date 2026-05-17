@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
-                                                isSubmitting: false 
-                                            }">
+                                                    isSubmitting: false 
+                                                }">
 
         {{-- ================= الهيدر السريع ================= --}}
         <div class="flex justify-between items-center">
@@ -151,14 +151,15 @@
                             @else
                                 {{-- 🟢 الأزرار العادية (تسليم العميل) --}}
                                 <button type="button" @click="
-                                                                                                        @if($shipment->payment_method !== 'prepaid')
-                                                                                                            showPaymentModal = true; 
-                                                                                                            openStatusMenu = false;
-                                                                                                        @else
-                                                                                                            $refs.statusInput.value = 'delivered'; 
-                                                                                                            $refs.statusForm.submit();
-                                                                                                        @endif
-                                                                                                    " :disabled="isSubmitting"
+                                                                                                                    @if($shipment->payment_method !== 'prepaid')
+                                                                                                                        showPaymentModal = true; 
+                                                                                                                        openStatusMenu = false;
+                                                                                                                    @else
+                                                                                                                        $refs.statusInput.value = 'delivered'; 
+                                                                                                                        $refs.statusForm.submit();
+                                                                                                                    @endif
+                                                                                                                "
+                                    :disabled="isSubmitting"
                                     class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-emerald-50 transition-all text-right group active:scale-[0.98]">
                                     <div
                                         class="flex justify-center items-center w-8 h-8 text-emerald-600 bg-emerald-50 rounded-lg transition-transform group-hover:scale-110 shrink-0">
@@ -288,28 +289,31 @@
 
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 
-            {{-- 1. بطاقة المرسل (الجهة المُصدِرة) --}}
-            <div
-                class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] h-full flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex gap-3 items-center">
-                        <div class="flex justify-center items-center w-10 h-10 text-amber-500 bg-amber-50 rounded-xl">
-                            <span class="material-symbols-outlined text-[20px]">person_check</span>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-black text-slate-800 font-headline">بيانات المُرسل</h3>
-                            <p class="text-[10px] font-bold text-slate-400">الشخص أو الجهة المرسلة للطرد</p>
+            {{-- 🛡️ نتحقق من وجود العميل المُرسل قبل طباعة البطاقة --}}
+            @if($shipment->senderCustomer)
+                {{-- 1. بطاقة المرسل (الجهة المُصدِرة) --}}
+                <div
+                    class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex gap-3 items-center">
+                            <div class="flex justify-center items-center w-10 h-10 text-amber-500 bg-amber-50 rounded-xl">
+                                <span class="material-symbols-outlined text-[20px]">person_check</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-slate-800 font-headline">بيانات المُرسل</h3>
+                                <p class="text-[10px] font-bold text-slate-400">الشخص أو الجهة المرسلة للطرد</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex flex-col flex-1 justify-center p-4 rounded-2xl border bg-slate-50/50 border-slate-100">
-                    <p class="text-sm font-black text-slate-800">{{ $shipment->senderCustomer->name ?? 'غير مسجل' }}</p>
-                    <p class="mt-1 text-xs font-bold text-right text-slate-500 dir-ltr">
-                        <x-phone-number :value="$shipment->senderCustomer?->phone ?? '---'" />
-                    </p>
+                    <div class="flex flex-col flex-1 justify-center p-4 rounded-2xl border bg-slate-50/50 border-slate-100">
+                        <p class="text-sm font-black text-slate-800">{{ $shipment->senderCustomer->name }}</p>
+                        <p class="mt-1 text-xs font-bold text-right text-slate-500 dir-ltr">
+                            <x-phone-number :value="$shipment->senderCustomer->phone ?? '---'" />
+                        </p>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             {{-- 2. بطاقة المستلم (الوجهة) مع أزرار التواصل --}}
             <div

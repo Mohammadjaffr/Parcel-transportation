@@ -447,7 +447,7 @@ class ShipmentPackagesController extends Controller
 
                 // --- معالجة العميل المرسل ---
                 $senderId = null;
-                if (!empty($item['sender_phone'])) {
+                if (!empty($item['sender_phone']) && strlen(trim($item['sender_phone'])) > 4) {
                     $sender = Customer::firstOrCreate(
                         ['phone' => $item['sender_phone'], 'app_id' => $user->app_id],
                         [
