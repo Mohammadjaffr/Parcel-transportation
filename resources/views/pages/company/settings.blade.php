@@ -461,18 +461,30 @@
                         </div>
 
                         <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
-                                (Google Maps)</label>
-                            <div class="relative">
-                                <input type="url" name="map_link" placeholder="http://googleusercontent.com/maps..."
-                                    dir="ltr"
-                                    class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                                <div
-                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <span class="text-lg material-symbols-outlined">map</span>
-                                </div>
-                            </div>
-                        </div>
+    <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
+        رابط موقع الفرع (Google Maps)
+    </label>
+    
+    <div class="relative group/input">
+        {{-- حقل الإدخال --}}
+        <input type="url" name="map_link" x-model="editBranchForm.map_link"
+            placeholder="https://maps.google.com/..." dir="ltr"
+            class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+        
+        {{-- زر فتح الخرائط القابل للنقر --}}
+        <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
+            <a href="https://www.google.com/maps" target="_blank" title="افتح خرائط جوجل للبحث عن الموقع"
+                class="flex justify-center items-center w-9 h-9 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors active:scale-95 cursor-pointer">
+                <span class="text-[18px] material-symbols-outlined">map</span>
+            </a>
+        </div>
+    </div>
+    
+    {{-- نص إرشادي --}}
+    <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
+        اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
+    </p>
+</div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
@@ -847,18 +859,30 @@
                         </div>
 
                         <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رابط موقع الفرع
-                                (Google Maps)</label>
-                            <div class="relative">
-                                <input type="url" name="map_link" x-model="editBranchForm.map_link"
-                                    placeholder="http://googleusercontent.com..." dir="ltr"
-                                    class="pr-11 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                                <div
-                                    class="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <span class="text-lg material-symbols-outlined">map</span>
-                                </div>
-                            </div>
-                        </div>
+    <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
+        رابط موقع الفرع (Google Maps)
+    </label>
+    
+    <div class="relative group/input">
+        {{-- حقل الإدخال --}}
+        <input type="url" name="map_link" x-model="editBranchForm.map_link"
+            placeholder="https://maps.google.com/..." dir="ltr"
+            class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+        
+        {{-- زر فتح الخرائط القابل للنقر --}}
+        <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
+            <a href="https://www.google.com/maps" target="_blank" title="افتح خرائط جوجل للبحث عن الموقع"
+                class="flex justify-center items-center w-9 h-9 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors active:scale-95 cursor-pointer">
+                <span class="text-[18px] material-symbols-outlined">map</span>
+            </a>
+        </div>
+    </div>
+    
+    {{-- نص إرشادي --}}
+    <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
+        اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
+    </p>
+</div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
