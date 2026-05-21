@@ -63,13 +63,6 @@
                 بالمستودع
             </a>
 
-            {{-- خرج للتوصيل --}}
-            <a href="{{ request()->fullUrlWithQuery(['status' => 'out_for_delivery', 'page' => null]) }}"
-                class="snap-start shrink-0 px-5 py-2.5 rounded-xl text-xs font-bold transition-all border 
-                {{ request('status') == 'out_for_delivery' ? 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/20' : 'bg-white text-indigo-600 border-indigo-100 hover:bg-indigo-50' }}">
-                خرج للتوصيل
-            </a>
-
             {{-- مكتملة --}}
             <a href="{{ request()->fullUrlWithQuery(['status' => 'delivered', 'page' => null]) }}"
                 class="snap-start shrink-0 px-5 py-2.5 rounded-xl text-xs font-bold transition-all border 
@@ -117,7 +110,7 @@
                 <a x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
                     href="{{ route('shipmentpackage.incoming.show', $package->id) }}"
                     class="block bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative active:scale-[0.98] transition-transform">
-                    <x-shipment-status :status="$package->status" />
+                    
 
                     {{-- شريط جانبي لوني يوضح الحالة --}}
                     <div class="absolute right-0 top-0 bottom-0 w-1.5 {{ $sideBarClass }}"></div>
