@@ -100,7 +100,7 @@
             <div class="space-y-6">
 
                 {{-- ================= المرسل ================= --}}
-                <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), '{{ old('sender_customer_id', $shipment->sender_customer_id) }}', '{{ old('sender_name', $shipment->senderCustomer->name ?? '') }}', '{{ old('sender_phone', $shipment->senderCustomer->phone ?? '') }}')"
+                <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('sender_customer_id', $shipment->sender_customer_id) }}', name: '{{ old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name) }}', phone: '{{ old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone) }}' })"
                     class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                     <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span
                             class="text-red-500">*</span></span>
@@ -187,7 +187,7 @@
                 </div>
 
                 {{-- ================= المستلم ================= --}}
-                <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), '{{ old('receiver_customer_id', $shipment->receiver_customer_id) }}', '{{ old('receiver_name', $shipment->receiverCustomer->name ?? '') }}', '{{ old('receiver_phone', $shipment->receiverCustomer->phone ?? '') }}')"
+                <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('receiver_customer_id', $shipment->receiver_customer_id) }}', name: '{{ old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name) }}', phone: '{{ old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone) }}' })"
                     class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                     <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
                         <span class="text-red-500">*</span></span>
@@ -525,7 +525,7 @@
             /* =========================================================
                2. منطق إدارة العملاء (تم تحديثه ليدعم التعبئة المسبقة Prefill)
             ========================================================= */
-            Alpine.data('customerSelect', (customersList, countriesList, initId, initName, initPhone) => ({
+            Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
                 // البيانات الأساسية
                 customers: customersList || [],
                 countries: countriesList || [],
@@ -533,8 +533,8 @@
 
                 // متغيرات حالة الحقول (State) مجهزة بالبيانات القديمة
                 localPhoneNumber: '',
-                nameInput: initName || '',
-                selectedCustomerId: initId || null,
+                nameInput: '',
+                selectedCustomerId: null,
 
                 // متغيرات حالة القوائم المنسدلة (UI State)
                 selectedCountry: null,
@@ -543,23 +543,25 @@
                 showCustomerDropdown: false,
 
                 init() {
-                    // تعيين الدولة بناءً على رقم الهاتف القديم أو الافتراضي (اليمن)
-                    let p = initPhone || '';
-                    let selected = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    if (initialData && (initialData.phone || initialData.name || initialData.id)) {
+                        let phone = initialData.phone || '';
+                        if (phone && /^\d/.test(phone)) phone = '+' + phone;
 
-                    if (p) {
-                        const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
-                        for (const code of codes) {
-                            let regex = new RegExp('^(\\+|00)?' + code);
-                            if (regex.test(p)) {
-                                selected = this.countries.find(c => c.dial_code.replace('+', '') === code);
-                                p = p.replace(regex, '');
-                                break;
-                            }
+                        this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code))
+                            || this.countries.find(c => c.code === 'YE')
+                            || this.countries[0];
+
+                        if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                        } else {
+                            this.localPhoneNumber = phone;
                         }
+
+                        this.selectedCustomerId = (initialData.id && initialData.id !== '') ? Number(initialData.id) : null;
+                        this.nameInput = initialData.name || '';
+                    } else {
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
                     }
-                    this.selectedCountry = selected;
-                    this.localPhoneNumber = p;
                 },
 
                 get filteredCountries() {

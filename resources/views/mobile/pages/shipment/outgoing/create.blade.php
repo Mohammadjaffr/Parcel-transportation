@@ -3,7 +3,7 @@
 @section('title', 'إرسال طرد جديد')
 
 @section('content')
-    <div x-data="{ paymentMethod: 'prepaid' }" class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
+    <div x-data="{ paymentMethod: '{{ old('payment_method', 'prepaid') }}' }" class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
 
         {{-- <div class="flex gap-4 items-center mb-2">
             <a href="{{ url()->previous() }}"
@@ -20,7 +20,7 @@
             @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
             @csrf
             {{-- بيانات الفروع --}}
-            <div x-data='destinationLogic(@json($offices))'
+            <div x-data='destinationLogic(@json($offices), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
                 class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-900/5 group/card">
 
                 {{-- الرأس بشكل مبسط --}}
@@ -44,7 +44,7 @@
                         <label class="text-[10px] font-black text-slate-400 pr-1">المكتب <span
                                 class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select name="office_id" x-model="selectedOfficeId" @change="updateBranches" required
+                            <select name="office_id" x-model="selectedOfficeId" @change="selectedBranchId = ''; updateBranches()" required
                                 class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all appearance-none outline-none text-slate-800 bg-slate-50 border-slate-200/70 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10">
                                 <option value="" disabled selected>المكتب...</option>
                                 <template x-for="office in offices" :key="office.id">
@@ -65,7 +65,7 @@
                         <label class="text-[10px] font-black text-slate-400 pr-1">الفرع <span
                                 class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select name="receiver_branch_id" required
+                            <select name="receiver_branch_id" x-model="selectedBranchId" required
                                 class="pr-3 pl-8 w-full h-12 text-xs font-bold bg-white rounded-xl border transition-all appearance-none outline-none text-slate-800 border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">
                                 <option value="" disabled selected>الفرع...</option>
                                 <template x-for="branch in availableBranches" :key="branch.id">
@@ -94,7 +94,7 @@
                 <div class="space-y-6">
 
                     {{-- ================= المرسل ================= --}}
-                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))" class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
+                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('sender_customer_id') }}', name: '{{ old('sender_name') }}', phone: '{{ old('sender_phone') }}' })" class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                         <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span
                                 class="text-red-500">*</span></span>
 
@@ -185,7 +185,7 @@
                     </div>
 
                     {{-- ================= المستلم ================= --}}
-                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))" class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
+                    <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('receiver_customer_id') }}', name: '{{ old('receiver_name') }}', phone: '{{ old('receiver_phone') }}' })" class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                         <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
                             <span class="text-red-500">*</span></span>
 
@@ -292,7 +292,7 @@
                     <div class="flex flex-col gap-2" x-data="{
                         isOpen: false,
                         options: ['كرتون', 'كيس'],
-                        packageType: 'كرتون'
+                        packageType: '{{ old('package_type', 'كرتون') }}'
                     }">
                         <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
                                 class="text-rose-500">*</span></label>
@@ -331,7 +331,7 @@
                         <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
 
                         <div class="relative">
-                            <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5" min="0"
+                            <input type="number" step="0.1" name="weight" value="{{ old('weight') }}" placeholder="مثال: 2.5" min="0"
                                 dir="ltr"
                                 class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
@@ -346,7 +346,7 @@
                 </div>
 
                 {{-- منطقة بيانات العسل مخفية افتراضياً وتظهر عند الضغط --}}
-                <div x-data="{ showHoneyFields: false }" class="mt-5">
+                <div x-data="{ showHoneyFields: {{ old('no_gallons_honey') || old('no_honey_jars') ? 'true' : 'false' }} }" class="mt-5">
 
                     {{-- زر الإظهار والإخفاء --}}
                     <button type="button" @click="showHoneyFields = !showHoneyFields"
@@ -373,13 +373,13 @@
                             <div>
                                 <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
                                     العسل</label>
-                                <input type="number" name="no_gallons_honey" placeholder="العدد"
+                                <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}" placeholder="العدد"
                                     class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                             </div>
                             <div>
                                 <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
                                     العسل</label>
-                                <input type="number" name="no_honey_jars" placeholder="العدد"
+                                <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}" placeholder="العدد"
                                     class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                             </div>
                         </div>
@@ -388,7 +388,7 @@
                 <div class="flex flex-col gap-2 pt-2">
                     <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
                     <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
-                        class="p-4 w-full text-sm rounded-2xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700"></textarea>
+                        class="p-4 w-full text-sm rounded-2xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">{{ old('notes') }}</textarea>
                 </div>
             </div>
 
@@ -426,14 +426,14 @@
                     <div class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-slate-400">المبلغ الإجمالي (ريال) <span
                                 class="text-red-500">*</span></label>
-                        <input type="number" required name="total_amount" placeholder="0.00"
+                        <input type="number" required name="total_amount" value="{{ old('total_amount') }}" placeholder="0.00"
                             class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-primary"
                             dir="ltr">
                     </div>
 
                     <div x-show="paymentMethod === 'partial_payment'" x-collapse class="flex flex-col gap-2">
                         <label class="text-[11px] font-bold text-rose-500">المبلغ المدفوع حالياً (ريال)</label>
-                        <input type="number" name="partial_amount" placeholder="0.00"
+                        <input type="number" name="partial_amount" value="{{ old('partial_amount') }}" placeholder="0.00"
                             class="px-4 w-full h-14 text-lg font-black text-left text-rose-600 rounded-2xl border-none ring-1 ring-rose-200 outline-none bg-rose-50/50 focus:ring-2 focus:ring-rose-400"
                             dir="ltr">
                     </div>
@@ -479,25 +479,56 @@
             /* =========================================================
                1. منطق اختيار الوجهة (المكتب -> الفرع)
             ========================================================= */
-            Alpine.data('destinationLogic', (officesList) => ({
+            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
                 offices: officesList || [],
-                selectedOfficeId: '',
+                selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
+                selectedBranchId: initialBranchId ? String(initialBranchId) : '',
                 availableBranches: [],
 
                 init() {
-                    // التحديد التلقائي لـ "مكتبنا الحالي" عند تحميل الصفحة
-                    const internalOffice = this.offices.find(o => String(o.id).startsWith('internal_'));
+                    // الحالة الأولى: إذا كان المكتب ممرراً مسبقاً (في حالة وجود خطأ في الفورم)
+                    if (this.selectedOfficeId) {
+                        this.populateBranches();
+                        return; // نخرج من الدالة لكي لا نغير التحديد
+                    }
+
+                    // الحالة الثانية: إذا كان الفرع ممرراً ولكن المكتب غير معروف
+                    if (this.selectedBranchId) {
+                        const foundOffice = this.offices.find(office => {
+                            return (office.branches || []).some(
+                                branch => String(branch.id) === String(this.selectedBranchId)
+                            );
+                        });
+
+                        if (foundOffice) {
+                            this.selectedOfficeId = String(foundOffice.id);
+                            this.populateBranches();
+                            return;
+                        }
+                    }
+
+                    // الحالة الثالثة (الافتراضية لطرد جديد): تحديد "مكتبنا الحالي" تلقائياً
+                    const internalOffice = this.offices.find(
+                        o => String(o.id).startsWith('internal_')
+                    );
 
                     if (internalOffice) {
-                        this.selectedOfficeId = internalOffice.id;
-                        this.availableBranches = internalOffice.branches;
+                        this.selectedOfficeId = String(internalOffice.id);
+                        this.populateBranches();
                     }
                 },
 
+                // دالة مساعدة لتعبئة الفروع بناءً على المكتب المحدد
+                populateBranches() {
+                    const office = this.offices.find(
+                        o => String(o.id) === String(this.selectedOfficeId)
+                    );
+                    this.availableBranches = office ? (office.branches || []) : [];
+                },
+
+                // تُستدعى من الواجهة عند تغيير المكتب @change
                 updateBranches() {
-                    // تحديث قائمة الفروع بناءً على المكتب المختار
-                    const office = this.offices.find(o => o.id == this.selectedOfficeId);
-                    this.availableBranches = office ? office.branches : [];
+                    this.populateBranches();
                 }
             }));
 
@@ -505,7 +536,7 @@
             /* =========================================================
                2. منطق إدارة العملاء (مفتاح الدولة + البحث التلقائي)
             ========================================================= */
-            Alpine.data('customerSelect', (customersList, countriesList) => ({
+            Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
                 // البيانات الأساسية
                 customers: customersList || [],
                 countries: countriesList || [],
@@ -523,9 +554,25 @@
                 showCustomerDropdown: false,
 
                 init() {
-                    // تعيين اليمن كدولة افتراضية عند التحميل
-                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[
-                        0];
+                    if (initialData && (initialData.phone || initialData.name || initialData.id)) {
+                        let phone = initialData.phone || '';
+                        if (phone && /^\d/.test(phone)) phone = '+' + phone;
+
+                        this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code))
+                            || this.countries.find(c => c.code === 'YE')
+                            || this.countries[0];
+
+                        if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                        } else {
+                            this.localPhoneNumber = phone;
+                        }
+
+                        this.selectedCustomerId = initialData.id ? Number(initialData.id) : null;
+                        this.nameInput = initialData.name || '';
+                    } else {
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    }
                 },
 
                 /* --- خصائص محسوبة (Getters) --- */

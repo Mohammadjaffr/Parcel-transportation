@@ -653,14 +653,14 @@
                 searchQuery: '',
                 visibleCount: {{ $shipments->count() }},
 
-                showRow(bondNumber, senderName, senderPhone, receiverName, receiverPhone, destination) {
+                showRow(id, senderName, senderPhone, receiverName, receiverPhone, destination) {
                     const query = this.searchQuery.toLowerCase().trim();
 
                     if (!query) {
                         return true;
                     }
 
-                    return String(bondNumber || '').toLowerCase().includes(query) ||
+                    return String(id || '').toLowerCase().includes(query) ||
                         String(senderName || '').toLowerCase().includes(query) ||
                         String(senderPhone || '').toLowerCase().includes(query) ||
                         String(receiverName || '').toLowerCase().includes(query) ||

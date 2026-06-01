@@ -670,9 +670,9 @@
                 showCustomerDropdown: false,
 
                 init() {
-                    if (initialData && initialData.phone) {
-                        let phone = initialData.phone;
-                        if (/^\d/.test(phone)) phone = '+' + phone;
+                    if (initialData && (initialData.phone || initialData.name || initialData.id)) {
+                        let phone = initialData.phone || '';
+                        if (phone && /^\d/.test(phone)) phone = '+' + phone;
 
                         this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code))
                             || this.countries.find(c => c.code === 'YE')
@@ -681,10 +681,10 @@
                         if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
                             this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
                         } else {
-                            this.localPhoneNumber = initialData.phone;
+                            this.localPhoneNumber = phone;
                         }
 
-                        this.selectedCustomerId = initialData.id;
+                        this.selectedCustomerId = (initialData.id && initialData.id !== '') ? Number(initialData.id) : null;
                         this.nameInput = initialData.name || '';
                     } else {
                         this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];

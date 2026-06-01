@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl"
-    x-data="{ paymentMethod: 'prepaid', isSubmitting: false }">
+    x-data="{ paymentMethod: '{{ old('payment_method', 'prepaid') }}', isSubmitting: false }">
 
     {{-- ================= الشريط العلوي (Sticky Header) ================= --}}
     <div
@@ -45,7 +45,7 @@
             <div class="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
 
                 {{-- 1. بيانات الفروع (الوجهة) --}}
-                <div x-data='destinationLogic(@json($offices))'
+                <div x-data='destinationLogic(@json($offices), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
                     class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
                     <div
                         class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
@@ -72,7 +72,7 @@
                                 <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">المكتب
                                     <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <select name="office_id" x-model="selectedOfficeId" @change="updateBranches"
+                                    <select name="office_id" x-model="selectedOfficeId" @change="selectedBranchId = ''; updateBranches()"
                                         required
                                         class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
                                         <option value="" disabled selected>اختر المكتب...</option>
@@ -92,7 +92,7 @@
                                 <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">الفرع <span
                                         class="text-error">*</span></label>
                                 <div class="relative">
-                                    <select name="receiver_branch_id" required
+                                    <select name="receiver_branch_id" x-model="selectedBranchId" required
                                         class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
                                         <option value="" disabled selected>اختر الفرع...</option>
                                         <template x-for="branch in availableBranches" :key="branch.id">
@@ -123,7 +123,7 @@
 
                     <div class="space-y-8">
                         {{-- المرسل --}}
-                        <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
+                        <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('sender_customer_id') }}', name: '{{ old('sender_name') }}', phone: '{{ old('sender_phone') }}' })"
                             class="relative z-50">
                             <h4
                                 class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
@@ -235,7 +235,7 @@
                         </div>
 
                         {{-- المستلم --}}
-                        <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))))"
+                        <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('receiver_customer_id') }}', name: '{{ old('receiver_name') }}', phone: '{{ old('receiver_phone') }}' })"
                             class="relative z-40">
                             <h4
                                 class="pb-2 mb-3 text-sm font-bold text-gray-700 border-b border-gray-100 dark:text-gray-200 dark:border-boxdark-2">
@@ -371,7 +371,7 @@
                         <div class="flex flex-col gap-2" x-data="{
                                 isOpen: false,
                                 options: ['كرتون', 'كيس'],
-                                packageType: 'كرتون'
+                                packageType: '{{ old('package_type', 'كرتون') }}'
                             }">
                             <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
                                     class="text-rose-500">*</span></label>
@@ -411,7 +411,7 @@
                             <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
 
                             <div class="relative">
-                                <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5" min="0" dir="ltr"
+                                <input type="number" step="0.1" name="weight" value="{{ old('weight') }}" placeholder="مثال: 2.5" min="0" dir="ltr"
                                     class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
                                 {{-- أيقونة الوزن الجمالية --}}
@@ -425,7 +425,7 @@
                     </div>
 
                     {{-- منطقة بيانات العسل مخفية افتراضياً وتظهر عند الضغط --}}
-                    <div x-data="{ showHoneyFields: false }" class="mt-5">
+                    <div x-data="{ showHoneyFields: {{ old('no_gallons_honey') || old('no_honey_jars') ? 'true' : 'false' }} }" class="mt-5">
 
                         {{-- زر الإظهار والإخفاء --}}
                         <button type="button" @click="showHoneyFields = !showHoneyFields"
@@ -453,14 +453,14 @@
                                     <label
                                         class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
                                         العسل</label>
-                                    <input type="number" name="no_gallons_honey" placeholder="العدد"
+                                    <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}" placeholder="العدد"
                                         class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
                                         العسل</label>
-                                    <input type="number" name="no_honey_jars" placeholder="العدد"
+                                    <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}" placeholder="العدد"
                                         class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
                                 </div>
                             </div>
@@ -471,7 +471,7 @@
                         <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">ملاحظات
                             إضافية</label>
                         <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
-                            class="p-4 w-full text-sm rounded-2xl border border-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white"></textarea>
+                            class="p-4 w-full text-sm rounded-2xl border border-gray-200 transition-all outline-none resize-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">{{ old('notes') }}</textarea>
                     </div>
                 </div>
 
@@ -495,9 +495,9 @@
                                 class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
 
                                 {{-- 🛡️ التحقق من صلاحية الدفع المسبق --}}
-                                @hasservice('Payment_Prepaid')
+                                {{-- @hasservice('Payment_Prepaid') --}}
                                 <option value="prepaid">مدفوع مقدماً</option>
-                                @endhasservice
+                                {{-- @endhasservice --}}
 
                                 {{-- 🛡️ التحقق من صلاحية الدفع عند الاستلام --}}
                                 @hasservice('Payment_COD')
@@ -505,9 +505,9 @@
                                 @endhasservice
 
                                 {{-- 🛡️ التحقق من صلاحية الدفع الجزئي --}}
-                                @hasservice('Payment_Partial')
+                                {{-- @hasservice('Payment_Partial') --}}
                                 <option value="partial_payment">دفع جزئي</option>
-                                @endhasservice
+                                {{-- @endhasservice --}}
 
                                 {{-- 🛡️ التحقق من صلاحية الدفع الآجل --}}
                                 @hasservice('Payment_Credit')
@@ -520,21 +520,21 @@
                         <div>
                             <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ
                                 الإجمالي (ريال) <span class="text-error">*</span></label>
-                            <input type="number" required name="total_amount" placeholder="0.00"
+                            <input type="number" required name="total_amount" value="{{ old('total_amount') }}" placeholder="0.00"
                                 class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-primary dark:text-primary"
                                 dir="ltr">
                         </div>
 
                         {{-- 💡 حماية الـ DOM: منع ظهور حقل الدفع الجزئي برمجياً إذا لم يكن المكتب يملك الصلاحية --}}
-                        @hasservice('Payment_Partial')
+                        {{-- @hasservice('Payment_Partial') --}}
                         <div x-show="paymentMethod === 'partial_payment'" x-collapse>
                             <label class="block text-[11px] font-bold text-rose-500 dark:text-rose-400 mb-1.5">المبلغ
                                 المدفوع حالياً (ريال)</label>
-                            <input type="number" name="partial_amount" placeholder="0.00"
+                            <input type="number" name="partial_amount" value="{{ old('partial_amount') }}" placeholder="0.00"
                                 class="px-4 w-full h-14 text-xl font-black text-left text-rose-600 rounded-2xl border border-rose-200 transition-all outline-none bg-rose-50/50 dark:bg-rose-500/5 dark:border-rose-500/20 focus:border-rose-400 dark:text-rose-400"
                                 dir="ltr">
                         </div>
-                        @endhasservice
+                        {{-- @endhasservice --}}
                     </div>
                 </div>
 
@@ -560,24 +560,60 @@
 @section('script')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('destinationLogic', (officesList) => ({
+            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
                 offices: officesList || [],
-                selectedOfficeId: '',
+                selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
+                selectedBranchId: initialBranchId ? String(initialBranchId) : '',
                 availableBranches: [],
+
                 init() {
-                    const internalOffice = this.offices.find(o => String(o.id).startsWith('internal_'));
+                    // الحالة الأولى: إذا كان المكتب ممرراً مسبقاً (في حالة وجود خطأ في الفورم)
+                    if (this.selectedOfficeId) {
+                        this.populateBranches();
+                        return; // نخرج من الدالة لكي لا نغير التحديد
+                    }
+
+                    // الحالة الثانية: إذا كان الفرع ممرراً ولكن المكتب غير معروف
+                    if (this.selectedBranchId) {
+                        const foundOffice = this.offices.find(office => {
+                            return (office.branches || []).some(
+                                branch => String(branch.id) === String(this.selectedBranchId)
+                            );
+                        });
+
+                        if (foundOffice) {
+                            this.selectedOfficeId = String(foundOffice.id);
+                            this.populateBranches();
+                            return;
+                        }
+                    }
+
+                    // الحالة الثالثة (الافتراضية لطرد جديد): تحديد "مكتبنا الحالي" تلقائياً
+                    const internalOffice = this.offices.find(
+                        o => String(o.id).startsWith('internal_')
+                    );
+
                     if (internalOffice) {
-                        this.selectedOfficeId = internalOffice.id;
-                        this.availableBranches = internalOffice.branches;
+                        this.selectedOfficeId = String(internalOffice.id);
+                        this.populateBranches();
                     }
                 },
+
+                // دالة مساعدة لتعبئة الفروع بناءً على المكتب المحدد
+                populateBranches() {
+                    const office = this.offices.find(
+                        o => String(o.id) === String(this.selectedOfficeId)
+                    );
+                    this.availableBranches = office ? (office.branches || []) : [];
+                },
+
+                // تُستدعى من الواجهة عند تغيير المكتب @change
                 updateBranches() {
-                    const office = this.offices.find(o => o.id == this.selectedOfficeId);
-                    this.availableBranches = office ? office.branches : [];
+                    this.populateBranches();
                 }
             }));
 
-            Alpine.data('customerSelect', (customersList, countriesList) => ({
+            Alpine.data('customerSelect', (customersList, countriesList, initialData) => ({
                 customers: customersList || [],
                 countries: countriesList || [],
                 filteredCustomers: [],
@@ -590,8 +626,25 @@
                 showCustomerDropdown: false,
 
                 init() {
-                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[
-                        0];
+                    if (initialData && (initialData.phone || initialData.name || initialData.id)) {
+                        let phone = initialData.phone || '';
+                        if (phone && /^\d/.test(phone)) phone = '+' + phone;
+
+                        this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code))
+                            || this.countries.find(c => c.code === 'YE')
+                            || this.countries[0];
+
+                        if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                            this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                        } else {
+                            this.localPhoneNumber = phone;
+                        }
+
+                        this.selectedCustomerId = initialData.id ? Number(initialData.id) : null;
+                        this.nameInput = initialData.name || '';
+                    } else {
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    }
                 },
                 get filteredCountries() {
                     if (this.searchCountryQuery === '') return this.countries;
