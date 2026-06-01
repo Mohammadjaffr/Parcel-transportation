@@ -61,7 +61,8 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:6'],
-            'branch_id' => ['required', 'exists:branches,id']
+            'branch_id' => ['required', 'exists:branches,id'],
+            'is_active' => ['nullable', 'in:0,1']
         ], [
             'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
             'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
@@ -91,10 +92,15 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
                 'whatsapp_number' => $request->whatsapp_number,
                 'password'  => Hash::make($request->password),
                 'type'      => 'user',
-                'is_banned' => false,
+                'is_banned' => $request->input('is_active', 1) == 0,
             ]);
 
             DB::commit();
+
+            // تهيئة رسائل النجاح (الـ Flash message)
+            session()->flash('success', true);
+            session()->flash('success_title', 'تمت الإضافة!');
+            session()->flash('success_message', 'تم إضافة المستخدم بنجاح إلى النظام.');
 
             // 2. الرد في حالة النجاح
             if ($request->expectsJson()) {
@@ -106,7 +112,7 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
                 ], 200);
             }
 
-            return WebResponseClass::sendResponse('تم الإضافة!', 'تم إضافة المستخدم بنجاح', 'حسناً', 'users.index');
+            return redirect()->route('users.index');
         } catch (\Exception $e) {
             DB::rollBack();
 

@@ -270,7 +270,38 @@
                         @enderror
                     </div>
 
-
+                    {{-- حالة الحساب (نشط / محظور) --}}
+                    <div class="sm:col-span-2 mt-2" x-data="{ isActive: true }">
+                        <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                            حالة الحساب <span class="text-red-500">*</span>
+                        </label>
+                        <input type="hidden" name="is_active" :value="isActive ? 1 : 0">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 transition-colors duration-300">
+                            <div class="flex items-center gap-3">
+                                <div class="flex justify-center items-center w-10 h-10 rounded-xl shadow-inner transition-colors duration-300"
+                                    :class="isActive ? 'bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20' : 'bg-rose-500/10 text-rose-500 dark:bg-rose-500/20'">
+                                    <span class="material-symbols-outlined text-[22px]" x-text="isActive ? 'lock_open' : 'lock'"></span>
+                                </div>
+                                <div class="flex flex-col text-right">
+                                    <span class="text-sm font-bold transition-colors duration-300"
+                                        :class="isActive ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'"
+                                        x-text="isActive ? 'الحساب نشط (فعال)' : 'الحساب محظور (موقوف)'"></span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                                        x-text="isActive ? 'يمكن للمستخدم تسجيل الدخول واستخدام كافة ميزات النظام.' : 'لن يتمكن المستخدم من تسجيل الدخول للنظام فور إنشاء حسابه.'"></span>
+                                </div>
+                            </div>
+                            
+                            <button type="button" @click="isActive = !isActive" 
+                                class="relative inline-flex items-center cursor-pointer select-none focus:outline-none" dir="ltr">
+                                <!-- Track -->
+                                <div class="w-14 h-8 rounded-full transition-colors duration-300"
+                                    :class="isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'"></div>
+                                <!-- Knob -->
+                                <div class="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform duration-300"
+                                    :class="isActive ? 'translate-x-6' : 'translate-x-0'"></div>
+                            </button>
+                        </div>
+                    </div>
 
                 </div>
 
