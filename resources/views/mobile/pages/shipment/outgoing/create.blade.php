@@ -279,168 +279,206 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
-                <div class="flex gap-2 items-center mb-4">
-                    <span
-                        class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[20px]">inventory_2</span>
-                    <h3 class="font-bold text-slate-700 font-headline">محتويات الطرد</h3>
-                </div>
+           {{-- ================= الغلاف الرئيسي (لربط الحسابات بين الطرد والمالية) ================= --}}
+<div class="flex flex-col gap-4"
+    x-data="{
+        packageFee: {{ old('package_fee', 0) }},
+        packageCommissionRate: {{ old('package_commission_rate', 0) }},
+        honeyFee: {{ old('honey_fee', 0) }},
+        honeyCommissionRate: {{ old('honey_commission_rate', 0) }},
+        
+        // حساب إجمالي المبلغ (الطرد + العسل)
+        get totalAmount() {
+            return (parseFloat(this.packageFee) || 0) + (parseFloat(this.honeyFee) || 0);
+        },
+        // حساب مبلغ عمولة الطرد
+        get packageCommissionCalc() {
+            return (((parseFloat(this.packageFee) || 0) * (parseFloat(this.packageCommissionRate) || 0)) / 100).toFixed(2);
+        },
+        // حساب مبلغ عمولة العسل
+        get honeyCommissionCalc() {
+            return (((parseFloat(this.honeyFee) || 0) * (parseFloat(this.honeyCommissionRate) || 0)) / 100).toFixed(2);
+        }
+    }">
 
-                <div class="grid grid-cols-2 gap-4">
+    {{-- ================= قسم محتويات الطرد ================= --}}
+    <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+        <div class="flex gap-2 items-center mb-4">
+            <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-1.5 rounded-lg text-[20px]">inventory_2</span>
+            <h3 class="font-bold text-slate-700 font-headline">محتويات الطرد والتسعير</h3>
+        </div>
 
-                    {{-- ================= 1. حقل نوع الشحنة (Combobox) ================= --}}
-                    <div class="flex flex-col gap-2" x-data="{
-                        isOpen: false,
-                        options: ['كرتون', 'كيس'],
-                        packageType: '{{ old('package_type', 'كرتون') }}'
-                    }">
-                        <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
-                                class="text-rose-500">*</span></label>
+        <div class="grid grid-cols-2 gap-4">
 
-                        <div class="relative z-[40]">
-                            {{-- حقل الإدخال النصي --}}
-                            <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true"
-                                @click.outside="isOpen = false" placeholder="اختر أو اكتب النوع..." autocomplete="off"
-                                required
-                                class="px-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+            {{-- 1. حقل نوع الشحنة (Combobox) --}}
+            <div class="flex flex-col gap-2 col-span-2" x-data="{
+                    isOpen: false,
+                    options: ['كرتون', 'كيس'],
+                    packageType: '{{ old('package_type', 'كرتون') }}'
+                }">
+                <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span class="text-rose-500">*</span></label>
 
-                            {{-- أيقونة السهم التفاعلية --}}
-                            <button type="button" @click="isOpen = !isOpen" tabindex="-1"
-                                class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
-                                <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
-                                    :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
-                            </button>
+                <div class="relative z-[40]">
+                    <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true"
+                        @click.outside="isOpen = false" placeholder="اختر أو اكتب النوع..." autocomplete="off" required
+                        class="px-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
-                            {{-- القائمة المنسدلة الذكية --}}
-                            <div x-show="isOpen" x-cloak x-transition.opacity.translate.y.-10px
-                                class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
-                                <template x-for="option in options" :key="option">
-                                    <button type="button" @click="packageType = option; isOpen = false"
-                                        class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
-                                        <span x-text="option"></span>
-                                        <span x-show="packageType === option"
-                                            class="material-symbols-outlined text-[18px] text-primary">check</span>
-                                    </button>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- ================= 2. حقل الوزن ================= --}}
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
-
-                        <div class="relative">
-                            <input type="number" step="0.1" name="weight" value="{{ old('weight') }}" placeholder="مثال: 2.5" min="0"
-                                dir="ltr"
-                                class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
-
-                            {{-- أيقونة الوزن الجمالية --}}
-                            <div
-                                class="flex absolute inset-y-0 right-0 items-center pr-3 pointer-events-none text-slate-400">
-                                <span class="material-symbols-outlined text-[18px]">scale</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                {{-- منطقة بيانات العسل مخفية افتراضياً وتظهر عند الضغط --}}
-                <div x-data="{ showHoneyFields: {{ old('no_gallons_honey') || old('no_honey_jars') ? 'true' : 'false' }} }" class="mt-5">
-
-                    {{-- زر الإظهار والإخفاء --}}
-                    <button type="button" @click="showHoneyFields = !showHoneyFields"
-                        class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
-                        <div class="flex gap-2 items-center">
-                            <span class="text-[20px] material-symbols-outlined">hive</span>
-                            <span>إضافة بيانات العسل (جوالين / قروف)</span>
-                        </div>
-                        {{-- سهم يتحرك عند الفتح والإغلاق --}}
-                        <span class="transition-transform duration-300 material-symbols-outlined"
-                            :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
+                    <button type="button" @click="isOpen = !isOpen" tabindex="-1"
+                        class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                            :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
                     </button>
 
-                    {{-- الحقول (تظهر بتأثير انسيابي) --}}
-                    <div x-show="showHoneyFields" x-cloak x-transition:enter="transition ease-out duration-300"
-                        x-transition:enter-start="opacity-0 -translate-y-2"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-200"
-                        x-transition:leave-start="opacity-100 translate-y-0"
-                        x-transition:leave-end="opacity-0 -translate-y-2">
+                    <div x-show="isOpen" x-cloak x-transition.opacity.translate.y.-10px
+                        class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
+                        <template x-for="option in options" :key="option">
+                            <button type="button" @click="packageType = option; isOpen = false"
+                                class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                <span x-text="option"></span>
+                                <span x-show="packageType === option" class="material-symbols-outlined text-[18px] text-primary">check</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
 
-                        <div
-                            class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
-                            <div>
-                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
-                                    العسل</label>
-                                <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
-                                    العسل</label>
-                                <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}" placeholder="العدد"
-                                    class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 dark:focus:border-amber-500 text-on-surface dark:text-white">
-                            </div>
+            {{-- 2. حقل الوزن --}}
+            {{-- <div class="flex flex-col gap-2 col-span-2">
+                <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
+                <div class="relative">
+                    <input type="number" step="0.1" name="weight" value="{{ old('weight') }}" placeholder="مثال: 2.5" min="0" dir="ltr"
+                        class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+                    <div class="flex absolute inset-y-0 right-0 items-center pr-3 pointer-events-none text-slate-400">
+                        <span class="material-symbols-outlined text-[18px]">scale</span>
+                    </div>
+                </div>
+            </div> --}}
+
+            {{-- 3. تسعيرة الطرد وعمولته (للموبايل) --}}
+            <div class="flex flex-col gap-2 col-span-1 mt-1">
+                <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
+                <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0" min="0" dir="ltr" required
+                    class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border transition-all outline-none border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+            </div>
+
+            <div class="flex flex-col gap-2 col-span-1 mt-1">
+                <label class="text-[11px] font-bold text-slate-500">نسبة العمولة (%)</label>
+                <div class="relative">
+                    <input type="number" name="package_commission_rate" x-model.number="packageCommissionRate" placeholder="0" min="0" max="100" dir="ltr"
+                        class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+                    {{-- عرض مباشر للمبلغ المحسوب --}}
+                    <div class="absolute -bottom-5 left-1 flex gap-1 items-center text-[9px] font-bold text-emerald-600">
+                        <span class="material-symbols-outlined text-[10px]">payments</span>
+                        العمولة: <span x-text="packageCommissionCalc"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- ================= منطقة بيانات العسل ================= --}}
+        <div x-data="{ showHoneyFields: {{ (old('no_gallons_honey') > 0 || old('no_honey_jars') > 0 || old('honey_fee') > 0) ? 'true' : 'false' }} }" class="mt-8">
+
+            <button type="button" @click="showHoneyFields = !showHoneyFields"
+                class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-xl text-amber-600 bg-amber-50 hover:bg-amber-100 active:scale-[0.98]">
+                <div class="flex gap-2 items-center">
+                    <span class="text-[20px] material-symbols-outlined">hive</span>
+                    <span>بيانات وتسعيرة العسل</span>
+                </div>
+                <span class="transition-transform duration-300 material-symbols-outlined"
+                    :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
+            </button>
+
+            <div x-show="showHoneyFields" x-cloak x-collapse>
+                <div class="grid grid-cols-2 gap-4 p-4 mt-2 rounded-xl border bg-amber-50/50 border-amber-100/50">
+                    
+                    {{-- الكميات --}}
+                    <div>
+                        <label class="block mb-1.5 text-[10px] font-bold text-amber-600">جوالين العسل</label>
+                        <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}" placeholder="العدد" min="0"
+                            class="px-3 w-full h-11 text-sm bg-white rounded-lg border border-amber-100 transition-all outline-none focus:border-amber-400">
+                    </div>
+                    <div>
+                        <label class="block mb-1.5 text-[10px] font-bold text-amber-600">قروف العسل</label>
+                        <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}" placeholder="العدد" min="0"
+                            class="px-3 w-full h-11 text-sm bg-white rounded-lg border border-amber-100 transition-all outline-none focus:border-amber-400">
+                    </div>
+
+                    {{-- التسعيرة والعمولة --}}
+                    <div class="mt-1">
+                        <label class="block mb-1.5 text-[10px] font-bold text-amber-600">أجرة العسل (ريال)</label>
+                        <input type="number" name="honey_fee" x-model.number="honeyFee" placeholder="0" min="0" dir="ltr"
+                            class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-lg border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
+                    </div>
+                    <div class="mt-1 relative">
+                        <label class="block mb-1.5 text-[10px] font-bold text-amber-600">نسبة العمولة (%)</label>
+                        <input type="number" name="honey_commission_rate" x-model.number="honeyCommissionRate" placeholder="0" min="0" max="100" dir="ltr"
+                            class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-lg border border-amber-100 transition-all outline-none focus:border-amber-400">
+                        {{-- عرض مباشر للمبلغ المحسوب --}}
+                        <div class="absolute -bottom-5 left-1 flex gap-1 items-center text-[9px] font-bold text-emerald-600">
+                            <span class="material-symbols-outlined text-[10px]">payments</span>
+                            العمولة: <span x-text="honeyCommissionCalc"></span>
                         </div>
                     </div>
-                </div>
-                <div class="flex flex-col gap-2 pt-2">
-                    <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
-                    <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
-                        class="p-4 w-full text-sm rounded-2xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">{{ old('notes') }}</textarea>
-                </div>
-            </div>
-
-            <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
-                <div class="flex gap-2 items-center mb-4">
-                    <span
-                        class="material-symbols-outlined text-rose-500 bg-rose-50 p-1.5 rounded-lg text-[20px]">payments</span>
-                    <h3 class="font-bold text-slate-700 font-headline">المالية والدفع</h3>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span
-                                class="text-red-500">*</span></label>
-                        <select name="payment_method" x-model="paymentMethod"
-                            class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
-                            @hasservice('Payment_Prepaid')
-                                <option value="prepaid">مدفوع مقدماً</option>
-                            @endhasservice
-                            
-                            @hasservice('Payment_COD')
-                                <option value="cod">الدفع عند الاستلام (على حساب المستلم)</option>
-                            @endhasservice
-
-                            @hasservice('Payment_Partial')
-                                <option value="partial_payment">دفع جزئي</option>
-                            @endhasservice
-
-                            @hasservice('Payment_Credit')
-                                <option value="customer_credit">آجل (على حساب المرسل)</option>
-                            @endhasservice
-                        </select>
-                    </div>
-
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[11px] font-bold text-slate-400">المبلغ الإجمالي (ريال) <span
-                                class="text-red-500">*</span></label>
-                        <input type="number" required name="total_amount" value="{{ old('total_amount') }}" placeholder="0.00"
-                            class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-primary"
-                            dir="ltr">
-                    </div>
-
-                    <div x-show="paymentMethod === 'partial_payment'" x-collapse class="flex flex-col gap-2">
-                        <label class="text-[11px] font-bold text-rose-500">المبلغ المدفوع حالياً (ريال)</label>
-                        <input type="number" name="partial_amount" value="{{ old('partial_amount') }}" placeholder="0.00"
-                            class="px-4 w-full h-14 text-lg font-black text-left text-rose-600 rounded-2xl border-none ring-1 ring-rose-200 outline-none bg-rose-50/50 focus:ring-2 focus:ring-rose-400"
-                            dir="ltr">
-                    </div>
-
 
                 </div>
             </div>
+        </div>
+
+        <div class="flex flex-col gap-2 mt-8">
+            <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
+            <textarea name="notes" rows="2" placeholder="اكتب أي ملاحظات هنا..."
+                class="p-4 w-full text-sm rounded-xl border-none ring-1 outline-none resize-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">{{ old('notes') }}</textarea>
+        </div>
+    </div>
+
+
+    {{-- ================= قسم المالية والدفع ================= --}}
+    <div class="bg-white p-5 rounded-[1.75rem] border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+        <div class="flex gap-2 items-center mb-4">
+            <span class="material-symbols-outlined text-rose-500 bg-rose-50 p-1.5 rounded-lg text-[20px]">payments</span>
+            <h3 class="font-bold text-slate-700 font-headline">المالية والدفع</h3>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span class="text-red-500">*</span></label>
+                <select name="payment_method" x-model="paymentMethod"
+                    class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
+                    @hasservice('Payment_Prepaid')
+                        <option value="prepaid">مدفوع مقدماً</option>
+                    @endhasservice
+                    @hasservice('Payment_COD')
+                        <option value="cod">الدفع عند الاستلام (على حساب المستلم)</option>
+                    @endhasservice
+                    @hasservice('Payment_Partial')
+                        <option value="partial_payment">دفع جزئي</option>
+                    @endhasservice
+                    @hasservice('Payment_Credit')
+                        <option value="customer_credit">آجل (على حساب المرسل)</option>
+                    @endhasservice
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-slate-400">المبلغ الإجمالي (ريال) <span class="text-red-500">*</span></label>
+                
+                {{-- 💡 حقل مقفل يحسب المجموع تلقائياً ليتناسب مع تصميم الموبايل --}}
+                <input type="number" required name="total_amount" :value="totalAmount" readonly tabindex="-1" placeholder="0.00"
+                    class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 outline-none bg-slate-100 ring-slate-200 text-primary cursor-not-allowed shadow-inner"
+                    dir="ltr">
+                <p class="text-[9px] font-bold text-gray-400">يُحسب تلقائياً (الطرد + العسل)</p>
+            </div>
+
+            <div x-show="paymentMethod === 'partial_payment'" x-collapse class="flex flex-col gap-2">
+                <label class="text-[11px] font-bold text-rose-500">المبلغ المدفوع حالياً (ريال)</label>
+                <input type="number" name="partial_amount" value="{{ old('partial_amount') }}" placeholder="0.00" min="0" :max="totalAmount"
+                    class="px-4 w-full h-14 text-lg font-black text-left text-rose-600 rounded-2xl border-none ring-1 ring-rose-200 outline-none bg-rose-50/50 focus:ring-2 focus:ring-rose-400"
+                    dir="ltr">
+            </div>
+        </div>
+    </div>
+</div>
             {{-- زر الارسال --}}
             <div class="pt-2 pb-4">
                 <button type="submit" :disabled="isSubmitting"

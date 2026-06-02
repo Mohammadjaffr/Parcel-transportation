@@ -188,7 +188,7 @@
 
                     <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all shipment-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
                         x-show="showRow(
-                            @js($shipment->bond_number),
+                            @js($shipment->id),
                             @js($shipment->senderCustomer?->name),
                             @js($shipment->senderCustomer?->phone),
                             @js($shipment->receiverCustomer?->name),
@@ -205,7 +205,7 @@
 
                                 <div class="flex flex-col gap-1 min-w-0">
                                     <span class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
-                                        {{ $shipment->bond_number }}
+                                        {{ $shipment->id }}
                                     </span>
 
                                     <div
@@ -403,7 +403,7 @@
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group shipment-row"
                                 x-show="showRow(
-                                    @js($shipment->bond_number),
+                                    @js($shipment->id),
                                     @js($shipment->senderCustomer?->name),
                                     @js($shipment->senderCustomer?->phone),
                                     @js($shipment->receiverCustomer?->name),
@@ -421,7 +421,7 @@
 
                                         <div class="flex flex-col gap-1">
                                             <span class="text-sm font-black text-gray-800 dark:text-white">
-                                                {{ $shipment->bond_number }}
+                                                {{ $shipment->id }}
                                             </span>
                                             <span
                                                 class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">

@@ -83,6 +83,21 @@ class CustomerTransactionService
     }
 
     /**
+     * تحديث الحركات المالية للطرد (عند تعديل البوليصة)
+     */
+    public function updateShipmentTransaction(Shipment $shipment)
+    {
+        // 1. مسح القيود المالية القديمة المرتبطة بهذا الطرد (تصفير الدفتر لهذا الطرد)
+        CustomerTransaction::where('shipment_id', $shipment->id)->delete();
+
+        // 2. إعادة إنشاء القيود بناءً على الحالة الجديدة (طريقة الدفع والمبالغ المحدثة)
+        // نستدعي الدالة الأساسية التي كتبتها أنت مسبقاً لضمان توحيد اللوجيك (DRY)
+        $this->recordInitialShipment($shipment);
+        
+        return true;
+    }
+
+    /**
      * دالة مساعدة داخلية لتقليل تكرار الكود (Helper)
      */
     private function createTransaction(Shipment $shipment, $amount, $type, $description)

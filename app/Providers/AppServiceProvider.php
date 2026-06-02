@@ -6,6 +6,8 @@ use App\Models\TransactionCategory;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Shipment; 
+use App\Observers\ShipmentObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,6 @@ class AppServiceProvider extends ServiceProvider
             $currentApp = auth()->user()->app;
             return $currentApp && $currentApp->hasService($serviceSlug);
         });
+        Shipment::observe(ShipmentObserver::class);
     }
 }

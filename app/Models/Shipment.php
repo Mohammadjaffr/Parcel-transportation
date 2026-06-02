@@ -11,27 +11,49 @@ class Shipment extends Model
     use HasFactory;
 
     protected $fillable = [
+        // 1. المعرّفات
         'uuid',
+        'bond_number',
+        'code',
+        'shipment_package_id',
+
+        // 2. التوجيه والفروع
         'sender_branch_id',
         'sender_office_branch_id',
         'receiver_branch_id',
         'receiver_office_branch_id',
+
+        // 3. العملاء
         'sender_customer_id',
         'receiver_customer_id',
-        'customer_debt_status',
-        'total_amount',
-        'partial_amount',
+
+        // 4. تفاصيل الطرد العادي
         'package_type',
         'weight',
-        'payment_method',
-        'status',
-        'notes',
-        'code',
-        'no_honey_jars',
+        'package_fee',
+        'package_commission_rate',
+        'package_commission_amount',
+
+        // 5. تفاصيل العسل
         'no_gallons_honey',
-        'bond_number',
-        'shipment_package_id',
+        'no_honey_jars',
+        'honey_fee',
+        'honey_commission_rate',
+        'honey_commission_amount',
+
+        // 6. الإجماليات والمالية
+        'payment_method',
+        'total_amount',
+        'partial_amount',
+        'total_commission',
+        'customer_debt_status',
+
+        // 7. الحالة والملاحظات
+        'status',
         'is_returned',
+        'notes',
+        
+        // 8. معلومات النظام
         'created_by',
     ];
     protected $casts = [

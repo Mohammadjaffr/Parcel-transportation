@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'تفاصيل الطرد #' . $shipment->bond_number)
+@section('title', 'تفاصيل الطرد #' . $shipment->id)
 
 @section('content')
 
@@ -70,7 +70,7 @@
                     <div>
                         <div class="flex flex-wrap gap-3 items-center mb-1.5">
                             <h1 class="text-2xl font-black text-gray-900 dark:text-white font-headline">
-                                الطرد #{{ $shipment->bond_number }}
+                                الطرد #{{ $shipment->id }}
                             </h1>
 
                             {{-- ================= حالة الطرد الذكية ================= --}}
@@ -404,32 +404,70 @@
                 </div>
 
                 {{-- مربع محتوى الطرد (Purple Theme) --}}
+                {{-- ================= مربع محتوى الطرد والتسعير التفصيلي (Purple Theme) ================= --}}
                 <div
                     class="p-6 bg-white border border-gray-100 shadow-sm rounded-[2rem] dark:bg-boxdark-2 dark:border-boxdark transition-all hover:shadow-md hover:border-purple-200 dark:hover:border-purple-500/30">
                     <div class="flex gap-2 items-center mb-6 text-sm font-black tracking-widest text-purple-500 uppercase">
                         <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                        بيانات محتوى الطرد
+                        محتويات الطرد والتسعير
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                        <div
-                            class="flex flex-col justify-center p-5 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark dark:border-gray-800">
-                            <div class="mb-2 text-xs font-bold text-gray-500 dark:text-gray-400">نوع الشحنة</div>
-                            <div class="text-lg font-black text-gray-900 dark:text-white font-headline">
-                                {{ $shipment->package_type ?? '-' }}</div>
+                    <div class="space-y-4">
+                        {{-- 📦 1. تفاصيل الطرد العادي --}}
+                        <div class="p-5 rounded-2xl bg-gray-50 border border-gray-100 dark:bg-boxdark dark:border-gray-800 transition-colors hover:border-purple-200">
+                            <div class="flex justify-between items-center mb-4">
+                                <h5 class="text-sm font-black text-gray-700 dark:text-gray-200 flex items-center gap-2 font-headline">
+                                    <span class="material-symbols-outlined text-[20px] text-purple-500">inventory_2</span> الطرد العادي
+                                </h5>
+                                <div class="text-left">
+                                    <span class="text-[10px] font-bold text-gray-400 block mb-0.5">أجرة الطرد</span>
+                                    <span class="font-mono text-lg font-black text-gray-900 dark:text-white dir-ltr">{{ number_format($shipment->package_fee ?? 0, 0) }} <span class="text-[10px] font-bold text-gray-500">ر.ي</span></span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-4 text-xs font-bold text-gray-500 bg-white dark:bg-boxdark-2 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <div class="flex gap-1.5 items-center"><span class="text-gray-400">النوع:</span> <span class="text-gray-800 dark:text-gray-300">{{ $shipment->package_type ?? '-' }}</span></div>
+                                @if($shipment->weight)
+                                <div class="flex gap-1.5 items-center"><span class="text-gray-400">الوزن:</span> <span class="text-gray-800 dark:text-gray-300">{{ $shipment->weight }} كجم</span></div>
+                                @endif
+                                
+                                {{-- عمولة الطرد --}}
+                                @if(($shipment->package_commission_amount ?? 0) > 0)
+                                <div class="flex gap-1.5 items-center mr-auto text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">
+                                    <span class="material-symbols-outlined text-[14px]">payments</span>
+                                    <span>العمولة ({{ number_format($shipment->package_commission_rate ?? 0, 0) }}%):</span> 
+                                    <span class="font-black dir-ltr">{{ number_format($shipment->package_commission_amount ?? 0, 0) }} ر.ي</span>
+                                </div>
+                                @endif
+                            </div>
                         </div>
-                        <div
-                            class="flex flex-col justify-center p-5 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark dark:border-gray-800">
-                            <div class="mb-2 text-xs font-bold text-gray-500 dark:text-gray-400">عدد الجوالين</div>
-                            <div class="text-lg font-black text-gray-900 dark:text-white font-headline">
-                                {{ $shipment->no_gallons_honey ?? 0 }}</div>
+
+                        {{-- 🍯 2. تفاصيل العسل (تظهر فقط إذا كان هناك بيانات للعسل) --}}
+                        @if(($shipment->no_gallons_honey > 0) || ($shipment->no_honey_jars > 0) || ($shipment->honey_fee > 0))
+                        <div class="p-5 rounded-2xl bg-amber-50/50 border border-amber-100/50 dark:bg-amber-500/5 dark:border-amber-500/10 transition-colors hover:border-amber-300">
+                            <div class="flex justify-between items-center mb-4">
+                                <h5 class="text-sm font-black text-amber-700 dark:text-amber-500 flex items-center gap-2 font-headline">
+                                    <span class="material-symbols-outlined text-[20px]">hive</span> شحن العسل
+                                </h5>
+                                <div class="text-left">
+                                    <span class="text-[10px] font-bold text-amber-600/70 block mb-0.5">أجرة العسل</span>
+                                    <span class="font-mono text-lg font-black text-amber-700 dark:text-amber-500 dir-ltr">{{ number_format($shipment->honey_fee ?? 0, 0) }} <span class="text-[10px] font-bold text-amber-600/60">ر.ي</span></span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-4 text-xs font-bold text-amber-600/80 dark:text-amber-500/80 bg-white dark:bg-boxdark-2 p-3 rounded-xl border border-amber-100/50 dark:border-amber-500/10">
+                                <div class="flex gap-1.5 items-center"><span class="opacity-70">عدد الجوالين:</span> <span class="text-amber-700 dark:text-amber-400">{{ $shipment->no_gallons_honey ?? 0 }}</span></div>
+                                <div class="flex gap-1.5 items-center"><span class="opacity-70">عدد القروف:</span> <span class="text-amber-700 dark:text-amber-400">{{ $shipment->no_honey_jars ?? 0 }}</span></div>
+                                
+                                {{-- عمولة العسل --}}
+                                @if(($shipment->honey_commission_amount ?? 0) > 0)
+                                <div class="flex gap-1.5 items-center mr-auto text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded-lg">
+                                    <span class="material-symbols-outlined text-[14px]">payments</span>
+                                    <span>العمولة ({{ number_format($shipment->honey_commission_rate ?? 0, 0) }}%):</span> 
+                                    <span class="font-black dir-ltr">{{ number_format($shipment->honey_commission_amount ?? 0, 0) }} ر.ي</span>
+                                </div>
+                                @endif
+                            </div>
                         </div>
-                        <div
-                            class="flex flex-col justify-center p-5 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark dark:border-gray-800">
-                            <div class="mb-2 text-xs font-bold text-gray-500 dark:text-gray-400">عدد القروف</div>
-                            <div class="text-lg font-black text-gray-900 dark:text-white font-headline">
-                                {{ $shipment->no_honey_jars ?? 0 }}</div>
-                        </div>
+                        @endif
                     </div>
 
                     @if ($shipment->notes)
@@ -448,8 +486,8 @@
 
             </div>
 
+            {{-- ================= مربع المالية والدفع (Amber Theme) ================= --}}
             <div class="space-y-6 lg:col-span-1">
-                {{-- مربع المالية (Amber Theme) --}}
                 <div
                     class="p-6 bg-white border border-gray-100 shadow-sm rounded-[2rem] dark:bg-boxdark-2 dark:border-boxdark transition-all hover:shadow-md hover:border-amber-200 dark:hover:border-amber-500/30">
                     <div class="flex justify-between items-center mb-6">
@@ -464,8 +502,21 @@
                     </div>
 
                     <div class="space-y-2">
+                        
+                        {{-- 💰 إجمالي عمولات المكتب (إبراز خاص للمكتب) --}}
+                        <div class="p-4 mb-4 bg-emerald-50 rounded-2xl border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                            <div class="flex items-center gap-2 text-[11px] font-black text-emerald-600/80 dark:text-emerald-400 mb-1.5 uppercase tracking-wide">
+                                <span class="material-symbols-outlined text-[16px]">military_tech</span> إجمالي العمولة 
+                            </div>
+                            <div class="font-mono text-2xl font-black text-emerald-700 dark:text-emerald-300 dir-ltr">
+                                {{ number_format($shipment->total_commission ?? 0, 0) }}
+                                <span class="font-sans text-[10px] font-bold text-emerald-600/60">ر.ي</span>
+                            </div>
+                        </div>
+
+                        {{-- إجمالي مبلغ الشحنة --}}
                         <div class="flex justify-between items-center py-4 border-b border-gray-100 dark:border-gray-800">
-                            <div class="text-sm font-bold text-gray-500 dark:text-gray-400">إجمالي المبلغ</div>
+                            <div class="text-sm font-bold text-gray-500 dark:text-gray-400">إجمالي مبلغ الشحنة <br><span class="text-[10px]">(المطلوب من العميل)</span></div>
                             <div class="font-mono text-3xl font-black tracking-tight text-gray-900 dark:text-white">
                                 {{ number_format($shipment->total_amount, 0) }}
                                 <span class="font-sans text-xs font-bold text-gray-400">ر.ي</span>
@@ -489,7 +540,7 @@
                             </span>
                         </div>
 
-                        @if ($shipment->payment_method === 'partial_payment' && $paidAmount > 0)
+                        @if ($shipment->payment_method === 'partial_payment' && isset($paidAmount) && $paidAmount > 0)
                             <div class="flex justify-between items-center py-4">
                                 <span class="text-sm font-bold text-gray-500 dark:text-gray-400">المبلغ المدفوع</span>
                                 <span class="font-mono text-xl font-black text-green-500">
@@ -500,6 +551,11 @@
                     </div>
                 </div>
             </div>
+
+        </div>
+
+            </div>
+
 
         </div>
 

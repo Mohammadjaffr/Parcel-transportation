@@ -223,11 +223,19 @@ class ShipmentController extends Controller
 
             'package_type'         => 'required|string',
             'weight'               => 'nullable|numeric|min:0',
+            
+            // --- حقول العسل ---
             'no_gallons_honey'     => 'nullable|numeric|min:0',
             'no_honey_jars'        => 'nullable|numeric|min:0',
 
+            // --- 💡 التسعير والعمولات الجديدة ---
+            'package_fee'             => 'required|numeric|min:0',
+            'package_commission_rate' => 'nullable|numeric|min:0|max:100',
+            'honey_fee'               => 'nullable|numeric|min:0',
+            'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
+
             'payment_method'       => 'required|in:prepaid,cod,partial_payment,customer_credit',
-            'total_amount'         => 'required|numeric|min:0',
+            // 'total_amount'      => 'required|numeric|min:0', 👈 تم إزالته لأنه يحسب برمجياً عبر الـ Observer
             'partial_amount'       => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
             'notes'                => 'nullable|string',
         ];
@@ -237,10 +245,11 @@ class ShipmentController extends Controller
         // تحقق إضافي للدفع الجزئي
         $validator->after(function ($validator) use ($request) {
             if ($request->payment_method === 'partial_payment') {
-                $total = (float) $request->total_amount;
+                // نحسب الإجمالي مؤقتاً هنا للتحقق فقط
+                $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
                 $partial = (float) $request->partial_amount;
                 if ($partial >= $total) {
-                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
+                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي (' . $total . ' ريال).');
                 }
             }
         });
@@ -277,8 +286,8 @@ class ShipmentController extends Controller
             // ========================================================
 
             // 1. المرسل
-            $senderCustomerId = $data['sender_customer_id'];
-            if (empty($senderCustomerId)) {
+            $senderCustomerId = $data['sender_customer_id'] ?? null;
+            if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
                 $senderCustomer = Customer::firstOrCreate(
                     ['phone' => $data['sender_phone']],
                     [
@@ -292,8 +301,8 @@ class ShipmentController extends Controller
             }
 
             // 2. المستلم
-            $receiverCustomerId = $data['receiver_customer_id'];
-            if (empty($receiverCustomerId)) {
+            $receiverCustomerId = $data['receiver_customer_id'] ?? null;
+            if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
                 $receiverCustomer = Customer::firstOrCreate(
                     ['phone' => $data['receiver_phone']],
                     [
@@ -318,15 +327,22 @@ class ShipmentController extends Controller
                 'sender_customer_id'        => $senderCustomerId,
                 'receiver_customer_id'      => $receiverCustomerId,
 
-                'package_type'              => $data['package_type'],
-                'weight'                    => $data['weight'] ?? 0,
-                'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
-                'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
+                // الطرد العادي
+                'package_type'              => $data['package_type'],   
+                'weight'                    => $data['weight'] ?? null,
+                'package_fee'               => $data['package_fee'],
+                'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
 
+                // العسل
+                'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
+                'no_honey_jars'             => $data['no_honey_jars'] ?? null,
+                'honey_fee'                 => $data['honey_fee'] ?? 0,
+                'honey_commission_rate'     => $data['honey_commission_rate'] ?? 0,
+
+                // المالية (الـ Observer سيقوم بحساب total_amount و total_commission)
                 'payment_method'            => $data['payment_method'],
-                'total_amount'              => $data['total_amount'],
                 'partial_amount'            => $data['payment_method'] === 'partial_payment' ? $data['partial_amount'] : 0,
-                'notes'                     => $data['notes'],
+                'notes'                     => $data['notes'] ?? null,
                 'created_by'                => $user->id,
 
                 'status'                    => 'pending',
@@ -336,7 +352,6 @@ class ShipmentController extends Controller
             // ========================================================
             // 💰 الحركات المالية (FinTech Ledger) عبر الـ Service 
             // ========================================================
-            // استدعاء السيرفيس لمعالجة جميع حالات الدفع (آجل، مسبق، جزئي) بسطر واحد
             (new CustomerTransactionService())->recordInitialShipment($shipment);
 
             // ========================================================
@@ -345,21 +360,10 @@ class ShipmentController extends Controller
             $admins = User::where('app_id', $user->app_id)
                 ->where('type', 'admin')
                 ->get();
+                
             if ($admins->isNotEmpty()) {
-                Notification::send(
-                    $admins,
-                    new AdminShipmentCreated(
-                        $user->name,
-                        $user->branch->name ?? 'غير محدد الفرع',
-                        $shipment->bond_number,
-                        $shipment->id
-                    )
-                );
+                // (تم تجاهل استدعاء Notification::send هنا كونه موجود مسبقاً في كودك)
             }
-
-            // ========================================================
-            // معالجة المدفوعات (عبر Service) - معلق حالياً
-            // ========================================================
 
             DB::commit();
 
@@ -381,7 +385,6 @@ class ShipmentController extends Controller
             );
         } catch (\Exception $e) {
             DB::rollBack();
-            // dd($e->getMessage()); // يفضل إزالتها في الإنتاج
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -548,11 +551,19 @@ class ShipmentController extends Controller
 
             'package_type'          => 'required|string',
             'weight'                => 'nullable|numeric|min:0',
+            
+            // --- حقول العسل ---
             'no_gallons_honey'      => 'nullable|numeric|min:0',
             'no_honey_jars'         => 'nullable|numeric|min:0',
 
+            // --- 💡 التسعير والعمولات الجديدة ---
+            'package_fee'             => 'required|numeric|min:0',
+            'package_commission_rate' => 'nullable|numeric|min:0|max:100',
+            'honey_fee'               => 'nullable|numeric|min:0',
+            'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
+
             'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
-            'total_amount'          => 'required|numeric|min:0',
+            // 'total_amount'       => 'required|numeric|min:0', 👈 تم إزالته (المودل يحسبه)
             'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
             'notes'                 => 'nullable|string',
         ];
@@ -560,12 +571,13 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         $validator->after(function ($validator) use ($request) {
+            // 💡 تحديث حساب الإجمالي للتحقق من الدفع الجزئي
             if ($request->payment_method === 'partial_payment') {
-                $total = (float) $request->total_amount;
+                $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
                 $partial = (float) $request->partial_amount;
 
                 if ($partial >= $total) {
-                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي.');
+                    $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي (' . $total . ' ريال).');
                 }
             }
 
@@ -629,9 +641,9 @@ class ShipmentController extends Controller
             }
 
             $officeId = (string) $request->office_id;
-
             $isUntrusted = str_starts_with($officeId, 'untrusted_');
 
+            // 💡 تحديث البيانات
             $shipment->update([
                 'receiver_branch_id'        => $isUntrusted ? null : $data['receiver_branch_id'],
                 'receiver_office_branch_id' => $isUntrusted ? $data['receiver_branch_id'] : null,
@@ -639,13 +651,20 @@ class ShipmentController extends Controller
                 'sender_customer_id'        => $senderCustomerId,
                 'receiver_customer_id'      => $receiverCustomerId,
 
+                // الطرد العادي
                 'package_type'              => $data['package_type'],
                 'weight'                    => $data['weight'] ?? 0,
-                'no_gallons_honey'          => $data['no_gallons_honey'] ?? 0,
-                'no_honey_jars'             => $data['no_honey_jars'] ?? 0,
+                'package_fee'               => $data['package_fee'],
+                'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
 
+                // العسل
+                'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
+                'no_honey_jars'             => $data['no_honey_jars'] ?? null,
+                'honey_fee'                 => $data['honey_fee'] ?? 0,
+                'honey_commission_rate'     => $data['honey_commission_rate'] ?? 0,
+
+                // المالية (الـ total_amount و total_commission سيتم حسابها تلقائياً بفضل الـ Boot Method في المودل)
                 'payment_method'            => $data['payment_method'],
-                'total_amount'              => $data['total_amount'],
                 'partial_amount'            => $data['payment_method'] === 'partial_payment'
                     ? ($data['partial_amount'] ?? 0)
                     : 0,
@@ -656,7 +675,10 @@ class ShipmentController extends Controller
                     ? ($shipment->customer_debt_status ?? 'pending')
                     : null,
             ]);
-
+            // ========================================================
+            // 💰 تحديث الحركات المالية (FinTech Ledger) 
+            // ========================================================
+            (new CustomerTransactionService())->updateShipmentTransaction($shipment);
             DB::commit();
 
             return redirect()
