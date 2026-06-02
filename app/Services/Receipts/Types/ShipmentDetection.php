@@ -88,6 +88,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
         // 4. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
+        $totalPackageComm = 0;
+        $totalHoneyComm = 0;
 
         foreach ($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
@@ -113,9 +115,11 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 $paidAmount = 0;
                 $remainingAmount = $totalAmount;
             }
+            $totalPackageComm += (float) ($shipment->package_commission_amount ?? 0);
+            $totalHoneyComm   += (float) ($shipment->honey_commission_amount ?? 0);
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->bond_number ?? '---',
+                'bond_number'       => $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -179,7 +183,11 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
             // إصلاح توقيت الطباعة
             'print_date'        => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')),
-
+            'totals' => [
+                'package_commission' => $totalPackageComm,
+                'honey_commission'   => $totalHoneyComm,
+                'grand_commission'   => $totalPackageComm + $totalHoneyComm,
+            ],
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

@@ -14,7 +14,7 @@
             return [
                 'id' => $p->id,
                 'weight' => $p->weight ?? 0,
-                'bond_number' => $p->bond_number,
+                'id' => $p->id,
                 'customer_name' => $p->receiverCustomer->name ?? '',
                 'branch_name' => $p->receiverBranch?->name ?? $p->receiverOfficeBranch?->name ?? 'فرع غير محدد'
             ];
@@ -184,7 +184,7 @@
                                 $branchName = $parcel->receiverBranch?->name ?? $parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد';
                                 $customerName = $parcel->receiverCustomer?->name ?? '';
                             @endphp
-                            <label x-show="(searchQuery === '' || ('{{ $parcel->bond_number }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
+                            <label x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
                                 x-transition
                                 class="block relative cursor-pointer group">
                                 
@@ -204,7 +204,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex justify-between items-center mb-1.5">
                                             <span
-                                                class="block font-mono text-sm font-black tracking-tight truncate text-slate-800">{{ $parcel->bond_number }}</span>
+                                                class="block font-mono text-sm font-black tracking-tight truncate text-slate-800">{{ $parcel->id }}</span>
 
                                             <span
                                                 class="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -309,7 +309,7 @@
                 selectAllFiltered() {
                     this.parcels.forEach(p => {
                         const matchesSearch = this.searchQuery === '' || 
-                            (p.bond_number + ' ' + p.customer_name).includes(this.searchQuery);
+                            (p.id + ' ' + p.customer_name).includes(this.searchQuery);
                         const matchesBranch = this.selectedBranch === '' || 
                             p.branch_name === this.selectedBranch;
 

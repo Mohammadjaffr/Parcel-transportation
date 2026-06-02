@@ -14,7 +14,7 @@
             return [
                 'id' => $p->id,
                 'weight' => $p->weight ?? 0,
-                'bond_number' => $p->bond_number,
+                'id' => $p->id,
                 'customer_name' => $p->receiverCustomer->name ?? '',
                 'branch_name' => $p->receiverBranch?->name ?? $p->receiverOfficeBranch?->name ?? 'فرع غير محدد'
             ];
@@ -263,7 +263,7 @@
                                         $branchName = $parcel->receiverBranch?->name ?? $parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد';
                                         $customerName = $parcel->receiverCustomer?->name ?? '';
                                     @endphp
-                                    <tr x-show="(searchQuery === '' || ('{{ $parcel->bond_number }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
+                                    <tr x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
                                         x-transition
                                         class="transition-all cursor-pointer group hover:bg-surface/50 dark:hover:bg-boxdark-2/50"
                                         @click="toggleParcel({{ $parcel->id }}, {{ $parcel->weight ?? 0 }})"
@@ -285,7 +285,7 @@
                                                 <div class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-xl border border-gray-100 shadow-sm transition-colors bg-surface dark:bg-boxdark-2 dark:text-bodydark dark:border-boxdark group-hover:text-primary">
                                                     <span class="material-symbols-outlined text-[18px]">package_2</span>
                                                 </div>
-                                                <span class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">{{ $parcel->bond_number }}</span>
+                                                <span class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">{{ $parcel->id }}</span>
                                             </div>
                                         </td>
 
@@ -334,7 +334,7 @@
                                 $branchName = $parcel->receiverBranch?->name ?? $parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد';
                                 $customerName = $parcel->receiverCustomer?->name ?? '';
                             @endphp
-                            <label x-show="(searchQuery === '' || ('{{ $parcel->bond_number }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
+                            <label x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
                                 x-transition
                                 class="block relative h-full cursor-pointer group">
                                 <input type="checkbox" class="hidden peer"
@@ -351,7 +351,7 @@
                                                 <span class="material-symbols-outlined text-[24px]">package_2</span>
                                             </div>
                                             <div class="flex flex-col gap-1">
-                                                <span class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">{{ $parcel->bond_number }}</span>
+                                                <span class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">{{ $parcel->id }}</span>
                                                 <span class="text-[10px] font-bold text-primary bg-primary-container dark:bg-primary/10 dark:text-primary px-2 py-0.5 rounded-md flex items-center gap-1 w-max">
                                                     <span class="material-symbols-outlined text-[12px]">store</span>
                                                     {{ $branchName }}
@@ -458,7 +458,7 @@
                 selectAllFiltered() {
                     this.parcels.forEach(p => {
                         const matchesSearch = this.searchQuery === '' || 
-                            (p.bond_number + ' ' + p.customer_name).includes(this.searchQuery);
+                            (p.id + ' ' + p.customer_name).includes(this.searchQuery);
                         const matchesBranch = this.selectedBranch === '' || 
                             p.branch_name === this.selectedBranch;
 

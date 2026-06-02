@@ -185,39 +185,69 @@
                     </table>
 
                     @if (!empty($shipments))
-                        <div
-                            class="grid grid-cols-2 gap-4 p-4 text-center border-t divide-x divide-x-reverse bg-slate-50 border-slate-200 sm:grid-cols-4 divide-slate-200">
-                            <div>
-                                <p class="mb-1 text-xs font-bold uppercase text-slate-400">عدد الطرود</p>
-                                <p class="text-lg font-black text-slate-800">{{ $total_shipments ?? 0 }}</p>
+                        <div class="grid grid-cols-2 gap-4 p-4 border-t border-slate-200 bg-slate-50 sm:grid-cols-6">
+                            {{-- إحصائيات الطرود --}}
+                            <div class="col-span-2 sm:col-span-2 border-r border-slate-200">
+                                <p class="mb-1 text-[10px] font-black uppercase text-slate-400">ملخص الطرود</p>
+                                <div class="flex gap-4">
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-500">العدد</p>
+                                        <p class="text-lg font-black text-slate-800">{{ $total_shipments ?? 0 }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-500">الإجمالي</p>
+                                        <p class="text-lg font-black text-slate-800" dir="ltr">
+                                            @php
+                                                $totalAmounts = collect($shipments)->sum(
+                                                    fn($s) => (float) str_replace(',', '', $s['total_amount']),
+                                                );
+                                            @endphp
+                                            {{ number_format($totalAmounts, 0) }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي المبالغ</p>
-                                <p class="text-lg font-black text-slate-800" dir="ltr">
-                                    @php
-                                        $totalAmounts = collect($shipments)->sum(function ($s) {
-                                            return (float) str_replace(',', '', $s['total_amount']);
-                                        });
-                                    @endphp
-                                    {{ number_format($totalAmounts, 0) }} ر.ي
-                                </p>
+
+                            {{-- إحصائيات المبالغ المحصلة --}}
+                            <div class="col-span-2 sm:col-span-2 border-r border-slate-200">
+                                <p class="mb-1 text-[10px] font-black uppercase text-slate-400">التحصيل المالي</p>
+                                <div class="flex gap-4">
+                                    <div>
+                                        <p class="text-xs font-bold text-emerald-600">المدفوع</p>
+                                        <p class="text-lg font-black text-emerald-600">
+                                            @php $totalPaid = collect($shipments)->sum(fn($s) => (float) str_replace(',', '', $s['partial_amount'])); @endphp
+                                            {{ number_format($totalPaid, 0) }}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-bold text-rose-600">المتبقي</p>
+                                        <p class="text-lg font-black text-rose-600">
+                                            {{ number_format($totalAmounts - $totalPaid, 0) }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p class="mb-1 text-xs font-bold uppercase text-slate-400">المدفوع</p>
-                                <p class="text-lg font-black text-emerald-600" dir="ltr">
-                                    @php
-                                        $totalPaid = collect($shipments)->sum(function ($s) {
-                                            return (float) str_replace(',', '', $s['partial_amount']);
-                                        });
-                                    @endphp
-                                    {{ number_format($totalPaid, 0) }} ر.ي
-                                </p>
-                            </div>
-                            <div>
-                                <p class="mb-1 text-xs font-bold uppercase text-slate-400">المتبقي للتحصيل</p>
-                                <p class="text-lg font-black text-rose-600" dir="ltr">
-                                    {{ number_format($totalAmounts - $totalPaid, 0) }} ر.ي
-                                </p>
+
+                            {{-- 💡 الإضافة الجديدة: ملخص العمولات --}}
+                            <div class="col-span-2 sm:col-span-2 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                                <p class="mb-1 text-[10px] font-black uppercase text-emerald-700">العمولة  </p>
+                                <div class="flex gap-4">
+                                    <div>
+                                        <p class="text-[9px] font-bold text-emerald-600/70">طرد</p>
+                                        <p class="text-sm font-black text-emerald-800">
+                                            {{ number_format($totals['package_commission'], 0) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-bold text-emerald-600/70">عسل</p>
+                                        <p class="text-sm font-black text-amber-700">
+                                            {{ number_format($totals['honey_commission'], 0) }}</p>
+                                    </div>
+                                    <div class="mr-auto text-left">
+                                        <p class="text-[9px] font-bold text-emerald-600/70">الإجمالي</p>
+                                        <p class="text-lg font-black text-emerald-900">
+                                            {{ number_format($totals['grand_commission'], 0) }}</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     @endif
