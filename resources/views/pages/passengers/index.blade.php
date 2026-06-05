@@ -111,9 +111,11 @@
                             </select>
                             <div
                                 class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
-                                <span class="material-symbols-outlined text-[20px]">tune</span></div>
+                                <span class="material-symbols-outlined text-[20px]">tune</span>
+                            </div>
                             <div class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
-                                <span class="material-symbols-outlined text-[20px]">expand_more</span></div>
+                                <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                            </div>
                         </div>
                     </div>
 
@@ -136,7 +138,7 @@
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">التاريخ</th>
                             <th class="px-6 py-4 text-center">بيانات الراكب</th>
-                            <th class="px-6 py-4">اسم العميل ورقمه</th>
+                            <th class="px-6 py-4">اسم الوسيط </th>
                             <th class="px-6 py-4 text-center">بيانات السائق</th>
                             <th class="px-6 py-4 text-center">المكان</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
@@ -192,13 +194,16 @@
                                     <div class="flex gap-3 items-center">
                                         <div
                                             class="flex justify-center items-center w-10 h-10 text-lg font-black text-white rounded-lg shadow-inner bg-slate-800 dark:bg-slate-700">
-                                            {{ mb_substr($passenger->customer->name ?? 'ع', 0, 1, 'UTF-8') }}
+                                            {{ mb_substr($passenger->broker->name ?? 'و', 0, 1, 'UTF-8') }}
                                         </div>
-                                        <div class="flex flex-col gap-1 min-w-0">
-                                            <span
-                                                class="text-sm font-bold text-gray-700 dark:text-gray-300">{{ $passenger->customer->name ?? 'غير محدد' }}</span>
-                                            <x-phone-number :value="$passenger->customer->phone ?? ''"
-                                                class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
+
+                                        <div class="flex flex-col gap-1 min-w-0 text-right">
+                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                                                {{ $passenger->broker->name ?? 'بدون وسيط' }}
+                                            </span>
+                                            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                                                الوسيط المعتمد
+                                            </span>
                                         </div>
                                     </div>
                                 </td>
@@ -276,10 +281,10 @@
         driver_phone: @js($passenger->driver->phone ?? ''),
         note: @js($passenger->note)
     })"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
-                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                                                    تعديل البيانات
-                                                </button>
+                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
+                                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                                        تعديل البيانات
+                                                    </button>
                                                 @endif
                                                 <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
@@ -312,7 +317,7 @@
 
 
 
-                                             
+
                                             </div>
                                         </div>
                                     </div>
@@ -424,10 +429,11 @@
                                         </button>
                                         <div x-show="openCountryDropdown" x-cloak x-transition
                                             class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                                <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
                                                     class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
+                                                    dir="rtl">
+                                            </div>
                                             <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
                                                 <template x-for="country in filteredCountries" :key="country.code">
                                                     <button type="button"
@@ -451,89 +457,68 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
-                            x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))">
-                            <div class="relative">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم العميل
-                                    <span class="text-error">*</span></label>
-                                <input type="hidden" name="customer_id" x-model="selectedRecordId">
-                                <input type="hidden" name="customer_phone" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40"
-                                    :class="selectedRecordId ?
+                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                            x-data="{
+                                searchQuery: '',
+                                selectedId: '',
+                                showDropdown: false,
+                                brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                                get filteredBrokers() {
+                                    if (!this.searchQuery) return [];
+                                    return this.brokers.filter(b => b.name.includes(this.searchQuery));
+                                },
+                                selectBroker(broker) {
+                                    this.selectedId = broker.id;
+                                    this.searchQuery = broker.name;
+                                    this.showDropdown = false;
+                                },
+                                resetSelection() {
+                                    this.selectedId = '';
+                                    this.searchQuery = '';
+                                }
+                            }">
+
+                            <div class="relative text-right">
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                                    اسم الوسيط أو المكتب <span class="text-error">*</span>
+                                </label>
+
+                                <input type="hidden" name="broker_id" :value="selectedId">
+
+                                <div class="relative flex items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                                    :class="selectedId ?
                                         'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' :
-                                        ''"
-                                    style="direction: ltr;">
-                                    <div class="relative h-full" @click.away="openCountryDropdown = false">
-                                        <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
-                                            <template x-if="selectedCountry?.svg">
-                                                <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
-                                                    x-html="selectedCountry.svg"></div>
-                                            </template>
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                x-text="selectedCountry?.dial_code"></span>
-                                        </button>
-                                        <div x-show="openCountryDropdown" x-cloak x-transition
-                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
-                                                    class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
-                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
-                                                <template x-for="country in filteredCountries" :key="country.code">
-                                                    <button type="button"
-                                                        @click="selectedCountry = country; openCountryDropdown = false; searchRecord()"
-                                                        class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                        <div class="w-5 h-auto rounded-[2px] overflow-hidden"
-                                                            x-html="country.svg"></div>
-                                                        <span
-                                                            class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
-                                                            x-text="country.name"></span>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord"
-                                        @focus="showDropdown = true" @click.away="showDropdown = false"
-                                        placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
-                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                        class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
-                                        :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
-                                    <button type="button" x-show="selectedRecordId" @click="resetSelection"
-                                        class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span
-                                            class="material-symbols-outlined text-[16px]">close</span></button>
+                                        ''">
+
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px]"
+                                        :class="selectedId ? 'text-emerald-500' : 'text-gray-400'">handshake</span>
+
+                                    <input type="text" name="broker_name" x-model="searchQuery"
+                                        @input="selectedId = ''; showDropdown = true" @focus="showDropdown = true"
+                                        @click.away="showDropdown = false"
+                                        placeholder="اكتب اسم الوسيط للبحث أو للإضافة الجديدة..." required
+                                        autocomplete="off"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-on-surface dark:text-white"
+                                        :class="selectedId ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''">
+
+                                    <button type="button" x-show="searchQuery.length > 0" @click="resetSelection()"
+                                        class="absolute left-2 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
+                                        <span class="material-symbols-outlined text-[16px]">close</span>
+                                    </button>
                                 </div>
-                                <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition
-                                    x-cloak
+
+                                <div x-show="showDropdown && filteredBrokers.length > 0" x-transition x-cloak
                                     class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
-                                    <template x-for="record in filteredRecords" :key="record.id">
-                                        <button type="button" @click="selectRecord(record)"
+                                    <template x-for="broker in filteredBrokers" :key="broker.id">
+                                        <button type="button" @click="selectBroker(broker)"
                                             class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                            <div class="flex flex-col gap-0.5"><span
-                                                    class="text-sm font-bold text-on-surface dark:text-white"
-                                                    x-text="record.name"></span><span
-                                                    class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                    x-text="record.phone"></span></div>
-                                            <span
-                                                class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                            <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                x-text="broker.name"></span>
+                                            <span class="text-xs text-emerald-500 font-medium flex items-center gap-1">
+                                                اختيار <span class="material-symbols-outlined text-[14px]">done</span>
+                                            </span>
                                         </button>
                                     </template>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم العميل
-                                    <span class="text-error">*</span></label>
-                                <div class="relative">
-                                    <input type="text" name="customer_name"x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
-                                        placeholder="اسم العميل"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
-                                        :class="selectedRecordId ?
-                                            'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
-                                            ''">
-                                    <span
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]"
-                                        :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">person</span>
                                 </div>
                             </div>
                         </div>
@@ -562,11 +547,12 @@
                                         </button>
                                         <div x-show="openCountryDropdown" x-cloak x-transition
                                             class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                                <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
                                                     class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
-                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                                    dir="rtl">
+                                            </div>
+                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="lzr">
                                                 <template x-for="country in filteredCountries" :key="country.code">
                                                     <button type="button"
                                                         @click="selectedCountry = country; openCountryDropdown = false; searchRecord()"
@@ -597,11 +583,13 @@
                                     <template x-for="record in filteredRecords" :key="record.id">
                                         <button type="button" @click="selectRecord(record)"
                                             class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                            <div class="flex flex-col gap-0.5"><span
-                                                    class="text-sm font-bold text-on-surface dark:text-white"
-                                                    x-text="record.name"></span><span
+                                            <div class="flex flex-col gap-0.5">
+                                                <span class="text-sm font-bold text-on-surface dark:text-white"
+                                                    x-text="record.name"></span>
+                                                <span
                                                     class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                    x-text="record.phone"></span></div>
+                                                    x-text="record.phone"></span>
+                                            </div>
                                             <span
                                                 class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
                                         </button>
@@ -612,8 +600,9 @@
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم السائق
                                     <span class="text-error">*</span></label>
                                 <div class="relative">
-                                    <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
-                                        placeholder="اسم السائق"
+                                    <input type="text" name="driver_name" x-model="nameInput"
+                                        :readonly="selectedRecordId !== ''"
+                                        :required="selectedRecordId === ''" placeholder="اسم السائق"
                                         class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
                                         :class="selectedRecordId ?
                                             'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
@@ -625,7 +614,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -633,9 +622,16 @@
                                     class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة
-                                    <span class="text-error">*</span></label>
-                                <input type="number" name="total_commission" min="0" step="0.01" required
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكتب
+                                     <span class="text-error">*</span></label>
+                                <input type="number" name="office_commission" value="0" min="0" step="0.01" 
+                                    placeholder="0.00"
+                                    class="px-4 w-full h-12 font-black text-emerald-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكاتب
+                                    الأخرى <span class="text-error">*</span></label>
+                                <input type="number" name="other_office_commission" value="0" min="0" step="0.01"
                                     placeholder="0.00"
                                     class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
@@ -659,311 +655,263 @@
         </div>
 
         {{-- ====================== Edit Modal ====================== --}}
-        <div x-show="showEditModal" x-cloak
-            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
-            <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
-                @click="closeModals()"></div>
+<div x-show="showEditModal" x-cloak
+    class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+    <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
+        @click="closeModals()"></div>
 
-            <div
-                class="relative w-full max-w-4xl bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div
+        class="relative w-full max-w-4xl bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 md:p-8 pointer-events-auto max-h-[90vh] overflow-y-auto custom-scrollbar">
 
-                <div class="flex justify-between items-center pb-4 mb-6 border-b border-gray-50 dark:border-boxdark-2">
-                    <div>
-                        <h3 class="text-xl font-black text-on-surface dark:text-white">تعديل بيانات الراكب</h3>
-                    </div>
-                    <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 text-gray-400 rounded-xl transition-colors bg-surface dark:bg-boxdark-2 hover:text-error active:scale-95">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
-                </div>
-
-                <form :action="editPassengerData.url" method="POST" class="space-y-6">
-                    @csrf
-                    @method('PUT')
-
-                    <div class="grid grid-cols-1 gap-5">
-                        <div
-                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
-                                        class="text-error">*</span></label>
-                                <input type="date" name="date" x-model="editPassengerData.date" required
-                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
-                                        class="text-error">*</span></label>
-                                <input type="text" name="location" x-model="editPassengerData.location" required
-                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الحالة <span
-                                        class="text-error">*</span></label>
-                                <select name="status" x-model="editPassengerData.status" required
-                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
-                                    <option value="pending">قيد الانتظار</option>
-                                    <option value="completed">مكتمل</option>
-                                    <option value="cancel">ملغي</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
-                            <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
-                                x-effect="loadInitial(editPassengerData.passenger_number)">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
-                                    <span class="text-error">*</span></label>
-                                <input type="hidden" name="passenger_number" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40"
-                                    style="direction: ltr;">
-                                    <div class="relative h-full" @click.away="openCountryDropdown = false">
-                                        <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
-                                            <template x-if="selectedCountry?.svg">
-                                                <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
-                                                    x-html="selectedCountry.svg"></div>
-                                            </template>
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                x-text="selectedCountry?.dial_code"></span>
-                                        </button>
-                                        <div x-show="openCountryDropdown" x-cloak x-transition
-                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
-                                                    class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
-                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
-                                                <template x-for="country in filteredCountries" :key="country.code">
-                                                    <button type="button"
-                                                        @click="selectedCountry = country; openCountryDropdown = false"
-                                                        class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                        <div class="w-5 h-auto rounded-[2px] overflow-hidden"
-                                                            x-html="country.svg"></div>
-                                                        <span
-                                                            class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
-                                                            x-text="country.name"></span>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
-                                        inputmode="numeric" autocomplete="off"
-                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                        class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
-                            x-data="recordPhonePicker(@js($customers->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'phone' => $c->phone])->values()), @js(array_values(config('countries', []))))"
-                            x-effect="loadInitial({ id: editPassengerData.customer_id, name: editPassengerData.customer_name, phone: editPassengerData.customer_phone })">
-                            <div class="relative">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم العميل
-                                    <span class="text-error">*</span></label>
-                                <input type="hidden" name="customer_id" x-model="selectedRecordId">
-                                <input type="hidden" name="customer_phone" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40"
-                                    :class="selectedRecordId ?
-                                        'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' :
-                                        ''"
-                                    style="direction: ltr;">
-                                    <div class="relative h-full" @click.away="openCountryDropdown = false">
-                                        <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
-                                            <template x-if="selectedCountry?.svg">
-                                                <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
-                                                    x-html="selectedCountry.svg"></div>
-                                            </template>
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                x-text="selectedCountry?.dial_code"></span>
-                                        </button>
-                                        <div x-show="openCountryDropdown" x-cloak x-transition
-                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
-                                                    class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
-                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
-                                                <template x-for="country in filteredCountries" :key="country.code">
-                                                    <button type="button"
-                                                        @click="selectedCountry = country; openCountryDropdown = false; searchRecord()"
-                                                        class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                        <div class="w-5 h-auto rounded-[2px] overflow-hidden"
-                                                            x-html="country.svg"></div>
-                                                        <span
-                                                            class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
-                                                            x-text="country.name"></span>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord"
-                                        @focus="showDropdown = true" @click.away="showDropdown = false"
-                                        placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
-                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                        class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
-                                        :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
-                                    <button type="button" x-show="selectedRecordId" @click="resetSelection"
-                                        class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span
-                                            class="material-symbols-outlined text-[16px]">close</span></button>
-                                </div>
-                                <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition
-                                    x-cloak
-                                    class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
-                                    <template x-for="record in filteredRecords" :key="record.id">
-                                        <button type="button" @click="selectRecord(record)"
-                                            class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                            <div class="flex flex-col gap-0.5"><span
-                                                    class="text-sm font-bold text-on-surface dark:text-white"
-                                                    x-text="record.name"></span><span
-                                                    class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                    x-text="record.phone"></span></div>
-                                            <span
-                                                class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم العميل
-                                    <span class="text-error">*</span></label>
-                                <div class="relative">
-                                    <input type="text" name="customer_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
-                                        placeholder="اسم العميل"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
-                                        :class="selectedRecordId ?
-                                            'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
-                                            ''">
-                                    <span
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]"
-                                        :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">person</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
-                            x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))"
-                            x-effect="loadInitial({ id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
-                            <div class="relative">
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق
-                                    <span class="text-error">*</span></label>
-                                <input type="hidden" name="driver_id" x-model="selectedRecordId">
-                                <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
-                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40"
-                                    :class="selectedRecordId ?
-                                        'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' :
-                                        ''"
-                                    style="direction: ltr;">
-                                    <div class="relative h-full" @click.away="openCountryDropdown = false">
-                                        <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                            class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
-                                            <template x-if="selectedCountry?.svg">
-                                                <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden"
-                                                    x-html="selectedCountry.svg"></div>
-                                            </template>
-                                            <span class="text-xs font-bold text-gray-600 dark:text-gray-300"
-                                                x-text="selectedCountry?.dial_code"></span>
-                                        </button>
-                                        <div x-show="openCountryDropdown" x-cloak x-transition
-                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                            <div class="p-2 border-b border-gray-50 dark:border-boxdark"><input
-                                                    type="text" x-model="searchCountryQuery" placeholder="بحث..."
-                                                    class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white"
-                                                    dir="rtl"></div>
-                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
-                                                <template x-for="country in filteredCountries" :key="country.code">
-                                                    <button type="button"
-                                                        @click="selectedCountry = country; openCountryDropdown = false; searchRecord()"
-                                                        class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
-                                                        <div class="w-5 h-auto rounded-[2px] overflow-hidden"
-                                                            x-html="country.svg"></div>
-                                                        <span
-                                                            class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200"
-                                                            x-text="country.name"></span>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchRecord"
-                                        @focus="showDropdown = true" @click.away="showDropdown = false"
-                                        placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
-                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                        class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
-                                        :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
-                                    <button type="button" x-show="selectedRecordId" @click="resetSelection"
-                                        class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span
-                                            class="material-symbols-outlined text-[16px]">close</span></button>
-                                </div>
-                                <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition
-                                    x-cloak
-                                    class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
-                                    <template x-for="record in filteredRecords" :key="record.id">
-                                        <button type="button" @click="selectRecord(record)"
-                                            class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                            <div class="flex flex-col gap-0.5"><span
-                                                    class="text-sm font-bold text-on-surface dark:text-white"
-                                                    x-text="record.name"></span><span
-                                                    class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                    x-text="record.phone"></span></div>
-                                            <span
-                                                class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
-                                        </button>
-                                    </template>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم السائق
-                                    <span class="text-error">*</span></label>
-                                <div class="relative">
-                                    <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
-                                        placeholder="اسم السائق"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
-                                        :class="selectedRecordId ?
-                                            'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' :
-                                            ''">
-                                    <span
-                                        class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]"
-                                        :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
-                                    <span class="text-error">*</span></label>
-                                <input type="number" name="count" min="1" x-model="editPassengerData.count"
-                                    required
-                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
-                            </div>
-                            <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">إجمالي العمولة
-                                    <span class="text-error">*</span></label>
-                                <input type="number" name="total_commission" min="0" step="0.01"
-                                    x-model="editPassengerData.total_commission" required
-                                    class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
-                            <textarea name="note" rows="2" x-model="editPassengerData.note"
-                                class="px-4 py-3 w-full rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40"></textarea>
-                        </div>
-                    </div>
-                    <div class="pt-2">
-                        <button type="submit"
-                            class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95">
-                            <span class="material-symbols-outlined">update</span> حفظ التعديلات
-                        </button>
-                    </div>
-                </form>
+        <div class="flex justify-between items-center pb-4 mb-6 border-b border-gray-50 dark:border-boxdark-2">
+            <div>
+                <h3 class="text-xl font-black text-on-surface dark:text-white">تعديل بيانات الراكب</h3>
             </div>
+            <button type="button" @click="closeModals()"
+                class="flex justify-center items-center w-10 h-10 text-gray-400 rounded-xl transition-colors bg-surface dark:bg-boxdark-2 hover:text-error active:scale-95">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
 
+        <form :action="editPassengerData.url" method="POST" class="space-y-6">
+            @csrf
+            @method('PUT')
+
+            <div class="grid grid-cols-1 gap-5">
+
+                <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span class="text-error">*</span></label>
+                        <input type="date" name="date" x-model="editPassengerData.date" required
+                            class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span class="text-error">*</span></label>
+                        <input type="text" name="location" x-model="editPassengerData.location" required
+                            class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الحالة <span class="text-error">*</span></label>
+                        <select name="status" x-model="editPassengerData.status" required
+                            class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                            <option value="pending">قيد الانتظار</option>
+                            <option value="completed">مكتمل</option>
+                            <option value="cancel">ملغي</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
+                    <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
+                        x-effect="loadInitial(editPassengerData.passenger_number)">
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span class="text-error">*</span></label>
+                        <input type="hidden" name="passenger_number" :value="fullPhoneNumber">
+                        <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40" style="direction: ltr;">
+                            <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                    class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r border-gray-200 transition-colors bg-surface dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                    </template>
+                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300" x-text="selectedCountry?.dial_code"></span>
+                                </button>
+                                <div x-show="openCountryDropdown" x-cloak x-transition
+                                    class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
+                                    <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                        <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                            class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white" dir="rtl">
+                                    </div>
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                        <template x-for="country in filteredCountries" :key="country.code">
+                                            <button type="button" @click="selectedCountry = country; openCountryDropdown = false"
+                                                class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
+                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden" x-html="country.svg"></div>
+                                                <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
+                                inputmode="numeric" autocomplete="off"
+                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                     x-data="{
+                        searchQuery: '',
+                        selectedId: '',
+                        showDropdown: false,
+                        brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                        get filteredBrokers() {
+                            if (!this.searchQuery || this.selectedId) return [];
+                            return this.brokers.filter(b => b.name.includes(this.searchQuery));
+                        },
+                        selectBroker(broker) {
+                            this.selectedId = broker.id;
+                            this.searchQuery = broker.name;
+                            editPassengerData.broker_id = broker.id;
+                            editPassengerData.broker_name = broker.name;
+                            this.showDropdown = false;
+                        },
+                        resetSelection() {
+                            this.selectedId = '';
+                            this.searchQuery = '';
+                            editPassengerData.broker_id = '';
+                            editPassengerData.broker_name = '';
+                        }
+                     }"
+                     x-effect="
+                        if (editPassengerData.broker_id && selectedId !== editPassengerData.broker_id) {
+                            selectedId = editPassengerData.broker_id;
+                            searchQuery = editPassengerData.broker_name;
+                        } else if (!editPassengerData.broker_id && !selectedId) {
+                            searchQuery = editPassengerData.broker_name || '';
+                        }
+                     ">
+                    
+                    <div class="relative text-right">
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم الوسيط أو المكتب <span class="text-error">*</span></label>
+                        <input type="hidden" name="broker_id" :value="selectedId">
+
+                        <div class="relative flex items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                             :class="selectedId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''">
+                            
+                            <span class="absolute right-3 material-symbols-outlined text-[20px]" :class="selectedId ? 'text-emerald-500' : 'text-gray-400'">handshake</span>
+
+                            <input type="text" name="broker_name" x-model="searchQuery" 
+                                   @input="selectedId = ''; editPassengerData.broker_id = ''; editPassengerData.broker_name = searchQuery; showDropdown = true"
+                                   @focus="showDropdown = true" @click.away="showDropdown = false"
+                                   placeholder="اكتب اسم الوسيط للبحث أو للتعيين الجديد..." required autocomplete="off"
+                                   class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-on-surface dark:text-white"
+                                   :class="selectedId ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''">
+
+                            <button type="button" x-show="searchQuery.length > 0" @click="resetSelection()"
+                                    class="absolute left-2 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
+                                <span class="material-symbols-outlined text-[16px]">close</span>
+                            </button>
+                        </div>
+
+                        <div x-show="showDropdown && filteredBrokers.length > 0" x-transition x-cloak
+                             class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                            <template x-for="broker in filteredBrokers" :key="broker.id">
+                                <button type="button" @click="selectBroker(broker)"
+                                        class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
+                                    <span class="text-sm font-bold text-on-surface dark:text-white" x-text="broker.name"></span>
+                                    <span class="text-xs text-emerald-500 font-medium flex items-center gap-1">تعديل إلى <span class="material-symbols-outlined text-[14px]">done</span></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                    x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))"
+                    x-effect="loadInitial({ id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
+                    <div class="relative">
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق <span class="text-error">*</span></label>
+                        <input type="hidden" name="driver_id" x-model="selectedRecordId">
+                        <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
+                        <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                            :class="selectedRecordId ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''" style="direction: ltr;">
+                            <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                    class="flex gap-2 items-center px-3 h-12 bg-gray-50 rounded-l-xl border-r border-gray-200 transition-colors dark:bg-boxdark-2 dark:border-boxdark shrink-0 hover:bg-gray-100 dark:hover:bg-boxdark">
+                                    <template x-if="selectedCountry?.svg">
+                                        <div class="w-5 h-auto rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry.svg"></div>
+                                    </template>
+                                    <span class="text-xs font-bold text-gray-600 dark:text-gray-300" x-text="selectedCountry?.dial_code"></span>
+                                </button>
+                                <div x-show="openCountryDropdown" x-cloak x-transition
+                                    class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
+                                    <div class="p-2 border-b border-gray-50 dark:border-boxdark">
+                                        <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                            class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-surface dark:bg-boxdark focus:ring-1 ring-primary/30 text-on-surface dark:text-white" dir="rtl">
+                                    </div>
+                                    <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                        <template x-for="country in filteredCountries" :key="country.code">
+                                            <button type="button" @click="selectedCountry = country; openCountryDropdown = false; searchRecord()"
+                                                class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
+                                                <div class="w-5 h-auto rounded-[2px] overflow-hidden" x-html="country.svg"></div>
+                                                <span class="flex-1 text-xs font-bold text-gray-700 truncate dark:text-gray-200" x-text="country.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="tel" x-model="localPhoneNumber" @input="searchRecord"
+                                @focus="showDropdown = true" @click.away="showDropdown = false"
+                                placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
+                                :class="selectedRecordId ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''">
+                            <button type="button" x-show="selectedRecordId" @click="resetSelection"
+                                class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error"><span
+                                    class="material-symbols-outlined text-[16px]">close</span></button>
+                        </div>
+                        <div x-show="showDropdown && localPhoneNumber.length > 0 && !selectedRecordId" x-transition x-cloak
+                            class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                            <template x-for="record in filteredRecords" :key="record.id">
+                                <button type="button" @click="selectRecord(record)"
+                                        class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
+                                    <div class="flex flex-col gap-0.5">
+                                        <span class="text-sm font-bold text-on-surface dark:text-white" x-text="record.name"></span>
+                                        <span class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right" x-text="record.phone"></span>
+                                    </div>
+                                    <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم السائق <span class="text-error">*</span></label>
+                        <div class="relative">
+                            <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedRecordId !== ''" :required="selectedRecordId === ''"
+                                placeholder="اسم السائق"
+                                class="px-4 pr-10 w-full h-12 text-sm font-bold bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/30"
+                                :class="selectedRecordId ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/40 dark:bg-emerald-500/10 ring-emerald-200 dark:ring-emerald-500/20' : ''">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[18px]" :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب <span class="text-error">*</span></label>
+                        <input type="number" name="count" min="1" x-model="editPassengerData.count" required
+                            class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكتب <span class="text-error">*</span></label>
+                        <input type="number" name="office_commission" min="0" step="0.01" x-model="editPassengerData.office_commission" required placeholder="0.00"
+                            class="px-4 w-full h-12 font-black text-emerald-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكاتب الأخرى <span class="text-error">*</span></label>
+                        <input type="number" name="other_office_commission" min="0" step="0.01" x-model="editPassengerData.other_office_commission" required placeholder="0.00"
+                            class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
+                    <textarea name="note" rows="2" x-model="editPassengerData.note"
+                        class="px-4 py-3 w-full rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40"></textarea>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit"
+                    class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95">
+                    <span class="material-symbols-outlined">update</span> حفظ التعديلات
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
         {{-- ====================== Status Modal (Bypass 404) ====================== --}}
         <div x-show="showStatusModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
@@ -1060,9 +1008,8 @@
                     location: '',
                     count: 1,
                     total_commission: 0,
-                    customer_id: '',
-                    customer_name: '',
-                    customer_phone: '',
+                    broker_id: '', // 👈 جديد
+                    broker_name: '',
                     driver_id: '',
                     driver_name: '',
                     driver_phone: '',
@@ -1083,8 +1030,7 @@
                     location: '',
                     count: 1,
                     total_commission: 0,
-                    customer_phone: '',
-                    customer_name: '',
+                    broker_name: '',
                     driver_phone: '',
                     driver_name: '',
                     note: ''
@@ -1101,6 +1047,8 @@
                 openEditModal(passenger) {
                     this.editPassengerData = {
                         ...passenger,
+                        broker_id: passenger.broker_id || '',
+                        broker_name: passenger.broker ? passenger.broker.name : '',
                         url: '{{ route('passengers.index') }}/' + passenger.id
                     };
                     this.showEditModal = true;
@@ -1119,6 +1067,7 @@
                     // نمرر كل البيانات كمدخلات مخفية حتى ينجح الـ Validation في الكنترولر بدون 404
                     this.statusPassengerData = {
                         ...passenger,
+                        broker_name: passenger.broker ? passenger.broker.name : '',
                         url: '{{ route('passengers.index') }}/' + passenger.id + '/status'
                     };
                     this.showStatusModal = true;
@@ -1131,7 +1080,7 @@
                     this.showStatusModal = false;
                 },
 
-                showRow(passengerNumber, location, driverName, customerName, statusKey) {
+                showRow(passengerNumber, location, driverName, brokerName, statusKey) {
                     const query = this.searchQuery.toLowerCase().trim();
                     const cleanQuery = query.replace(/^(\+967|967|00967|0)/, '');
 
@@ -1149,7 +1098,7 @@
                     const arabicStatus = statusMap[statusKey] || statusKey;
 
                     const matchesSearch = !query || check(passengerNumber) || check(location) || check(driverName) || check(
-                        customerName) || check(arabicStatus);
+                        brokerName) || check(arabicStatus);
                     const matchesStatus = !this.statusFilter || String(statusKey || '') === this.statusFilter;
 
                     return matchesSearch && matchesStatus;
@@ -1199,82 +1148,103 @@
                         return dial && clean.startsWith(dial);
                     });
                     this.selectedCountry = country || this.countries.find(c => c.code === 'YE') || this.countries[0] ||
-                    null;
+                        null;
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
                     this.localPhoneNumber = clean.startsWith(dial) ? clean.substring(dial.length) : clean;
                 }
             }
         }
 
-      function recordPhonePicker(recordsList, countriesList) {
+        function recordPhonePicker(recordsList, countriesList) {
             return {
-                records: recordsList || [], countries: countriesList || [], localPhoneNumber: '', selectedCountry: null, openCountryDropdown: false, searchCountryQuery: '',
-                showDropdown: false, selectedRecordId: '', nameInput: '', initializedRecordKey: '',
-                
-                init() { this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null; },
-                
+                records: recordsList || [],
+                countries: countriesList || [],
+                localPhoneNumber: '',
+                selectedCountry: null,
+                openCountryDropdown: false,
+                searchCountryQuery: '',
+                showDropdown: false,
+                selectedRecordId: '',
+                nameInput: '',
+                initializedRecordKey: '',
+
+                init() {
+                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                },
+
                 get filteredCountries() {
                     const query = this.searchCountryQuery.toLowerCase().trim();
                     if (!query) return this.countries;
-                    return this.countries.filter(country => String(country.name || '').toLowerCase().includes(query) || String(country.code || '').toLowerCase().includes(query) || String(country.dial_code || '').toLowerCase().includes(query));
+                    return this.countries.filter(country => String(country.name || '').toLowerCase().includes(query) ||
+                        String(country.code || '').toLowerCase().includes(query) || String(country.dial_code || '')
+                        .toLowerCase().includes(query));
                 },
-                
+
                 get fullPhoneNumber() {
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
                     const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
-                    if (!local) return ''; return dial + local;
+                    if (!local) return '';
+                    return dial + local;
                 },
-                
+
                 get filteredRecords() {
-                    const phone = this.fullPhoneNumber; const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '');
+                    const phone = this.fullPhoneNumber;
+                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '');
                     if (!local) return [];
                     return this.records.filter(record => {
                         const recordPhone = String(record.phone || '').replace(/[^\d]/g, '');
                         return recordPhone.includes(local) || recordPhone.includes(phone);
                     });
                 },
-                
+
                 searchRecord() {
-                    const exact = this.records.find(record => String(record.phone || '').replace(/[^\d]/g, '') === String(this.fullPhoneNumber || '').replace(/[^\d]/g, ''));
-                    if (exact) { 
-                        this.selectRecord(exact); 
-                    } else { 
-                        this.selectedRecordId = ''; 
+                    const exact = this.records.find(record => String(record.phone || '').replace(/[^\d]/g, '') === String(
+                        this.fullPhoneNumber || '').replace(/[^\d]/g, ''));
+                    if (exact) {
+                        this.selectRecord(exact);
+                    } else {
+                        this.selectedRecordId = '';
                         // 🌟 التعديل هنا: قمنا بإزالة تفريغ الاسم (this.nameInput = '') حتى لا يمسح ما كتبته! 🌟
-                        this.showDropdown = true; 
+                        this.showDropdown = true;
                     }
                 },
-                
+
                 selectRecord(record) {
-                    this.selectedRecordId = record.id || ''; 
+                    this.selectedRecordId = record.id || '';
                     this.nameInput = record.name || '';
                     this.applyPhone(record.phone || this.fullPhoneNumber);
                     this.showDropdown = false;
                 },
-                
-                resetSelection() { 
-                    this.selectedRecordId = ''; 
-                    this.nameInput = ''; 
+
+                resetSelection() {
+                    this.selectedRecordId = '';
+                    this.nameInput = '';
                 },
-                
+
                 applyPhone(phone) {
                     const clean = String(phone || '').replace(/[^\d]/g, '');
-                    const sortedCountries = [...this.countries].sort((a, b) => String(b.dial_code || '').length - String(a.dial_code || '').length);
+                    const sortedCountries = [...this.countries].sort((a, b) => String(b.dial_code || '').length - String(a
+                        .dial_code || '').length);
                     const country = sortedCountries.find(c => {
-                        const dial = String(c.dial_code || '').replace('+', ''); return dial && clean.startsWith(dial);
+                        const dial = String(c.dial_code || '').replace('+', '');
+                        return dial && clean.startsWith(dial);
                     });
-                    this.selectedCountry = country || this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                    this.selectedCountry = country || this.countries.find(c => c.code === 'YE') || this.countries[0] ||
+                        null;
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
                     this.localPhoneNumber = clean.startsWith(dial) ? clean.substring(dial.length) : clean;
                 },
-                
+
                 loadInitial(record) {
                     if (!record || (!record.id && !record.phone && !record.name)) return;
                     const key = JSON.stringify(record);
                     if (this.initializedRecordKey === key) return;
                     this.initializedRecordKey = key;
-                    this.selectedRecordId = record.id || ''; this.nameInput = record.name || '';
-                    if (record.phone) { this.applyPhone(record.phone); }
+                    this.selectedRecordId = record.id || '';
+                    this.nameInput = record.name || '';
+                    if (record.phone) {
+                        this.applyPhone(record.phone);
+                    }
                 }
             }
         }

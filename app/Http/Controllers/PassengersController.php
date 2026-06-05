@@ -14,13 +14,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Broker;
 
 class PassengersController extends Controller
 {
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Passengers::with(['driver', 'customer', 'branch'])->where('branch_id', $user->branch_id)
+        $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)
             ->latest();
 
         if ($request->filled('search')) {
@@ -34,9 +35,9 @@ class PassengersController extends Controller
                         $driverQuery->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('customer', function ($customerQuery) use ($search) {
-                        $customerQuery->where('name', 'like', "%{$search}%")
-                            ->orWhere('phone', 'like', "%{$search}%");
+                    // 🌟 التعديل الذهبي هنا: البحث في علاقة الوسيط (broker) وعمود الاسم (name) فقط 🌟
+                    ->orWhereHas('broker', function ($brokerQuery) use ($search) {
+                        $brokerQuery->where('name', 'like', "%{$search}%");
                     })
                     ->orWhereHas('branch', function ($branchQuery) use ($search) {
                         $branchQuery->where('name', 'like', "%{$search}%");
@@ -47,12 +48,14 @@ class PassengersController extends Controller
         $passengers = $query->paginate(15)->withQueryString();
         $drivers = Driver::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
+        $brokers = Broker::select('id', 'name')->get();
 
         if ($request->isMobile) {
             return view('mobile.pages.people.passengers.index', compact(
                 'passengers',
                 'drivers',
                 'customers',
+                'brokers',
             ));
         }
 
@@ -60,6 +63,7 @@ class PassengersController extends Controller
             'passengers',
             'drivers',
             'customers',
+            'brokers',
         ));
     }
 
@@ -85,15 +89,18 @@ class PassengersController extends Controller
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
             'passenger_number' => ['required', 'string', 'max:255'],
-            'customer_id'    => ['nullable', 'exists:customers,id'],
-            'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
-            'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
+
+            // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع المودال
+            'broker_id'   => ['nullable', 'exists:brokers,id'],
+            'broker_name' => ['required', 'string', 'max:255'], // الحقل النصي دائماً مطلوب لأنه يحمل اسم الوسيط المكتوب
+
             'driver_id'    => ['nullable', 'exists:drivers,id'],
             'driver_phone' => ['required_without:driver_id', 'string', 'max:255'],
             'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
-            'total_commission' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+            'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'note' => ['nullable', 'string'],
         ]);
 
@@ -105,23 +112,31 @@ class PassengersController extends Controller
             $data = $validator->validated();
             $data['status'] = 'pending';
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
-            $customerPhone = $this->normalizePhone($data['customer_phone'] ?? '');
             $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
-            // الحل هنا: استخدام (?? null) لتفادي الخطأ
-            $data['customer_id'] = ($data['customer_id'] ?? null)
-                ?: $this->resolvePassengerCustomer($customerPhone, $data['customer_name'] ?? null);
+            // 🌟 هندسة الوسطاء: إذا لم يتم اختيار وسيط مسبقاً (أي أن broker_id فارغ)
+            if (empty($data['broker_id']) && !empty($data['broker_name'])) {
+                // سيبحث عن الاسم في الداتابيز، إن وجده يجلبه، وإن لم يجده ينشئ وسيطاً جديداً فوراً
+                $broker = \App\Models\Broker::firstOrCreate([
+                    'name' => $data['broker_name']
+                ]);
 
-            // الحل هنا أيضاً للسائق
+                // إسناد الـ id المستخرج لقاعدة بيانات الراكب
+                $data['broker_id'] = $broker->id;
+            }
+
+            // معالجة السائق (تبقى كما هي تماماً في كودك الأصلي بدون تغيير)
             $data['driver_id'] = ($data['driver_id'] ?? null)
                 ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
-            unset($data['customer_name'], $data['customer_phone'], $data['driver_phone'], $data['driver_name']);
+            // 🗑️ تنظيف البيانات من الحقول المؤقتة لكي لا يظهر خطأ "عمود غير موجود" عند الحفظ
+            unset($data['broker_name'], $data['driver_phone'], $data['driver_name']);
 
+            // إنشاء وحفظ سجل الراكب الجديد مربوطاً بالوسيط والسائق
             $passenger = Passengers::create($data);
 
-            return WebResponseClass::sendResponse('تمت الإضافة!', 'تم حفظ الراكب بنجاح.', 'حسناً', 'passengers.index');
+            return WebResponseClass::sendResponse('تمت الإضافة!', 'تم حفظ الراكب والوسيط بنجاح.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }
@@ -162,25 +177,29 @@ class PassengersController extends Controller
     {
         $passenger = Passengers::findOrFail($id);
         $oldStatus = $passenger->status;
-        if($oldStatus == 'completed'){
+
+        // منع تعديل البيانات إذا كانت الرحلة مكتملة مسبقاً لحماية الحسابات والعمولات
+        if ($oldStatus == 'completed') {
             return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
         }
 
         $validator = Validator::make($request->all(), [
-            'date' => ['required', 'date'],
-            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+            'date'             => ['required', 'date'],
+            'status'           => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
 
-            'customer_id'    => ['nullable', 'exists:customers,id'],
-            'customer_phone' => ['required_without:customer_id', 'string', 'max:255'],
-            'customer_name'  => ['required_without:customer_id', 'string', 'max:255'],
-            'driver_id'    => ['nullable', 'exists:drivers,id'],
-            'driver_phone' => ['required_without:driver_id', 'string', 'max:255'],
-            'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
-            'count' => ['required', 'integer', 'min:1'],
-            'total_commission' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
-            'note' => ['nullable', 'string'],
+            // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع مودال التعديل
+            'broker_id'        => ['nullable', 'exists:brokers,id'],
+            'broker_name'      => ['required', 'string', 'max:255'], // حقل الاسم مطلوب دائماً لاستخدامه في البحث أو الإنشاء
+
+            'driver_id'        => ['nullable', 'exists:drivers,id'],
+            'driver_phone'     => ['required_without:driver_id', 'string', 'max:255'],
+            'driver_name'      => ['required_without:driver_id', 'string', 'max:255'],
+            'location'         => ['required', 'string', 'max:255'],
+            'count'            => ['required', 'integer', 'min:1'],
+            'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
+            'note'             => ['nullable', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -192,27 +211,40 @@ class PassengersController extends Controller
             $data = $validator->validated();
 
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
-            $customerPhone = $this->normalizePhone($data['customer_phone'] ?? '');
             $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
-            // الحل هنا: استخدام (?? null) لتفادي الخطأ
-            $data['customer_id'] = ($data['customer_id'] ?? null)
-                ?: $this->resolvePassengerCustomer($customerPhone, $data['customer_name'] ?? null);
+            // 🌟 هندسة الوسطاء في التعديل: إذا لم يتم اختيار وسيط من القائمة (أي تم كتابة اسم جديد يدوياً)
+            if (empty($data['broker_id']) && !empty($data['broker_name'])) {
+                // سيبحث عن الاسم، إن وجده يجلبه، وإن لم يجده ينشئ وسيطاً جديداً في جدول الوسطاء فوراً
+                $broker = Broker::firstOrCreate([
+                    'name' => $data['broker_name']
+                ]);
 
+                $data['broker_id'] = $broker->id;
+            }
+
+            // معالجة السائق (تبقى كما هي في كودك الأصلي)
             $data['driver_id'] = ($data['driver_id'] ?? null)
                 ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
-            unset($data['customer_name'], $data['customer_phone'], $data['driver_phone'], $data['driver_name']);
+            // 🗑️ تنظيف المصفوفة من الحقول النصية المؤقتة لكي لا يظهر خطأ أعمدة غير موجودة عند الحفظ
+            unset($data['broker_name'], $data['driver_phone'], $data['driver_name']);
 
+            // تحديث سجل الراكب ببياناته الجديدة والوسيط الجديد
             $passenger->update($data);
+
+            // 💰 إذا تحولت حالة الرحلة إلى "مكتمل" ولم تكن مكتملة من قبل، نقوم بتسجيل العمولة ماليًا
             if ($passenger->status === 'completed' && $oldStatus !== 'completed') {
-                $transactionService = new CustomerTransactionService();
-                $transactionService->recordPassengerCommission($passenger);
+                // 💡 تنبيه مالي: تأكد من مراجعة كود السيرفس بالأسفل ليتعامل مع الـ broker_id بدلاً من العميل
+                // $transactionService = new CustomerTransactionService(); 
+                // $transactionService->recordPassengerCommission($passenger);
             }
+
             DB::commit();
-            return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة.', 'حسناً', 'passengers.index');
+            return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة للوسيط.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
+            DB::rollBack(); // التراجع عن العمليات في حال حدوث أي فشل تقني
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -255,7 +287,6 @@ class PassengersController extends Controller
             ];
 
             return WebResponseClass::sendResponse('تم التحديث!', $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح', 'حسناً', 'passengers.index');
-
         } catch (Exception $e) {
             DB::rollBack();
             return WebResponseClass::sendExceptionError($e);

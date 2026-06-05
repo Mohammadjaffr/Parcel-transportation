@@ -10,11 +10,12 @@ class Passengers extends Model
     use HasFactory ;
     protected $fillable = [
         'date',
-        'customer_id',
+        'broker_id',
         'passenger_number',
         'location',
         'count',
-        'total_commission',
+        'office_commission',
+        'other_office_commission',
         'branch_id',
         'driver_id',
         'note',
@@ -35,9 +36,13 @@ class Passengers extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function customer()
+    public function broker()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Broker::class);
+    }
+    public function getTotalCommissionAttribute()
+    {  
+        return $this->office_commission + $this->other_office_commission;
     }
 
 }
