@@ -9,14 +9,14 @@
         $passengerDate = $passenger->date ? \Carbon\Carbon::parse($passenger->date) : null;
         $dayName = $passengerDate ? $passengerDate->translatedFormat('l') : 'غير محدد';
 
-        $customerName = $passenger->customer->name ?? 'راكب غير محدد';
+        $brokerName = $passenger->broker?->name ?? 'بدون وسيط';
         $driverName = $passenger->driver->name ?? 'سائق غير محدد';
         $branchName = $passenger->branch->name ?? 'غير محدد';
-        $custPhone = $passenger->customer->phone ?? '0';
 
-        $commission = (float) ($passenger->total_commission ?? 0);
+        $officeCommission = (float) ($passenger->office_commission ?? 0);
+        $otherOfficeCommission = (float) ($passenger->other_office_commission ?? 0);
 
-        $customerInitial = mb_substr($customerName, 0, 1, 'UTF-8');
+        $brokerInitial = mb_substr($brokerName, 0, 1, 'UTF-8');
         $driverInitial = mb_substr($driverName, 0, 1, 'UTF-8');
     @endphp
 
@@ -265,24 +265,41 @@
 
 
                         </div>
-                        <div class="mt-4 full-w">
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div
                                 class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
                                 <div
-                                    class="flex justify-center items-center w-12 h-12 rounded-xl text-primary bg-primary-container dark:bg-primary/10 shrink-0">
+                                    class="flex justify-center items-center w-12 h-12 rounded-xl text-emerald-500 bg-emerald-50 shrink-0">
                                     <span class="material-symbols-outlined">payments</span>
                                 </div>
 
                                 <div class="min-w-0">
                                     <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
-                                        إجمالي العمولة
+                                        عمولة المكتب
                                     </span>
 
                                     <span class="block text-sm font-black truncate text-on-surface dark:text-white">
-                                        {{ $commission }}
+                                        {{ number_format($officeCommission, 0) }} ر.ي
                                     </span>
                                 </div>
+                            </div>
 
+                            <div
+                                class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 rounded-xl text-amber-500 bg-amber-50 shrink-0">
+                                    <span class="material-symbols-outlined">payments</span>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
+                                        عمولة المكاتب الأخرى
+                                    </span>
+
+                                    <span class="block text-sm font-black truncate text-on-surface dark:text-white">
+                                        {{ number_format($otherOfficeCommission, 0) }} ر.ي
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -345,32 +362,29 @@
                                 أطراف الرحلة
                             </h2>
                             <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                العميل والسائق فقط
+                                الوسيط والسائق فقط
                             </p>
                         </div>
                     </div>
 
                     <div class="p-6 space-y-5">
 
-                        {{-- Customer --}}
+                        {{-- Broker --}}
                         <div
                             class="flex gap-4 items-center p-4 rounded-2xl border border-emerald-100 bg-emerald-50/40 dark:bg-emerald-500/10 dark:border-emerald-500/20">
                             <div
                                 class="flex justify-center items-center w-14 h-14 text-xl font-black text-white bg-emerald-500 rounded-2xl shadow-inner shrink-0">
-                                {{ $customerInitial ?: 'ع' }}
+                                {{ $brokerInitial ?: 'و' }}
                             </div>
 
                             <div class="min-w-0">
                                 <span class="block mb-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400">
-                                    العميل
+                                    الوسيط
                                 </span>
 
                                 <h3 class="text-base font-black truncate text-on-surface dark:text-white">
-                                    {{ $customerName }}
+                                    {{ $brokerName }}
                                 </h3>
-
-                                <x-phone-number :value="$custPhone"
-                                    class="mt-1 text-[11px] font-bold text-gray-500 dark:text-bodydark" />
                             </div>
                         </div>
 

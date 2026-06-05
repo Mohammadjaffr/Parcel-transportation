@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Classes\WebResponseClass;
 use App\Models\Branch;
-use App\Models\Customer;
 use App\Models\Driver;
 use App\Models\Passengers;
 use App\Services\AdminLoggerService;
@@ -47,14 +46,12 @@ class PassengersController extends Controller
 
         $passengers = $query->paginate(15)->withQueryString();
         $drivers = Driver::orderBy('name')->get();
-        $customers = Customer::orderBy('name')->get();
         $brokers = Broker::select('id', 'name')->get();
 
         if ($request->isMobile) {
             return view('mobile.pages.people.passengers.index', compact(
                 'passengers',
                 'drivers',
-                'customers',
                 'brokers',
             ));
         }
@@ -62,7 +59,6 @@ class PassengersController extends Controller
         return view('pages.passengers.index', compact(
             'passengers',
             'drivers',
-            'customers',
             'brokers',
         ));
     }
@@ -70,17 +66,17 @@ class PassengersController extends Controller
     public function create(Request $request)
     {
         $drivers = Driver::orderBy('name')->get();
-        $customers = Customer::orderBy('name')->get();
+        $brokers = Broker::select('id', 'name')->get();
         if ($request->isMobile) {
             return view('mobile.pages.people.passengers.create', compact(
                 'drivers',
-                'customers',
+                'brokers',
             ));
         }
 
         return view('pages.passengers.create', compact(
             'drivers',
-            'customers',
+            'brokers',
         ));
     }
 
@@ -144,7 +140,7 @@ class PassengersController extends Controller
     public function show(Request $request, $id)
     {
         $user = auth()->user();
-        $passenger = Passengers::with(['driver', 'customer', 'branch'])->where('branch_id', $user->branch_id)->findOrFail($id);
+        $passenger = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->findOrFail($id);
 
         if ($request->isMobile) {
             return view('mobile.pages.people.passengers.show', compact('passenger'));
@@ -155,19 +151,29 @@ class PassengersController extends Controller
 
     public function edit($id)
     {
-        $passenger = Passengers::with(['driver', 'customer', 'branch'])->findOrFail($id);
+        $passenger = Passengers::with(['driver', 'broker', 'branch'])->findOrFail($id);
         $drivers = Driver::orderBy('name')->get();
-        $customers = Customer::orderBy('name')->get();
+        $brokers = Broker::select('id', 'name')->get();
         $branches = Branch::orderBy('name')->get();
 
         $currentBranch = $this->currentBranchId()
             ? Branch::find($this->currentBranchId())
             : null;
 
+        if (request()->isMobile) {
+            return view('mobile.pages.people.passengers.edit', compact(
+                'passenger',
+                'drivers',
+                'brokers',
+                'branches',
+                'currentBranch'
+            ));
+        }
+
         return view('pages.passengers.edit', compact(
             'passenger',
             'drivers',
-            'customers',
+            'brokers',
             'branches',
             'currentBranch'
         ));
@@ -273,8 +279,8 @@ class PassengersController extends Controller
             $passenger->update(['status' => $newStatus]);
 
             if ($newStatus === 'completed' && $oldStatus !== 'completed') {
-                $transactionService = new CustomerTransactionService();
-                $transactionService->recordPassengerCommission($passenger);
+                // $transactionService = new CustomerTransactionService();
+                // $transactionService->recordPassengerCommission($passenger);
             }
 
             DB::commit();
@@ -354,42 +360,6 @@ class PassengersController extends Controller
         }
 
         return $phone;
-    }
-
-    private function resolvePassengerCustomer(?string $phone, ?string $name = null): ?int
-    {
-        $phone = $this->normalizePhone($phone);
-
-        if (!$phone) {
-            return null;
-        }
-
-        $user = auth()->user();
-
-        $customer = Customer::query()
-            ->where('phone', $phone)
-            ->when($user?->app_id, fn($q) => $q->where('app_id', $user->app_id))
-            ->first();
-
-        if ($customer) {
-            if ($name && $customer->name !== $name) {
-                $customer->update([
-                    'name' => $name,
-                ]);
-            }
-
-            return $customer->id;
-        }
-
-        $customer = Customer::create([
-            'name' => $name ?: 'راكب ' . $phone,
-            'phone' => $phone,
-            'app_id' => $user->app_id ?? null,
-            'branch_id' => $user->branch_id ?? null,
-            'created_by' => $user->id ?? null,
-        ]);
-
-        return $customer->id;
     }
 
     private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int

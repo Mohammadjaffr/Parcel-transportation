@@ -8,14 +8,14 @@
     $passengerDate = $passenger->date ? \Carbon\Carbon::parse($passenger->date) : null;
     $dayName = $passengerDate ? $passengerDate->translatedFormat('l') : 'غير محدد';
 
-    $customerName = $passenger->customer->name ?? 'راكب غير محدد';
+    $customerName = '';
     $driverName = $passenger->driver->name ?? 'سائق غير محدد';
     $branchName = $passenger->branch->name ?? 'غير محدد';
-        $custPhone = $passenger->customer->phone ?? '0';
+        $custPhone = '0';
 
     $commission = (float) ($passenger->total_commission ?? 0);
 
-    $customerInitial = mb_substr($customerName, 0, 1, 'UTF-8');
+    $customerInitial = 'ر';
     $driverInitial = mb_substr($driverName, 0, 1, 'UTF-8');
 
     // تحديد الحالة الديناميكية
@@ -58,7 +58,7 @@
 
             <div class="flex gap-4 items-center">
                 <div class="flex justify-center items-center w-14 h-14 text-2xl font-black bg-primary/10 rounded-[1.25rem] border shadow-inner text-primary border-primary/5 shrink-0">
-                    {{ $customerInitial ?: 'ع' }}
+                    ر
                 </div>
                 <div class="min-w-0">
                     {{-- <span class="block mb-1 text-[10px] font-black text-slate-400 dark:text-gray-500">العميل / الراكب</span> --}}
@@ -92,7 +92,7 @@
             </div>
 
             {{-- العدد --}}
-            <div class="p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center dark:bg-boxdark dark:border-boxdark-2">
+            <div class="p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center dark:bg-boxdark dark:border-boxdark-2 col-span-2">
                 <div class="flex justify-center items-center mb-2 w-10 h-10 text-emerald-500 bg-emerald-50 rounded-full dark:bg-emerald-500/10">
                     <span class="material-symbols-outlined text-[20px]">groups</span>
                 </div>
@@ -100,14 +100,24 @@
                 <span class="text-sm font-black text-slate-800 dark:text-white">{{ number_format($passenger->count ?? 0, 0) }}</span>
             </div>
 
-            {{-- العمولة --}}
+            {{-- عمولة المكتب --}}
+            <div class="p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center relative overflow-hidden dark:bg-boxdark dark:border-boxdark-2">
+                <div class="absolute inset-x-0 bottom-0 h-1 bg-emerald-500"></div>
+                <div class="flex justify-center items-center mb-2 w-10 h-10 text-emerald-500 bg-emerald-50 rounded-full dark:bg-emerald-500/10">
+                    <span class="material-symbols-outlined text-[20px]">payments</span>
+                </div>
+                <span class="text-[10px] font-bold text-slate-400 dark:text-gray-500 mb-0.5">عمولة المكتب</span>
+                <span class="text-sm font-black text-emerald-600">{{ number_format((float)($passenger->office_commission ?? 0), 0) }} <span class="text-[10px]">ر.ي</span></span>
+            </div>
+
+            {{-- عمولة مكاتب أخرى --}}
             <div class="p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center relative overflow-hidden dark:bg-boxdark dark:border-boxdark-2">
                 <div class="absolute inset-x-0 bottom-0 h-1 bg-amber-500"></div>
                 <div class="flex justify-center items-center mb-2 w-10 h-10 text-amber-500 bg-amber-50 rounded-full dark:bg-amber-500/10">
                     <span class="material-symbols-outlined text-[20px]">payments</span>
                 </div>
-                <span class="text-[10px] font-bold text-slate-400 dark:text-gray-500 mb-0.5">العمولة</span>
-                <span class="text-sm font-black text-amber-500">{{ number_format($commission, 0) }} <span class="text-[10px]">ر.ي</span></span>
+                <span class="text-[10px] font-bold text-slate-400 dark:text-gray-500 mb-0.5">عمولات مكاتب أخرى</span>
+                <span class="text-sm font-black text-amber-500">{{ number_format((float)($passenger->other_office_commission ?? 0), 0) }} <span class="text-[10px]">ر.ي</span></span>
             </div>
         </div>
 
@@ -134,26 +144,21 @@
                 </div>
             </div>
         </div>
-        {{-- ================= بيانات العميل ================= --}}
+        {{-- ================= بيانات الوسيط ================= --}}
         <div class="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
             <h3 class="flex items-center gap-2 text-sm font-black text-slate-800 mb-4 dark:text-white">
-                <span class="material-symbols-outlined text-primary text-[20px]">person</span>
-                بيانات العميل
+                <span class="material-symbols-outlined text-primary text-[20px]">handshake</span>
+                بيانات الوسيط
             </h3>
             
             <div class="flex gap-4 items-center p-4 rounded-2xl border border-primary/15 bg-primary-container/40 dark:bg-primary/10 dark:border-primary/20">
                 <div class="flex justify-center items-center w-12 h-12 text-lg font-black text-white rounded-[1rem] shadow-inner bg-primary shrink-0">
-                    {{ $customerInitial ?: 'ع' }}
+                    {{ mb_substr($passenger->broker?->name ?? 'و', 0, 1, 'UTF-8') }}
                 </div>
                 <div class="min-w-0">
                     <h3 class="text-sm font-black truncate text-slate-800 dark:text-white">
-                        {{ $customerName }}
+                        {{ $passenger->broker?->name ?? 'وسيط غير حدد' }}
                     </h3>
-                    @if($custPhone)
-                        <x-phone-number :value="$custPhone" class="mt-0.5 text-xs font-bold text-slate-500 font-mono dir-ltr inline-block dark:text-bodydark" />
-                    @else
-                        <span class="text-[10px] font-bold text-slate-400">لا يوجد رقم</span>
-                    @endif
                 </div>
             </div>
         </div>

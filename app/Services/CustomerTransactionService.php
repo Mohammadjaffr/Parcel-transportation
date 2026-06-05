@@ -146,23 +146,11 @@ class CustomerTransactionService
     }
 
     /**
-     * 6. تسجيل عمولة للعميل مقابل جلب راكب
+     * 6. تسجيل عمولة للعميل مقابل جلب راكب (تم إيقافها لأن العميل استبدل بالوسيط والوسطاء ليس لديهم حسابات مالية حالياً)
      */
     public function recordPassengerCommission($passenger)
     {
-        
-        if ($passenger->customer_id && $passenger->total_commission > 0) {
-            
-            return CustomerTransaction::create([
-                'customer_id'  => $passenger->customer_id,
-                'passenger_id' => $passenger->id, 
-                'amount'       => $passenger->total_commission,
-                'type'         => 'credit', 
-                'description'  => "عمولة جلب راكب رقم #{$passenger->passenger_number} - المكان: {$passenger->location}",
-                'created_by'   => auth()->id(),
-                'branch_id'  => auth()->user()->branch_id,
-            ]);
-        }
+        // تم استبدال العميل بالوسيط نهائياً، ولا يتم تسجيل حركات مالية للوسطاء في الوقت الحالي.
         return false;
     }
 }

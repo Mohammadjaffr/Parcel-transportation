@@ -1,6 +1,8 @@
 @extends('receipts.layout')
 
-@section('title', 'تقرير جميع الركاب')
+@section('title', $title)
+
+
 
 @push('styles')
     <style>
@@ -28,13 +30,13 @@
                     @endif
                     <div>
                         <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="text-slate-500 font-medium text-sm mt-1">{{ $title ?? 'تقرير جميع الركاب' }}</p>
+                        <p class="text-slate-500 font-medium text-sm mt-1">{{ $title ?? "كشف السائق {$driver_name}" }}</p>
                     </div>
                 </div>
                 <div class="text-right">
                     <div
                         class="inline-flex items-center justify-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-bold text-sm mb-2 border border-indigo-100">
-                        {{ $title ?? 'تقرير جميع الركاب' }}
+                        {{ $title }}
                     </div>
                     <div class="text-slate-400 text-xs font-medium flex items-center gap-1.5 justify-end mt-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,7 +73,7 @@
                         @endif
                         @if(!empty($status_filter) && $status_filter !== 'all')
                             @php
-                                $filterLabels = ['pending' => 'قيد الانتظار', 'completed' => 'مكتمل', 'cancel' => 'ملغي'];
+                                $filterLabels = ['pending' => 'قيد الانتظار', 'confirmed' => 'مؤكد', 'completed' => 'مكتمل', 'cancel' => 'ملغي'];
                             @endphp
                             <span>الحالة: <strong>{{ $filterLabels[$status_filter] ?? $status_filter }}</strong></span>
                         @endif
@@ -79,88 +81,113 @@
                 </div>
             @endif
 
-            {{-- Passengers Table --}}
-            <div class="mb-8">
-                <h2 class="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
-                    <span class="w-2 h-6 rounded-full bg-indigo-500"></span>
-                    بيانات الركاب
-                </h2>
-
-                <div class="rounded-2xl border border-slate-200 overflow-x-auto">
-                    <table class="w-full text-sm text-right premium-table">
-                        <thead>
-                            <tr>
-                                <th class="w-10 text-center">#</th>
-                                <th class="w-24">التاريخ</th>
-                                <th>رقم الراكب</th>
-                                <th>العميل</th>
-                                <th>السائق</th>
-                                <th class="w-28">المكان</th>
-                                <th class="w-16 text-center">العدد</th>
-                                <th class="w-24 text-center">العمولة</th>
-                                <th class="w-24 text-center">الحالة</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($passengers ?? [] as $passenger)
-                                <tr class="transition-colors hover:bg-slate-50">
-                                    <td class="text-center font-bold text-slate-400">{{ $loop->iteration }}</td>
-                                    <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
-                                    <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
-                                    <td>
-                                        <div class="text-slate-800 font-bold">{{ $passenger['customer_name'] }}</div>
-                                        <div class="text-xs text-slate-400" dir="ltr">{{ $passenger['customer_phone'] }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="text-slate-800 font-bold">{{ $passenger['driver_name'] }}</div>
-                                        <div class="text-xs text-slate-400" dir="ltr">{{ $passenger['driver_phone'] }}</div>
-                                    </td>
-                                    <td class="text-slate-600 font-medium">{{ $passenger['location'] }}</td>
-                                    <td class="text-center font-black text-slate-800">{{ $passenger['count'] }}</td>
-                                    <td class="text-center font-black text-amber-600" dir="ltr">{{ $passenger['total_commission'] }}</td>
-                                    <td class="text-center">
-                                        @php
-                                            $statusColors = [
-                                                'pending' => 'bg-amber-50 text-amber-700',
-                                                'completed' => 'bg-emerald-50 text-emerald-700',
-                                                'cancel' => 'bg-rose-50 text-rose-700',
-                                            ];
-                                            $colorClass = $statusColors[$passenger['status_key']] ?? 'bg-slate-50 text-slate-700';
-                                        @endphp
-                                        <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold {{ $colorClass }}">
-                                            {{ $passenger['status_label'] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="p-8 text-center text-slate-400 font-medium bg-slate-50/50">
-                                        لا توجد بيانات ركاب.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
-                    @if(!empty($passengers))
-                        <div
-                            class="bg-slate-50 border-t border-slate-200 p-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
-                            <div>
-                                <p class="text-xs text-slate-400 font-bold uppercase mb-1">عدد الركاب</p>
-                                <p class="text-slate-800 font-black text-lg">{{ $total_passengers ?? 0 }}</p>
+            {{-- Grouped by Drivers --}}
+            @forelse($drivers ?? [] as $driver)
+                <div class="mb-10 page-break-inside-avoid">
+                    {{-- Driver Card Header --}}
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-200 rounded-t-2xl gap-4 border-b-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center shrink-0">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4">
+                                    </path>
+                                </svg>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي العدد</p>
-                                <p class="text-slate-800 font-black text-lg">{{ number_format($total_count ?? 0, 0) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي العمولة</p>
-                                <p class="text-amber-600 font-black text-lg" dir="ltr">{{ number_format($total_commission ?? 0, 0) }} ر.ي</p>
+                                <h3 class="font-black text-slate-800 text-base">السائق: {{ $driver['driver_name'] }}</h3>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-xs text-slate-500 font-bold" dir="ltr">{{ $driver['driver_phone'] }}</span>
+                                  
+                                </div>
                             </div>
                         </div>
-                    @endif
+                        <div class="flex gap-4 text-xs font-bold text-slate-600">
+                            <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">الركاب: <strong>{{ $driver['total_passengers_count'] }}</strong></span>
+                            <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">العدد الكلي: <strong>{{ $driver['total_count'] }}</strong></span>
+                            <span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100">عمولة المكتب: <strong>{{ number_format($driver['total_office_commission'], 0) }}</strong></span>
+                            <span class="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-100">عمولة أخرى: <strong>{{ number_format($driver['total_other_office_commission'], 0) }}</strong></span>
+                        </div>
+                    </div>
+
+                    {{-- Passengers Table --}}
+                    <div class="border border-slate-200 rounded-b-2xl overflow-x-auto">
+                        <table class="w-full text-sm text-right premium-table">
+                            <thead>
+                                <tr>
+                                    <th class="w-10 text-center">#</th>
+                                    <th class="w-24">التاريخ</th>
+                                    <th>رقم الراكب (الهاتف)</th>
+                                    <th>الوسيط</th>
+                                    <th class="w-32">المكان</th>
+                                    <th class="w-16 text-center">العدد</th>
+                                    <th class="w-24 text-center">عمولة المكتب</th>
+                                    <th class="w-24 text-center">عمولة أخرى</th>
+                                    <th class="w-24 text-center">الحالة</th>
+                                    <th>الملاحظات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($driver['passengers'] as $passenger)
+                                    <tr class="transition-colors hover:bg-slate-50">
+                                        <td class="text-center font-bold text-slate-400">{{ $loop->iteration }}</td>
+                                        <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
+                                        <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
+                                        <td class="font-bold text-slate-800">{{ $passenger['broker_name'] }}</td>
+                                        <td class="text-slate-600 font-medium">{{ $passenger['location'] }}</td>
+                                        <td class="text-center font-black text-slate-800">{{ $passenger['count'] }}</td>
+                                        <td class="text-center font-black text-emerald-600" dir="ltr">{{ $passenger['office_commission'] }}</td>
+                                        <td class="text-center font-black text-amber-600" dir="ltr">{{ $passenger['other_office_commission'] }}</td>
+                                        <td class="text-center">
+                                            @php
+                                                $statusColors = [
+                                                    'pending' => 'bg-amber-50 text-amber-700',
+                                                    'confirmed' => 'bg-blue-50 text-blue-700',
+                                                    'completed' => 'bg-emerald-50 text-emerald-700',
+                                                    'cancel' => 'bg-rose-50 text-rose-700',
+                                                ];
+                                                $colorClass = $statusColors[$passenger['status_key']] ?? 'bg-slate-50 text-slate-700';
+                                            @endphp
+                                            <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold {{ $colorClass }}">
+                                                {{ $passenger['status_label'] }}
+                                            </span>
+                                        </td>
+                                        <td class="text-xs text-slate-500 font-medium max-w-xs truncate">{{ $passenger['note'] ?? '---' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
+            @empty
+                <div class="py-12 border border-slate-200 rounded-2xl text-center text-slate-400 font-medium bg-slate-50/50">
+                    لا توجد بيانات كشوفات ركاب للسائقين.
+                </div>
+            @endforelse
+
+            {{-- Grand Totals --}}
+            @if(!empty($drivers))
+                <div class="rounded-2xl border border-slate-200 overflow-hidden mb-8">
+                    <div class="bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب (العمليات)</p>
+                            <p class="text-slate-800 font-black text-lg">{{ $total_passengers ?? 0 }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب الكلي</p>
+                            <p class="text-slate-800 font-black text-lg">{{ number_format($total_count ?? 0, 0) }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي عمولة المكتب</p>
+                            <p class="text-emerald-600 font-black text-lg" dir="ltr">{{ number_format($total_office_commission ?? 0, 0) }} ر.ي</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي عمولات أخرى</p>
+                            <p class="text-amber-600 font-black text-lg" dir="ltr">{{ number_format($total_other_office_commission ?? 0, 0) }} ر.ي</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             {{-- Signatures --}}
             <div class="grid grid-cols-2 gap-8 mt-12 mb-4">

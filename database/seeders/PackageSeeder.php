@@ -53,6 +53,17 @@ class PackageSeeder extends Seeder
             'is_phone_verified' => true,
 
         ]);
+        User::create([
+            'name' => 'السعدي',
+            'phone' => '967775190521',
+            'password' => Hash::make('123456789'),
+            'type' => 'admin',
+            'whatsapp_number' => '967775190521',
+            'is_phone_verified' => true,
+
+        ]);
+        
+        
      
     }
 }

@@ -4,8 +4,8 @@
 @section('Breadcrumb', 'إدارة الشحنات / تفاصيل الإرسالية الواردة')
 
 @section('content')
-    <div x-data="{ isSubmitting: false }" class="flex relative flex-col gap-6 p-4 rounded-3xl bg-surface dark:bg-boxdark-2 lg:p-6 font-body"
-        dir="rtl">
+    <div x-data="{ isSubmitting: false }"
+        class="flex relative flex-col gap-6 p-4 rounded-3xl bg-surface dark:bg-boxdark-2 lg:p-6 font-body" dir="rtl">
 
         {{-- ================= الهيدر العلوي الذكي ================= --}}
         <div
@@ -98,15 +98,18 @@
 
                             <div x-show="openStatusMenu" x-cloak x-transition.origin.top.right
                                 class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark-2 rounded-2xl shadow-xl border border-gray-100 dark:border-boxdark z-[60] overflow-hidden">
-                                <div class="px-4 py-3 bg-gray-50 border-b border-gray-100 dark:bg-boxdark dark:border-boxdark">
-                                    <span class="text-xs font-bold text-gray-500">بمجرد التأكيد ستصبح جميع الطرود في عهدتك.</span>
+                                <div
+                                    class="px-4 py-3 bg-gray-50 border-b border-gray-100 dark:bg-boxdark dark:border-boxdark">
+                                    <span class="text-xs font-bold text-gray-500">بمجرد التأكيد ستصبح جميع الطرود في
+                                        عهدتك.</span>
                                 </div>
                                 @foreach ($availableStatuses as $value => $data)
                                     <button type="button"
                                         @click="$refs.statusInput.value = '{{ $value }}'; $refs.statusForm.submit()"
                                         :disabled="isSubmitting"
                                         class="flex gap-3 items-center px-5 py-4 w-full text-sm font-bold text-right text-gray-700 transition-colors hover:bg-gray-50 dark:hover:bg-boxdark-2 dark:text-white">
-                                        <span class="material-symbols-outlined text-[20px] text-emerald-500">{{ $data['icon'] }}</span>
+                                        <span
+                                            class="material-symbols-outlined text-[20px] text-emerald-500">{{ $data['icon'] }}</span>
                                         {{ $data['label'] }}
                                     </button>
                                 @endforeach
@@ -211,7 +214,8 @@
                             </div>
                             <div
                                 class="p-5 rounded-2xl border border-gray-100 transition-all bg-gray-50/80 dark:bg-boxdark-2/40 dark:border-boxdark hover:bg-gray-50">
-                                <span class="text-[10px] font-black tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 uppercase block">
+                                <span
+                                    class="text-[10px] font-black tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 uppercase block">
                                     مصدر الإرسالية</span>
                                 <div class="flex flex-col gap-1">
                                     <span class="text-sm font-black text-on-surface dark:text-white">
@@ -222,8 +226,7 @@
                                         @endif
                                         {{ $package->sender_entity->name ?? 'غير معروف' }}
                                     </span>
-                                    <span
-                                        class="flex gap-1.5 items-center mt-2 text-xs font-bold text-gray-500 w-fit">
+                                    <span class="flex gap-1.5 items-center mt-2 text-xs font-bold text-gray-500 w-fit">
                                         <span class="material-symbols-outlined text-[14px]">storefront</span>
                                         {{ $package->sender_office_branch_id ? 'مكتب وكيل خارجي' : 'فرع داخلي' }}
                                     </span>
@@ -238,7 +241,8 @@
                             </div>
                             <div
                                 class="p-5 rounded-2xl border border-emerald-100 transition-all bg-emerald-50/50 dark:bg-emerald-500/5 dark:border-emerald-500/10 hover:bg-emerald-50">
-                                <span class="text-[10px] font-black tracking-wider text-emerald-600/70 dark:text-emerald-400/70 mb-4 uppercase block">
+                                <span
+                                    class="text-[10px] font-black tracking-wider text-emerald-600/70 dark:text-emerald-400/70 mb-4 uppercase block">
                                     الوجهة (إلينا)</span>
                                 <span
                                     class="inline-flex gap-2.5 items-center px-4 py-3 text-[13px] font-black text-emerald-700 bg-white rounded-xl border border-emerald-100 shadow-sm dark:bg-boxdark dark:border-emerald-500/20 dark:text-emerald-400 transition-all hover:scale-[1.02]">
@@ -269,7 +273,7 @@
             <div class="lg:col-span-2">
                 <div
                     class="bg-white dark:bg-boxdark p-6 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm min-h-full">
-                    
+
                     <div
                         class="flex justify-between items-center p-4 mb-8 rounded-2xl border border-gray-100 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                         <div class="flex gap-3 items-center">
@@ -278,7 +282,8 @@
                                 <span class="material-symbols-outlined text-[22px]">inventory_2</span>
                             </div>
                             <div>
-                                <h3 class="text-lg font-black font-headline text-on-surface dark:text-white">الطرود القادمة</h3>
+                                <h3 class="text-lg font-black font-headline text-on-surface dark:text-white">الطرود القادمة
+                                </h3>
                                 <p class="text-xs font-bold text-gray-500">اتبع حالة كل طرد عند التفريغ</p>
                             </div>
                         </div>
@@ -309,31 +314,39 @@
 
                                 <div class="flex-1 min-w-0">
                                     <div class="flex flex-wrap gap-3 items-center mb-2">
-                                        <span class="font-mono text-lg font-black leading-none text-on-surface dark:text-white">{{ $shipment->code }}</span>
-                                        <span class="text-[10px] font-black text-gray-500 bg-gray-100/80 border border-gray-200/50 px-2.5 py-1 rounded-lg dark:bg-boxdark dark:border-boxdark dark:text-gray-400">
+                                        <span
+                                            class="font-mono text-lg font-black leading-none text-on-surface dark:text-white">{{ $shipment->code }}</span>
+                                        <span
+                                            class="text-[10px] font-black text-gray-500 bg-gray-100/80 border border-gray-200/50 px-2.5 py-1 rounded-lg dark:bg-boxdark dark:border-boxdark dark:text-gray-400">
                                             {{ $shipment->package_type ?? 'طرد عادي' }}
                                         </span>
                                         @php $isPaid = $shipment->payment_method === 'prepaid'; @endphp
-                                        <span class="text-[10px] font-black px-2.5 py-1 rounded-lg border {{ $isPaid ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400' }}">
+                                        <span
+                                            class="text-[10px] font-black px-2.5 py-1 rounded-lg border {{ $isPaid ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400' }}">
                                             {{ $isPaid ? 'خالص (مدفوع)' : number_format($shipment->total_amount) . ' ر.ي' }}
                                         </span>
                                     </div>
-                                    
-                                    <div class="flex flex-wrap gap-y-2 gap-x-5 items-center text-xs font-bold text-gray-500 dark:text-gray-400">
+
+                                    <div
+                                        class="flex flex-wrap gap-y-2 gap-x-5 items-center text-xs font-bold text-gray-500 dark:text-gray-400">
                                         <div class="flex gap-1.5 items-center">
-                                            <span class="material-symbols-outlined text-[16px] text-gray-400">person_outline</span>
-                                            <span class="truncate max-w-[150px]">المستلم: {{ $shipment->receiverCustomer->name ?? $shipment->receiver_name ?? 'غير مسجل' }}</span>
+                                            <span
+                                                class="material-symbols-outlined text-[16px] text-gray-400">person_outline</span>
+                                            <span class="truncate max-w-[150px]">المستلم:
+                                                {{ $shipment->receiverCustomer->name ?? ($shipment->receiver_name ?? 'غير مسجل') }}</span>
                                         </div>
                                         @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
                                             <div class="flex gap-1.5 items-center dir-ltr">
-                                                <span class="material-symbols-outlined text-[16px] text-gray-400">call</span>
+                                                <span
+                                                    class="material-symbols-outlined text-[16px] text-gray-400">call</span>
                                                 <span class="truncate"> <x-phone-number :value="$shipment->receiverCustomer->phone ?? '---'" /></span>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
 
-                                <div class="flex z-20 gap-2 items-center pr-4 border-r border-gray-100 dark:border-boxdark shrink-0">
+                                <div
+                                    class="flex z-20 gap-2 items-center pr-4 border-r border-gray-100 dark:border-boxdark shrink-0">
                                     {{-- تأكيد الوصول الفردي --}}
                                     @if ($shipment->status === 'in_transit')
                                         <form action="{{ route('shipment.updateStatus', $shipment->id) }}" method="POST"
@@ -358,28 +371,45 @@
                                     {{-- مراسلة المستلم --}}
                                     @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
                                         @php
-                                            $targetCustomer = $shipment->is_returned ? $shipment->senderCustomer : $shipment->receiverCustomer;
+                                            $targetCustomer = $shipment->is_returned
+                                                ? $shipment->senderCustomer
+                                                : $shipment->receiverCustomer;
                                             if ($shipment->is_returned) {
-                                                $whatsappMsg = "مرحباً *" . ($targetCustomer->name ?? '') . "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" . $shipment->code . "* إلى فرعنا.\nيرجى التفضل باستلامه.";
+                                                $whatsappMsg =
+                                                    'مرحباً *' .
+                                                    ($targetCustomer->name ?? '') .
+                                                    "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" .
+                                                    $shipment->code .
+                                                    "* إلى فرعنا.\nيرجى التفضل باستلامه.";
                                             } else {
-                                                $whatsappMsg = "مرحباً *" . ($targetCustomer->name ?? '') . "*،\nنفيدك بوصول طردك برقم السند: *" . $shipment->code . "* إلى فرعنا.\n" . ($shipment->payment_method !== 'prepaid' ? "المبلغ المطلوب عند الاستلام: *" . number_format($shipment->total_amount, 0) . "* ريال." : "الطرد خالص الدفع.");
+                                                $whatsappMsg =
+                                                    'مرحباً *' .
+                                                    ($targetCustomer->name ?? '') .
+                                                    "*،\nنفيدك بوصول طردك برقم السند: *" .
+                                                    $shipment->code .
+                                                    "* إلى فرعنا.\n" .
+                                                    ($shipment->payment_method !== 'prepaid'
+                                                        ? 'المبلغ المطلوب عند الاستلام: *' .
+                                                            number_format($shipment->total_amount, 0) .
+                                                            '* ريال.'
+                                                        : 'الطرد خالص الدفع.');
                                             }
                                         @endphp
-                                      @foreach ($package->shipments as $shipment)
-    <!-- ... هنا تضع باقي تفاصيل الشحنة ... -->
+                                        @foreach ($package->shipments as $shipment)
+                                            <!-- ... هنا تضع باقي تفاصيل الشحنة ... -->
 
-    <!-- 💡 زر مراسلة المستلم عبر الواتساب (خاص بالشحنة الحالية) -->
-    @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
-        <a href="{{ $shipment->receiver_whatsapp_link }}"
-            target="_blank" title="مراسلة المستلم"
-            class="flex justify-center items-center w-11 h-11 text-emerald-500 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm transition-all dark:bg-emerald-500/10 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] active:scale-95 dark:border-emerald-500/20">
-            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-            </svg>
-        </a>
-    @endif
-
-@endforeach
+                                            <!-- 💡 زر مراسلة المستلم عبر الواتساب (خاص بالشحنة الحالية) -->
+                                            @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
+                                                <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"
+                                                    title="مراسلة المستلم"
+                                                    class="flex justify-center items-center w-11 h-11 text-emerald-500 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm transition-all dark:bg-emerald-500/10 hover:bg-[#25D366] hover:text-white hover:border-[#25D366] active:scale-95 dark:border-emerald-500/20">
+                                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                                                        <path
+                                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                                    </svg>
+                                                </a>
+                                            @endif
+                                        @endforeach
                                     @endif
                                 </div>
                             </div>
@@ -392,7 +422,8 @@
                                         class="material-symbols-outlined text-[40px] text-gray-300 dark:text-gray-700">inbox_customize</span>
                                 </div>
                                 <p class="text-base font-black text-gray-500 dark:text-gray-500">لا توجد طرود مضمنة</p>
-                                <p class="mt-1 text-xs font-bold text-gray-400">لم يتم إضافة أي طرود لهذه الإرسالية بعد.</p>
+                                <p class="mt-1 text-xs font-bold text-gray-400">لم يتم إضافة أي طرود لهذه الإرسالية بعد.
+                                </p>
                             </div>
                         @endforelse
                     </div>
@@ -402,4 +433,3 @@
         </div>
     </div>
 @endsection
-

@@ -1,6 +1,6 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'إضافة راكب')
+@section('title', 'تعديل راكب')
 
 @section('content')
 
@@ -12,7 +12,7 @@
                 <span class="material-symbols-outlined text-[20px] mr-1">arrow_forward_ios</span>
             </a>
             <div>
-                <h1 class="text-lg font-black font-headline text-slate-800 dark:text-white">إضافة راكب جديد</h1>
+                <h1 class="text-lg font-black font-headline text-slate-800 dark:text-white">تعديل بيانات الراكب</h1>
             </div>
         </div>
 
@@ -20,23 +20,34 @@
         <div class="px-4">
             <div class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2">
 
-                <form action="{{ route('passengers.store') }}" method="POST" class="space-y-6">
+                <form action="{{ route('passengers.update', $passenger->id) }}" method="POST" class="space-y-6">
                     @csrf
+                    @method('PUT')
+
                     <div class="grid grid-cols-1 gap-5">
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl bg-gray-50/50 dark:bg-boxdark-2/50 border border-gray-100 dark:border-boxdark-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-gray-50/50 dark:bg-boxdark-2/50 border border-gray-100 dark:border-boxdark-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span class="text-error">*</span></label>
-                                <input type="date" name="date" required value="{{ now()->format('Y-m-d') }}" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                                <input type="date" name="date" required value="{{ $passenger->date ? $passenger->date->format('Y-m-d') : now()->format('Y-m-d') }}" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span class="text-error">*</span></label>
-                                <input type="text" name="location" required placeholder="مثلاً: عدن - كريتر" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                                <input type="text" name="location" required value="{{ $passenger->location }}" placeholder="مثلاً: عدن - كريتر" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">الحالة <span class="text-error">*</span></label>
+                                <select name="status" required class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-white dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 transition-all">
+                                    <option value="pending" {{ $passenger->status === 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
+                                    <option value="confirmed" {{ $passenger->status === 'confirmed' ? 'selected' : '' }}>مؤكد</option>
+                                    <option value="completed" {{ $passenger->status === 'completed' ? 'selected' : '' }}>مكتمل</option>
+                                    <option value="cancel" {{ $passenger->status === 'cancel' ? 'selected' : '' }}>ملغي</option>
+                                </select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
-                            <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))">
+                            <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))" x-init="loadInitial('{{ $passenger->passenger_number }}')">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب <span class="text-error">*</span></label>
                                 <input type="hidden" name="passenger_number" :value="fullPhoneNumber">
                                 <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40" style="direction: ltr;">
@@ -65,8 +76,8 @@
                         {{-- ================= بيانات الوسيط ================= --}}
                         <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="{
-                                searchQuery: '',
-                                selectedId: '',
+                                searchQuery: '{{ $passenger->broker?->name ?? '' }}',
+                                selectedId: '{{ $passenger->broker_id ?? '' }}',
                                 showDropdown: false,
                                 brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
                                 get filteredBrokers() {
@@ -131,7 +142,8 @@
 
                         {{-- ================= بيانات السائق ================= --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
-                            x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))">
+                            x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))"
+                            x-init="loadInitial({ id: '{{ $passenger->driver_id }}', name: '{{ $passenger->driver->name ?? '' }}', phone: '{{ $passenger->driver->phone ?? '' }}' })">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق <span class="text-error">*</span></label>
                                 <input type="hidden" name="driver_id" x-model="selectedRecordId">
@@ -178,27 +190,27 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب <span class="text-error">*</span></label>
-                                <input type="number" name="count" min="1" value="1" required class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                                <input type="number" name="count" min="1" value="{{ $passenger->count }}" required class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكتب <span class="text-error">*</span></label>
-                                <input type="number" name="office_commission" min="0" step="0.01" required placeholder="0.00" value="0" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-emerald-600 font-black">
+                                <input type="number" name="office_commission" min="0" step="0.01" required placeholder="0.00" value="{{ $passenger->office_commission }}" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-emerald-600 font-black">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة مكاتب أخرى <span class="text-error">*</span></label>
-                                <input type="number" name="other_office_commission" min="0" step="0.01" required placeholder="0.00" value="0" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-amber-600 font-black">
+                                <input type="number" name="other_office_commission" min="0" step="0.01" required placeholder="0.00" value="{{ $passenger->other_office_commission }}" class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40 text-amber-600 font-black">
                             </div>
                         </div>
 
                         <div>
                             <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">ملاحظات</label>
-                            <textarea name="note" rows="2" placeholder="أي ملاحظات إضافية..." class="px-4 py-3 w-full rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40"></textarea>
+                            <textarea name="note" rows="2" placeholder="أي ملاحظات إضافية..." class="px-4 py-3 w-full rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">{{ $passenger->note }}</textarea>
                         </div>
 
                     </div>
                     <div class="pt-2">
                         <button type="submit" class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95">
-                            <span class="material-symbols-outlined">save</span> حفظ البيانات
+                            <span class="material-symbols-outlined">save</span> حفظ التعديلات
                         </button>
                     </div>
                 </form>
@@ -209,7 +221,6 @@
 
 @endsection
 
-{{-- 🌟 تم إضافة السكريبت لتعمل دوال Alpine.js بشكل صحيح في الموبايل --}}
 @section('script')
     <script>
         function passengerPhonePicker(countriesList) {
