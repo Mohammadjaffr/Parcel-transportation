@@ -257,6 +257,7 @@
                                                 إرسال للمرسل
                                             </a>
                                         @endif
+                                        
 
                                         @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
                                             <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"

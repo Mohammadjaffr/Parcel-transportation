@@ -511,7 +511,7 @@ class ShipmentPackagesController extends Controller
             return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
         }
     }
-    public function incomingShow(Request $request, $id)
+   public function incomingShow(Request $request, $id)
     {
         $user = auth()->user();
 
@@ -520,10 +520,8 @@ class ShipmentPackagesController extends Controller
             'senderOfficeBranch',
             'driver',
             'creator',
-            // 💡 تمرير متغير $user للداخل باستخدام (use)
             'shipments' => function ($query) use ($user) {
-
-                // 💡 فلترة الطرود لتجلب فقط ما يخص فرع الموظف الحالي
+                // فلترة الطرود لتجلب فقط ما يخص فرع الموظف الحالي
                 $query->where('receiver_branch_id', $user->branch_id)
                     ->with([
                         'senderCustomer',
@@ -532,8 +530,15 @@ class ShipmentPackagesController extends Controller
                         'receiverOfficeBranch'
                     ]);
             }
-        ])
-            ->findOrFail($id);
+        ])->findOrFail($id);
+
+        // 💡 إضافة روابط الواتساب لكل شحنة داخل الطرد
+        foreach ($package->shipments as $shipment) {
+            $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
+        }
+
+        // (اختياري) الاحتفاظ برابط الطرد الأساسي إذا كنت تستخدمه في مكان آخر
+        $package->receiver_whatsapp_link = WhatsAppLinkService::generate($package, 'receiver');
 
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.incoming.show', compact('package'));
@@ -541,7 +546,6 @@ class ShipmentPackagesController extends Controller
 
         return view('pages.shipmentpackage.incoming.show', compact('package'));
     }
-
 
     public function index()
     {
