@@ -254,7 +254,7 @@
                                     <th class="px-6 py-4">رقم السند</th>
                                     <th class="px-6 py-4">المستلم</th>
                                     <th class="px-6 py-4">الوجهة</th>
-                                    <th class="px-6 py-4 text-center">المحتوى</th>
+                                    <th class="px-6 py-4 text-center">نوع الطرود</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50 dark:divide-boxdark-2">
@@ -307,7 +307,7 @@
 
                                         <td class="px-6 py-4 text-center">
                                             <span class="text-xs font-bold text-gray-500 dark:text-bodydark">
-                                                {{ $parcel->weight ?? '0' }} كجم
+                                                {{ $parcel->package_type ?? 'فاضي' }} 
                                             </span>
                                         </td>
                                     </tr>

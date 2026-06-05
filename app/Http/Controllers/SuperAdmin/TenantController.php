@@ -7,6 +7,9 @@ use App\Models\App;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class TenantController extends Controller
 {
@@ -166,6 +169,43 @@ class TenantController extends Controller
                 ? 'تم تفعيل جميع الخدمات بنجاح'
                 : 'تم تعطيل جميع الخدمات بنجاح',
             'is_active' => $isActive,
+        ]);
+    }
+
+    public function resetPassword(Request $request, App $app)
+    {
+        $request->validate([
+            'password' => 'nullable|string|min:6',
+        ]);
+
+        $user = User::where('app_id', $app->id)
+            ->where('type', 'admin')
+            ->first();
+
+        if (!$user) {
+            $user = User::where('app_id', $app->id)->first();
+        }
+
+        if (!$user) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'لم يتم العثور على أي مستخدم لهذا المكتب لتغيير كلمة المرور الخاصة به.',
+            ], 404);
+        }
+
+        $newPassword = $request->password;
+        if (empty($newPassword)) {
+            $newPassword = Str::random(8);
+        }
+
+        $user->update([
+            'password' => Hash::make($newPassword),
+        ]);
+
+        return response()->json([
+            'status'   => 'success',
+            'message'  => "تم إعادة تعيين كلمة مرور المسؤول ({$user->name}) بنجاح.",
+            'password' => $newPassword,
         ]);
     }
 }

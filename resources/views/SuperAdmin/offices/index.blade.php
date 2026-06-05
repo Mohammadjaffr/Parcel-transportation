@@ -63,7 +63,7 @@
                             <div class="flex justify-center items-center w-10 h-10 text-sm font-black text-white rounded-xl shadow-sm shrink-0" style="background:{{ $app->color ?? '#f79009' }}">{{ mb_substr($app->name ?? 'م',0,1) }}</div>
                             <div class="min-w-0">
                                 <p class="text-sm font-bold truncate text-slate-900 group-hover:text-primary">{{ $app->name ?? 'بدون اسم' }}</p>
-                                <p class="mt-0.5 text-xs truncate text-slate-400">{{ $app->created_at->format('Y/m/d') }}</p>
+                                <p class="mt-0.5 text-xs truncate text-slate-400">{{ $app->created_at?->format('Y/m/d') ?? 'تاريخ غير متوفر' }}</p></p>
                             </div>
                         </a>
                     </td>
@@ -85,9 +85,16 @@
                         </label>
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <a href="{{ route('superadmin.offices.show', $app->id) }}" class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold rounded-lg transition-colors bg-primary/5 text-primary hover:bg-primary hover:text-white">
-                            <span class="material-symbols-outlined text-[16px]">visibility</span> التفاصيل
-                        </a>
+                        <div class="flex gap-2 justify-center items-center">
+                            <a href="{{ route('superadmin.offices.show', $app->id) }}" class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold rounded-lg transition-colors bg-primary/5 text-primary hover:bg-primary hover:text-white">
+                                <span class="material-symbols-outlined text-[16px]">visibility</span> التفاصيل
+                            </a>
+                            <button type="button"
+                                    @click="resetPassword({{ $app->id }}, '{{ addslashes($app->name ?? '') }}')"
+                                    class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold rounded-lg transition-colors bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white">
+                                <span class="material-symbols-outlined text-[16px]">lock_reset</span> الباسورد
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 @empty
@@ -136,6 +143,36 @@ function tenantsManager() {
             } catch (e) {
                 this.appStates[appId] = !checked;
                 this.showToast('حدث خطأ في الاتصال', 'error');
+            }
+        },
+        async resetPassword(appId, appName) {
+            const password = prompt(`أدخل كلمة المرور الجديدة لمكتب "${appName}" (اترك الحقل فارغاً لتوليد كلمة مرور عشوائية تلقائياً):`);
+            if (password === null) return;
+
+            if (password.trim() !== '' && password.length < 6) {
+                this.showToast('يجب أن تكون كلمة المرور 6 أحرف على الأقل', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch(`/superadmin/offices/${appId}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password: password })
+                });
+                const data = await res.json();
+                if (res.ok && data.status === 'success') {
+                    alert(`${data.message}\nكلمة المرور الجديدة: ${data.password}`);
+                    this.showToast('تم إعادة تعيين كلمة المرور بنجاح');
+                } else {
+                    this.showToast(data.message || 'حدث خطأ أثناء إعادة التعيين', 'error');
+                }
+            } catch (e) {
+                this.showToast('حدث خطأ في الاتصال بالخادم', 'error');
             }
         }
     };
