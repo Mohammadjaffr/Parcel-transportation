@@ -30,7 +30,7 @@
                     @endif
                     <div>
                         <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="text-slate-500 font-medium text-sm mt-1">{{ $title ?? "كشف السائق {$driver_name}" }}</p>
+                        <p class="text-slate-500 font-medium text-sm mt-1">{{ $title ?? "كشف الراكب {$driver_name}" }}</p>
                     </div>
                 </div>
                 <div class="text-right">
@@ -170,7 +170,7 @@
                 <div class="rounded-2xl border border-slate-200 overflow-hidden mb-8">
                     <div class="bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
                         <div>
-                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب (العمليات)</p>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب </p>
                             <p class="text-slate-800 font-black text-lg">{{ $total_passengers ?? 0 }}</p>
                         </div>
                         <div>

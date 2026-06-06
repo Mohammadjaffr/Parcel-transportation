@@ -20,7 +20,7 @@
                 </div>
 
                 <div class="flex gap-2 items-center shrink-0">
-                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'all']) }}" target="_blank"
+                    <a href="{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => 'all']) }}" target="_blank"
                         class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl border-2 transition-all border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">print</span>
                         <span>تقرير الركاب</span>
@@ -228,7 +228,7 @@
                                         <div class="flex items-center gap-1.5 mt-0.5">
                                             <x-phone-number :value="$passenger->driver->phone ?? ''"
                                                 class="text-[10px] font-bold text-gray-500 dark:text-bodydark" />
-                                           
+
                                         </div>
                                     </div>
                                 </td>
@@ -290,7 +290,8 @@
                                                     إرسال للسائق (واتساب)
                                                 </a>
 
-                                                <a href="{{ $passenger->driver_pdf_link }}" target="_blank"
+                                                <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'driver_id:' . $passenger->driver_id]) }}"
+                                                    target="_blank"
                                                     class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-boxdark-2 dark:hover:text-indigo-400">
                                                     <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
@@ -299,7 +300,7 @@
                                                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                                                         </path>
                                                     </svg>
-                                                    كشف السائق (PDF)
+                                                    كشف الركاب (PDF)
                                                 </a>
                                                 @if ($statusKey === 'pending')
                                                     <button type="button"
