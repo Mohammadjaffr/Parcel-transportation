@@ -42,7 +42,7 @@ class EvolutionApiService
     $instance = $instanceName ?? $this->defaultInstance;
     $url = "{$this->baseUrl}/send/text";
 
-    $randomDelay = rand(1500, 3500);
+    $randomDelay = rand(1500, 2000);
 
     try {
         $response = Http::withHeaders($this->getHeaders())->post($url, [
