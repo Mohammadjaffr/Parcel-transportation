@@ -46,19 +46,10 @@ class PackageSeeder extends Seeder
 
         User::create([
             'name' => 'تيار',
-            'phone' => '967780261952',
+            'phone' => '967776023837',
             'password' => Hash::make('123456789'),
             'type' => 'super_admin',
-            'whatsapp_number' => '967780261952',
-            'is_phone_verified' => true,
-
-        ]);
-        User::create([
-            'name' => 'السعدي',
-            'phone' => '967775190521',
-            'password' => Hash::make('123456789'),
-            'type' => 'admin',
-            'whatsapp_number' => '967775190521',
+            'whatsapp_number' => '967776023837',
             'is_phone_verified' => true,
 
         ]);
