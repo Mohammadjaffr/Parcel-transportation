@@ -13,9 +13,9 @@ class EvolutionApiService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(env('EVOLUTION_API_BASE_URL'), '/');
-        $this->apiKey = env('EVOLUTION_API_KEY');
-        $this->defaultInstance = env('EVOLUTION_API_DEFAULT_INSTANCE');
+        $this->baseUrl = rtrim(config('services.evolution.base_url'), '/');
+        $this->apiKey = config('services.evolution.api_key') ?? '';
+        $this->defaultInstance = config('services.evolution.default_instance') ?? '';
     }
 
     private function getHeaders(): array
