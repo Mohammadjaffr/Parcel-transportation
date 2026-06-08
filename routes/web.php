@@ -60,7 +60,8 @@ Route::middleware('auth')->group(function () {
             return redirect()->route('dashboard.index')
                 ->with('info', 'تم تفعيل حسابك بنجاح! أهلاً بك.');
         }
-        $adminPhone = "967780261952";
+        $companyPhone = config('app.company_phone');
+        $adminPhone = str_replace([' ', '+'], '', $companyPhone);
         return view('auth.pending', compact('adminPhone'));
     })->name('account.pending');
 

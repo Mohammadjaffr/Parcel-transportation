@@ -123,6 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'mobile_app_secret'=> env('MOBILE_APP_SECRET','a5508400-w29b-a414-d716-446655440000')
+    'mobile_app_secret'=> env('MOBILE_APP_SECRET','a5508400-w29b-a414-d716-446655440000'),
+
+    'company_phone' => env('TIYAR_COMPANY_PHONE', '+967 781 152 674'),
 
 ];

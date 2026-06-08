@@ -291,7 +291,7 @@
                 <p class="text-[10px] font-bold text-slate-500">
                     تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
                     <span class="mx-1">|</span>
-                    لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">+967 780 261 952</span>
+                    لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">{{ config('app.company_phone') }}</span>
                 </p>
             </div>
         </div>
