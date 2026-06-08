@@ -40,5 +40,10 @@ return [
         'auth_token' => env('TWILIO_AUTH_TOKEN'),
         'whatsapp_from' => env('TWILIO_WHATSAPP_FROM'),
     ],
+    'evolution' => [
+        'base_url' => env('EVOLUTION_API_BASE_URL'),
+        'api_key' => env('EVOLUTION_API_KEY'),
+        'default_instance' => env('EVOLUTION_API_DEFAULT_INSTANCE'),
+    ],
 
 ];
