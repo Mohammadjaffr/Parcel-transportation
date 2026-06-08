@@ -8,7 +8,7 @@
     <x-stat title="مدين" :value="$debit" color="error"/>
     <x-stat title="دائن" :value="$credit" color="success"/>
     <x-stat title="الرصيد" :value="$balance" :color="$balance>0?'error':'success'"/>
-</div>
+</div> 
 
 <table class="w-full text-sm">
 <thead>
