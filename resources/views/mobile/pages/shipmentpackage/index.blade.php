@@ -28,7 +28,7 @@
                 <span class="material-symbols-outlined text-3xl">move_to_inbox</span>
             </div>
             <div class="flex flex-col">
-                <span class="font-headline font-bold text-lg text-on-surface">الشحنات المستقبلة</span>
+                <span class="font-headline font-bold text-lg text-on-surface">الشحنات المستلمة</span>
                 <span class="text-xs text-on-surface-variant">إدارة الشحنات الواردة إلى المكتب</span>
             </div>
             <span class="material-symbols-outlined mr-auto text-slate-300">chevron_left</span>
