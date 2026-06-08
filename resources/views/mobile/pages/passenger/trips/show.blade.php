@@ -52,9 +52,10 @@
                             {{ $trip->driver->name ?? 'سائق غير معين' }}
                         </h3>
                         @if($trip->driver?->phone)
-                            <a href="tel:{{ $trip->driver->phone }}" class="inline-flex items-center gap-1 text-xs text-primary font-mono mt-1 bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10" style="direction: ltr;">
-                                <span class="material-symbols-outlined text-[14px]">call</span>
-                                {{ $trip->driver->phone }}
+                            <a href="tel:{{ $trip->driver->phone }}" class="inline-block mt-1.5" style="direction: ltr;">
+                                <div class="bg-primary/5 px-2.5 py-1 rounded-xl border border-primary/10">
+                                    <x-phone-number :value="$trip->driver->phone" class="text-xs text-primary !justify-start" />
+                                </div>
                             </a>
                         @endif
                     </div>
@@ -91,53 +92,65 @@
                         <span class="material-symbols-outlined text-[18px] text-slate-400">group</span>
                         ركاب الرحلة المقيدين بالداخل
                     </h3>
-                    <span class="text-[11px] font-bold text-gray-400" x-text="'المعروض: ' + filteredPassengers().length"></span>
+                    <span class="text-[11px] font-bold text-gray-400" x-text="'المعروض: ' + countVisible"></span>
                 </div>
 
                 {{-- شريط البحث الفوري داخل الركاب --}}
                 <div class="relative px-1">
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
                     <input type="text" x-model="searchQuery" placeholder="البحث برقم جوال الراكب المضاف..."
-                        class="pr-11 pl-4 w-full h-12 text-sm bg-white dark:bg-boxdark text-slate-800 dark:text-white rounded-2xl border transition-all outline-none border-slate-200 dark:border-boxdark-2 focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                        class="pr-11 pl-4 w-full h-12 text-sm bg-white dark:bg-boxdark text-slate-800 dark:text-white rounded-2xl border transition-all outline-none border-slate-200 dark:border-boxdark-2 focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-sm">
                 </div>
 
-                {{-- القائمة التكرارية للركاب --}}
-                <div class="grid grid-cols-1 gap-3">
-                    <template x-for="passenger in filteredPassengers()" :key="passenger.id">
-                        <div class="bg-white dark:bg-boxdark p-4 rounded-3xl border border-slate-100 dark:border-boxdark-2 shadow-[0_4px_20px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4">
+                {{-- قائمة الركاب (Grid) للموبايل --}}
+                <div class="grid grid-cols-1 gap-3 px-1 mt-2">
+                    @forelse($trip->passengers as $passenger)
+                        <div class="bg-white dark:bg-boxdark p-4 rounded-3xl border border-slate-100 dark:border-boxdark-2 shadow-[0_4px_20px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4 transition-all"
+                            x-show="searchQuery === '' || String(@js($passenger->passenger_number)).includes(searchQuery)">
                             
                             <div class="flex items-center gap-3 min-w-0 flex-1">
-                                {{-- عداد أفراد المجموعة الصغير --}}
+                                {{-- العداد المصغر --}}
                                 <div class="flex flex-col justify-center items-center w-11 h-11 rounded-2xl bg-slate-50 dark:bg-boxdark-2 text-slate-600 dark:text-gray-300 shrink-0 border border-slate-100 dark:border-boxdark-2">
-                                    <span class="text-sm font-black leading-none" x-text="passenger.count"></span>
+                                    <span class="text-sm font-black leading-none font-headline">{{ $passenger->count ?? 1 }}</span>
                                     <span class="text-[8px] font-bold mt-0.5">ركاب</span>
                                 </div>
 
-                                {{-- رقم جوال الراكب والوجهة المستهدفة --}}
+                                {{-- التفاصيل --}}
                                 <div class="flex-1 min-w-0">
-                                    <span class="block font-headline text-sm font-black text-slate-800 dark:text-white tracking-tight truncate mb-0.5" style="direction: ltr; text-align: right;" x-text="passenger.passenger_number"></span>
+                                    <span class="block font-headline text-sm font-black text-slate-800 dark:text-white tracking-tight truncate mb-0.5" style="direction: ltr; text-align: right;">
+                                        <x-phone-number :value="$passenger->passenger_number" class="text-sm text-slate-800 dark:text-white !justify-start" />
+                                    </span>
                                     
-                                    <div class="flex gap-1 items-center">
-                                        <span class="material-symbols-outlined text-[13px] text-primary">flag</span>
-                                        <span class="text-xs font-bold text-slate-500 dark:text-gray-400 truncate" x-text="passenger.destination"></span>
+                                    <div class="flex gap-1 items-center mt-1">
+                                        <span class="material-symbols-outlined text-[13px] text-amber-500">location_on</span>
+                                        <span class="text-xs font-bold text-slate-500 dark:text-gray-400 truncate">{{ $passenger->destination ?? ' ' }}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {{-- أيقونة تدل على التأكيد الثابت للراكب بالداخل --}}
-                            <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            {{-- مؤشر مقيد --}}
+                            <div class="flex justify-center items-center w-8 h-8 rounded-full bg-primary/10 text-primary shrink-0 border border-primary/20">
                                 <span class="material-symbols-outlined text-[16px] font-bold">done_all</span>
                             </div>
                         </div>
-                    </template>
-
-                    {{-- حالة البحث الفارغ --}}
-                    <div x-show="filteredPassengers().length === 0" class="bg-white dark:bg-boxdark p-10 rounded-[2.5rem] border border-slate-100 dark:border-boxdark-2 text-center flex flex-col items-center justify-center text-slate-400">
-                        <div class="flex justify-center items-center mb-2 w-14 h-14 rounded-full bg-slate-50 dark:bg-boxdark-2">
-                            <span class="material-symbols-outlined text-[28px] opacity-30">person_search</span>
+                    @empty
+                        <div class="bg-white dark:bg-boxdark p-10 rounded-[2.5rem] border border-slate-100 dark:border-boxdark-2 shadow-sm flex flex-col items-center justify-center text-slate-400">
+                            <div class="flex justify-center items-center mb-3 w-16 h-16 rounded-full bg-slate-50 dark:bg-boxdark-2">
+                                <span class="material-symbols-outlined text-[32px] opacity-30">group_off</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-500 dark:text-gray-400 text-center">لا يوجد ركاب مضافين لهذه الرحلة حتى الآن</p>
                         </div>
-                        <p class="text-xs font-bold text-slate-500 dark:text-gray-400">لم يتم العثور على ركاب يطابقون رقم الجوال المدخل</p>
-                    </div>
+                    @endforelse
+
+                    {{-- رسالة لا توجد نتائج للبحث --}}
+                    @if($trip->passengers->isNotEmpty())
+                        <div x-show="countVisible === 0" x-cloak class="bg-white dark:bg-boxdark p-10 rounded-[2.5rem] border border-slate-100 dark:border-boxdark-2 shadow-sm flex flex-col items-center justify-center text-slate-400">
+                            <div class="flex justify-center items-center mb-3 w-16 h-16 rounded-full bg-slate-50 dark:bg-boxdark-2">
+                                <span class="material-symbols-outlined text-[32px] opacity-30">search_off</span>
+                            </div>
+                            <p class="text-xs font-bold text-slate-500 dark:text-gray-400 text-center">لا توجد نتائج تطابق بحثك</p>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -148,15 +161,16 @@
 
 @section('script')
     <script>
-        function tripDetailsForm(passengersList) {
+        function tripDetailsForm() {
             return {
-                passengers: passengersList || [],
                 searchQuery: '',
-
-                filteredPassengers() {
-                    return this.passengers.filter(p => {
-                        return this.searchQuery === '' || String(p.passenger_number).includes(this.searchQuery);
-                    });
+                get countVisible() {
+                    if (this.searchQuery === '') return {{ $trip->passengers->count() }};
+                    let count = 0;
+                    @foreach($trip->passengers as $passenger)
+                        if (String(@js($passenger->passenger_number)).includes(this.searchQuery)) count++;
+                    @endforeach
+                    return count;
                 }
             }
         }

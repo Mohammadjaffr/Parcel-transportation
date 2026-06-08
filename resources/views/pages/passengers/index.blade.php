@@ -90,20 +90,17 @@
         </div>
 
         {{-- ====================== Search & Table Section ====================== --}}
-        <div
-            class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+        <div class="bg-white dark:bg-boxdark my-4 rounded-2xl border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
             {{-- Search --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
                 <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
                     <div class="flex flex-col gap-3 w-full md:flex-row md:items-center">
-                        <div
-                            class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                        <div class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                             <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                                 placeholder="ابحث برقم الراكب، المكان، السائق، الوسيط..."
-                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white">
-                            <div
-                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-body text-gray-600 dark:text-gray-300">
+                            <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[22px]">search</span>
                             </div>
                             <button type="button" x-show="searchQuery.length > 0"
@@ -113,17 +110,15 @@
                             </button>
                         </div>
 
-                        <div
-                            class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                        <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                             <select x-model="statusFilter" @change="updateVisibility()"
-                                class="pr-11 pl-9 w-full h-12 text-sm font-black bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 text-on-surface dark:text-white">
+                                class="pr-11 pl-9 w-full h-12 text-sm font-bold bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 text-gray-600 dark:text-gray-300 font-body">
                                 <option value="">كل الحالات</option>
                                 <option value="pending">قيد الانتظار</option>
                                 <option value="completed">مكتمل</option>
                                 <option value="cancel">ملغي</option>
                             </select>
-                            <div
-                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
+                            <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
                                 <span class="material-symbols-outlined text-[20px]">tune</span>
                             </div>
                             <div class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
@@ -132,12 +127,11 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-2 items-center text-xs font-black text-gray-500 dark:text-bodydark">
-                        <span
-                            class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
+                    <div class="flex gap-2 items-center text-xs font-bold text-gray-500 dark:text-bodydark font-body">
+                        <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                         </span>
-                        <span>النتائج المعروضة: <span class="text-primary" x-text="visibleCount"></span> من
+                        <span>النتائج المعروضة: <span class="text-primary font-bold" x-text="visibleCount"></span> من
                             <span>{{ $passengers->count() }}</span></span>
                     </div>
                 </div>
@@ -145,18 +139,15 @@
 
             {{-- Desktop View Table --}}
             <div class="hidden overflow-visible w-full lg:block">
-                <table class="w-full text-right border-collapse">
+                <table class="table-auto w-full text-right border-collapse">
                     <thead>
-                        <tr
-                            class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
-                            <th class="px-6 py-4">التاريخ</th>
-                            <th class="px-6 py-4 text-center">بيانات الراكب</th>
-                            <th class="px-6 py-4">اسم الوسيط </th>
-                            <th class="px-6 py-4 text-center">بيانات السائق</th>
-                            <th class="px-6 py-4 text-center">المكان</th>
-                            <th class="px-6 py-4 text-center">الحالة</th>
-                            <th class="px-6 py-4 text-center">العدد والعمولات</th>
-                            <th class="px-6 py-4 text-center">الإجراءات</th>
+                        <tr class="bg-gray-50/80 dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark-2">
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">التاريخ واليوم</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الراكب</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">المكان</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">العدد والعمولة</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الوسيط والسائق</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
@@ -173,8 +164,7 @@
                                     default => 'قيد الانتظار',
                                 };
                                 $statusClass = match ($statusKey) {
-                                    'completed'
-                                        => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+                                    'completed' => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
                                     'cancel' => 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
                                     default => 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
                                 };
@@ -183,199 +173,167 @@
                                     'cancel' => 'cancel',
                                     default => 'schedule',
                                 };
+                                
+                                // Avatar generator
+                                $avatarLetters = mb_substr(preg_replace('/[^0-9]/', '', $passenger->passenger_number), 0, 2);
+                                if(empty($avatarLetters)) $avatarLetters = '00';
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group passenger-row"
                                 x-show="showRow(@js($passenger->passenger_number), @js($passenger->location), @js($passenger->driver->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
 
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col gap-1">
-                                        <span
-                                            class="text-sm font-black text-gray-800 dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
-                                        <span
-                                            class="text-[11px] font-bold text-gray-500 dark:text-bodydark">{{ $dayName }}</span>
+                                {{-- التاريخ واليوم --}}
+                                <td class="px-6 py-4 align-top">
+                                    <div class="flex flex-col gap-1.5">
+                                        <span class="font-body text-sm font-bold text-gray-800 dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
+                                        <span class="font-body text-xs text-gray-500 dark:text-gray-400">{{ $dayName }}</span>
+                                        <span class="inline-flex gap-1 items-center justify-center px-2.5 py-1 mt-1 rounded-md text-[10px] font-bold {{ $statusClass }} w-max">
+                                            <span class="material-symbols-outlined text-[14px]">{{ $statusIcon }}</span>
+                                            {{ $statusLabel }}
+                                        </span>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4">
-                                    <div class="font-mono text-sm font-black text-primary dir-ltr">
-                                        <x-phone-number :value="$passenger->passenger_number" class="text-primary" />
-                                    </div>
-                                </td>
-
-                                <td class="px-6 py-4">
-                                    <div class="flex gap-3 items-center">
-                                        <div
-                                            class="flex justify-center items-center w-10 h-10 text-lg font-black text-white rounded-lg shadow-inner bg-slate-800 dark:bg-slate-700">
-                                            {{ mb_substr($passenger->broker->name ?? 'و', 0, 1, 'UTF-8') }}
+                                {{-- الراكب --}}
+                                <td class="px-6 py-4 align-top">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 text-primary font-bold shadow-sm shrink-0">
+                                            {{ $avatarLetters }}
                                         </div>
-
-                                        <div class="flex flex-col gap-1 min-w-0 text-right">
-                                            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">
-                                                {{ $passenger->broker->name ?? 'بدون وسيط' }}
+                                        <div class="flex flex-col gap-1">
+                                            <span class="font-body text-sm font-bold text-gray-800 dark:text-white dir-ltr text-right">
+                                                <x-phone-number :value="$passenger->passenger_number" class="text-primary font-bold" />
                                             </span>
-                                            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
-                                                الوسيط المعتمد
-                                            </span>
+                                            @if($passenger->note)
+                                                <span class="font-body text-xs text-gray-500 dark:text-gray-400 line-clamp-1" title="{{ $passenger->note }}">
+                                                    {{ $passenger->note }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex flex-col gap-1 items-center">
-                                        <span
-                                            class="text-xs font-black text-primary">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
-                                        <div class="flex items-center gap-1.5 mt-0.5">
-                                            <x-phone-number :value="$passenger->driver->phone ?? ''"
-                                                class="text-[10px] font-bold text-gray-500 dark:text-bodydark" />
-
-                                        </div>
-                                    </div>
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="px-3 py-1.5 text-xs font-bold text-gray-600 bg-white rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">{{ $passenger->location ?: 'غير محدد' }}</span>
-                                </td>
-
-                                <td class="px-6 py-4 text-center">
-                                    <span
-                                        class="inline-flex gap-1.5 items-center justify-center px-3 py-1.5 rounded-xl text-[11px] font-black {{ $statusClass }}">
-                                        <span class="material-symbols-outlined text-[15px]">{{ $statusIcon }}</span>
-                                        {{ $statusLabel }}
+                                {{-- المكان --}}
+                                <td class="px-6 py-4 align-top text-center">
+                                    <span class="inline-block px-3 py-1.5 font-body text-xs font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
+                                        {{ $passenger->location ?: 'غير محدد' }}
                                     </span>
                                 </td>
 
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex flex-col gap-1 items-center">
-                                        <span
-                                            class="px-3 py-1.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">العدد:
-                                            {{ $passenger->count ?? 0 }}</span>
-                                        <span class="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">المكتب:
-                                            {{ number_format($passenger->office_commission ?? 0, 0) }}</span>
-                                        <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400">أخرى:
-                                            {{ number_format($passenger->other_office_commission ?? 0, 0) }}</span>
+                                {{-- العدد والعمولة --}}
+                                <td class="px-6 py-4 align-top text-center">
+                                    <div class="flex flex-col gap-2 items-center">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary">
+                                            <span class="material-symbols-outlined text-[16px]">group</span>
+                                            العدد: {{ $passenger->count ?? 0 }}
+                                        </span>
+                                        <div class="flex flex-col gap-1 text-[11px] font-body text-center">
+                                            <span class="text-gray-600 dark:text-gray-300 font-bold">المكتب: <span class="text-emerald-600 dark:text-emerald-400">{{ number_format($passenger->office_commission ?? 0, 0) }}</span></span>
+                                            <span class="text-gray-600 dark:text-gray-300 font-bold">أخرى: <span class="text-amber-600 dark:text-amber-400">{{ number_format($passenger->other_office_commission ?? 0, 0) }}</span></span>
+                                        </div>
                                     </div>
                                 </td>
 
-                                <td class="relative px-6 py-4 text-center">
-                                    <div x-data="{ open: false }" class="inline-block relative text-right"
-                                        @click.away="open = false">
-                                        <button @click="open = !open" type="button" title="خيارات"
-                                            class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
-                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
-                                        </button>
-
-                                        <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="transform opacity-0 scale-95"
-                                            x-transition:enter-end="transform opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="transform opacity-100 scale-100"
-                                            x-transition:leave-end="transform opacity-0 scale-95"
-                                            class="absolute left-0 top-full mt-2 z-[999] w-52 bg-white/95 backdrop-blur-md rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark/95 dark:border-boxdark-2 focus:outline-none origin-top-left overflow-hidden"
-                                            style="display: none;">
-                                            <div class="py-1" role="menu">
-                                                <a href="{{ route('passengers.show', $passenger->id) }}"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-boxdark-2 dark:hover:text-blue-400">
-                                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                                    عرض التفاصيل
-                                                </a>
-
-                                                <a href="{{ $passenger->driver_whatsapp_link }}" target="_blank"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-boxdark-2 dark:hover:text-emerald-400">
-                                                    <svg class="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
-                                                        <path
-                                                            d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                    </svg>
-                                                    إرسال للسائق (واتساب)
-                                                </a>
-
-                                                <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'driver_id:' . $passenger->driver_id]) }}"
-                                                    target="_blank"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-boxdark-2 dark:hover:text-indigo-400">
-                                                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                                        </path>
-                                                    </svg>
-                                                    كشف الركاب (PDF)
-                                                </a>
-                                                @if ($statusKey === 'pending')
-                                                    <button type="button"
-                                                        @click="open = false; openEditModal({
-        id: {{ $passenger->id }},
-        date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
-        passenger_number: @js($passenger->passenger_number),
-        status: @js($statusKey),
-        location: @js($passenger->location),
-        count: @js($passenger->count),
-        office_commission: @js($passenger->office_commission),
-        other_office_commission: @js($passenger->other_office_commission),
-        broker_id: @js($passenger->broker_id),
-        broker_name: @js($passenger->broker->name ?? ''),
-        driver_id: @js($passenger->driver_id),
-        driver_name: @js($passenger->driver->name ?? ''),
-        driver_phone: @js($passenger->driver->phone ?? ''),
-        note: @js($passenger->note)
-    })"
-                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
-                                                        <span class="material-symbols-outlined text-[18px]">edit</span>
-                                                        تعديل البيانات
-                                                    </button>
+                                {{-- الوسيط والسائق --}}
+                                <td class="px-6 py-4 align-top">
+                                    <div class="flex flex-col gap-3">
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                                <span class="material-symbols-outlined text-[14px]">handshake</span>
+                                            </span>
+                                            <span class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                                <span class="material-symbols-outlined text-[14px]">local_taxi</span>
+                                            </span>
+                                            <div class="flex flex-col">
+                                                <span class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
+                                                @if($passenger->driver)
+                                                <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
+                                                    <x-phone-number :value="$passenger->driver->phone ?? ''" />
+                                                </span>
                                                 @endif
-                                                <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
-
-                                                {{-- زر تعيين الحالة يظهر فقط إذا كانت الحالة قيد الانتظار --}}
-                                                @if ($statusKey === 'pending')
-                                                    <button type="button"
-                                                        @click="open = false; openStatusModal({
-            id: {{ $passenger->id }},
-            date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
-            status: @js($statusKey),
-            passenger_number: @js($passenger->passenger_number),
-            location: @js($passenger->location),
-            count: @js($passenger->count),
-            office_commission: @js($passenger->office_commission),
-            other_office_commission: @js($passenger->other_office_commission),
-            broker_name: @js($passenger->broker->name ?? ''),
-            driver_phone: @js($passenger->driver->phone ?? ''),
-            driver_name: @js($passenger->driver->name ?? ''),
-            note: @js($passenger->note)
-        })"
-                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-boxdark-2 dark:hover:text-emerald-400">
-                                                        <span
-                                                            class="material-symbols-outlined text-[18px]">fact_check</span>
-                                                        تعيين الحالة
-                                                    </button>
-                                                    <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
-                                                @endif
-
-
-
-
-
-
                                             </div>
                                         </div>
+                                    </div>
+                                </td>
+
+                                {{-- الإجراءات --}}
+                                <td class="px-6 py-4 align-middle text-center">
+                                    <div class="flex items-center justify-center gap-2">
+                                        <a href="{{ route('passengers.show', $passenger->id) }}" title="عرض التفاصيل"
+                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+                                            <span class="material-symbols-outlined text-[20px]">visibility</span>
+                                        </a>
+
+                                        @if ($statusKey === 'pending')
+                                        <button type="button" title="تعديل البيانات"
+                                            @click="openEditModal({
+                                                id: {{ $passenger->id }},
+                                                date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                passenger_number: @js($passenger->passenger_number),
+                                                status: @js($statusKey),
+                                                location: @js($passenger->location),
+                                                count: @js($passenger->count),
+                                                office_commission: @js($passenger->office_commission),
+                                                other_office_commission: @js($passenger->other_office_commission),
+                                                broker_id: @js($passenger->broker_id),
+                                                broker_name: @js($passenger->broker->name ?? ''),
+                                                driver_id: @js($passenger->driver_id),
+                                                driver_name: @js($passenger->driver->name ?? ''),
+                                                driver_phone: @js($passenger->driver->phone ?? ''),
+                                                note: @js($passenger->note)
+                                            })"
+                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
+                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                        </button>
+
+                                        <button type="button" title="تعيين الحالة"
+                                            @click="openStatusModal({
+                                                id: {{ $passenger->id }},
+                                                date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                status: @js($statusKey),
+                                                passenger_number: @js($passenger->passenger_number),
+                                                location: @js($passenger->location),
+                                                count: @js($passenger->count),
+                                                office_commission: @js($passenger->office_commission),
+                                                other_office_commission: @js($passenger->other_office_commission),
+                                                broker_name: @js($passenger->broker->name ?? ''),
+                                                driver_phone: @js($passenger->driver->phone ?? ''),
+                                                driver_name: @js($passenger->driver->name ?? ''),
+                                                note: @js($passenger->note)
+                                            })"
+                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
+                                            <span class="material-symbols-outlined text-[20px]">fact_check</span>
+                                        </button>
+                                        @endif
+
+                                        <a href="{{ $passenger->driver_whatsapp_link }}" target="_blank" title="إرسال للسائق (واتساب)" 
+                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
+                                            <svg class="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                            </svg>
+                                        </a>
+
+                                        <button type="button" title="حذف"
+                                            @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number))"
+                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-error hover:bg-error/10 transition-colors">
+                                            <span class="material-symbols-outlined text-[20px]">delete</span>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="py-24 text-center">
+                                <td colspan="6" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
-                                        <div
-                                            class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
-                                            <span
-                                                class="material-symbols-outlined text-[28px] text-gray-400">group_off</span>
+                                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                            <span class="material-symbols-outlined text-[28px] text-gray-400">group_off</span>
                                         </div>
                                         <div>
-                                            <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">لا توجد
-                                                بيانات للركاب</h3>
-                                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على أي
-                                                ركاب مسجلين في النظام حالياً.</p>
+                                            <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا توجد بيانات للركاب</h3>
+                                            <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على أي ركاب مسجلين في النظام حالياً.</p>
                                         </div>
                                     </div>
                                 </td>
@@ -383,17 +341,14 @@
                         @endforelse
 
                         <tr x-show="visibleCount === 0 && {{ $passengers->count() }} > 0" x-cloak>
-                            <td colspan="8" class="py-24 text-center">
+                            <td colspan="6" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
-                                    <div
-                                        class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                                     </div>
                                     <div>
-                                        <h3 class="mb-1 text-base font-bold text-gray-800 dark:text-white">لا توجد نتائج
-                                            مطابقة</h3>
-                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على ركاب
-                                            يطابقون بحثك أو الحالة المحددة.</p>
+                                        <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا توجد نتائج مطابقة</h3>
+                                        <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على ركاب يطابقون بحثك أو الحالة المحددة.</p>
                                     </div>
                                 </div>
                             </td>
@@ -403,8 +358,7 @@
             </div>
 
             @if ($passengers->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
+                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-2xl">
                     {{ $passengers->links('vendor.pagination.tailwind') }}
                 </div>
             @endif

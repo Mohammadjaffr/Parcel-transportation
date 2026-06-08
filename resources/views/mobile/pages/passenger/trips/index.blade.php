@@ -22,6 +22,7 @@
         {{-- ================= حاوية الرحلات الأساسية ================= --}}
         <div class="px-4 space-y-4">
             
+            
             @forelse($trips as $trip)
                 {{-- بطاقة كرت الرحلة الواحدة مع تهيئة النطاق المستقل للقائمة المنسدلة --}}
                 <div x-data="{ openMenu: false }" class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2 relative transition-all hover:shadow-md">
@@ -37,7 +38,7 @@
                                     {{ $trip->driver->name ?? 'سائق غير معين بعد' }}
                                 </h3>
                                 @if($trip->driver?->phone)
-                                    <span class="text-xs text-gray-400 font-mono block text-right mt-0.5" style="direction: ltr;">{{ $trip->driver->phone }}</span>
+                                    <span class="text-xs text-gray-400 font-mono block text-right mt-0.5" style="direction: ltr;">  <x-phone-number :value="$trip->driver->phone" class="text-xs text-primary !justify-start" /></span>
                                 @else
                                     <span class="text-xs text-amber-500 font-medium block mt-0.5">يرجى تعيين سائق للرحلة</span>
                                 @endif

@@ -46,10 +46,7 @@ class Passengers extends Model
         return $this->office_commission + $this->other_office_commission;
     }
 
-    public function getDriverPdfLinkAttribute()
-    {
-        return route('receipt.generate', ['type' => 'passenger', 'id' => $this->id]);
-    }
+  
 
     public function getDriverWhatsappLinkAttribute()
     {

@@ -38,26 +38,26 @@
                             <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 transition-all group ring-slate-200 dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/50"
                                 :class="selectedDriverId ? 'bg-primary/5 ring-primary/30 dark:bg-primary/5' : ''" style="direction: ltr;">
 
-                                <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                <div class="relative h-full shrink-0" @click.away="openCountryDropdown = false">
                                     <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                        class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark-2 dark:border-boxdark text-slate-600 dark:text-gray-300">
-                                        <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry?.svg"></div>
-                                        <span class="text-xs font-bold" x-text="selectedCountry?.dial_code"></span>
+                                        class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark-2 dark:border-boxdark text-slate-600 dark:text-gray-300 min-w-max">
+                                        <div class="w-6 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden shrink-0" x-html="selectedCountry?.svg"></div>
+                                        <span class="text-xs font-bold font-mono dir-ltr shrink-0" x-text="selectedCountry?.dial_code" style="direction: ltr;"></span>
                                     </button>
 
                                     <div x-show="openCountryDropdown" x-cloak x-transition
-                                        class="absolute top-full left-0 mt-1 w-64 bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[60] overflow-hidden">
+                                        class="absolute top-full left-0 mt-1 w-[260px] max-w-[90vw] bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[60] overflow-hidden">
                                         <div class="p-2 border-b border-slate-50 dark:border-boxdark-2">
                                             <input type="text" x-model="searchCountryQuery" placeholder="بحث عن دولة..."
-                                                class="px-3 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white" dir="rtl">
+                                                class="px-3 w-full h-9 text-xs rounded-lg outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white border border-slate-100 dark:border-boxdark-2 focus:border-primary focus:ring-1 focus:ring-primary/30 transition-all" dir="rtl">
                                         </div>
-                                        <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                        <div class="overflow-y-auto max-h-56 custom-scrollbar" dir="ltr">
                                             <template x-for="country in filteredCountries" :key="country.code">
                                                 <button type="button" @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
-                                                    class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200">
-                                                    <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden" x-html="country.svg"></div>
-                                                    <span class="flex-1 text-xs font-bold" x-text="country.name"></span>
-                                                    <span class="text-xs text-slate-400" x-text="country.dial_code"></span>
+                                                    class="flex gap-3 items-center px-3 py-2.5 w-full text-left transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200 border-b border-slate-50 dark:border-boxdark-2 last:border-0">
+                                                    <div class="w-6 h-auto flex items-center justify-center rounded-[2px] overflow-hidden shrink-0 shadow-sm" x-html="country.svg"></div>
+                                                    <span class="flex-1 text-xs font-bold truncate" x-text="country.name"></span>
+                                                    <span class="text-xs text-slate-400 font-mono shrink-0" x-text="country.dial_code" style="direction: ltr;"></span>
                                                 </button>
                                             </template>
                                         </div>

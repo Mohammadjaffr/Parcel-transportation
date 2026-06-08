@@ -23,7 +23,7 @@ class PassengerTripController extends Controller
             return view('mobile.pages.passenger.trips.index', compact('trips'));
         }
         //ضبظ حق الدسك توب 
-        return view('mobile.trips.index', compact('trips'));
+        return view('pages.passenger.trips.index', compact('trips'));
         
     }
 
@@ -38,7 +38,7 @@ class PassengerTripController extends Controller
             return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
         }
         // ضبظ حق الدسك توب 
-        return view('mobile.trips.create', compact('drivers', 'pendingPassengers'));
+        return view('pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
 
     
     }
@@ -93,18 +93,26 @@ class PassengerTripController extends Controller
             return view('mobile.pages.passenger.trips.show', compact('trip'));
         }
         // اكتب مسار الصفحة على الدسك توب
-    return view('mobile.trips.show', compact('trip'));
+    return view('pages.passenger.trips.show', compact('trip'));
     }
 
 
 
 
 
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
-        $trip = PassengerTrip::findOrFail($id);
+        $trip = PassengerTrip::with('passengers')->findOrFail($id);
         $drivers = Driver::all();
-        return view('mobile.trips.edit', compact('trip', 'drivers'));
+        $pendingPassengers = Passengers::where('status', 'pending')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->latest()
+            ->get();
+
+        if ($request->isMobile) {
+            return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+        }
+        return view('pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
     }
 
     public function update(Request $request, $id)
@@ -113,15 +121,42 @@ class PassengerTripController extends Controller
 
         $request->validate([
             'driver_id' => ['nullable', 'exists:drivers,id'],
+            'passenger_ids' => ['required', 'array', 'min:1'],
         ]);
 
         try {
+            DB::beginTransaction();
+
             $trip->update([
                 'driver_id' => $request->driver_id,
             ]);
 
+            // الركاب الحاليين في هذه الرحلة
+            $currentPassengerIds = $trip->passengers()->pluck('id')->toArray();
+            $newPassengerIds = $request->passenger_ids;
+
+            // ركاب تم إزالتهم من الرحلة (إعادتهم إلى قيد الانتظار)
+            $removedIds = array_diff($currentPassengerIds, $newPassengerIds);
+            if (!empty($removedIds)) {
+                Passengers::whereIn('id', $removedIds)->update([
+                    'trip_id' => null,
+                    'status' => 'pending'
+                ]);
+            }
+
+            // ركاب جدد تمت إضافتهم للرحلة
+            $addedIds = array_diff($newPassengerIds, $currentPassengerIds);
+            if (!empty($addedIds)) {
+                Passengers::whereIn('id', $addedIds)->update([
+                    'trip_id' => $trip->id,
+                    'status' => 'completed'
+                ]);
+            }
+
+            DB::commit();
             return redirect()->route('trips.index')->with('success', 'تم تحديث الرحلة بنجاح.');
         } catch (Exception $e) {
+            DB::rollBack();
             return back()->with('error', 'حدث خطأ أثناء التحديث.');
         }
     }

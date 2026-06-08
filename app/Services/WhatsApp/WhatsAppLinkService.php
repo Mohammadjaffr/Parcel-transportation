@@ -9,6 +9,7 @@ use App\Services\WhatsApp\Messages\ExternalOfficeDetection;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
 use App\Services\WhatsApp\Messages\CustomerTransactionMessage; 
+use App\Services\WhatsApp\Messages\PassengerDriverMessage;
 use Illuminate\Database\Eloquent\Model;
 
 class WhatsAppLinkService
@@ -23,6 +24,7 @@ class WhatsAppLinkService
             'receiver' => new ReceiverMessage(),
             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
             'transaction' => new CustomerTransactionMessage(), 
+            'passengerDriver' => new PassengerDriverMessage(),
             default    => null,
         };
 
