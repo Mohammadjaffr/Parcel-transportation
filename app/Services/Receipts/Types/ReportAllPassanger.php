@@ -17,6 +17,10 @@ class ReportAllPassanger implements ReceiptStrategyInterface
     public function fetchData(string $referenceId): array
     {
         $user = auth()->user();
+         // 🔒 حماية دفاعية: إذا كان المستخدم غير مسجل، اقطع الطلب فوراً واعرض صفحة غير مصرح
+        if (!$user) {
+            abort(403, 'غير مصرح لك بالوصول إلى هذه البيانات، يرجى تسجيل الدخول أولاً.');
+        }
         // referenceId يمكن أن يكون 'all' أو يحتوي فلاتر أو رقم معرف راكب مفرد
         $filters = [];
         if (is_numeric($referenceId)) {
