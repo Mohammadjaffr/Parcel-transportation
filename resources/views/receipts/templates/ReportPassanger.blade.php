@@ -53,19 +53,7 @@
                 <div class="mb-10 page-break-inside-avoid">
                     {{-- Driver Card Header --}}
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 bg-slate-50 border border-slate-200 rounded-t-2xl gap-4 border-b-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-500 text-white flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="font-black text-slate-800 text-base">السائق: {{ $driver['driver_name'] }}</h3>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-xs text-slate-500 font-bold" dir="ltr">{{ $driver['driver_phone'] }}</span>
-                                </div>
-                            </div>
-                        </div>
+                  
                         <div class="flex gap-4 text-xs font-bold text-slate-600">
                             <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">الركاب : <strong>{{ $driver['total_passengers_count'] }}</strong></span>
                             <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">إجمالي الأشخاص: <strong>{{ $driver['total_count'] }}</strong></span>
@@ -82,8 +70,9 @@
                                     <th class="w-20 text-center">اليوم</th>
                                     <th class="w-28 text-center">رقم الراكب</th>
                                     <th class="w-16 text-center">العدد</th>
-                                    <th class="w-[28%] text-right">المكان</th>
-                                    <th class="w-[28%] text-right">الملاحظات</th>
+                                    <th class="w-[18%] text-right">مكان الركوب</th>
+                                    <th class="w-[18%] text-right">الوجهة</th>
+                                    <th class="w-[20%] text-right">الملاحظات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -96,7 +85,8 @@
                                         <td class="text-center font-black text-slate-800 bg-slate-50/50">{{ $passenger['count'] }}</td>
                                         
                                         {{-- تم استخدام كلاس text-wrap-custom لتوسيع الحقل والسماح بكسر النص --}}
-                                        <td class="text-slate-700 font-bold text-wrap-custom">{{ $passenger['location'] }}</td>
+                                        <td class="text-slate-700 font-bold text-wrap-custom">{{ $passenger['pickup_location'] }}</td>
+                                        <td class="text-slate-700 font-bold text-wrap-custom">{{ $passenger['destination'] }}</td>
                                         <td class="text-slate-600 font-medium text-xs text-wrap-custom">{{ $passenger['note'] }}</td>
                                     </tr>
                                 @endforeach

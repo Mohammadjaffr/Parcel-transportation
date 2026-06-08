@@ -13,6 +13,9 @@ use App\Services\Receipts\Types\CustomerTransactionReceipt;
 use App\Services\Receipts\Types\ReportPassanger;
 use App\Services\Receipts\Types\ExternalOfficeDetection;
 use App\Services\Receipts\Types\ReportAllPassanger;
+use App\Services\Receipts\Types\ReportTrip;
+use App\Services\Receipts\Types\ReportAllTrips;
+
 use Exception;
 
 class ReceiptFactory
@@ -30,6 +33,8 @@ class ReceiptFactory
             'transaction' => new CustomerTransactionReceipt(),
             'passenger' => new ReportPassanger(),
             'all_passenger' => new ReportAllPassanger(),
+            'trip' => new ReportTrip(),
+            'all_trips' => new ReportAllTrips(),
             default    => throw new Exception("نوع السند غير مدعوم: {$type}")
         };
     }

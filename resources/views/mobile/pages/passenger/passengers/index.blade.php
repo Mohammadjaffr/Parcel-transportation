@@ -13,17 +13,20 @@
                     إجمالي <span class="text-primary">{{ $passengers->total() ?? 0 }}</span> راكب مسجل
                 </p>
             </div>
-            <a href="{{ route('passengers.create') }}">
-                <button type="button"
-                    class="flex justify-center items-center w-12 h-12 text-white rounded-[1rem] shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
-                    <span class="text-2xl material-symbols-outlined"
-                        style="font-variation-settings: 'FILL' 1;">person_add</span>
-                </button>
-            </a>
-            {{-- <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => 'all']) }}" target="_blank"
-                class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl transition-all border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
-                <span class="material-symbols-outlined text-[20px]">print</span>
-            </a> --}}
+            <div class="flex gap-2">
+                <a :href="'{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => '__ID__']) }}'.replace('__ID__', getPrintUrl())" target="_blank"
+                    class="flex justify-center items-center h-12 px-4 gap-1 text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-[1rem] shadow-sm transition-all active:scale-95 border border-primary/20">
+                    <span class="text-xl material-symbols-outlined">print</span>
+                    <span class="font-bold text-sm">طباعة الكشف</span>
+                </a>
+                <a href="{{ route('passengers.create') }}">
+                    <button type="button"
+                        class="flex justify-center items-center w-12 h-12 text-white rounded-[1rem] shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
+                        <span class="text-2xl material-symbols-outlined"
+                            style="font-variation-settings: 'FILL' 1;">person_add</span>
+                    </button>
+                </a>
+            </div>
         </div>
 
 
@@ -130,9 +133,9 @@
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">visibility</span> عرض التفاصيل
                                     </a>
-                                    <a href="{{ $passenger->driver_whatsapp_link }}" target="_blank"
+                                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank" title="طباعة "
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
-                                        <span class="material-symbols-outlined text-[16px]">chat</span> واتساب
+                                        <span class="material-symbols-outlined text-[16px]">print</span>   طباعة كشف ركاب 
                                     </a>
                                     @if ($statusKey === 'pending')
                                         <a href="{{ route('passengers.edit', $passenger->id) }}"
@@ -358,6 +361,11 @@
                     driver_phone: '',
                     note: '',
                     url: ''
+                },
+                getPrintUrl() {
+                    let parts = [];
+                    if (this.selectedStatus) parts.push('status:' + this.selectedStatus);
+                    return parts.length > 0 ? parts.join('|') : 'all';
                 },
                 matchSearch(number, location, cName, cPhone, dName, dPhone, statusKey) {
                     if (this.selectedStatus !== '' && statusKey !== this.selectedStatus) {

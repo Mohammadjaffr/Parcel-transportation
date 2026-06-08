@@ -83,7 +83,8 @@ class ReportPassanger implements ReceiptStrategyInterface
                     'date'             => $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : '---',
                     'day'              => $p->date ? \Carbon\Carbon::parse($p->date)->locale('ar')->translatedFormat('l') : '---',
                     'passenger_number' => $displayPhone,
-                    'location'         => $p->location ?? '---',
+                    'pickup_location'  => $p->pickup_location ?? '---',
+                    'destination'      => $p->destination ?? '---',
                     'count'            => $p->count ?? 0,
                     'note'             => $p->note ?: '---',
                 ];

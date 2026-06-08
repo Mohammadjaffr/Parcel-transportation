@@ -8,6 +8,8 @@ use App\Models\PassengerTrip;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\WhatsApp\WhatsAppLinkService;
+
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +21,12 @@ class PassengerTripController extends Controller
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->paginate(10);
+              $trips->getCollection()->transform(function ($trip) {     
+
+            $trip->driver_pdf_link = WhatsAppLinkService::generate($trip, 'passengerDriver');
+
+            return $trip;
+        });
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.index', compact('trips'));
         }

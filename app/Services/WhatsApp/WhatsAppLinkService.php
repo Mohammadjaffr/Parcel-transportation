@@ -11,6 +11,9 @@ use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
 use App\Services\WhatsApp\Messages\CustomerTransactionMessage; 
 use App\Services\WhatsApp\Messages\PassengerDriverMessage;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\PassengerTrip;
+use App\Services\WhatsApp\Messages\TripDriverMessage;
+
 
 class WhatsAppLinkService
 {
@@ -25,6 +28,7 @@ class WhatsAppLinkService
             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
             'transaction' => new CustomerTransactionMessage(), 
             'passengerDriver' => new PassengerDriverMessage(),
+            'tripDriver' => new TripDriverMessage(),
             default    => null,
         };
 

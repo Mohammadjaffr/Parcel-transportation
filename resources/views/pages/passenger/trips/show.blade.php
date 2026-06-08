@@ -33,7 +33,7 @@
 
             {{-- Actions --}}
             <div class="flex gap-3">
-                <a href="" target="_blank" class="flex items-center gap-2 px-5 h-12 bg-white dark:bg-boxdark text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 active:scale-95 font-bold text-sm">
+                <a href="{{ route('receipt.generate', ['type' => 'trip', 'id' => $trip->uuid]) }}" target="_blank" class="flex items-center gap-2 px-5 h-12 bg-white dark:bg-boxdark text-emerald-600 dark:text-emerald-400 rounded-2xl border border-emerald-100 dark:border-emerald-500/20 shadow-sm transition-all hover:bg-emerald-50 dark:hover:bg-emerald-500/10 active:scale-95 font-bold text-sm">
                     <span class="material-symbols-outlined text-[20px]">print</span>
                     طباعة الكشف
                 </a>

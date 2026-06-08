@@ -18,7 +18,7 @@ class PassengerDriverMessage implements WhatsAppMessageInterface
 
     public function getReceiptType(): ?string
     {
-        return 'PassengerDriverDetection';
+        return 'passengerDriver';
     }
 
     public function getMessageBody(Model $entity, ?string $receiptUrl = null): string

@@ -28,13 +28,14 @@
 
             {{-- زر سريع للطباعة أو التعديل من داخل التفاصيل --}}
             <div class="flex gap-2">
-                <a href="" target="_blank" class="flex justify-center items-center w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-500/20 shadow-sm transition-all active:scale-90">
+                <a href="{{ route('receipt.generate', ['type' => 'trip', 'id' => $trip->uuid]) }}" target="_blank" class="flex justify-center items-center w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-500/20 shadow-sm transition-all active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">print</span>
                 </a>
                 <a href="{{ route('trips.edit', $trip->id) }}" class="flex justify-center items-center w-10 h-10 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-full border border-amber-100 dark:border-amber-500/20 shadow-sm transition-all active:scale-90">
                     <span class="material-symbols-outlined text-[20px]">edit</span>
                 </a>
             </div>
+            
         </div>
 
         <div class="px-4 space-y-5">

@@ -47,7 +47,7 @@
                         </div>
 
                         <h1 class="text-2xl font-black tracking-tight md:text-3xl text-on-surface dark:text-white">
-                           الراكب
+                            الراكب
                         </h1>
 
                         <div class="flex flex-wrap gap-3 items-center mt-2">
@@ -64,7 +64,11 @@
                         </div>
                     </div>
                 </div>
-
+                <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                    class="flex gap-3 items-center px-4 py-2.5  border-emerald-100 border-2 rounded-md text-sm font-bold text-green-500 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10">
+                    <span class="material-symbols-outlined text-[18px]">print</span>
+                    طباعة الكشف
+                </a>
             </div>
         </div>
 

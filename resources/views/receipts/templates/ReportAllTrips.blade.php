@@ -120,12 +120,13 @@
                                     
                                     <th>رقم الراكب (الهاتف)</th>
                                     <th>الوسيط</th>
-                                    <th class="w-32">المكان</th>
-                                    <th class="w-16 text-center">العدد</th>
-                                    <th class="w-24 text-center">عمولة المكتب</th>
-                                    <th class="w-24 text-center">عمولة أخرى</th>
-                                    <th class="w-24 text-center">الحالة</th>
-                                    <th>الملاحظات</th>
+                                    <th class="w-28 text-right">مكان الركوب</th>
+                                    <th class="w-28 text-right">الوجهة</th>
+                                    <th class="w-12 text-center">العدد</th>
+                                    <th class="w-20 text-center">عمولة المكتب</th>
+                                    <th class="w-20 text-center">عمولة أخرى</th>
+                                    <th class="w-20 text-center">الحالة</th>
+                                    <th class="w-32 text-right">الملاحظات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,7 +136,8 @@
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
                                         <td class="font-bold text-slate-800">{{ $passenger['broker_name'] }}</td>
-                                        <td class="text-slate-600 font-medium">{{ $passenger['location'] }}</td>
+                                        <td class="text-slate-600 font-bold text-xs">{{ $passenger['pickup_location'] }}</td>
+                                        <td class="text-slate-600 font-bold text-xs">{{ $passenger['destination'] }}</td>
                                         <td class="text-center font-black text-slate-800">{{ $passenger['count'] }}</td>
                                         <td class="text-center font-black text-emerald-600" dir="ltr">{{ $passenger['office_commission'] }}</td>
                                         <td class="text-center font-black text-amber-600" dir="ltr">{{ $passenger['other_office_commission'] }}</td>

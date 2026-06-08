@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Broker;
+use App\Services\WhatsApp\WhatsAppLinkService;
+
 
 class PassengersController extends Controller
 {
@@ -45,6 +47,12 @@ class PassengersController extends Controller
         }
 
         $passengers = $query->paginate(15)->withQueryString();
+             $passengers->getCollection()->transform(function ($passenger) {     
+
+            $passenger->driver_pdf_link = WhatsAppLinkService::generate($passenger, 'passengerDriver');
+
+            return $passenger;
+        });
         $drivers = Driver::orderBy('name')->get();
         $brokers = Broker::select('id', 'name')->get();
 

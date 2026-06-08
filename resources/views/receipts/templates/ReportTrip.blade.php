@@ -105,8 +105,7 @@
                         <div class="flex gap-4 text-xs font-bold text-slate-600">
                             <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">الركاب: <strong>{{ $driver['total_passengers_count'] }}</strong></span>
                             <span class="bg-white px-3 py-1.5 rounded-lg border border-slate-200">العدد الكلي: <strong>{{ $driver['total_count'] }}</strong></span>
-                            <span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-100">عمولة المكتب: <strong>{{ number_format($driver['total_office_commission'], 0) }}</strong></span>
-                            <span class="bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-100">عمولة أخرى: <strong>{{ number_format($driver['total_other_office_commission'], 0) }}</strong></span>
+
                         </div>
                     </div>
 
@@ -120,12 +119,11 @@
                                     
                                     <th>رقم الراكب (الهاتف)</th>
                                     <th>الوسيط</th>
-                                    <th class="w-32">المكان</th>
-                                    <th class="w-16 text-center">العدد</th>
-                                    <th class="w-24 text-center">عمولة المكتب</th>
-                                    <th class="w-24 text-center">عمولة أخرى</th>
-                                    <th class="w-24 text-center">الحالة</th>
-                                    <th>الملاحظات</th>
+                                    <th class="w-28 text-right">مكان الركوب</th>
+                                    <th class="w-28 text-right">الوجهة</th>
+                                    <th class="w-12 text-center">العدد</th>
+                                   
+                                    <th class="w-32 text-right">الملاحظات</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -135,24 +133,10 @@
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
                                         <td class="font-bold text-slate-800">{{ $passenger['broker_name'] }}</td>
-                                        <td class="text-slate-600 font-medium">{{ $passenger['location'] }}</td>
+                                        <td class="text-slate-600 font-bold text-xs">{{ $passenger['pickup_location'] }}</td>
+                                        <td class="text-slate-600 font-bold text-xs">{{ $passenger['destination'] }}</td>
                                         <td class="text-center font-black text-slate-800">{{ $passenger['count'] }}</td>
-                                        <td class="text-center font-black text-emerald-600" dir="ltr">{{ $passenger['office_commission'] }}</td>
-                                        <td class="text-center font-black text-amber-600" dir="ltr">{{ $passenger['other_office_commission'] }}</td>
-                                        <td class="text-center">
-                                            @php
-                                                $statusColors = [
-                                                    'pending' => 'bg-amber-50 text-amber-700',
-                                                    'confirmed' => 'bg-blue-50 text-blue-700',
-                                                    'completed' => 'bg-emerald-50 text-emerald-700',
-                                                    'cancel' => 'bg-rose-50 text-rose-700',
-                                                ];
-                                                $colorClass = $statusColors[$passenger['status_key']] ?? 'bg-slate-50 text-slate-700';
-                                            @endphp
-                                            <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold {{ $colorClass }}">
-                                                {{ $passenger['status_label'] }}
-                                            </span>
-                                        </td>
+                                      
                                         <td class="text-xs text-slate-500 font-medium max-w-xs truncate">{{ $passenger['note'] ?? '---' }}</td>
                                     </tr>
                                 @endforeach
@@ -169,7 +153,7 @@
             {{-- Grand Totals --}}
             @if(!empty($drivers))
                 <div class="rounded-2xl border border-slate-200 overflow-hidden mb-8">
-                    <div class="bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
+                    <div class="bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-2 gap-4 text-center divide-x divide-x-reverse divide-slate-200">
                         <div>
                             <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب </p>
                             <p class="text-slate-800 font-black text-lg">{{ $total_passengers ?? 0 }}</p>
@@ -178,14 +162,7 @@
                             <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي الركاب الكلي</p>
                             <p class="text-slate-800 font-black text-lg">{{ number_format($total_count ?? 0, 0) }}</p>
                         </div>
-                        <div>
-                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي عمولة المكتب</p>
-                            <p class="text-emerald-600 font-black text-lg" dir="ltr">{{ number_format($total_office_commission ?? 0, 0) }} ر.ي</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">إجمالي عمولات أخرى</p>
-                            <p class="text-amber-600 font-black text-lg" dir="ltr">{{ number_format($total_other_office_commission ?? 0, 0) }} ر.ي</p>
-                        </div>
+                        
                     </div>
                 </div>
             @endif

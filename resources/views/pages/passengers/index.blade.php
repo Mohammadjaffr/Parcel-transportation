@@ -20,10 +20,12 @@
                 </div>
 
                 <div class="flex gap-2 items-center shrink-0">
-                    <a href="{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => 'all']) }}" target="_blank"
+                    <a :href="'{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => '__ID__']) }}'.replace('__ID__',
+                        getPrintUrl())"
+                        target="_blank"
                         class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl border-2 transition-all border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">print</span>
-                        <span>تقرير الركاب</span>
+                        <span>طباعة الكشف للمكتب</span>
                     </a>
                     <button type="button" @click="openCreateModal()"
                         class="inline-flex gap-2.5 items-center px-5 h-12 text-sm font-black text-white rounded-2xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/25 active:scale-95">
@@ -90,17 +92,20 @@
         </div>
 
         {{-- ====================== Search & Table Section ====================== --}}
-        <div class="bg-white dark:bg-boxdark my-4 rounded-2xl border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+        <div
+            class="bg-white dark:bg-boxdark my-4 rounded-2xl border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
             {{-- Search --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
                 <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
                     <div class="flex flex-col gap-3 w-full md:flex-row md:items-center">
-                        <div class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                        <div
+                            class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                             <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                                 placeholder="ابحث برقم الراكب، المكان، السائق، الوسيط..."
                                 class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-body text-gray-600 dark:text-gray-300">
-                            <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                            <div
+                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[22px]">search</span>
                             </div>
                             <button type="button" x-show="searchQuery.length > 0"
@@ -110,7 +115,8 @@
                             </button>
                         </div>
 
-                        <div class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                        <div
+                            class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                             <select x-model="statusFilter" @change="updateVisibility()"
                                 class="pr-11 pl-9 w-full h-12 text-sm font-bold bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 text-gray-600 dark:text-gray-300 font-body">
                                 <option value="">كل الحالات</option>
@@ -118,7 +124,8 @@
                                 <option value="completed">مكتمل</option>
                                 <option value="cancel">ملغي</option>
                             </select>
-                            <div class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
+                            <div
+                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
                                 <span class="material-symbols-outlined text-[20px]">tune</span>
                             </div>
                             <div class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
@@ -142,12 +149,21 @@
                 <table class="table-auto w-full text-right border-collapse">
                     <thead>
                         <tr class="bg-gray-50/80 dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark-2">
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">التاريخ واليوم</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الراكب</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">المكان</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">العدد والعمولة</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الوسيط والسائق</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">الإجراءات</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">التاريخ
+                                واليوم</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الراكب
+                            </th>
+                            <th
+                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                المكان</th>
+                            <th
+                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                العدد والعمولة</th>
+                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الوسيط
+                            </th>
+                            <th
+                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
@@ -164,7 +180,8 @@
                                     default => 'قيد الانتظار',
                                 };
                                 $statusClass = match ($statusKey) {
-                                    'completed' => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+                                    'completed'
+                                        => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
                                     'cancel' => 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
                                     default => 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
                                 };
@@ -173,21 +190,30 @@
                                     'cancel' => 'cancel',
                                     default => 'schedule',
                                 };
-                                
+
                                 // Avatar generator
-                                $avatarLetters = mb_substr(preg_replace('/[^0-9]/', '', $passenger->passenger_number), 0, 2);
-                                if(empty($avatarLetters)) $avatarLetters = '00';
+                                $avatarLetters = mb_substr(
+                                    preg_replace('/[^0-9]/', '', $passenger->passenger_number),
+                                    0,
+                                    2,
+                                );
+                                if (empty($avatarLetters)) {
+                                    $avatarLetters = '00';
+                                }
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group passenger-row"
-                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->location), @js($passenger->driver->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
+                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->driver->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
 
                                 {{-- التاريخ واليوم --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-1.5">
-                                        <span class="font-body text-sm font-bold text-gray-800 dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
-                                        <span class="font-body text-xs text-gray-500 dark:text-gray-400">{{ $dayName }}</span>
-                                        <span class="inline-flex gap-1 items-center justify-center px-2.5 py-1 mt-1 rounded-md text-[10px] font-bold {{ $statusClass }} w-max">
+                                        <span
+                                            class="font-body text-sm font-bold text-gray-800 dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
+                                        <span
+                                            class="font-body text-xs text-gray-500 dark:text-gray-400">{{ $dayName }}</span>
+                                        <span
+                                            class="inline-flex gap-1 items-center justify-center px-2.5 py-1 mt-1 rounded-md text-[10px] font-bold {{ $statusClass }} w-max">
                                             <span class="material-symbols-outlined text-[14px]">{{ $statusIcon }}</span>
                                             {{ $statusLabel }}
                                         </span>
@@ -197,15 +223,19 @@
                                 {{-- الراكب --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex items-center gap-3">
-                                        <div class="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 text-primary font-bold shadow-sm shrink-0">
+                                        <div
+                                            class="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 text-primary font-bold shadow-sm shrink-0">
                                             {{ $avatarLetters }}
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <span class="font-body text-sm font-bold text-gray-800 dark:text-white dir-ltr text-right">
+                                            <span
+                                                class="font-body text-sm font-bold text-gray-800 dark:text-white dir-ltr text-right">
                                                 <x-phone-number :value="$passenger->passenger_number" class="text-primary font-bold" />
                                             </span>
-                                            @if($passenger->note)
-                                                <span class="font-body text-xs text-gray-500 dark:text-gray-400 line-clamp-1" title="{{ $passenger->note }}">
+                                            @if ($passenger->note)
+                                                <span
+                                                    class="font-body text-xs text-gray-500 dark:text-gray-400 line-clamp-1"
+                                                    title="{{ $passenger->note }}">
                                                     {{ $passenger->note }}
                                                 </span>
                                             @endif
@@ -215,21 +245,34 @@
 
                                 {{-- المكان --}}
                                 <td class="px-6 py-4 align-top text-center">
-                                    <span class="inline-block px-3 py-1.5 font-body text-xs font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
-                                        {{ $passenger->location ?: 'غير محدد' }}
+                                    <span
+                                        class="inline-block px-3 py-1.5 font-body text-xs font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
+                                        {{ $passenger->pickup_location ?: 'غير محدد' }}
                                     </span>
+                                    @if ($passenger->destination)
+                                        <div class="mt-1">
+                                            <span
+                                                class="inline-flex gap-1 items-center px-2 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 rounded-md dark:bg-emerald-500/10 dark:text-emerald-400">
+                                                <span class="material-symbols-outlined text-[12px]">flag</span>
+                                                {{ $passenger->destination }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- العدد والعمولة --}}
                                 <td class="px-6 py-4 align-top text-center">
                                     <div class="flex flex-col gap-2 items-center">
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary">
                                             <span class="material-symbols-outlined text-[16px]">group</span>
                                             العدد: {{ $passenger->count ?? 0 }}
                                         </span>
                                         <div class="flex flex-col gap-1 text-[11px] font-body text-center">
-                                            <span class="text-gray-600 dark:text-gray-300 font-bold">المكتب: <span class="text-emerald-600 dark:text-emerald-400">{{ number_format($passenger->office_commission ?? 0, 0) }}</span></span>
-                                            <span class="text-gray-600 dark:text-gray-300 font-bold">أخرى: <span class="text-amber-600 dark:text-amber-400">{{ number_format($passenger->other_office_commission ?? 0, 0) }}</span></span>
+                                            <span class="text-gray-600 dark:text-gray-300 font-bold">المكتب: <span
+                                                    class="text-emerald-600 dark:text-emerald-400">{{ number_format($passenger->office_commission ?? 0, 0) }}</span></span>
+                                            <span class="text-gray-600 dark:text-gray-300 font-bold">أخرى: <span
+                                                    class="text-amber-600 dark:text-amber-400">{{ number_format($passenger->other_office_commission ?? 0, 0) }}</span></span>
                                         </div>
                                     </div>
                                 </td>
@@ -238,89 +281,108 @@
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-3">
                                         <div class="flex items-center gap-2">
-                                            <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                            <span
+                                                class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
                                                 <span class="material-symbols-outlined text-[14px]">handshake</span>
                                             </span>
-                                            <span class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
+                                            <span
+                                                class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
                                         </div>
-                                        <div class="flex items-center gap-2">
+                                        {{-- <div class="flex items-center gap-2">
                                             <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
                                                 <span class="material-symbols-outlined text-[14px]">local_taxi</span>
                                             </span>
                                             <div class="flex flex-col">
                                                 <span class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
-                                                @if($passenger->driver)
+                                                @if ($passenger->driver)
                                                 <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
                                                     <x-phone-number :value="$passenger->driver->phone ?? ''" />
                                                 </span>
                                                 @endif
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </td>
 
                                 {{-- الإجراءات --}}
-                                <td class="px-6 py-4 align-middle text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <a href="{{ route('passengers.show', $passenger->id) }}" title="عرض التفاصيل"
-                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
-                                            <span class="material-symbols-outlined text-[20px]">visibility</span>
-                                        </a>
-
-                                        @if ($statusKey === 'pending')
-                                        <button type="button" title="تعديل البيانات"
-                                            @click="openEditModal({
-                                                id: {{ $passenger->id }},
-                                                date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
-                                                passenger_number: @js($passenger->passenger_number),
-                                                status: @js($statusKey),
-                                                location: @js($passenger->location),
-                                                count: @js($passenger->count),
-                                                office_commission: @js($passenger->office_commission),
-                                                other_office_commission: @js($passenger->other_office_commission),
-                                                broker_id: @js($passenger->broker_id),
-                                                broker_name: @js($passenger->broker->name ?? ''),
-                                                driver_id: @js($passenger->driver_id),
-                                                driver_name: @js($passenger->driver->name ?? ''),
-                                                driver_phone: @js($passenger->driver->phone ?? ''),
-                                                note: @js($passenger->note)
-                                            })"
-                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors">
-                                            <span class="material-symbols-outlined text-[20px]">edit</span>
+                                <td class="px-6 py-4 align-middle text-center" x-data="{ openOptions: false }">
+                                    <div class="relative flex justify-center items-center">
+                                        <button @click="openOptions = !openOptions" @click.away="openOptions = false"
+                                            class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-boxdark-2 dark:hover:text-gray-300">
+                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                         </button>
 
-                                        <button type="button" title="تعيين الحالة"
-                                            @click="openStatusModal({
-                                                id: {{ $passenger->id }},
-                                                date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
-                                                status: @js($statusKey),
-                                                passenger_number: @js($passenger->passenger_number),
-                                                location: @js($passenger->location),
-                                                count: @js($passenger->count),
-                                                office_commission: @js($passenger->office_commission),
-                                                other_office_commission: @js($passenger->other_office_commission),
-                                                broker_name: @js($passenger->broker->name ?? ''),
-                                                driver_phone: @js($passenger->driver->phone ?? ''),
-                                                driver_name: @js($passenger->driver->name ?? ''),
-                                                note: @js($passenger->note)
-                                            })"
-                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
-                                            <span class="material-symbols-outlined text-[20px]">fact_check</span>
-                                        </button>
-                                        @endif
+                                        <div x-show="openOptions" x-transition.opacity.duration.200ms x-cloak
+                                            class="absolute left-1/2 top-full z-[60] py-2 mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 transform -translate-x-1/2 dark:bg-boxdark dark:border-boxdark-2">
 
-                                        <a href="{{ $passenger->driver_whatsapp_link }}" target="_blank" title="إرسال للسائق (واتساب)" 
-                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
-                                            <svg class="w-[20px] h-[20px] fill-current" viewBox="0 0 24 24">
-                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                            </svg>
-                                        </a>
+                                            <a href="{{ route('passengers.show', $passenger->id) }}"
+                                                class="flex gap-3 items-center px-4 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-primary dark:text-gray-300 dark:hover:bg-boxdark-2">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                                عرض التفاصيل
+                                            </a>
 
-                                        <button type="button" title="حذف"
-                                            @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number))"
-                                            class="flex items-center justify-center w-9 h-9 rounded-xl text-gray-400 hover:text-error hover:bg-error/10 transition-colors">
-                                            <span class="material-symbols-outlined text-[20px]">delete</span>
-                                        </button>
+                                            @if ($statusKey === 'pending')
+                                                <button type="button"
+                                                    @click="openEditModal({
+                                                    id: {{ $passenger->id }},
+                                                    date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                    passenger_number: @js($passenger->passenger_number),
+                                                    status: @js($statusKey),
+                                                    pickup_location: @js($passenger->pickup_location),
+                                                    destination: @js($passenger->destination),
+                                                    count: @js($passenger->count),
+                                                    office_commission: @js($passenger->office_commission),
+                                                    other_office_commission: @js($passenger->other_office_commission),
+                                                    broker_id: @js($passenger->broker_id),
+                                                    broker_name: @js($passenger->broker->name ?? ''),
+                                                    driver_id: @js($passenger->driver_id),
+                                                    driver_name: @js($passenger->driver->name ?? ''),
+                                                    driver_phone: @js($passenger->driver->phone ?? ''),
+                                                    note: @js($passenger->note)
+                                                }); openOptions = false"
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:text-gray-300 dark:hover:bg-amber-500/10 text-right">
+                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                                    تعديل البيانات
+                                                </button>
+
+                                                <button type="button"
+                                                    @click="openStatusModal({
+                                                    id: {{ $passenger->id }},
+                                                    date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                    status: @js($statusKey),
+                                                    passenger_number: @js($passenger->passenger_number),
+                                                    pickup_location: @js($passenger->pickup_location),
+                                                    destination: @js($passenger->destination),
+                                                    count: @js($passenger->count),
+                                                    office_commission: @js($passenger->office_commission),
+                                                    other_office_commission: @js($passenger->other_office_commission),
+                                                    broker_name: @js($passenger->broker->name ?? ''),
+                                                    driver_phone: @js($passenger->driver->phone ?? ''),
+                                                    driver_name: @js($passenger->driver->name ?? ''),
+                                                    note: @js($passenger->note)
+                                                }); openOptions = false"
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10 text-right">
+                                                    <span class="material-symbols-outlined text-[18px]">fact_check</span>
+                                                    تعيين الحالة
+                                                </button>
+                                            @endif
+
+                                            <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}"
+                                                target="_blank"
+                                                class="flex gap-3 items-center px-4 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10">
+                                                <span class="material-symbols-outlined text-[18px]">print</span>
+                                                طباعة الكشف
+                                            </a>
+                                       
+                                            <div class="my-1 border-t border-gray-50 dark:border-boxdark-2"></div>
+
+                                            {{-- <button type="button"
+                                                @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number)); openOptions = false"
+                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-error/10 hover:text-error dark:text-gray-300 dark:hover:bg-error/20 text-right">
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                                حذف الراكب
+                                            </button> --}}
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -328,12 +390,17 @@
                             <tr>
                                 <td colspan="6" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
-                                        <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
-                                            <span class="material-symbols-outlined text-[28px] text-gray-400">group_off</span>
+                                        <div
+                                            class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                            <span
+                                                class="material-symbols-outlined text-[28px] text-gray-400">group_off</span>
                                         </div>
                                         <div>
-                                            <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا توجد بيانات للركاب</h3>
-                                            <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على أي ركاب مسجلين في النظام حالياً.</p>
+                                            <h3
+                                                class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">
+                                                لا توجد بيانات للركاب</h3>
+                                            <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم
+                                                نعثر على أي ركاب مسجلين في النظام حالياً.</p>
                                         </div>
                                     </div>
                                 </td>
@@ -343,12 +410,15 @@
                         <tr x-show="visibleCount === 0 && {{ $passengers->count() }} > 0" x-cloak>
                             <td colspan="6" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
-                                    <div class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
+                                    <div
+                                        class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                                     </div>
                                     <div>
-                                        <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا توجد نتائج مطابقة</h3>
-                                        <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر على ركاب يطابقون بحثك أو الحالة المحددة.</p>
+                                        <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا
+                                            توجد نتائج مطابقة</h3>
+                                        <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر
+                                            على ركاب يطابقون بحثك أو الحالة المحددة.</p>
                                     </div>
                                 </div>
                             </td>
@@ -358,7 +428,8 @@
             </div>
 
             @if ($passengers->hasPages())
-                <div class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-2xl">
+                <div
+                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-2xl">
                     {{ $passengers->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
@@ -388,7 +459,7 @@
                     <div class="grid grid-cols-1 gap-5">
 
                         <div
-                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
+                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
                                         class="text-error">*</span></label>
@@ -396,9 +467,15 @@
                                     class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
-                                        class="text-error">*</span></label>
-                                <input type="text" name="location" required placeholder="مثلاً: عدن - كريتر"
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">مكان الراكب
+                                    <span class="text-error">*</span></label>
+                                <input type="text" name="pickup_location" required placeholder="من أين سيركب؟ "
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">وجهة
+                                    الراكب</label>
+                                <input type="text" name="destination" placeholder="إلى أين يسافر؟ "
                                     class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                         </div>
@@ -516,7 +593,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        {{-- <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))">
                             <div class="relative">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم السائق
@@ -605,7 +682,7 @@
                                         :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
@@ -673,7 +750,7 @@
                     <div class="grid grid-cols-1 gap-5">
 
                         <div
-                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
+                            class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-4 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">التاريخ <span
                                         class="text-error">*</span></label>
@@ -681,9 +758,16 @@
                                     class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
-                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">المكان <span
-                                        class="text-error">*</span></label>
-                                <input type="text" name="location" x-model="editPassengerData.location" required
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">مكان الراكب
+                                    <span class="text-error">*</span></label>
+                                <input type="text" name="pickup_location" x-model="editPassengerData.pickup_location"
+                                    required
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">وجهة
+                                    الراكب</label>
+                                <input type="text" name="destination" x-model="editPassengerData.destination"
                                     class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
@@ -822,7 +906,7 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        {{-- <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-2 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="recordPhonePicker(@js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])->values()), @js(array_values(config('countries', []))))"
                             x-effect="loadInitial({ id: editPassengerData.driver_id, name: editPassengerData.driver_name, phone: editPassengerData.driver_phone })">
                             <div class="relative">
@@ -912,7 +996,7 @@
                                         :class="selectedRecordId ? 'text-emerald-500' : 'text-gray-400'">local_taxi</span>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div>
@@ -1047,7 +1131,8 @@
                     date: '',
                     passenger_number: '',
                     status: 'pending',
-                    location: '',
+                    pickup_location: '',
+                    destination: '',
                     count: 1,
                     office_commission: 0,
                     other_office_commission: 0,
@@ -1070,7 +1155,8 @@
                     url: '',
                     date: '',
                     passenger_number: '',
-                    location: '',
+                    pickup_location: '',
+                    destination: '',
                     count: 1,
                     office_commission: 0,
                     other_office_commission: 0,
