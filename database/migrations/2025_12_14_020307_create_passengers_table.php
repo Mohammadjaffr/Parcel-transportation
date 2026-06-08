@@ -16,11 +16,12 @@ return new class extends Migration
             $table->date('date');                         
             $table->string('passenger_number');  
             $table->enum('status', ['pending', 'completed', 'cancel'])->default('pending');          
-            $table->string('location');                    
+            $table->string('pickup_location');
+            $table->string('destination')->nullable();                  
             $table->integer('count')->default(1);         
             $table->decimal('office_commission', 10, 2)->default(0.00);
             $table->decimal('other_office_commission', 10, 2)->default(0.00);   
-            $table->foreignId('driver_id')->constrained('drivers')->onDelete('cascade');  
+            $table->foreignId('trip_id')->nullable()->constrained('passenger_trips')->onDelete('set null'); 
             $table->foreignId('broker_id')->nullable()->constrained('brokers')->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->cascadeOnDelete();
             $table->text('note')->nullable();             

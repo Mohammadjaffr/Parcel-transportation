@@ -49,7 +49,7 @@ class PassengersController extends Controller
         $brokers = Broker::select('id', 'name')->get();
 
         if ($request->isMobile) {
-            return view('mobile.pages.people.passengers.index', compact(
+            return view('mobile.pages.passenger.passengers.index', compact(
                 'passengers',
                 'drivers',
                 'brokers',
@@ -68,7 +68,7 @@ class PassengersController extends Controller
         $drivers = Driver::orderBy('name')->get();
         $brokers = Broker::select('id', 'name')->get();
         if ($request->isMobile) {
-            return view('mobile.pages.people.passengers.create', compact(
+            return view('mobile.pages.passenger.passengers.create', compact(
                 'drivers',
                 'brokers',
             ));
@@ -84,16 +84,14 @@ class PassengersController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
+            'pickup_location' => 'required|string|max:255', // مكان الصعود الجديد
+            'destination' => 'nullable|string|max:255',
             'passenger_number' => ['required', 'string', 'max:255'],
 
             // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع المودال
             'broker_id'   => ['nullable', 'exists:brokers,id'],
             'broker_name' => ['required', 'string', 'max:255'], // الحقل النصي دائماً مطلوب لأنه يحمل اسم الوسيط المكتوب
 
-            'driver_id'    => ['nullable', 'exists:drivers,id'],
-            'driver_phone' => ['required_without:driver_id', 'string', 'max:255'],
-            'driver_name'  => ['required_without:driver_id', 'string', 'max:255'],
-            'location' => ['required', 'string', 'max:255'],
             'count' => ['required', 'integer', 'min:1'],
             'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
@@ -114,7 +112,7 @@ class PassengersController extends Controller
             // 🌟 هندسة الوسطاء: إذا لم يتم اختيار وسيط مسبقاً (أي أن broker_id فارغ)
             if (empty($data['broker_id']) && !empty($data['broker_name'])) {
                 // سيبحث عن الاسم في الداتابيز، إن وجده يجلبه، وإن لم يجده ينشئ وسيطاً جديداً فوراً
-                $broker = \App\Models\Broker::firstOrCreate([
+                $broker = Broker::firstOrCreate([
                     'name' => $data['broker_name']
                 ]);
 
@@ -123,11 +121,11 @@ class PassengersController extends Controller
             }
 
             // معالجة السائق (تبقى كما هي تماماً في كودك الأصلي بدون تغيير)
-            $data['driver_id'] = ($data['driver_id'] ?? null)
-                ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
+            // $data['driver_id'] = ($data['driver_id'] ?? null)
+            //     ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
             // 🗑️ تنظيف البيانات من الحقول المؤقتة لكي لا يظهر خطأ "عمود غير موجود" عند الحفظ
-            unset($data['broker_name'], $data['driver_phone'], $data['driver_name']);
+            unset($data['broker_name']);
 
             // إنشاء وحفظ سجل الراكب الجديد مربوطاً بالوسيط والسائق
             $passenger = Passengers::create($data);
@@ -143,7 +141,7 @@ class PassengersController extends Controller
         $passenger = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->findOrFail($id);
 
         if ($request->isMobile) {
-            return view('mobile.pages.people.passengers.show', compact('passenger'));
+            return view('mobile.pages.passenger.passengers.show', compact('passenger'));
         }
 
         return view('pages.passengers.show', compact('passenger'));
@@ -161,7 +159,7 @@ class PassengersController extends Controller
             : null;
 
         if (request()->isMobile) {
-            return view('mobile.pages.people.passengers.edit', compact(
+            return view('mobile.pages.passenger.passengers.edit', compact(
                 'passenger',
                 'drivers',
                 'brokers',
@@ -191,17 +189,14 @@ class PassengersController extends Controller
 
         $validator = Validator::make($request->all(), [
             'date'             => ['required', 'date'],
-            'status'           => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'passenger_number' => ['required', 'string', 'max:255'],
+            'destination'             => ['required', 'string', 'max:255'],      // 🔥 الحقل الجديد للوجهة
+            'pickup_location'         => ['required', 'string', 'max:255'],
 
             // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع مودال التعديل
             'broker_id'        => ['nullable', 'exists:brokers,id'],
             'broker_name'      => ['required', 'string', 'max:255'], // حقل الاسم مطلوب دائماً لاستخدامه في البحث أو الإنشاء
 
-            'driver_id'        => ['nullable', 'exists:drivers,id'],
-            'driver_phone'     => ['required_without:driver_id', 'string', 'max:255'],
-            'driver_name'      => ['required_without:driver_id', 'string', 'max:255'],
-            'location'         => ['required', 'string', 'max:255'],
             'count'            => ['required', 'integer', 'min:1'],
             'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
@@ -217,7 +212,7 @@ class PassengersController extends Controller
             $data = $validator->validated();
 
             $data['passenger_number'] = $this->normalizePhone($data['passenger_number']);
-            $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
+            // $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
             // 🌟 هندسة الوسطاء في التعديل: إذا لم يتم اختيار وسيط من القائمة (أي تم كتابة اسم جديد يدوياً)
@@ -231,21 +226,21 @@ class PassengersController extends Controller
             }
 
             // معالجة السائق (تبقى كما هي في كودك الأصلي)
-            $data['driver_id'] = ($data['driver_id'] ?? null)
-                ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
+            // $data['driver_id'] = ($data['driver_id'] ?? null)
+            //     ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
             // 🗑️ تنظيف المصفوفة من الحقول النصية المؤقتة لكي لا يظهر خطأ أعمدة غير موجودة عند الحفظ
-            unset($data['broker_name'], $data['driver_phone'], $data['driver_name']);
+            unset($data['broker_name']);
 
             // تحديث سجل الراكب ببياناته الجديدة والوسيط الجديد
             $passenger->update($data);
 
             // 💰 إذا تحولت حالة الرحلة إلى "مكتمل" ولم تكن مكتملة من قبل، نقوم بتسجيل العمولة ماليًا
-            if ($passenger->status === 'completed' && $oldStatus !== 'completed') {
-                // 💡 تنبيه مالي: تأكد من مراجعة كود السيرفس بالأسفل ليتعامل مع الـ broker_id بدلاً من العميل
-                // $transactionService = new CustomerTransactionService(); 
-                // $transactionService->recordPassengerCommission($passenger);
-            }
+            // if ($passenger->status === 'completed' && $oldStatus !== 'completed') {
+            //     // 💡 تنبيه مالي: تأكد من مراجعة كود السيرفس بالأسفل ليتعامل مع الـ broker_id بدلاً من العميل
+            //     // $transactionService = new CustomerTransactionService(); 
+            //     // $transactionService->recordPassengerCommission($passenger);
+            // }
 
             DB::commit();
             return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة للوسيط.', 'حسناً', 'passengers.index');
@@ -362,47 +357,5 @@ class PassengersController extends Controller
         return $phone;
     }
 
-    private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int
-    {
-        $phone = $this->normalizePhone($phone);
-
-        if (!$phone) {
-            return null;
-        }
-
-        $driver = Driver::query()
-            ->where('phone', $phone)
-            ->first();
-
-        if ($driver) {
-            if ($name && $driver->name !== $name) {
-                $driver->name = $name;
-                $driver->save();
-            }
-
-            return $driver->id;
-        }
-
-        $user = auth()->user();
-
-        $driver = new Driver();
-        $driver->name = $name ?: 'سائق ' . $phone;
-        $driver->phone = $phone;
-
-        if (Schema::hasColumn('drivers', 'app_id')) {
-            $driver->app_id = $user->app_id ?? null;
-        }
-
-        if (Schema::hasColumn('drivers', 'branch_id')) {
-            $driver->branch_id = $user->branch_id ?? null;
-        }
-
-        if (Schema::hasColumn('drivers', 'created_by')) {
-            $driver->created_by = $user->id ?? null;
-        }
-
-        $driver->save();
-
-        return $driver->id;
-    }
+    
 }

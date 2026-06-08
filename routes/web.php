@@ -18,6 +18,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\OfficeController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PassengersController;
+use App\Http\Controllers\PassengerTripController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\ReceiptHeaderController;
@@ -25,15 +26,14 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackagesController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\PackageController as SuperAdminPackageController;
+use App\Http\Controllers\SuperAdmin\SubscriptionController as SuperAdminSubscriptionController;
+use App\Http\Controllers\SuperAdmin\TenantController as SuperAdminTenantController;
 use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
-use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
-use App\Http\Controllers\SuperAdmin\TenantController as SuperAdminTenantController;
-use App\Http\Controllers\SuperAdmin\PackageController as SuperAdminPackageController;
-use App\Http\Controllers\SuperAdmin\SubscriptionController as SuperAdminSubscriptionController;
-
 use Illuminate\Support\Facades\Route;
 
 
@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
         // لازم يكون قبل resource offices
         Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
         Route::resource('offices', OfficeController::class);
+        Route::resource('trips', PassengerTripController::class)->names('trips');
 
         Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])->name('customers.addPayment');
@@ -142,6 +143,7 @@ Route::middleware('auth')->group(function () {
         Route::view('/mobile/shipmentpackage', 'mobile.pages.shipmentpackage.index')->name('mobile.shipmentpackage.index');
         Route::view('/mobile/office', 'mobile.pages.office.index')->name('mobile.office');
         Route::view('/mobile/shipment', 'mobile.pages.shipment.index')->name('mobile.shipment');
+        Route::view('/mobile/passenger', 'mobile.pages.passenger.index')->name('mobile.passenger');
 
         //=============================================================================   معتمد   ======================================
 

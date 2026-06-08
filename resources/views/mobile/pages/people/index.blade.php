@@ -54,20 +54,7 @@
                 <span class="mr-auto material-symbols-outlined text-slate-300">chevron_left</span>
             </a>
             @endhasservice
-            @hasservice('Passengers')
-            <a href="{{ route('passengers.index') }}"
-                class="flex gap-5 items-center p-6 rounded-3xl border shadow-sm transition-all bg-surface-container-lowest border-slate-100 active:scale-95 group">
-                <div
-                    class="flex justify-center items-center w-14 h-14 bg-indigo-500 rounded-2xl">
-                    <span class="text-3xl text-white material-symbols-outlined">hail</span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-lg font-bold font-headline text-on-surface">الركاب</span>
-                    <span class="text-xs text-on-surface-variant">إدارة بيانات الركاب، تفاصيل الرحلات، والعمولات</span>
-                </div>
-                <span class="mr-auto material-symbols-outlined text-slate-300">chevron_left</span>
-            </a>
-            @endhasservice
+           
         </div>
     </div>
 @endsection
