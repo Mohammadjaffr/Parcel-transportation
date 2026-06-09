@@ -76,7 +76,8 @@
         <div class="grid grid-cols-1 gap-4 mx-auto w-full max-w-7xl md:grid-cols-4">
 
             {{-- Date --}}
-            {{-- <div class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+            {{-- <div
+                class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
                 <div class="flex gap-4 items-center">
                     <div
                         class="flex justify-center items-center w-12 h-12 text-blue-500 bg-blue-50 rounded-xl dark:bg-blue-500/10 shrink-0">
@@ -96,7 +97,8 @@
             </div> --}}
 
             {{-- Location --}}
-            {{-- <div class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+            {{-- <div
+                class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
                 <div class="flex gap-4 items-center">
                     <div
                         class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10 shrink-0">
@@ -116,7 +118,8 @@
             </div> --}}
 
             {{-- Count --}}
-            {{-- <div class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+            {{-- <div
+                class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
                 <div class="flex gap-4 items-center">
                     <div
                         class="flex justify-center items-center w-12 h-12 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10 shrink-0">
@@ -183,7 +186,7 @@
                                     تفاصيل الرحلة
                                 </h2>
                                 <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                    بيانات الرحلة الأساسية بدون تكرار بيانات العميل أو السائق
+                                    بيانات الرحلة الأساسية
                                 </p>
                             </div>
                         </div>
@@ -225,7 +228,7 @@
                                     </span>
 
                                     <span class="block text-sm font-black truncate text-on-surface dark:text-white">
-                                        {{ $passenger->location ?? 'غير محدد' }}
+                                        {{ $passenger->pickup_location ?? 'غير محدد' }}
                                     </span>
                                 </div>
                             </div>
@@ -392,103 +395,134 @@
                             </div>
                         </div>
 
-                        {{-- Driver --}}
+                        {{-- 1. تجهيز بيانات السائق النشط ذكياً قبل الكرت --}}
+                        @php
+                            // التحقق أولاً من وجود سائق للرحلة، وإلا نعتمد سائق السند المباشر
+                            $activeDriver = $passenger->trip->driver ?? $passenger->driver;
+
+                            $driverName = $activeDriver->name ?? 'غير محدد';
+                            $driverPhone = $activeDriver->phone ?? null;
+                            $driverInitial = $activeDriver ? mb_substr($driverName, 0, 1, 'UTF-8') : 'س';
+                            $isTripDriver = isset($passenger->trip->driver); // للتحقق إن كان سائق رحلة
+                        @endphp
+
+                        {{-- ================= كرت السائق المسؤول ================= --}}
                         <div
                             class="flex gap-4 items-center p-4 rounded-2xl border border-primary/15 bg-primary-container/40 dark:bg-primary/10 dark:border-primary/20">
+
+                            {{-- الحرف الأول من الاسم --}}
                             <div
                                 class="flex justify-center items-center w-14 h-14 text-xl font-black text-white rounded-2xl shadow-inner bg-primary shrink-0">
-                                {{ $driverInitial ?: 'س' }}
+                                {{ $driverInitial }}
                             </div>
 
-                            <div class="min-w-0">
-                                <span class="block mb-1 text-[10px] font-black text-primary">
-                                    السائق
-                                </span>
+                            {{-- تفاصيل السائق --}}
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="block text-[10px] font-black text-primary">
+                                        السائق
+                                    </span>
+                                    {{-- شارة تميز سائق الرحلة متناسقة مع ألوان الكرت الرئيسي --}}
+                                    @if($isTripDriver)
+                                        <span class="text-[8px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-md font-black">
+                                            سائق الرحلة
+                                        </span>
+                                    @endif
+                                </div>
 
-                                <h3 class="text-base font-black truncate text-on-surface dark:text-white">
+                                <h3 class="text-base font-black truncate text-on-surface dark:text-white"
+                                    title="{{ $driverName }}">
                                     {{ $driverName }}
                                 </h3>
 
-                                @if ($passenger->driver?->phone)
-                                    <x-phone-number :value="$passenger->driver->phone"
+                                {{-- رقم الهاتف المحدث --}}
+                                @if ($driverPhone)
+                                    <x-phone-number :value="$driverPhone"
                                         class="mt-1 text-[11px] font-bold text-gray-500 dark:text-bodydark" />
                                 @else
-                                    <span class="text-[11px] font-bold text-gray-400">لا يوجد رقم</span>
+                                    <span class="mt-1 text-[11px] font-bold text-gray-400 block">لا يوجد رقم</span>
                                 @endif
                             </div>
+
                         </div>
                     </div>
                 </div>
 
                 {{-- Record Info --}}
-                {{-- <div class="overflow-hidden bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+                {{-- <div
+                    class="overflow-hidden bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
 
-                <div class="flex items-center px-6 py-5 border-b border-gray-100 dark:border-boxdark-2 bg-gray-50/60 dark:bg-boxdark-2/50">
-                    <div class="flex justify-center items-center ml-3 w-10 h-10 text-gray-500 bg-white rounded-xl shadow-sm dark:bg-boxdark dark:text-gray-400 shrink-0">
-                        <span class="material-symbols-outlined text-[20px]">schedule</span>
+                    <div
+                        class="flex items-center px-6 py-5 border-b border-gray-100 dark:border-boxdark-2 bg-gray-50/60 dark:bg-boxdark-2/50">
+                        <div
+                            class="flex justify-center items-center ml-3 w-10 h-10 text-gray-500 bg-white rounded-xl shadow-sm dark:bg-boxdark dark:text-gray-400 shrink-0">
+                            <span class="material-symbols-outlined text-[20px]">schedule</span>
+                        </div>
+
+                        <h2 class="text-lg font-black text-on-surface dark:text-white">
+                            معلومات السجل
+                        </h2>
                     </div>
 
-                    <h2 class="text-lg font-black text-on-surface dark:text-white">
-                        معلومات السجل
-                    </h2>
-                </div>
+                    <div class="p-6 space-y-4">
 
-                <div class="p-6 space-y-4">
+                        <div class="flex gap-4 justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                                رقم السجل
+                            </span>
 
-                    <div class="flex gap-4 justify-between items-center">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                            رقم السجل
-                        </span>
+                            <span
+                                class="inline-flex px-3 py-1 text-xs font-black rounded-xl text-primary bg-primary-container dark:bg-primary/10">
+                                #{{ $passenger->id }}
+                            </span>
+                        </div>
 
-                        <span class="inline-flex px-3 py-1 text-xs font-black rounded-xl text-primary bg-primary-container dark:bg-primary/10">
-                            #{{ $passenger->id }}
-                        </span>
+                        <div class="w-full h-px bg-gray-100 dark:bg-boxdark-2"></div>
+
+                        <div class="flex gap-4 justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                                تاريخ الإضافة
+                            </span>
+
+                            <span class="text-xs font-black text-on-surface dark:text-white">
+                                {{ $passenger->created_at ? $passenger->created_at->format('Y-m-d h:i A') : 'غير متوفر' }}
+                            </span>
+                        </div>
+
+                        <div class="w-full h-px bg-gray-100 dark:bg-boxdark-2"></div>
+
+                        <div class="flex gap-4 justify-between items-center">
+                            <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
+                                آخر تحديث
+                            </span>
+
+                            <span class="text-xs font-black text-on-surface dark:text-white">
+                                {{ $passenger->updated_at ? $passenger->updated_at->format('Y-m-d h:i A') : 'غير متوفر' }}
+                            </span>
+                        </div>
                     </div>
-
-                    <div class="w-full h-px bg-gray-100 dark:bg-boxdark-2"></div>
-
-                    <div class="flex gap-4 justify-between items-center">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                            تاريخ الإضافة
-                        </span>
-
-                        <span class="text-xs font-black text-on-surface dark:text-white">
-                            {{ $passenger->created_at ? $passenger->created_at->format('Y-m-d h:i A') : 'غير متوفر' }}
-                        </span>
-                    </div>
-
-                    <div class="w-full h-px bg-gray-100 dark:bg-boxdark-2"></div>
-
-                    <div class="flex gap-4 justify-between items-center">
-                        <span class="text-xs font-bold text-gray-500 dark:text-gray-400">
-                            آخر تحديث
-                        </span>
-
-                        <span class="text-xs font-black text-on-surface dark:text-white">
-                            {{ $passenger->updated_at ? $passenger->updated_at->format('Y-m-d h:i A') : 'غير متوفر' }}
-                        </span>
-                    </div>
-                </div>
-            </div> --}}
+                </div> --}}
 
                 {{-- Status --}}
-                {{-- <div class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
-                <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-11 h-11 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10 shrink-0">
-                        <span class="material-symbols-outlined text-[22px]">verified</span>
-                    </div>
+                {{-- <div
+                    class="p-5 bg-white rounded-[2rem] border border-gray-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2">
+                    <div class="flex gap-3 items-center">
+                        <div
+                            class="flex justify-center items-center w-11 h-11 text-emerald-500 bg-emerald-50 rounded-xl dark:bg-emerald-500/10 shrink-0">
+                            <span class="material-symbols-outlined text-[22px]">verified</span>
+                        </div>
 
-                    <div>
-                        <h3 class="text-sm font-black text-on-surface dark:text-white">
-                            السجل منظم
-                        </h3>
+                        <div>
+                            <h3 class="text-sm font-black text-on-surface dark:text-white">
+                                السجل منظم
+                            </h3>
 
-                        <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
-                            تم عرض كل معلومة مرة واحدة بدون تكرار.
-                        </p>
+                            <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
+                                تم عرض كل معلومة مرة واحدة بدون تكرار.
+                            </p>
+                        </div>
                     </div>
-                </div>
-            </div> --}}
+                </div> --}}
             </div>
         </div>
     </div>

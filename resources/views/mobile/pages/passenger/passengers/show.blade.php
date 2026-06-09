@@ -94,8 +94,7 @@
                         <span class="material-symbols-outlined text-[18px]">alt_route</span> خط سير الرحلة
                     </h3>
 
-                    <div
-                        class="relative pr-6 border-r-2 border-dashed border-slate-200 dark:border-slate-800 space-y-4 my-2">
+                    <div class="relative pr-6 border-r-2 border-dashed border-slate-200 dark:border-slate-800 space-y-4 my-2">
                         <div class="relative">
                             <span
                                 class="absolute right-[-29px] top-1 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-white ring-4 ring-slate-100 dark:border-boxdark dark:ring-slate-900"></span>
@@ -179,21 +178,49 @@
                 </div>
             </div>
 
+            {{-- 1. تجهيز بيانات السائق والوسيط ذكياً بناءً على وجود رحلة أم لا --}}
+            @php
+                // التحقق أولاً من وجود سائق للرحلة، وإلا نعتمد سائق السند المباشر
+                $activeDriver = $passenger->trip->driver ?? $passenger->driver;
+
+                $driverName = $activeDriver->name ?? 'غير محدد';
+                $driverPhone = $activeDriver->phone ?? null;
+                $driverInitial = $activeDriver ? mb_substr($driverName, 0, 1, 'UTF-8') : '-';
+                $isTripDriver = isset($passenger->trip->driver); // متغير لمعرفة هل هو سائق رحلة أم لا
+
+                $brokerName = $passenger->broker->name ?? 'غير محدد';
+                $brokerInitial = $passenger->broker ? mb_substr($brokerName, 0, 1, 'UTF-8') : '-';
+            @endphp
+
             {{-- ================= 5️⃣ جهات التوصيل (السائق والوسيط بالتوازي في صف واحد) ================= --}}
             <div class="grid grid-cols-2 gap-3">
+
+                {{-- ----------- كرت السائق (الكابتن) ----------- --}}
                 <div
                     class="p-4 bg-white rounded-[1.75rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 flex flex-col justify-between">
                     <div>
-                        <span
-                            class="block text-[9px] font-bold text-slate-400 dark:text-gray-500 mb-2.5 uppercase tracking-wider">الكابتن
-                            المسؤول</span>
+                        <div class="flex justify-between items-center mb-2.5">
+                            <span
+                                class="block text-[9px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">
+                                الكابتن المسؤول
+                            </span>
+                            {{-- شارة ذكية تظهر فقط إذا كان السائق مأخوذاً من الرحلة المربوطة --}}
+                            @if($isTripDriver)
+                                <span
+                                    class="text-[8px] bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-1.5 py-0.5 rounded-md font-bold">
+                                    سائق الرحلة
+                                </span>
+                            @endif
+                        </div>
+
                         <div class="flex gap-2 items-center min-w-0">
                             <div
                                 class="flex justify-center items-center w-8 h-8 text-[11px] font-black text-white rounded-xl shadow-sm bg-primary shrink-0">
                                 {{ $driverInitial }}
                             </div>
                             <div class="min-w-0 flex-1">
-                                <h4 class="text-xs font-black truncate text-slate-800 dark:text-white">
+                                <h4 class="text-xs font-black truncate text-slate-800 dark:text-white"
+                                    title="{{ $driverName }}">
                                     {{ $driverName }}
                                 </h4>
                             </div>
@@ -203,28 +230,31 @@
                     <div
                         class="mt-3 pt-2 border-t border-slate-50 dark:border-boxdark-2 flex items-center justify-between gap-1 min-w-0">
                         <div class="min-w-0 flex-1">
-                            @if ($passenger->driver?->phone)
-                                <x-phone-number :value="$passenger->driver->phone"
+                            @if ($driverPhone)
+                                <x-phone-number :value="$driverPhone"
                                     class="text-[10px] font-bold text-slate-400 font-mono dir-ltr inline-block truncate w-full dark:text-bodydark" />
                             @else
                                 <span class="text-[9px] font-bold text-slate-300 dark:text-gray-600 truncate block">لا يوجد
                                     رقم</span>
                             @endif
                         </div>
-                        @if ($passenger->driver?->phone)
-                            <a href="https://wa.me/{{ $passenger->driver->phone }}" target="_blank"
+                        @if ($driverPhone)
+                            <a href="https://wa.me/{{ $driverPhone }}" target="_blank"
                                 class="flex justify-center items-center w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 shrink-0">
                                 <span class="material-symbols-outlined text-[13px]">chat</span>
                             </a>
                         @endif
-                        </span>
                     </div>
+                </div>
 
-                    <div
-                        class="p-4 bg-white rounded-[1.75rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 flex flex-col justify-start">
+                {{-- ----------- كرت الوسيط المعتمد (منفصل تماماً وفي نفس الصف) ----------- --}}
+                <div
+                    class="p-4 bg-white rounded-[1.75rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 flex flex-col justify-between">
+                    <div>
                         <span
-                            class="block text-[9px] font-bold text-slate-400 dark:text-gray-500 mb-2.5 uppercase tracking-wider">الوسيط
-                            المعتمد</span>
+                            class="block text-[9px] font-bold text-slate-400 dark:text-gray-500 mb-2.5 uppercase tracking-wider">
+                            الوسيط المعتمد
+                        </span>
                         <div class="flex gap-2 items-center min-w-0">
                             <div
                                 class="flex justify-center items-center w-8 h-8 text-[11px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-xl shrink-0">
@@ -240,12 +270,14 @@
                             </div>
                         </div>
                     </div>
+                    {{-- يمكنك إضافة جزء سفلي للوسيط هنا إذا كان لديه هاتف مستقبلاً ليشابه كرت السائق --}}
                 </div>
 
-                {{-- ================= 6️⃣ الملاحظات السند المكتوبة ================= --}}
+                {{-- ================= 6️⃣ الملاحظات السند المكتوبة (تأخذ العرض كاملاً col-span-2 تحت الكرتين)
+                ================= --}}
                 @if ($passenger->note)
                     <div
-                        class="p-5 bg-amber-50/40 rounded-[2rem] border border-amber-100/60 shadow-sm dark:bg-amber-500/5 dark:border-amber-500/10">
+                        class="col-span-2 p-5 bg-amber-50/40 rounded-[2rem] border border-amber-100/60 shadow-sm dark:bg-amber-500/5 dark:border-amber-500/10">
                         <h3 class="flex items-center gap-1.5 text-xs font-black text-amber-600 mb-2.5">
                             <span class="material-symbols-outlined text-[18px]">description</span>
                             ملاحظات السند الحالية
@@ -291,4 +323,4 @@
             }
         </style>
 
-    @endsection
+@endsection
