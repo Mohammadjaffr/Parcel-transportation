@@ -6,7 +6,7 @@ use App\Models\Passengers;
 use App\Interfaces\ReceiptStrategyInterface;
 use Carbon\Carbon;
 
-class ReportPassanger implements ReceiptStrategyInterface
+class PassangerDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
@@ -119,7 +119,7 @@ class ReportPassanger implements ReceiptStrategyInterface
     public function getTemplatePath(): string
     {
         // 🌟 توجيه التقرير لملف Blade خاص بالسائق فقط 🌟
-        return 'receipts.templates.ReportPassanger';
+        return 'receipts.templates.PassangerDetection';
     }
 
     public function getFileName(array $data): string

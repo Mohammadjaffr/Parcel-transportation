@@ -243,7 +243,7 @@
                             @if($package->driver && $package->driver->phone)
                                 <div class="flex gap-1.5 items-center">
                                     {{-- زر الواتساب للسائق --}}
-                                    <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}?text={{ urlencode($driverMsg) }}"
+                                    <a href="{{ $package->DriverDetection }}"
                                         target="_blank"
                                         class="w-10 h-10 bg-white rounded-xl shadow-sm border border-primary/10 flex items-center justify-center hover:bg-[#25D366]/10 hover:border-[#25D366]/30 active:scale-95 transition-all">
                                         <svg class="w-5 h-5 fill-[#25D366]" viewBox="0 0 24 24"

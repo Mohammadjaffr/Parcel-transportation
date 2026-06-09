@@ -4,7 +4,6 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class ShipmentDetection implements ReceiptStrategyInterface
@@ -16,7 +15,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
     public function fetchData(string $referenceId): array
     {
-        // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها
+        // 1. جلب الإرسالية المجمعة مع طرودها وعلاقة الشركة
         $package = ShipmentPackage::with([
             'senderBranch.app',
             'driver',
@@ -41,10 +40,9 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
         }
 
-        // 2. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
-
         $mainBranchData = null;
+        
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
@@ -68,16 +66,14 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
             $allBranches = $app->branches()->get();
             foreach ($allBranches as $b) {
-                if ($senderBranch && $b->id === $senderBranch->id) {
-                    continue;
-                }
+                if ($senderBranch && $b->id === $senderBranch->id) continue;
                 $phonesArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $b->phone ?? '')));
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
+        
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
-        // 3. القواميس
         $paymentMethods = [
             'prepaid'         => 'مدفوع مقدماً',
             'cod'             => 'الدفع عند الاستلام',
@@ -85,11 +81,13 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'customer_credit' => 'آجل (ذمة)'
         ];
 
-        // 4. تجهيز الطرود
         $shipmentsData = [];
         $totalShipmentsCount = 0;
+        
+        // المتغيرات الحسابية للكشف
         $totalPackageComm = 0;
         $totalHoneyComm = 0;
+        $totalExpectedCash = 0; // إجمالي النقد المتوقع تحصيله من السائق
 
         foreach ($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
@@ -97,29 +95,19 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 ?? 'الوجهة غير محددة';
 
             $honeyDetails = ($shipment->no_gallons_honey || $shipment->no_honey_jars)
-                ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
+                ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
-            // 💡 الحسبة المالية الصحيحة بناءً على نوع الدفع
             $totalAmount = (float) ($shipment->total_amount ?? 0);
-            $paymentKey = $shipment->payment_method ?? 'prepaid';
+            $paidAmount = (float) ($shipment->partial_amount ?? 0);
+            $remainingAmount = max(0, $totalAmount - $paidAmount);
 
-            if ($paymentKey === 'prepaid' || $paymentKey === 'customer_credit') {
-                $paidAmount = $totalAmount;
-                $remainingAmount = 0;
-            } elseif ($paymentKey === 'partial_payment') {
-                $paidAmount = (float) ($shipment->partial_amount ?? 0);
-                $remainingAmount = max(0, $totalAmount - $paidAmount);
-            } else {
-                // cod أو 
-                $paidAmount = 0;
-                $remainingAmount = $totalAmount;
-            }
             $totalPackageComm += (float) ($shipment->package_commission_amount ?? 0);
             $totalHoneyComm   += (float) ($shipment->honey_commission_amount ?? 0);
+            $totalExpectedCash += $remainingAmount;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->id ?? '---',
+                'bond_number'       => $shipment->bond_number ?? $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -129,65 +117,53 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'receiver_branch'   => $receiverDestination,
                 'package_type'      => $shipment->package_type ?? 'طرد',
                 'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
-                'payment_key'       => $paymentKey,
-                'payment_method'    => $paymentMethods[$paymentKey] ?? 'غير محدد',
-
-                // 💡 المتغيرات بعد الحسبة الدقيقة
+                'payment_key'       => $shipment->payment_method ?? 'prepaid',
+                'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
                 'total_amount'      => number_format($totalAmount, 0),
                 'partial_amount'    => number_format($paidAmount, 0),
                 'remaining_amount'  => number_format($remainingAmount, 0),
-
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
             ];
             $totalShipmentsCount++;
         }
 
-        // 5. الثيم والألوان
-        $theme = $app ? $app->theme : [
-            'primary'   => '#fb6514',
-            'secondary' => '#333333',
-            'bg_light'  => '#fff4ee',
+        $theme = $app?->theme ?? [
+            'primary'   => '#1e3a8a', // Deep Blue
+            'secondary' => '#fb6514', // Vibrant Orange
+            'bg_light'  => '#fcfcfc',
         ];
 
-        // 6. إرجاع البيانات المنظمة
         return [
             'company' => [
-                'name'        => $app?->name ?? 'اسم الشركة غير محدد',
-                'logo'        => $logoBase64,
-                'main_branch' => $mainBranchData,
+                'name'         => $app?->name ?? 'اسم الشركة غير محدد',
+                'logo'         => $logoBase64,
+                'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
             ],
 
-            'title'             => 'كشف حمولة الرسائل',
+            'title'             => 'كشف تسليم سائق',
             'package_number'    => $package->tracking_number ?? 'غير متوفر',
-
-            // إصلاح التوقيت للـ AM/PM والمنطقة الزمنية
-            'date'              => str_replace(
-                ['AM', 'PM'],
-                ['صباحاً', 'مساءً'],
-                ($package->created_at
-                    ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A')
-                    : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'))
-            ),
+            'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
             'total_shipments'   => $totalShipmentsCount,
-
+            
             'shipments'         => $shipmentsData,
 
-            'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-
-            // إصلاح توقيت الطباعة
-            'print_date'        => str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')),
             'totals' => [
                 'package_commission' => $totalPackageComm,
                 'honey_commission'   => $totalHoneyComm,
                 'grand_commission'   => $totalPackageComm + $totalHoneyComm,
+                'expected_cash'      => $totalExpectedCash, // النقد المتوقع تحصيله
             ],
+
+            'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
+            'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),
+
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],
@@ -205,6 +181,6 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
     public function getFileName(array $data): string
     {
-        return 'Manifest_' . $data['package_number'] . '.pdf';
+        return 'Driver_Manifest_' . $data['package_number'] . '.pdf';
     }
 }

@@ -42,6 +42,7 @@ class ShipmentPackagesController extends Controller
         $packages->appends($request->all());
         $packages->getCollection()->transform(function ($package) {
             $package->DriverDetection = WhatsAppLinkService::generate($package, 'DriverDetection');
+             $package->ShipmentDetection = WhatsAppLinkService::generate($package, 'ShipmentDetection');
 
             return $package;
         });

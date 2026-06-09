@@ -2,12 +2,12 @@
 
 namespace App\Services\Receipts\Types;
 
-use App\Models\Passengers;
+use App\Models\PassengerTrip;
 use App\Interfaces\ReceiptStrategyInterface;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class ReportAllPassanger implements ReceiptStrategyInterface
+class TripDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
@@ -21,29 +21,35 @@ class ReportAllPassanger implements ReceiptStrategyInterface
         if (!$user) {
             abort(403, 'غير مصرح لك بالوصول إلى هذه البيانات، يرجى تسجيل الدخول أولاً.');
         }
-        // referenceId يمكن أن يكون 'all' أو يحتوي فلاتر أو رقم معرف راكب مفرد
+
         $filters = [];
-        if (is_numeric($referenceId)) {
-            $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->where('id', $referenceId);
+        $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
+        
+        if ($isSingleTrip) {
+            $trips = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
+                ->where('branch_id', $user->branch_id)
+                ->where(function($q) use ($referenceId) {
+                    $q->where('uuid', $referenceId)->orWhere('id', $referenceId);
+                })
+                ->get();
         } else {
             $filters = $this->parseFilters($referenceId);
-            $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->latest('date');
+            $query = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
+                ->where('branch_id', $user->branch_id)
+                ->latest();
 
             if (!empty($filters['from'])) {
-                $query->whereDate('date', '>=', $filters['from']);
+                $query->whereDate('created_at', '>=', $filters['from']);
             }
             if (!empty($filters['to'])) {
-                $query->whereDate('date', '<=', $filters['to']);
-            }
-            if (!empty($filters['status']) && $filters['status'] !== 'all') {
-                $query->where('status', $filters['status']);
+                $query->whereDate('created_at', '<=', $filters['to']);
             }
             if (!empty($filters['driver_id']) && $filters['driver_id'] !== 'all') {
                 $query->where('driver_id', $filters['driver_id']);
             }
+            
+            $trips = $query->get();
         }
-
-        $passengers = $query->get();
 
         $app = $user->app ?? null;
 
@@ -67,37 +73,48 @@ class ReportAllPassanger implements ReceiptStrategyInterface
             'cancel'    => 'ملغي',
         ];
 
-        // تجميع الركاب حسب السائق
-        $grouped = $passengers->groupBy(function ($passenger) {
-            return $passenger->driver_id ?: 'unassigned';
-        });
-
         $driversData = [];
-        foreach ($grouped as $driverId => $groupPassengers) {
-            $firstP = $groupPassengers->first();
-            $driverName = $firstP->driver->name ?? 'سائق غير محدد';
-            $driverPhone = $firstP->driver->phone ?? '';
+        $totalPassengers = 0;
+        $totalCount = 0;
+        $totalOfficeCommission = 0;
+        $totalOtherOfficeCommission = 0;
+
+        foreach ($trips as $trip) {
+            $driverName = $trip->driver->name ?? 'سائق غير محدد';
+            $driverPhone = $trip->driver->phone ?? '';
 
             // بناء نص رسالة الواتساب للسائق
             $msg = "السلام عليكم ورحمة الله وبركاته\n";
             $msg .= "الأخ الكابتن / *{$driverName}* المحترم،\n\n";
-            $msg .= "إليك كشف الركاب المكلف بنقلهم اليوم:\n\n";
+            $msg .= "إليك كشف الركاب لرحلتك رقم #{$trip->id}:\n\n";
             $msg .= "*تفاصيل الركاب:*\n";
             $msg .= "------------------------------------------\n";
 
             $passengersData = [];
             $i = 1;
-            foreach ($groupPassengers as $p) {
+            
+            $tripTotalCount = 0;
+            $tripTotalOffice = 0;
+            $tripTotalOther = 0;
+
+            foreach ($trip->passengers as $p) {
                 $pNum = $p->passenger_number ?? '---';
-                $pLoc = $p->location ?? '---';
+                $pPickup = $p->pickup_location ?? '---';
+                $pDest = $p->destination ?? '---';
                 $pCnt = $p->count ?? 0;
                 $pNote = $p->note ? $p->note : '---';
+
+                $tripTotalCount += $pCnt;
+                $tripTotalOffice += $p->office_commission ?? 0;
+                $tripTotalOther += $p->other_office_commission ?? 0;
+                $totalPassengers++;
 
                 $passengersData[] = [
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
                     'passenger_number'        => $pNum,
                     'broker_name'             => $p->broker?->name ?? 'بدون وسيط',
-                    'location'                => $pLoc,
+                    'pickup_location'         => $pPickup,
+                    'destination'             => $pDest,
                     'count'                   => $pCnt,
                     'office_commission'       => number_format($p->office_commission ?? 0, 0),
                     'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
@@ -107,7 +124,8 @@ class ReportAllPassanger implements ReceiptStrategyInterface
                 ];
 
                 $msg .= "{$i}. الراكب: {$pNum}\n";
-                $msg .= "📍 المكان: {$pLoc}\n";
+                $msg .= "📍 مكان الركوب: {$pPickup}\n";
+                $msg .= "🏁 الوجهة: {$pDest}\n";
                 $msg .= "👥 العدد: {$pCnt}\n";
                 if ($p->note) {
                     $msg .= "📝 ملاحظات: {$pNote}\n";
@@ -116,31 +134,14 @@ class ReportAllPassanger implements ReceiptStrategyInterface
                 $i++;
             }
 
-            // بناء رابط الـ PDF الخاص بالسائق مع الحفاظ على الفلاتر النشطة (التاريخ، الحالة)
-            $filterParts = [];
-            if (!empty($filters['from'])) {
-                $filterParts[] = 'from:' . $filters['from'];
-            }
-            if (!empty($filters['to'])) {
-                $filterParts[] = 'to:' . $filters['to'];
-            }
-            if (!empty($filters['status']) && $filters['status'] !== 'all') {
-                $filterParts[] = 'status:' . $filters['status'];
-            }
-            if ($driverId !== 'unassigned') {
-                $filterParts[] = 'driver_id:' . $driverId;
-            }
-
-            $referenceIdForDriver = count($filterParts) > 0 ? implode('|', $filterParts) : 'all';
-
+            // بناء رابط الـ PDF للرحلة
             $pdfLink = route('receipt.generate', [
-                'type' => 'passenger',
-                'id'   => $referenceIdForDriver
+                'type' => 'trip',
+                'id'   => $trip->id
             ]);
 
-            $totalCount = $groupPassengers->sum('count');
-            $msg .= "📊 إجمالي عدد الركاب: *{$totalCount}* راكب\n";
-            $msg .= "📄 رابط كشف الـ PDF للركاب:\n{$pdfLink}\n\n";
+            $msg .= "📊 إجمالي عدد الركاب: *{$tripTotalCount}* راكب\n";
+            $msg .= "📄 رابط كشف الـ PDF للرحلة:\n{$pdfLink}\n\n";
             $msg .= "رافقتكم السلامة. 🚚";
 
             $whatsappLink = '';
@@ -149,33 +150,41 @@ class ReportAllPassanger implements ReceiptStrategyInterface
             }
 
             $driversData[] = [
-                'driver_id'               => $driverId,
-                'driver_name'             => $driverName,
+                'driver_id'               => $trip->driver_id ?: 'unassigned',
+                'driver_name'             => $driverName . " (رحلة #{$trip->id})",
                 'driver_phone'            => $driverPhone ?: '---',
                 'passengers'              => $passengersData,
-                'total_passengers_count'  => $groupPassengers->count(),
-                'total_count'             => $totalCount,
-                'total_office_commission' => $groupPassengers->sum('office_commission'),
-                'total_other_office_commission' => $groupPassengers->sum('other_office_commission'),
+                'total_passengers_count'  => count($passengersData),
+                'total_count'             => $tripTotalCount,
+                'total_office_commission' => $tripTotalOffice,
+                'total_other_office_commission' => $tripTotalOther,
                 'whatsapp_link'           => $whatsappLink,
                 'pdf_link'                => $pdfLink,
             ];
+
+            $totalCount += $tripTotalCount;
+            $totalOfficeCommission += $tripTotalOffice;
+            $totalOtherOfficeCommission += $tripTotalOther;
         }
+
+        $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
+        $tripId = $trips->first()?->id ?? '';
+        $reportTitle = $isSingleTrip ? "سند رحلة رقم #{$tripId}" : "كشف الرحلات";
 
         return [
             'company' => [
                 'name' => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo' => $logoBase64,
             ],
-            'title'                         => "كشف الركاب ",
+            'title'                         => $reportTitle,
             'date_from'                     => $filters['from'] ?? null,
             'date_to'                       => $filters['to'] ?? null,
-            'status_filter'                 => $filters['status'] ?? null,
+            'status_filter'                 => null,
             'drivers'                       => $driversData,
-            'total_passengers'              => $passengers->count(),
-            'total_count'                   => $passengers->sum('count'),
-            'total_office_commission'       => $passengers->sum('office_commission'),
-            'total_other_office_commission' => $passengers->sum('other_office_commission'),
+            'total_passengers'              => $totalPassengers,
+            'total_count'                   => $totalCount,
+            'total_office_commission'       => $totalOfficeCommission,
+            'total_other_office_commission' => $totalOtherOfficeCommission,
             'creator_name'                  => $user->name ?? 'مسؤول النظام',
             'print_date'                    => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
         ];
@@ -183,21 +192,21 @@ class ReportAllPassanger implements ReceiptStrategyInterface
 
     public function getTemplatePath(): string
     {
-        return 'receipts.templates.ReportAllPassengers';
+        return 'receipts.templates.TripDetection';
     }
 
     public function getFileName(array $data): string
     {
-        return 'DriverManifest_' . now()->format('Y-m-d') . '.pdf';
+        return 'TripManifest_' . now()->format('Y-m-d') . '.pdf';
     }
 
     /**
      * تحليل الفلاتر من referenceId
-     * الصيغة: all أو status:pending|from:2026-01-01|to:2026-12-31|driver_id:5
+     * الصيغة: all أو from:2026-01-01|to:2026-12-31|driver_id:5
      */
     private function parseFilters(string $referenceId): array
     {
-        $filters = ['status' => null, 'from' => null, 'to' => null, 'driver_id' => null];
+        $filters = ['from' => null, 'to' => null, 'driver_id' => null];
 
         if ($referenceId === 'all') {
             return $filters;

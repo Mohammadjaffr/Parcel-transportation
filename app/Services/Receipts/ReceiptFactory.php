@@ -10,11 +10,11 @@ use App\Services\Receipts\Types\ReceiverShipmentReceipt;
 use App\Services\Receipts\Types\ThermalShipmentReceipt;
 use App\Services\Receipts\Types\CustomerAccountStatementReceipt;
 use App\Services\Receipts\Types\CustomerTransactionReceipt;
-use App\Services\Receipts\Types\ReportPassanger;
+use App\Services\Receipts\Types\PassangerDetection;
 use App\Services\Receipts\Types\ExternalOfficeDetection;
-use App\Services\Receipts\Types\ReportAllPassanger;
-use App\Services\Receipts\Types\ReportTrip;
-use App\Services\Receipts\Types\ReportAllTrips;
+use App\Services\Receipts\Types\PassangersDetection;
+use App\Services\Receipts\Types\TripDetection;
+use App\Services\Receipts\Types\TripsDetection;
 
 use Exception;
 
@@ -31,10 +31,10 @@ class ReceiptFactory
             'thermal' => new ThermalShipmentReceipt(),
             'CustomerAccountStatementReceipt' => new CustomerAccountStatementReceipt(),
             'transaction' => new CustomerTransactionReceipt(),
-            'passenger' => new ReportPassanger(),
-            'all_passenger' => new ReportAllPassanger(),
-            'trip' => new ReportTrip(),
-            'all_trips' => new ReportAllTrips(),
+            'passenger' => new PassangerDetection(),
+            'all_passenger' => new PassangersDetection(),
+            'trip' => new TripDetection(),
+            'all_trips' => new TripsDetection(),
             default    => throw new Exception("نوع السند غير مدعوم: {$type}")
         };
     }

@@ -18,7 +18,7 @@ class DriverDetection implements WhatsAppMessageInterface
 
     public function getReceiptType(): ?string
     {
-        return 'DriverDetection';
+        return 'ShipmentDetection';
     }
 
     public function getMessageBody(Model $entity, ?string $receiptUrl): string

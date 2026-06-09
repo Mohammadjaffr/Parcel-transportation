@@ -7,7 +7,7 @@ use App\Interfaces\ReceiptStrategyInterface;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class ReportTrip implements ReceiptStrategyInterface
+class TripsDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
@@ -23,14 +23,10 @@ class ReportTrip implements ReceiptStrategyInterface
         }
 
         $filters = [];
-        $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
-        
-        if ($isSingleTrip) {
+        if (is_numeric($referenceId)) {
             $trips = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
                 ->where('branch_id', $user->branch_id)
-                ->where(function($q) use ($referenceId) {
-                    $q->where('uuid', $referenceId)->orWhere('id', $referenceId);
-                })
+                ->where('id', $referenceId)
                 ->get();
         } else {
             $filters = $this->parseFilters($referenceId);
@@ -167,16 +163,12 @@ class ReportTrip implements ReceiptStrategyInterface
             $totalOtherOfficeCommission += $tripTotalOther;
         }
 
-        $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
-        $tripId = $trips->first()?->id ?? '';
-        $reportTitle = $isSingleTrip ? "سند رحلة رقم #{$tripId}" : "كشف الرحلات";
-
         return [
             'company' => [
                 'name' => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo' => $logoBase64,
             ],
-            'title'                         => $reportTitle,
+            'title'                         => "كشف الرحلات",
             'date_from'                     => $filters['from'] ?? null,
             'date_to'                       => $filters['to'] ?? null,
             'status_filter'                 => null,
@@ -192,7 +184,7 @@ class ReportTrip implements ReceiptStrategyInterface
 
     public function getTemplatePath(): string
     {
-        return 'receipts.templates.ReportTrip';
+        return 'receipts.templates.TripsDetection';
     }
 
     public function getFileName(array $data): string
