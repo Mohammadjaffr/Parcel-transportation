@@ -41,6 +41,10 @@ class Passengers extends Model
     {
         return $this->belongsTo(Broker::class);
     }
+    public function trip()
+    {
+        return $this->belongsTo(PassengerTrip::class, 'trip_id');
+    }
     public function getTotalCommissionAttribute()
     {  
         return $this->office_commission + $this->other_office_commission;

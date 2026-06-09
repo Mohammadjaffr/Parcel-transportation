@@ -146,7 +146,7 @@ class PassengersController extends Controller
     public function show(Request $request, $id)
     {
         $user = auth()->user();
-        $passenger = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->findOrFail($id);
+        $passenger = Passengers::with(['driver', 'broker', 'branch','trip.driver'])->where('branch_id', $user->branch_id)->findOrFail($id);
 
         if ($request->isMobile) {
             return view('mobile.pages.passenger.passengers.show', compact('passenger'));

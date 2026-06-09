@@ -103,11 +103,6 @@ class PassengerTripController extends Controller
         // اكتب مسار الصفحة على الدسك توب
     return view('pages.passenger.trips.show', compact('trip'));
     }
-
-
-
-
-
     public function edit(Request $request, $id)
     {
         $trip = PassengerTrip::with('passengers')->findOrFail($id);
@@ -167,6 +162,17 @@ class PassengerTripController extends Controller
             DB::rollBack();
             return back()->with('error', 'حدث خطأ أثناء التحديث.');
         }
+    }
+    public function removePassenger($tripId, $passengerId)
+    {
+        $passenger = Passengers::findOrFail($passengerId);
+        if ($passenger->trip_id != $tripId) {
+            return redirect()->back()->with('error', 'الراكب غير مرتبط بهذه الرحلة بالأساس.');
+        }
+        $passenger->trip_id = null;
+        $passenger->status  = 'pending';
+        $passenger->save();
+        return redirect()->back()->with('success', 'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.');
     }
     private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int
     {
