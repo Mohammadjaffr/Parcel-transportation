@@ -23,7 +23,7 @@
     <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
 
         {{-- ================= Header ================= --}}
-        <div class="mx-auto w-full max-w-7xl">
+        {{-- <div class="mx-auto w-full max-w-7xl">
             <div class="flex flex-col gap-4 justify-between items-start md:flex-row md:items-center">
 
                 <div class="flex gap-4 items-center min-w-0">
@@ -70,7 +70,7 @@
                     طباعة الكشف
                 </a>
             </div>
-        </div>
+        </div> --}}
 
         {{-- ================= Top Summary Cards ================= --}}
         <div class="grid grid-cols-1 gap-4 mx-auto w-full max-w-7xl md:grid-cols-4">
@@ -183,10 +183,10 @@
 
                             <div>
                                 <h2 class="text-lg font-black text-on-surface dark:text-white">
-                                    تفاصيل الرحلة
+                                    تفاصيل الراكب
                                 </h2>
                                 <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
-                                    بيانات الرحلة الأساسية
+                                    بيانات الراكب الأساسية
                                 </p>
                             </div>
                         </div>
@@ -194,6 +194,29 @@
 
                     <div class="p-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            <div
+                                class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                                <div
+                                    class="flex justify-center items-center w-12 h-12 rounded-xl text-primary bg-primary-container dark:bg-primary/10 shrink-0">
+                                    <span class="material-symbols-outlined">call</span>
+                                </div>
+
+                                <div class="min-w-0">
+                                    <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
+                                        رقم الراكب
+                                    </span>
+
+                                    <div class="flex flex-wrap gap-2 items-center">
+                                        <x-phone-number :value="$passenger->passenger_number"
+                                            class="text-sm font-black text-on-surface dark:text-white" />
+
+                                        <span class="text-xs text-gray-400">
+                                            ({{ $passengerDate ? $passengerDate->format('Y-m-d') : 'غير محدد' }})
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
                             <div
                                 class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
@@ -224,7 +247,7 @@
 
                                 <div class="min-w-0">
                                     <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
-                                        نقطة / مكان الرحلة
+                                        مكان الانطلاق
                                     </span>
 
                                     <span class="block text-sm font-black truncate text-on-surface dark:text-white">
@@ -240,7 +263,7 @@
                                     <span class="material-symbols-outlined">groups</span>
                                 </div>
 
-                                <div>
+                                <div class="min-w-0">
                                     <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
                                         عدد الركاب
                                     </span>
@@ -251,28 +274,10 @@
                                 </div>
                             </div>
 
-                            <div
-                                class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
-                                <div
-                                    class="flex justify-center items-center w-12 h-12 rounded-xl text-primary bg-primary-container dark:bg-primary/10 shrink-0">
-                                    <span class="material-symbols-outlined">store</span>
-                                </div>
-
-                                <div class="min-w-0">
-                                    <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
-                                        الفرع المسجل
-                                    </span>
-
-                                    <span class="block text-sm font-black truncate text-on-surface dark:text-white">
-                                        {{ $branchName }}
-                                    </span>
-                                </div>
-
-                            </div>
-
-
                         </div>
+
                         <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+
                             <div
                                 class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
                                 <div
@@ -308,6 +313,7 @@
                                     </span>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
