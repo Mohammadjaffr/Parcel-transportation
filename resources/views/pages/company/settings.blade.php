@@ -390,8 +390,8 @@
                             <div>
                                 <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
                                     (مميز)
-                                    <span class="text-rose-500">*</span></label>
-                                <input type="text" name="code" required placeholder="مثال: RUH-01" dir="ltr"
+                                </label>
+                                <input type="text" name="code" placeholder="مثال: RUH-01" dir="ltr"
                                     class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             </div>
                             <div>
@@ -787,8 +787,8 @@
                             <div>
                                 <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
                                     (مميز)
-                                    <span class="text-rose-500">*</span></label>
-                                <input type="text" name="code" x-model="editBranchForm.code" required
+                                    </label>
+                                <input type="text" name="code" x-model="editBranchForm.code"
                                     dir="ltr"
                                     class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             </div>

@@ -47,10 +47,10 @@ class BranchController extends Controller
     // 2. التحقق من المدخلات
     $request->validate([
         'name'     => 'required|string|max:255',
-        'code'     => ['required','string','max:50',
-            Rule::unique('branches', 'code')->where(function ($query) use ($user) {
-                return $query->where('app_id', $user->app_id);
-            })
+        'code'     => ['nullable','string','max:50',
+            // Rule::unique('branches', 'code')->where(function ($query) use ($user) {
+            //     return $query->where('app_id', $user->app_id);
+            // })
         ],
         'city'     => 'required|string|max:100',
         'phone'    => 'nullable|string|max:20',
@@ -75,7 +75,7 @@ class BranchController extends Controller
             Branch::create([
                 'app_id'   => $user->app_id,
                 'name'     => $request->name,
-                'code'     => strtoupper($request->code),
+                'code'     => strtoupper($request->code)?? null,
                 'city'     => $request->city,
                 'phone'    => $request->phone,
                 'address'  => $request->address,
@@ -248,7 +248,7 @@ class BranchController extends Controller
 
     $request->validate([
         'name'     => 'required|string|max:255',
-        'code'     => ['required', 'string', 'max:50',Rule::unique('branches', 'code')->where('app_id', $user->app_id)->ignore($branch->id)],
+        'code'     => ['nullable', 'string', 'max:50',Rule::unique('branches', 'code')->where('app_id', $user->app_id)->ignore($branch->id)],
         'city'     => 'required|string|max:100',
         'phone'    => 'nullable|string|max:20',
         'address'  => 'nullable|string|max:255',
@@ -268,7 +268,7 @@ class BranchController extends Controller
 
             $branch->update([
                 'name'     => $request->name,
-                'code'     => strtoupper($request->code),
+                'code'     => strtoupper($request->code)?? null,
                 'city'     => $request->city,
                 'phone'    => $request->phone,
                 'address'  => $request->address,
