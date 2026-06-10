@@ -44,6 +44,7 @@ return [
         'base_url' => env('EVOLUTION_API_BASE_URL'),
         'api_key' => env('EVOLUTION_API_KEY'),
         'default_instance' => env('EVOLUTION_API_DEFAULT_INSTANCE'),
+        'admin_token' => env('EVOLUTION_ADMIN_TOKEN'),
     ],
 
 ];
