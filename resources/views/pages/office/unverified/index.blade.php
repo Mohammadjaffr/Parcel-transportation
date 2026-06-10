@@ -356,7 +356,7 @@
                                             <span
                                                 class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
                                                 <span class="material-symbols-outlined text-[13px]">storefront</span>
-                                                مكتب خارجي غير موثوق
+                                                مكتب خارجي
                                             </span>
                                         </div>
                                     </div>
@@ -404,11 +404,6 @@
                                     <div class="flex flex-col gap-1 items-center">
                                         <span class="text-sm font-black text-gray-800 dark:text-white">
                                             {{ $office->creator->name ?? 'النظام' }}
-                                        </span>
-
-                                        <span
-                                            class="px-2.5 py-1 text-[10px] font-black rounded-lg bg-gray-50 text-gray-500 dark:bg-boxdark-2 dark:text-bodydark">
-                                            إدارة المكاتب
                                         </span>
                                     </div>
                                 </td>
@@ -476,7 +471,7 @@
                                                 لا توجد مكاتب
                                             </h3>
                                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                                                لم نعثر على أي مكاتب غير موثوقة في النظام حالياً.
+                                                لم نعثر على أي مكاتب خارجية في النظام حالياً.
                                             </p>
                                         </div>
                                     </div>

@@ -653,7 +653,7 @@ class ShipmentController extends Controller
 
                 // الطرد العادي
                 'package_type'              => $data['package_type'],
-                'weight'                    => $data['weight'] ?? 0,
+                'weight' => (filled($data['weight'] ?? null) && (float)$data['weight'] != 0) ? $data['weight'] : null,
                 'package_fee'               => $data['package_fee'],
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
 
