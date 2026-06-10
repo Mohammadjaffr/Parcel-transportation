@@ -86,7 +86,7 @@
         </div>
 
         {{-- ================= أزرار الإجراءات الراقية (Premium Actions) ================= --}}
-        <div class="flex gap-3 items-center mt-1 relative z-[60]">
+        <div class="flex gap-3 items-center mt-1 relative z-40">
 
             @php
                 $currentStatus = $shipment->status;
@@ -153,7 +153,7 @@
                         <div x-show="openStatusMenu" x-cloak x-transition:enter="transition ease-out duration-200"
                             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
                             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                            class="absolute top-full right-0 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[60]">
+                            class="absolute top-full right-0 mt-2 w-full bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-50">
 
                             @foreach ($availableStatuses as $value => $data)
                                 <button type="button"
