@@ -77,7 +77,7 @@
         <div class="flex relative flex-col gap-5">
             @forelse($packages as $package)
                 {{-- 2. هنا سحر الفلترة: البطاقة تختفي وتظهر بناءً على ما يكتبه المستخدم --}}
-                <div x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
+                <div x-show="searchQuery === '' || '{{ $package->id }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
                     x-data="{ openMenu: false }" x-transition
                     class="bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group package-card">
 
