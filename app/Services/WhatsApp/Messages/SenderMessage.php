@@ -28,7 +28,7 @@ class SenderMessage implements WhatsAppMessageInterface
         }
 
         $name       = $entity->senderCustomer->name ?? 'عميلنا العزيز';
-        $bondNumber = $entity->bond_number ?? 'غير متوفر';
+        $bondNumber = $entity->id ?? 'غير متوفر';
         
         // هنا نعرض الإجمالي، وممكن نضيف المتبقي عليه لو أحببت
         $totalAmount = number_format($entity->total_amount ?? 0);

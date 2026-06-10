@@ -111,7 +111,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             'title'             => 'سند استلام طرد',
-            'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
+            'bond_number'       => $shipment->id ?? 'غير متوفر',
             'tracking_code'     => $shipment->code ?? 'بدون تتبع',
             'date'              => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
 

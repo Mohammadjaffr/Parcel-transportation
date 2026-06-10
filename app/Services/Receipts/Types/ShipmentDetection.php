@@ -107,7 +107,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $totalExpectedCash += $remainingAmount;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->bond_number ?? $shipment->id ?? '---',
+                'bond_number'       => $shipment->id ?? $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -144,7 +144,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             ],
 
             'title'             => 'كشف تسليم سائق',
-            'package_number'    => $package->tracking_number ?? 'غير متوفر',
+            'package_number'    => $package->id ?? 'غير متوفر',
             'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',

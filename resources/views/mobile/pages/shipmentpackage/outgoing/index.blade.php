@@ -96,7 +96,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
-                                    {{ $package->tracking_number }}
+                                    {{ $package->id }}
                                 </h3>
                                 <div
                                     class="flex gap-1 items-center mt-0.5 text-[11px] font-bold text-slate-400 dark:text-gray-500">

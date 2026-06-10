@@ -28,7 +28,7 @@ class ReceiverMessage implements WhatsAppMessageInterface
         }
 
         $name       = $entity->receiverCustomer->name ?? 'عميلنا العزيز';
-        $bondNumber = $entity->bond_number ?? 'غير متوفر';
+        $bondNumber = $entity->id ?? 'غير متوفر';
         
         // 💡 جلب اسم فرع الاستلام
         $branchName = $entity->receiverBranch->name ?? $entity->receiverOfficeBranch->name ?? 'الفرع';

@@ -314,7 +314,7 @@
                     "*،\nبخصوص الطرد رقم: *" .
                     $shipment->id .
                     "*\nالموجود ضمن الإرسالية رقم: *" .
-                    $shipment->package->tracking_number .
+                    $shipment->package->id .
                     '*';
             @endphp
             <div
@@ -372,7 +372,7 @@
                             <p class="text-[9px] font-black text-blue-200 mb-0.5 uppercase tracking-wider">ضمن الإرسالية
                                 المجمعة</p>
                             <p class="font-mono text-sm font-black tracking-widest text-white">
-                                {{ $shipment->package->tracking_number }}</p>
+                                {{ $shipment->package->id }}</p>
                         </div>
                         <a href="{{ route('shipmentpackage.outgoing.show', $shipment->package->id) }}"
                             class="flex items-center gap-1.5 bg-white text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-50 active:scale-95 transition-all shadow-sm">

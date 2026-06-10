@@ -28,7 +28,7 @@ class DriverDetection implements WhatsAppMessageInterface
         }
 
         $driverName = $entity->driver->name ?? 'السائق';
-        $trackingNo = $entity->tracking_number ?? 'غير متوفر';
+        $trackingNo = $entity->id ?? 'غير متوفر';
 
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
         $msg .= "الأخ / {$driverName} المحترم،\n";

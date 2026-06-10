@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تفاصيل الإرسالية - ' . $package->tracking_number)
+@section('title', 'تفاصيل الإرسالية - ' . $package->id)
 @section('Breadcrumb', 'إدارة الشحنات / تفاصيل الإرسالية')
 
 @section('content')
@@ -24,7 +24,7 @@
                 </a>
                 <div>
                     <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">إرسالية
-                        #{{ $package->tracking_number }}</h1>
+                        #{{ $package->id }}</h1>
                     <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">
                         {{ $package->created_at->format('Y-m-d h:i A') }}</p>
                 </div>
@@ -161,7 +161,7 @@
                                     'مرحباً كابتن *' .
                                     ($package->driver->name ?? 'السائق') .
                                     "*،\nتم تكليفك برحلة شحن جديدة رقم: *" .
-                                    $package->tracking_number .
+                                    $package->id .
                                     "*\nعدد الطرود: *" .
                                     ($package->shipments_count ??
                                         ($package->shipments ? $package->shipments->count() : 0)) .
@@ -332,7 +332,7 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex flex-wrap gap-3 items-center mb-2">
                                         <span
-                                            class="font-mono text-lg font-black leading-none text-on-surface dark:text-white">{{ $shipment->bond_number }}</span>
+                                            class="font-mono text-lg font-black leading-none text-on-surface dark:text-white">{{ $shipment->id }}</span>
                                         <span
                                             class="text-[10px] font-black text-primary bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-lg flex items-center gap-1.5 dark:border-primary/20">
                                             <span class="material-symbols-outlined text-[14px]">account_balance</span>
@@ -356,7 +356,7 @@
                                             <span
                                                 class="material-symbols-outlined text-[16px] text-gray-400">qr_code_2</span>
                                             <span
-                                                class="font-mono tracking-widest">{{ $shipment->tracking_number }}</span>
+                                                class="font-mono tracking-widest">{{ $shipment->id }}</span>
                                         </div>
                                     </div>
                                 </div>

@@ -1,6 +1,6 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'تفاصيل الشحنة - ' . $package->tracking_number)
+@section('title', 'تفاصيل الشحنة - ' . $package->id)
 
 @section('content')
     {{-- إضافة x-data رئيسي للتحكم بالمودال في مستوى الصفحة بالكامل --}}
@@ -21,7 +21,7 @@
                 </a>
                 <div>
                     <h1 class="text-lg font-black font-headline text-slate-800">رقم الشحنة</h1>
-                    <p class="text-sm font-bold tracking-wider text-primary">{{ $package->tracking_number }}</p>
+                    <p class="text-sm font-bold tracking-wider text-primary">{{ $package->id }}</p>
                 </div>
             </div>
 
@@ -177,7 +177,7 @@
 
             @php
                 // رسالة واتساب للسائق
-                $driverMsg = "مرحباً كابتن *" . ($package->driver->name ?? 'السائق') . "*،\nتم تكليفك برحلة شحن جديدة رقم: *" . $package->tracking_number . "*\nعدد الطرود: *" . ($package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0)) . "* طرد.";
+                $driverMsg = "مرحباً كابتن *" . ($package->driver->name ?? 'السائق') . "*،\nتم تكليفك برحلة شحن جديدة رقم: *" . $package->id . "*\nعدد الطرود: *" . ($package->shipments_count ?? ($package->shipments ? $package->shipments->count() : 0)) . "* طرد.";
 
                 // 💡 اللوجيك: استخراج الوجهات وتصنيفها (فروع داخلية ومكاتب خارجية)
                 $internalBranches = collect();
