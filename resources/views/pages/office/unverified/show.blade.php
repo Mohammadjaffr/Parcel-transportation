@@ -282,7 +282,7 @@
 
                                 <div class="flex flex-col gap-1 min-w-0">
                                     <span class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
-                                        {{ $shipment->bond_number }}
+                                        {{ $shipment->id }}
                                     </span>
 
                                     <div
