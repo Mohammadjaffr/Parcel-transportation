@@ -201,7 +201,7 @@
                     <ul
                         class="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-x-4 gap-y-0.5 text-[10px] list-disc list-inside text-slate-400 font-medium">
                         @foreach ($terms_and_conditions as $term)
-                            <li class="truncate">{{ $term }}</li>
+                            <li>{{ $term }}</li>
                         @endforeach
                     </ul>
                 </div>

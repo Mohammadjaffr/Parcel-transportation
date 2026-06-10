@@ -34,7 +34,7 @@ class ExternalOfficeDetection implements WhatsAppMessageInterface
         $branchName = $officeBranch->name ?? '';
         $fullName = $branchName ? "{$officeName} - {$branchName}" : $officeName;
 
-        $trackingNo = $entity->tracking_number ?? 'غير متوفر';
+        $trackingNo = $entity->id ?? 'غير متوفر';
         
         $customReceiptUrl = route('receipt.generate', [
             'type' => 'ExternalOfficeDetection',

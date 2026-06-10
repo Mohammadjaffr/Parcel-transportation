@@ -10,7 +10,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return array(300, 300);
+        return ['a4', 'landscape'];
     }
 
     public function fetchData(string $referenceId): array
@@ -87,7 +87,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
         // المتغيرات الحسابية للكشف
         $totalPackageComm = 0;
         $totalHoneyComm = 0;
-        $totalExpectedCash = 0; // إجمالي النقد المتوقع تحصيله من السائق
+        $totalExpectedCash = 0; 
 
         foreach ($package->shipments as $shipment) {
             $receiverDestination = $shipment->receiverBranch?->name
@@ -98,16 +98,21 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
+            // جلب البيانات المالية الأساسية للـ Format
             $totalAmount = (float) ($shipment->total_amount ?? 0);
             $paidAmount = (float) ($shipment->partial_amount ?? 0);
-            $remainingAmount = max(0, $totalAmount - $paidAmount);
+            
+            // 🎯 السطر السحري: استدعاء الـ Accessor المعتمد في الموديل لحساب متبقي المستلم كاش
+            $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
 
             $totalPackageComm += (float) ($shipment->package_commission_amount ?? 0);
             $totalHoneyComm   += (float) ($shipment->honey_commission_amount ?? 0);
+            
+            // إضافة متبقي التحصيل النقدي الحقيقي المطلوب من السائق توريده
             $totalExpectedCash += $remainingAmount;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->id ?? $shipment->id ?? '---',
+                'bond_number'       => $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -121,7 +126,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
                 'total_amount'      => number_format($totalAmount, 0),
                 'partial_amount'    => number_format($paidAmount, 0),
-                'remaining_amount'  => number_format($remainingAmount, 0),
+                'remaining_amount'  => number_format($remainingAmount, 0), // ستظهر النتيجة بناءً على دالة match تماماً
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
             ];
@@ -129,8 +134,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
         }
 
         $theme = $app?->theme ?? [
-            'primary'   => '#1e3a8a', // Deep Blue
-            'secondary' => '#fb6514', // Vibrant Orange
+            'primary'   => '#1e3a8a', 
+            'secondary' => '#fb6514', 
             'bg_light'  => '#fcfcfc',
         ];
 
@@ -158,7 +163,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'package_commission' => $totalPackageComm,
                 'honey_commission'   => $totalHoneyComm,
                 'grand_commission'   => $totalPackageComm + $totalHoneyComm,
-                'expected_cash'      => $totalExpectedCash, // النقد المتوقع تحصيله
+                'expected_cash'      => $totalExpectedCash, 
             ],
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',

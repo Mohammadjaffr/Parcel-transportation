@@ -28,7 +28,7 @@ class DriverMessage implements WhatsAppMessageInterface
         }
 
         $driverName   = $entity->driver->name ?? 'السائق';
-        $trackingNo   = $entity->tracking_number ?? 'غير متوفر';
+        $trackingNo   = $entity->id ?? 'غير متوفر';
         $branchName   = $entity->senderBranch->name ?? 'غير محدد';
         $shipmentsCnt = $entity->shipments?->count() ?? 0;
 

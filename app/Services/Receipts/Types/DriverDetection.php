@@ -100,7 +100,7 @@ class DriverDetection implements ReceiptStrategyInterface
                 : null;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->bond_number ?? '---',
+                'bond_number'       => $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -139,7 +139,7 @@ class DriverDetection implements ReceiptStrategyInterface
             ],
 
             'title'             => 'كشف حمولة الرسائل',
-            'package_number'    => $package->tracking_number ?? 'غير متوفر',
+            'package_number'    => $package->id ?? 'غير متوفر',
             'date'              => $package->created_at ? $package->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
