@@ -23,7 +23,8 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'receiverBranch.app',
             'senderOfficeBranch.office',   // 👈 إصلاح: جلب المكتب الخارجي المرسل وشركته
             'receiverOfficeBranch.office', // 👈 إصلاح: جلب شركة المكتب الخارجي المستلم
-            'creator.app'
+            'creator.app',
+            'creator.branch'
         ])->where('uuid', $referenceId)->firstOrFail();
 
         // 2. تحديد الفرع الذي سيطبع السند (الفرع المُستلم أو المكتب الخارجي المُستلم)
@@ -150,6 +151,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
+            'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0) 
                 ? $app->terms_and_conditions 
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'يرجى مراجعة الطرد قبل مغادرة الفرع.'],

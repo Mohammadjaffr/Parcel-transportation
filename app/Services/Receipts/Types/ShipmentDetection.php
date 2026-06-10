@@ -20,6 +20,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'senderBranch.app',
             'driver',
             'creator.app',
+            'creator.branch',
             'shipments.senderCustomer',
             'shipments.receiverCustomer',
             'shipments.senderBranch',
@@ -168,7 +169,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),
-
+            'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

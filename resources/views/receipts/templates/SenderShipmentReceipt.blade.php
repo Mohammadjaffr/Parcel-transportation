@@ -21,6 +21,10 @@
                 gap: 0.75rem !important;
             }
 
+            .print-compact-header {
+                padding: 0.75rem 1rem !important;
+            }
+
             .print-grid-compact {
                 gap: 0.5rem !important;
             }
@@ -31,7 +35,10 @@
         class="max-w-2xl w-full mx-auto bg-white rounded-[1.5rem] shadow-[0_4px_25px_rgb(0,0,0,0.03)] print-no-shadow overflow-hidden border border-slate-100 print:border-slate-200 my-6 print:my-0 print:rounded-none">
 
         <div
-            class="p-5 bg-gradient-to-l from-orange-50/40 via-transparent to-transparent border-b border-slate-100 print-compact">
+            class="p-5 bg-gradient-to-l from-orange-50/40 via-transparent to-transparent border-b border-slate-100 print-compact print-compact-header">
+
+
+
             <div class="flex items-start justify-between gap-4">
 
                 <div class="flex items-start gap-3 min-w-0 flex-1">
@@ -64,17 +71,20 @@
                         class="inline-flex items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-lg border border-red-100 shadow-sm ">
                         رقم السند: {{ $bond_number ?? '---' }}
                     </span>
+                    <span
+                        class="items-center gap-1.5 px-3 py-1 text-xs font-black text-slate-700 bg-slate-100 border border-slate-200/80 rounded-full shadow-sm">
+                        {{ $user_branch ?? '---' }}
+                    </span>
                 </div>
+               
             </div>
         </div>
+
 
         <div class="p-5 space-y-4 print-compact">
 
             <div class="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-3 print-grid-compact">
                 <div class="p-3.5 rounded-xl border border-emerald-100 bg-emerald-50/20 relative overflow-hidden">
-                    <div
-                        class="absolute top-0 left-0 bg-emerald-100/40 text-emerald-600 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">
-                    </div>
                     <div class="flex gap-2 items-center mb-2 border-b border-emerald-100/50 pb-1.5">
                         <div class="flex justify-center items-center w-6 h-6 bg-emerald-100 rounded-md">
                             <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,11 +95,8 @@
                         <h3 class="text-xs font-black text-emerald-700">المرسل</h3>
                     </div>
                     <div class="space-y-1 text-xs">
-                        <div class="flex gap-1">
-                            <span class="text-slate-400">الاسم:</span>
-                            <span class="font-bold text-slate-800">{{ $sender_name ?? '---' }}
-                            </span>
-                        </div>
+                        <div class="flex gap-1"><span class="text-slate-400">الاسم:</span><span
+                                class="font-bold text-slate-800">{{ $sender_name ?? '---' }}</span></div>
                         <div class="flex gap-1"><span class="text-slate-400">الهاتف:</span> <span
                                 class="font-bold font-sans text-slate-800" dir="ltr">{{ $sender_phone ?? '---' }}</span>
                         </div>
@@ -101,9 +108,6 @@
                 </div>
 
                 <div class="p-3.5 rounded-xl border border-blue-100 bg-blue-50/20 relative overflow-hidden">
-                    <div
-                        class="absolute top-0 left-0 bg-blue-100/40 text-blue-600 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">
-                    </div>
                     <div class="flex gap-2 items-center mb-2 border-b border-blue-100/50 pb-1.5">
                         <div class="flex justify-center items-center w-6 h-6 bg-blue-100 rounded-md">
                             <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,22 +118,15 @@
                         <h3 class="text-xs font-black text-blue-700">المستلم</h3>
                     </div>
                     <div class="space-y-1 text-xs">
-                        <div class="flex gap-1">
-                            <span class="text-slate-400">الاسم:</span>
-                            <span class="font-bold text-slate-800">{{ $receiver_name ?? '---' }}</span>
+                        <div class="flex gap-1"><span class="text-slate-400">الاسم:</span><span
+                                class="font-bold text-slate-800">{{ $receiver_name ?? '---' }}</span></div>
+                        <div class="flex gap-1"><span class="text-slate-400">الهاتف:</span><span
+                                class="font-bold font-sans text-slate-800" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
                         </div>
-                        <div class="flex gap-1">
-                            <span class="text-slate-400">الهاتف:</span>
-                            <span class="font-bold font-sans text-slate-800" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-slate-400">الفرع:</span>
-                            <span class="font-medium text-slate-700">{{ $receiver_branch ?? '---' }}</span>
-                        </div>
-                        <div class="flex gap-1">
-                            <span class="text-slate-400">المكتب:</span>
-                            <span class="font-medium text-slate-600">{{ $receiver_office ?? '---' }}</span>
-                        </div>
+                        <div class="flex gap-1"><span class="text-slate-400">الفرع:</span><span
+                                class="font-medium text-slate-700">{{ $receiver_branch ?? '---' }}</span></div>
+                        <div class="flex gap-1"><span class="text-slate-400">المكتب:</span><span
+                                class="font-medium text-slate-600">{{ $receiver_office ?? '---' }}</span></div>
                     </div>
                 </div>
             </div>

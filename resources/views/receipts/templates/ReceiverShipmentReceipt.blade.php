@@ -64,6 +64,10 @@
                         class="inline-flex items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-lg border border-red-100 shadow-sm ">
                         رقم السند: {{ $bond_number ?? '---' }}
                     </span>
+                     <span
+                        class="items-center gap-1.5 px-3 py-1 text-xs font-black text-slate-700 bg-slate-100 border border-slate-200/80 rounded-full shadow-sm">
+                        {{ $user_branch ?? '---' }}
+                    </span>
                 </div>
             </div>
         </div>
@@ -72,9 +76,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-3 print-grid-compact">
                 <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 relative overflow-hidden">
-                    <div
-                        class="absolute top-0 left-0 bg-slate-200/50 text-slate-500 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">
-                    </div>
+                    
                     <div class="flex gap-2 items-center mb-2 border-b border-slate-200/60 pb-1.5">
                         <div class="flex justify-center items-center w-6 h-6 bg-slate-200 rounded-md">
                             <svg class="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,9 +101,7 @@
 
                 <div
                     class="p-3.5 rounded-xl border-2 border-teal-200 bg-teal-50/20 ring-2 ring-teal-100/30 relative overflow-hidden">
-                    <div
-                        class="absolute top-0 left-0 bg-teal-200/40 text-teal-600 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">
-                    </div>
+                    
                     <div class="flex gap-2 items-center mb-2 border-b border-teal-100/50 pb-1.5">
                         <div class="flex justify-center items-center w-6 h-6 bg-teal-100 rounded-md">
                             <svg class="w-3 h-3 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

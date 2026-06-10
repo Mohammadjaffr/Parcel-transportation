@@ -21,7 +21,8 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'senderBranch.app',
             'receiverBranch',
             'receiverOfficeBranch',
-            'creator.app'
+            'creator.app',
+            'creator.branch'
         ])->where('uuid', $referenceId)->firstOrFail();
 
         // 2. جلب بيانات التطبيق (الشركة) - محمي
@@ -139,6 +140,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
+            'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0)
                 ? $app->terms_and_conditions
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
