@@ -113,7 +113,7 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
 
             // --- معلومات السند ---
             'title'             => 'سند استلام طرد',
-            'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
+            'bond_number'       => $shipment->id ?? 'غير متوفر',
             'tracking_code'     => $shipment->code ?? 'بدون تتبع',
             
             // 🛡️ تم إصلاح الثغرة المخفية في التاريخ
