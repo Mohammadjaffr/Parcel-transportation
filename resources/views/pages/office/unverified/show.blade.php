@@ -259,7 +259,7 @@
                         $destination = $shipment->receiverOfficeBranch?->name ?? '---';
 
                         $searchText =
-                            $shipment->bond_number .
+                            $shipment->id .
                             ' ' .
                             ($shipment->receiverCustomer?->name ?? '') .
                             ' ' .

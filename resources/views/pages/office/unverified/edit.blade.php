@@ -3,7 +3,7 @@
 
 @section('Breadcrumb')
     <a href="{{ route('offices.unverified.index') }}" class="text-gray-500 transition-colors hover:text-primary">
-        إدارة المكاتب غير الموثوقة
+        إدارة المكاتب  الخارجية
     </a>
     <span class="text-gray-400">/</span>
     <span class="font-medium text-on-surface dark:text-gray-100">تعديل مكتب</span>
