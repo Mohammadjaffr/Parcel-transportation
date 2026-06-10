@@ -305,7 +305,7 @@
                                         </div>
                                         <div class="min-w-0">
                                             <span class="block font-mono text-sm font-black text-slate-800 dark:text-white">
-                                                {{ $shipment->bond_number ?? '---' }}
+                                                {{ $shipment->id ?? '---' }}
                                             </span>
                                             <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                                 {{ $shipment->created_at?->format('h:i A') }}
@@ -383,7 +383,7 @@
                                     <span class="material-symbols-outlined text-[24px]">{{ $currentStatus['icon'] }}</span>
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="font-mono text-sm font-black text-slate-800 dark:text-white">{{ $shipment->bond_number ?? '---' }}</p>
+                                    <p class="font-mono text-sm font-black text-slate-800 dark:text-white">{{ $shipment->id ?? '---' }}</p>
                                     <p class="mt-1 text-[10px] font-bold text-slate-400 dark:text-slate-500">
                                         {{ $senderName }} <span class="mx-1 text-slate-300">»</span> {{ $receiverName }}
                                     </p>
