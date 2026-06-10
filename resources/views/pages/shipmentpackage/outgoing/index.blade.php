@@ -242,7 +242,7 @@
 
                     <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all package-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
                         x-show="showRow(
-                            @js($package->tracking_number),
+                            @js($package->id),
                             @js($package->senderBranch->name ?? ''),
                             @js($package->driver->name ?? ''),
                             @js($package->driver->phone ?? ''),
@@ -419,7 +419,7 @@
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group package-row"
                                 x-show="showRow(
-                                    @js($package->tracking_number),
+                                    @js($package->id),
                                     @js($package->senderBranch->name ?? ''),
                                     @js($package->driver->name ?? ''),
                                     @js($package->driver->phone ?? ''),
