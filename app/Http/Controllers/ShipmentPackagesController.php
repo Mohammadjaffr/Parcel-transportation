@@ -393,125 +393,137 @@ class ShipmentPackagesController extends Controller
         return view('pages.shipmentpackage.incoming.create', compact('offices', 'drivers', 'customers'));
     }
     public function incomingStore(Request $request)
-    {
-        $request->validate([
-            'tracking_number' => 'required|string|unique:shipment_packages,tracking_number',
-            'sender_office_branch_id' => 'required',
-            'driver_phone' => 'required|string',
-            'driver_name' => 'required_without:driver_id|string',
-            'items' => 'required|array|min:1',
-            'items.*.bond_number' => 'required|string|unique:shipments,bond_number',
-            'items.*.receiver_name' => 'required|string',
-            'items.*.receiver_phone' => 'required|string',
-            'items.*.payment_status' => 'required|in:paid,unpaid',
-            'items.*.amount' => 'required_if:items.*.payment_status,unpaid|numeric|min:0',
-            'items.*.package_type' => 'required|string',
+{
+    // 1. إنشاء الـ Validator يدوياً
+    $validator = Validator::make($request->all(), [
+        'tracking_number' => 'required|string|unique:shipment_packages,tracking_number',
+        'sender_office_branch_id' => 'required',
+        'driver_phone' => 'required|string',
+        'driver_name' => 'required_without:driver_id|string',
+        'items' => 'required|array|min:1',
+        'items.*.bond_number' => 'required|string|unique:shipments,bond_number',
+        'items.*.receiver_name' => 'required|string',
+        'items.*.receiver_phone' => 'required|string',
+        'items.*.payment_status' => 'required|in:paid,unpaid',
+        'items.*.amount' => 'required_if:items.*.payment_status,unpaid|numeric|min:0',
+        'items.*.package_type' => 'required|string',
+    ]);
+
+    // 2. التحقق من فشل المدخلات وإرجاع الخطأ المخصص
+    if ($validator->fails()) {
+        $detailedErrors = implode(' • ', $validator->errors()->all());
+
+        return back()
+            ->withErrors($validator)
+            ->withInput()
+            ->with('error', 'يرجى مراجعة الحقول؛ الأخطاء الحالية: ' . $detailedErrors);
+    }
+
+    try {
+        // بدء المعاملة لضمان حفظ كل البيانات أو التراجع عنها
+        DB::beginTransaction();
+
+        $user = auth()->user();
+
+        // ==========================================
+        // 1. معالجة السائق (Driver)
+        // ==========================================
+        $driverId = $request->driver_id;
+
+        // إذا لم يتم تحديد سائق موجود، نقوم بإنشاء سائق جديد
+        if (!$driverId && $request->driver_phone) {
+            $driver = Driver::firstOrCreate(
+                ['phone' => $request->driver_phone, 'app_id' => $user->app_id], // الشرط: البحث برقم الهاتف والشركة
+                ['name' => $request->driver_name, 'created_by' => $user->id]     // البيانات الإضافية في حال الإنشاء
+            );
+            $driverId = $driver->id;
+        }
+
+        // ==========================================
+        // 2. إنشاء الإرسالية (Shipment Package)
+        // ==========================================
+        $package = ShipmentPackage::create([
+            'tracking_number' => $request->tracking_number,
+            'app_id' => $user->app_id,
+            'driver_id' => $driverId,
+            'created_by' => $user->id,
+            'sender_office_branch_id' => $request->sender_office_branch_id,
+            'status' => 'delivered',
+            'notes' => $request->notes,
         ]);
 
-        try {
-            // بدء المعاملة لضمان حفظ كل البيانات أو التراجع عنها
-            DB::beginTransaction();
+        // ==========================================
+        // 3. معالجة الطرود (Shipments) والعملاء (Customers)
+        // ==========================================
+        foreach ($request->items as $item) {
 
-            $user = auth()->user();
-
-            // ==========================================
-            // 1. معالجة السائق (Driver)
-            // ==========================================
-            $driverId = $request->driver_id;
-
-            // إذا لم يتم تحديد سائق موجود، نقوم بإنشاء سائق جديد
-            if (!$driverId && $request->driver_phone) {
-                $driver = Driver::firstOrCreate(
-                    ['phone' => $request->driver_phone, 'app_id' => $user->app_id], // الشرط: البحث برقم الهاتف والشركة
-                    ['name' => $request->driver_name, 'created_by' => $user->id]     // البيانات الإضافية في حال الإنشاء
+            // --- معالجة العميل المرسل ---
+            $senderId = null;
+            if (!empty($item['sender_phone']) && strlen(trim($item['sender_phone'])) > 4) {
+                $sender = Customer::firstOrCreate(
+                    ['phone' => $item['sender_phone'], 'app_id' => $user->app_id],
+                    [
+                        'name' => !empty($item['sender_name']) ? $item['sender_name'] : 'عميل ' . $item['sender_phone'],
+                        'branch_id' => $user->branch_id,
+                        'created_by' => $user->id
+                    ]
                 );
-                $driverId = $driver->id;
+                $senderId = $sender->id;
             }
 
-            // ==========================================
-            // 2. إنشاء الإرسالية (Shipment Package)
-            // ==========================================
-            $package = ShipmentPackage::create([
-                'tracking_number' => $request->tracking_number,
-                'app_id' => $user->app_id,
-                'driver_id' => $driverId,
-                'created_by' => $user->id,
+            // --- معالجة العميل المستلم ---
+            $receiverId = null;
+            if (!empty($item['receiver_phone'])) {
+                $receiver = Customer::firstOrCreate(
+                    ['phone' => $item['receiver_phone'], 'app_id' => $user->app_id],
+                    [
+                        'name' => $item['receiver_name'],
+                        'branch_id' => $user->branch_id,
+                        'created_by' => $user->id
+                    ]
+                );
+                $receiverId = $receiver->id;
+            }
+
+            // --- تحديد طريقة الدفع والمبلغ ---
+            $paymentMethod = $item['payment_status'] === 'paid' ? 'prepaid' : 'cod'; // (دفع مسبق) أو (دفع عند الاستلام)
+            $totalAmount = $item['payment_status'] === 'paid' ? 0 : ($item['amount'] ?? 0);
+
+            // --- إنشاء الطرد ---
+            Shipment::create([
+                'shipment_package_id' => $package->id,
+                'code' => $item['bond_number'],
+
+                // الفروع
                 'sender_office_branch_id' => $request->sender_office_branch_id,
-                'status' => 'delivered',
-                'notes' => $request->notes,
+                'receiver_branch_id' => $user->branch_id,
+
+                // العملاء
+                'sender_customer_id' => $senderId,
+                'receiver_customer_id' => $receiverId,
+
+                // تفاصيل الطرد
+                'package_type' => $item['package_type'],
+                'payment_method' => $paymentMethod,
+                'total_amount' => $totalAmount,
+                'notes' => $item['item_notes'],
+                'status' => 'received_at_branch',
+                'created_by' => $user->id,
             ]);
-
-            // ==========================================
-            // 3. معالجة الطرود (Shipments) والعملاء (Customers)
-            // ==========================================
-            foreach ($request->items as $item) {
-
-                // --- معالجة العميل المرسل ---
-                $senderId = null;
-                if (!empty($item['sender_phone']) && strlen(trim($item['sender_phone'])) > 4) {
-                    $sender = Customer::firstOrCreate(
-                        ['phone' => $item['sender_phone'], 'app_id' => $user->app_id],
-                        [
-                            'name' => !empty($item['sender_name']) ? $item['sender_name'] : 'عميل ' . $item['sender_phone'],
-                            'branch_id' => $user->branch_id,
-                            'created_by' => $user->id
-                        ]
-                    );
-                    $senderId = $sender->id;
-                }
-
-                // --- معالجة العميل المستلم ---
-                $receiverId = null;
-                if (!empty($item['receiver_phone'])) {
-                    $receiver = Customer::firstOrCreate(
-                        ['phone' => $item['receiver_phone'], 'app_id' => $user->app_id],
-                        [
-                            'name' => $item['receiver_name'],
-                            'branch_id' => $user->branch_id,
-                            'created_by' => $user->id
-                        ]
-                    );
-                    $receiverId = $receiver->id;
-                }
-
-                // --- تحديد طريقة الدفع والمبلغ ---
-                $paymentMethod = $item['payment_status'] === 'paid' ? 'prepaid' : 'cod'; // (دفع مسبق) أو (دفع عند الاستلام)
-                $totalAmount = $item['payment_status'] === 'paid' ? 0 : ($item['amount'] ?? 0);
-
-                // --- إنشاء الطرد ---
-                Shipment::create([
-                    'shipment_package_id' => $package->id,
-                    'code' => $item['bond_number'],
-
-                    // الفروع
-                    'sender_office_branch_id' => $request->sender_office_branch_id,
-                    'receiver_branch_id' => $user->branch_id,
-
-                    // العملاء
-                    'sender_customer_id' => $senderId,
-                    'receiver_customer_id' => $receiverId,
-
-                    // تفاصيل الطرد
-                    'package_type' => $item['package_type'],
-                    'payment_method' => $paymentMethod,
-                    'total_amount' => $totalAmount,
-                    'notes' => $item['item_notes'],
-                    'status' => 'received_at_branch',
-                    'created_by' => $user->id,
-                ]);
-            }
-
-            // إذا تم كل شيء بنجاح، نعتمد البيانات
-            DB::commit();
-
-            return redirect()->route('shipmentpackage.incoming.index')
-                ->with('success', 'تم استلام الإرسالية بجميع طرودها بنجاح!');
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
         }
+
+        // إذا تم كل شيء بنجاح، نعتمد البيانات
+        DB::commit();
+
+        return redirect()->route('shipmentpackage.incoming.index')
+            ->with('success', 'تم استلام الإرسالية بجميع طرودها بنجاح!');
+            
+    } catch (Exception $e) {
+        DB::rollBack();
+
+        return back()->withInput()->with('error', 'حدث خطأ أثناء الحفظ: ' . $e->getMessage());
     }
+}
    public function incomingShow(Request $request, $id)
     {
         $user = auth()->user();

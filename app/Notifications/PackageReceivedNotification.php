@@ -43,7 +43,7 @@ class PackageReceivedNotification extends Notification
     public function toDatabase($notifiable): array
     {
         return [
-            'message' => "تم استلام الطرد رقم ({$this->shipmentTrackingNumber}) التابع للإرسالية ({$this->packageTrackingNumber}) من قِبل [{$this->receiverBranchName}].",
+            'message' => "تم استلام الطرد رقم ({$this->shipmentId}) التابع للإرسالية ({$this->packageTrackingNumber}) من قِبل [{$this->receiverBranchName}].",
             'action_url'     => route('shipment.outgoing.show', $this->shipmentId), // يمكنك تغيير الراوت ليوجه المستخدم لصفحة الطرود المرسلة
             'type'    => 'package_received', // النوع الذي برمجناه في الواجهة (Header) ليعطيه اللون الأخضر
         ];

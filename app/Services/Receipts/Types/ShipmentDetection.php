@@ -89,8 +89,12 @@ class ShipmentDetection implements ReceiptStrategyInterface
         $totalPackageComm = 0;
         $totalHoneyComm = 0;
         $totalExpectedCash = 0; 
+        $isReceiver = false;
 
         foreach ($package->shipments as $shipment) {
+            if (!empty($shipment->code)) {
+                $isReceiver = true;
+            }
             $receiverDestination = $shipment->receiverBranch?->name
                 ?? $shipment->receiverOfficeBranch?->name
                 ?? 'الوجهة غير محددة';
@@ -113,7 +117,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $totalExpectedCash += $remainingAmount;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->id ?? '---',
+                'bond_number'       => $shipment->code ?? $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -149,8 +153,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'other_phones' => $otherPhonesStr,
             ],
 
-            'title'             => 'كشف تسليم سائق',
-            'package_number'    => $package->id ?? 'غير متوفر',
+            'title'             => $isReceiver ?'كشف استلام شحنة':'كشف تسليم شحنة ',
+            'package_number'    => $isReceiver ? $package->tracking_number ?? $package->id : $package->id ,
             'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
@@ -159,6 +163,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'total_shipments'   => $totalShipmentsCount,
             
             'shipments'         => $shipmentsData,
+            'isReceiver' => $isReceiver,
 
             'totals' => [
                 'package_commission' => $totalPackageComm,
@@ -166,7 +171,6 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'grand_commission'   => $totalPackageComm + $totalHoneyComm,
                 'expected_cash'      => $totalExpectedCash, 
             ],
-
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),
             'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',

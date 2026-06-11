@@ -259,13 +259,13 @@
                                         @endif
                                         
 
-                                        @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
+                                        {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
                                             <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">send</span>
                                                 إرسال للمستلم
                                             </a>
-                                        @endif
+                                        @endif --}}
                                     @endif
                                 </div>
                             </div>
@@ -572,17 +572,17 @@
                                                         <a href="{{ $shipment->sender_whatsapp_link }}" target="_blank"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
-                                                            إرسال للمرسل
+                                                            إشعار المرسل
                                                         </a>
                                                     @endif
 
-                                                    @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
+                                                    {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
                                                         <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
                                                             إرسال للمستلم
                                                         </a>
-                                                    @endif
+                                                    @endif --}}
                                                 @endif
                                             </div>
                                         </div>

@@ -40,9 +40,9 @@ class NewShipmentNotification extends Notification
     public function toArray(object $notifiable): array
     {
         if ($this->isInternal) {
-            $message = 'طرد داخلي جديد 📦: تم إرسال طرد من فرع [' . $this->senderName . '] برقم السند (' . $this->bondNumber . ').';
+            $message = 'طرد داخلي جديد 📦: تم إرسال طرد من فرع [' . $this->senderName . '] برقم السند (' . $this->shipmentId . ').';
         } else {
-            $message = 'طرد وارد 🚚: طرد قادم إليكم من مكتب [' . $this->senderName . '] برقم السند (' . $this->bondNumber . ').';
+            $message = 'طرد وارد 🚚: طرد قادم إليكم من مكتب [' . $this->senderName . '] برقم السند (' . $this->shipmentId . ').';
         }
 
         return [

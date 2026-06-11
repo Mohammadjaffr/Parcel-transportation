@@ -445,7 +445,7 @@
                                 </p>
                             </div>
                         </div>
-                        @if ($shipment->package->driver && $shipment->package->driver->phone)
+                        @if ($shipment->package?->driver?->phone)
                             <div class="flex gap-1.5 items-center">
                                 {{-- <a href=:" target="_blank"
                                     class="w-10 h-10 bg-white rounded-xl shadow-sm border border-blue-100 flex items-center justify-center hover:bg-[#25D366]/10 hover:border-[#25D366]/30 active:scale-95 transition-all">
@@ -462,6 +462,7 @@
                             </div>
                         @endif
                     </div>
+                    @if($shipment->package?->id)
                     <div
                         class="flex justify-between items-center p-4 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/20">
                         <div>
@@ -476,6 +477,7 @@
                             <span class="material-symbols-outlined text-[14px]">arrow_back_ios_new</span>
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
                         <div

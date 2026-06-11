@@ -57,7 +57,7 @@
                     {{ $name }}
                 </div>
 
-                <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' => $package->id]) }}"
+                <a href="{{ route('receipt.generate', ['type' => 'ShipmentDetection', 'id' =>$package->uuid ?? $package->id]) }}"
                     target="_blank"
                     class="flex gap-2 items-center px-5 h-11 text-xs font-black text-gray-700 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark-2 dark:text-white hover:bg-gray-50 dark:hover:bg-boxdark dark:border-boxdark">
                     <span class="material-symbols-outlined text-[18px]">print</span>

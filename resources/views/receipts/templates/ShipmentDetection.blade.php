@@ -151,7 +151,11 @@
             <div class="mb-6">
                 <div class="flex items-center gap-2 mb-3">
                     <span class="w-1.5 h-5 bg-indigo-600 rounded-full"></span>
-                    <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المُرحلة</h2>
+                    @if($isReceiver)
+                        <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المستلمه</h2>
+                    @else
+                        <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المُرحلة</h2>
+                    @endif
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -174,12 +178,22 @@
                                 <tr class="transition-colors hover:bg-slate-50/30">
                                     <td class="py-2.5 px-3 font-bold text-center text-slate-400">{{ $loop->iteration }}</td>
                                     <td class="py-2.5 px-3 font-black text-slate-700 font-mono" dir="ltr">
-                                        {{ $shipment['bond_number'] }}</td>
-                                    <td class="py-2.5 px-3">
-                                        <div class="font-bold text-slate-900">{{ $shipment['sender_name'] }}</div>
-                                        <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
-                                            {{ $shipment['sender_phone'] }}</div>
+                                        {{ $shipment['bond_number'] }}
                                     </td>
+                                    @if($shipment['sender_phone'] !== '---')
+                                        <td class="py-2.5 px-3">
+                                            <div class="font-bold text-slate-900">
+                                                {{ $shipment['sender_name'] }}
+                                            </div>
+                                            <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
+                                                {{ $shipment['sender_phone'] }}
+                                            </div>
+                                        </td>
+                                    @else
+                                        <td class="py-2.5 px-3">
+                                           غير مسجل
+                                        </td>
+                                    @endif
                                     <td class="py-2.5 px-3">
                                         <div class="font-bold text-slate-900">{{ $shipment['receiver_name'] }}</div>
                                         <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
@@ -289,6 +303,7 @@
                             </div>
 
                             {{-- 3. العمولات --}}
+                            @if(!$isReceiver)
                             <div class="p-4 bg-emerald-50/30 print:bg-transparent">
                                 <h4 class="mb-2 text-[10px] font-black uppercase tracking-wider text-emerald-800">تفصيل العمولات
                                 </h4>
@@ -314,6 +329,7 @@
                                     </div>
                                 </div>
                             </div>
+                            @endif
 
                         </div>
                     @endif
