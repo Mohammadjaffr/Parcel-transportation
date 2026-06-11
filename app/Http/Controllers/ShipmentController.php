@@ -590,10 +590,7 @@ class ShipmentController extends Controller
         });
 
         if ($validator->fails()) {
-            return back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', 'يرجى مراجعة الحقول المدخلة والتأكد من صحتها.');
+            return \App\Classes\WebResponseClass::sendValidationError($validator);
         }
 
         try {

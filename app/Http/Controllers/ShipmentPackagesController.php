@@ -309,11 +309,15 @@ class ShipmentPackagesController extends Controller
     {
 
         $request->validate([
-            'shipment_id' => 'required|exists:shipments,id'
+            'shipment_id' => 'nullable|exists:shipments,id',
+            'bond_number' => 'nullable|string'
         ], [
-            'shipment_id.required' => 'يرجى تحديد طرد لإضافته.',
             'shipment_id.exists'   => 'الطرد المحدد غير موجود في النظام.'
         ]);
+
+        if (!$request->shipment_id && !$request->bond_number) {
+            return back()->with('error', 'يرجى تحديد طرد أو إدخال رقم السند.');
+        }
 
         $package = ShipmentPackage::findOrFail($packageId);
 
@@ -324,10 +328,17 @@ class ShipmentPackagesController extends Controller
         try {
             DB::beginTransaction();
 
-            $shipment = Shipment::findOrFail($request->shipment_id);
+            if ($request->shipment_id) {
+                $shipment = Shipment::findOrFail($request->shipment_id);
+            } else {
+                $shipment = Shipment::where('bond_number', $request->bond_number)->orWhere('code', $request->bond_number)->first();
+                if (!$shipment) {
+                    return back()->with('error', 'لم يتم العثور على طرد بهذا الرقم.');
+                }
+            }
 
             if (!is_null($shipment->shipment_package_id)) {
-                return back()->with('error', 'عفواً، هذا الطرد (' . $shipment->bond_number . ') مرتبط بالفعل بإرسالية أخرى. يرجى فك ارتباطه أولاً.');
+                return back()->with('error', 'عفواً، هذا الطرد (' . ($shipment->code ?? $shipment->bond_number) . ') مرتبط بالفعل بإرسالية أخرى. يرجى فك ارتباطه أولاً.');
             }
 
             if (in_array($shipment->status, ['delivered', 'returned'])) {
@@ -339,7 +350,7 @@ class ShipmentPackagesController extends Controller
                 'status' => $package->status === 'in_transit' ? 'in_transit' : $shipment->status,
             ]);
             DB::commit();
-            return back()->with('success', 'تمت إضافة الطرد (' . $shipment->bond_number . ') إلى الإرسالية بنجاح.');
+            return back()->with('success', 'تمت إضافة الطرد (' . ($shipment->code ?? $shipment->bond_number) . ') إلى الإرسالية بنجاح.');
         } catch (Exception $e) {
             DB::rollBack();
             return back()->with('error', 'حدث خطأ أثناء إضافة الطرد: ' . $e->getMessage());

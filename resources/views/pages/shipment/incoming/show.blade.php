@@ -208,6 +208,11 @@
                         <span class="material-symbols-outlined text-[20px]">print</span>
                         طباعة السند
                     </a>
+                    <a href="{{ route('shipment.outgoing.create') }}" 
+                        class="flex flex-1 gap-2 justify-center items-center px-6 h-12 text-sm font-black text-white bg-primary rounded-xl shadow-lg transition-all md:flex-none shadow-primary/20 hover:bg-primary-hover active:scale-95">
+                        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                        إنشاء طرد جديد
+                    </a>
                 </div>
             </div>
 
@@ -347,8 +352,25 @@
             <h3 class="text-lg font-black text-slate-800 dark:text-white font-headline">الخلاصة المالية</h3>
         </div>
 
-        {{-- 💡 السحر هنا: نتحقق إذا كان المطلوب تحصيله يساوي 0 --}}
-        @if($shipment->amount_to_collect_from_receiver == 0)
+        {{-- 💡 السحر هنا: نتحقق إذا كان المطلوب تحصيله يساوي 0 أو تم التسليم --}}
+        @if($shipment->status === 'delivered')
+            <div class="flex justify-between items-center p-5 bg-emerald-50 rounded-2xl border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                <div class="flex gap-3 items-center">
+                    <span class="material-symbols-outlined text-[32px] text-emerald-500">task_alt</span>
+                    <div>
+                        <p class="text-[10px] font-black text-emerald-600/80 dark:text-emerald-400">حالة التحصيل والطرد</p>
+                        @if(in_array($shipment->payment_method, ['cod', 'partial_payment']))
+                            <p class="text-base font-black text-emerald-700 dark:text-emerald-300">تم التسليم واستلام مبلغ {{ number_format($shipment->amount_to_collect_from_receiver > 0 ? $shipment->amount_to_collect_from_receiver : $shipment->total_amount, 0) }} ر.ي</p>
+                        @else
+                            <p class="text-base font-black text-emerald-700 dark:text-emerald-300">تم التسليم (خالص مسبقاً)</p>
+                        @endif
+                    </div>
+                </div>
+                <span class="px-3 py-1.5 text-[10px] font-black rounded-lg text-emerald-700 bg-white shadow-sm border border-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 dark:border-emerald-500/30">
+                    مكتمل
+                </span>
+            </div>
+        @elseif($shipment->amount_to_collect_from_receiver == 0)
             <div class="flex justify-between items-center p-5 bg-emerald-50 rounded-2xl border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
                 <div class="flex gap-3 items-center">
                     <span class="material-symbols-outlined text-[32px] text-emerald-500">check_circle</span>
