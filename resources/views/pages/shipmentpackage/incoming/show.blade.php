@@ -4,7 +4,7 @@
 @section('Breadcrumb', 'إدارة الشحنات / تفاصيل الإرسالية الواردة')
 
 @section('content')
-    <div x-data="{ isSubmitting: false, isAddModalOpen: false, searchBondNumber: '' }"
+    <div x-data="{ isSubmitting: false }"
         class="flex relative flex-col gap-6 p-4 rounded-3xl bg-surface dark:bg-boxdark-2 lg:p-6 font-body" dir="rtl">
 
         {{-- ================= الهيدر العلوي الذكي ================= --}}
@@ -426,68 +426,10 @@
                                 </p>
                             </div>
                         @endforelse
-                        
-                        {{-- ================= زر إضافة طرد جديد ================= --}}
-                        @if (!in_array($package->status, ['delivered', 'returned']))
-                            <button type="button" @click="isAddModalOpen = true"
-                                class="flex gap-2 justify-center items-center mt-4 w-full h-14 text-sm font-black rounded-2xl border-2 border-dashed transition-all border-gray-200 dark:border-boxdark text-gray-400 dark:text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 active:scale-95">
-                                <span class="material-symbols-outlined text-[24px]">add_box</span>
-                                البحث عن طرد برقم السند لضمه للرحلة
-                            </button>
-                        @endif
                     </div>
                 </div>
             </div>
 
         </div>
-
-        {{-- ================= نافذة البحث والإضافة ================= --}}
-        <template x-teleport="body">
-            <div x-show="isAddModalOpen" x-cloak
-                class="fixed inset-0 z-[99999] flex justify-center items-center p-4 sm:p-0 font-body" dir="rtl">
-                
-                <div x-show="isAddModalOpen" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    class="absolute inset-0 backdrop-blur-sm bg-gray-900/60 dark:bg-black/70"
-                    @click="isAddModalOpen = false"></div>
-                    
-                <div x-show="isAddModalOpen" x-transition:enter="transform transition ease-out duration-300"
-                    x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-                    x-transition:leave="transform transition ease-in duration-200"
-                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                    x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                    class="relative bg-white dark:bg-boxdark w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-gray-100 dark:border-boxdark-2">
-                    
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-black text-on-surface dark:text-white font-headline flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary">search</span>
-                            إضافة طرد للرحلة
-                        </h2>
-                        <button type="button" @click="isAddModalOpen = false"
-                            class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-boxdark-2 text-gray-500 hover:text-rose-500 transition-colors">
-                            <span class="material-symbols-outlined">close</span>
-                        </button>
-                    </div>
-
-                    <form action="{{ route('shipmentpackage.addShipment', $package->id) }}" method="POST">
-                        @csrf
-                        <div class="mb-5">
-                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">رقم السند (الكود)</label>
-                            <input type="text" name="bond_number" required placeholder="أدخل رقم السند هنا..."
-                                class="w-full h-14 px-4 text-center text-lg font-black tracking-widest bg-gray-50 dark:bg-boxdark rounded-xl border border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all dir-ltr text-on-surface dark:text-white placeholder-gray-400">
-                        </div>
-
-                        <button type="submit"
-                            class="w-full h-12 bg-primary text-white hover:bg-primary-hover rounded-xl text-sm font-black transition-all active:scale-95 flex justify-center items-center gap-2 shadow-lg shadow-primary/30">
-                            <span class="material-symbols-outlined text-[20px]">add</span>
-                            إضافة الآن
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </template>
     </div>
 @endsection

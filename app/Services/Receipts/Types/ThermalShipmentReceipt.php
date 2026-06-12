@@ -136,7 +136,6 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
             'honey_details'     => $honeyDetails,
             'notes'             => $shipment->notes ?? 'لا توجد ملاحظات إضافية',
-            'status'            => $shipment->status,
 
             // --- الحسابات والمبالغ ---
             'payment_key'       => $shipment->payment_method ?? 'prepaid',

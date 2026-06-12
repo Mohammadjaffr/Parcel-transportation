@@ -181,11 +181,7 @@
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
                                         {{ $shipment->is_returned ? 'تفاصيل المرتجع' : 'التفاصيل والتسليم' }}
                                     </a>
-  <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
-                                        class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-emerald-600">
-                                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                        تعديل
-                                    </a>
+
                                     {{-- طباعة السند --}}
                                     <a href="{{ route('receipt.generate', ['type' => 'Shipment', 'id' => $shipment->id]) }}"
                                         target="_blank"
