@@ -4,8 +4,7 @@
 
 @section('content')
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
-                isSubmitting: false,
-                isAddModalOpen: false
+                isSubmitting: false 
             }">
 
         {{-- ================= الهيدر السريع ================= --}}
@@ -345,66 +344,7 @@
                 <p class="text-xs font-bold text-slate-400">لا توجد طرود مسجلة في هذه الشحنة.</p>
             </div>
         @endforelse
-
-        {{-- ================= زر إضافة طرد جديد ================= --}}
-        @if (!in_array($package->status, ['delivered', 'returned']))
-            <button type="button" @click="isAddModalOpen = true"
-                class="flex gap-2 justify-center items-center mt-3 w-full h-12 text-xs font-black rounded-xl border-2 border-dashed transition-all border-slate-200 text-slate-400 hover:border-primary hover:text-primary hover:bg-primary/5 active:scale-95">
-                <span class="material-symbols-outlined text-[20px]">add_box</span>
-                البحث عن طرد برقم السند لضمه
-            </button>
-        @endif
     </div>
 </div>
-
-{{-- ================= نافذة البحث والإضافة (موبايل) ================= --}}
-<template x-teleport="body">
-    <div x-show="isAddModalOpen" x-cloak
-        class="fixed inset-0 z-[100] flex justify-center items-end sm:items-center p-4 pb-8" dir="rtl">
-        
-        <div x-show="isAddModalOpen" x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="absolute inset-0 backdrop-blur-sm bg-slate-900/40"
-            @click="isAddModalOpen = false"></div>
-            
-        <div x-show="isAddModalOpen" x-transition:enter="transform transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave="transform transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-            x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
-            class="relative bg-white w-full max-w-md rounded-[2rem] shadow-2xl p-6 border border-slate-100">
-            
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-lg font-black text-slate-800 font-headline flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary">search</span>
-                    إضافة طرد للرحلة
-                </h2>
-                <button type="button" @click="isAddModalOpen = false"
-                    class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-500 hover:text-rose-500 transition-colors">
-                    <span class="material-symbols-outlined">close</span>
-                </button>
-            </div>
-
-            <form action="{{ route('shipmentpackage.addShipment', $package->id) }}" method="POST">
-                @csrf
-                <div class="mb-5">
-                    <label class="block text-xs font-bold text-slate-700 mb-2">رقم السند (الكود)</label>
-                    <input type="text" name="bond_number" required placeholder="أدخل رقم السند..."
-                        class="w-full h-12 px-4 text-center text-base font-black tracking-widest bg-slate-50 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all dir-ltr text-slate-800 placeholder-slate-400">
-                </div>
-
-                <button type="submit"
-                    class="w-full h-12 bg-primary text-white hover:bg-primary-hover rounded-xl text-sm font-black transition-all active:scale-95 flex justify-center items-center gap-2 shadow-lg shadow-primary/30">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
-                    إضافة الآن
-                </button>
-            </form>
-        </div>
-    </div>
-</template>
-
     </div>
 @endsection

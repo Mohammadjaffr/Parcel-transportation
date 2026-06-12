@@ -261,12 +261,6 @@
                                         {{ $shipment->is_returned ? 'تفاصيل المرتجع' : 'التفاصيل والتسليم' }}
                                     </a>
 
-                                    <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
-                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-slate-50 hover:text-primary dark:hover:bg-boxdark-2">
-                                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                        تعديل
-                                    </a>
-
                                     <a href="{{ route('receipt.generate', ['type' => 'receiver', 'id' => $shipment->uuid]) }}"
                                         target="_blank"
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-slate-50 hover:text-primary dark:hover:bg-boxdark">
@@ -721,13 +715,6 @@
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-boxdark-2 dark:hover:text-blue-400">
                                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
                                                 {{ $shipment->is_returned ? 'تفاصيل المرتجع' : 'التفاصيل والتسليم' }}
-                                            </a>
-
-                                            {{-- رابط تعديل الشحنة --}}
-                                            <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
-                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-slate-50 hover:text-primary dark:hover:bg-boxdark-2">
-                                                <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                                تعديل
                                             </a>
 
                                             {{-- رابط طباعة السند --}}
