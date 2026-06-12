@@ -34,7 +34,7 @@
 
         {{-- Search & Table --}}
         <div
-            class="bg-white dark:bg-boxdark my-4 rounded-2xl border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+            class="overflow-visible mx-auto my-4 max-w-7xl bg-white rounded-2xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2">
 
             {{-- Search --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
@@ -43,7 +43,7 @@
                         class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-slate-50 dark:bg-boxdark-2">
                         <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                             placeholder="ابحث برقم أو اسم السائق..."
-                            class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-body text-gray-600 dark:text-gray-300">
+                            class="flex-1 px-3 w-full h-12 text-sm text-left text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
                         <div
                             class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                             <span class="material-symbols-outlined text-[22px]">search</span>
@@ -59,7 +59,7 @@
                         <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                         </span>
-                        <span>النتائج المعروضة: <span class="text-primary font-bold" x-text="visibleCount"></span> من
+                        <span>النتائج المعروضة: <span class="font-bold text-primary" x-text="visibleCount"></span> من
                             <span>{{ $trips->count() }}</span></span>
                     </div>
                 </div>
@@ -67,9 +67,9 @@
 
             {{-- Table --}}
             <div class="overflow-visible w-full">
-                <table class="table-auto w-full text-right border-collapse">
+                <table class="w-full text-right border-collapse table-auto">
                     <thead>
-                        <tr class="bg-slate-50/80 dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark-2">
+                        <tr class="border-b border-gray-100 bg-slate-50/80 dark:bg-boxdark-2 dark:border-boxdark-2">
                             <th
                                 class="px-6 py-4 text-[11px] font-black text-gray-400 uppercase tracking-wider font-headline">
                                 الرحلة والتاريخ</th>
@@ -100,27 +100,27 @@
                                 {{-- Date & ID --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-1">
-                                        <span class="font-body text-sm font-bold text-gray-800 dark:text-white">رحلة
+                                        <span class="text-sm font-bold text-gray-800 font-body dark:text-white">رحلة
                                             #{{ $trip->id }}</span>
                                         <span
-                                            class="font-body text-xs text-gray-500 dark:text-gray-400">{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
+                                            class="text-xs text-gray-500 font-body dark:text-gray-400">{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
                                     </div>
                                 </td>
 
                                 {{-- Driver --}}
                                 <td class="px-6 py-4 align-top">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex gap-3 items-center">
                                         <div
-                                            class="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 text-primary font-headline font-black uppercase shadow-sm shrink-0">
+                                            class="flex justify-center items-center w-11 h-11 font-black uppercase rounded-full shadow-sm bg-primary/10 text-primary font-headline shrink-0">
                                             {{ $avatarLetters }}
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <span class="font-body text-sm font-bold text-gray-800 dark:text-white">
+                                            <span class="text-sm font-bold text-gray-800 font-body dark:text-white">
                                                 {{ $driverName }}
                                             </span>
                                             @if ($driverPhone)
                                                 <span
-                                                    class="font-body text-xs text-gray-500 dark:text-gray-400 dir-ltr text-right font-mono block mt-0.5"
+                                                    class="block mt-0.5 font-mono text-xs text-right text-gray-500 font-body dark:text-gray-400 dir-ltr"
                                                     style="direction: ltr;">
                                                     <x-phone-number :value="$driverPhone"
                                                         class="text-gray-500 dark:text-gray-400" />
@@ -134,19 +134,19 @@
                                 </td>
 
                                 {{-- Passengers count --}}
-                                <td class="px-6 py-4 align-middle text-center">
+                                <td class="px-6 py-4 text-center align-middle">
                                     <span
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-black bg-slate-100 text-slate-700 dark:bg-boxdark-2 dark:text-gray-300">
+                                        class="inline-flex gap-1.5 items-center px-3 py-1.5 text-sm font-black rounded-lg bg-slate-100 text-slate-700 dark:bg-boxdark-2 dark:text-gray-300">
                                         <span class="material-symbols-outlined text-[18px] text-gray-400">groups</span>
                                         {{ $trip->passengers->sum('count') }}
                                     </span>
                                 </td>
 
                                 {{-- Actions --}}
-                                <td class="px-6 py-4 align-middle text-center relative" x-data="{ openMenu: false }">
-                                    <div class="flex items-center justify-center">
+                                <td class="relative px-6 py-4 text-center align-middle" x-data="{ openMenu: false }">
+                                    <div class="flex justify-center items-center">
                                         <button @click="openMenu = !openMenu" @click.away="openMenu = false" type="button"
-                                            class="flex justify-center items-center w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 dark:bg-boxdark-2 rounded-full transition-all active:scale-90">
+                                            class="flex justify-center items-center w-8 h-8 rounded-full transition-all text-slate-400 hover:text-slate-600 dark:hover:text-white bg-slate-50 dark:bg-boxdark-2 active:scale-90">
                                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
                                         </button>
 
@@ -157,17 +157,17 @@
                                             x-transition:leave="transition ease-in duration-75"
                                             x-transition:leave-start="opacity-100 scale-100"
                                             x-transition:leave-end="opacity-0 scale-95"
-                                            class="absolute left-6 top-12 mt-2 w-44 bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl z-30 overflow-hidden py-1 text-right">
+                                            class="overflow-hidden absolute left-6 top-12 z-30 py-1 mt-2 w-44 text-right bg-white rounded-2xl border shadow-xl dark:bg-boxdark border-slate-100 dark:border-boxdark-2">
 
                                             <a href="{{ route('trips.show', $trip->id) }}"
-                                                class="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2 transition-colors">
+                                                class="flex gap-2 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2">
                                                 <span
                                                     class="material-symbols-outlined text-[16px] text-blue-500">visibility</span>
                                                 عرض التفاصيل
                                             </a>
 
                                             <a href="{{ route('trips.edit', $trip->id) }}"
-                                                class="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2 transition-colors">
+                                                class="flex gap-2 items-center px-4 py-2.5 text-xs font-bold transition-colors text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2">
                                                 <span
                                                     class="material-symbols-outlined text-[16px] text-amber-500">edit</span>
                                                 تعديل الرحلة
@@ -175,7 +175,7 @@
 
                                             <a href="{{ route('receipt.generate', ['type' => 'trip', 'id' => $trip->uuid]) }}"
                                                 target="_blank"
-                                                class="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2 transition-colors border-t border-slate-50 dark:border-boxdark-2">
+                                                class="flex gap-2 items-center px-4 py-2.5 text-xs font-bold border-t transition-colors text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-boxdark-2 border-slate-50 dark:border-boxdark-2">
                                                 <span
                                                     class="material-symbols-outlined text-[16px] text-emerald-500">print</span>
                                                 طباعة الكشف / السند
@@ -195,18 +195,18 @@
                                 <td colspan="4" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
-                                            class="flex justify-center items-center w-16 h-16 bg-slate-50 rounded-full border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark text-gray-400">
+                                            class="flex justify-center items-center w-16 h-16 text-gray-400 rounded-full border border-gray-100 bg-slate-50 dark:bg-boxdark-2 dark:border-boxdark">
                                             <span class="material-symbols-outlined text-[32px]">explore_off</span>
                                         </div>
                                         <div>
                                             <h3
-                                                class="mb-1 font-headline text-base font-black text-slate-700 dark:text-white">
+                                                class="mb-1 text-base font-black font-headline text-slate-700 dark:text-white">
                                                 لا توجد رحلات مضافة حالياً</h3>
-                                            <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">قم
+                                            <p class="text-sm font-medium text-gray-500 font-body dark:text-gray-400">قم
                                                 بإنشاء أول رحلة الآن لتبدأ بتوزيع الركاب بداخلها.</p>
                                         </div>
                                         <a href="{{ route('trips.create') }}"
-                                            class="mt-2 px-6 h-12 bg-primary text-white text-sm font-black rounded-xl shadow-md shadow-primary/20 flex items-center gap-2 transition-all active:scale-95">
+                                            class="flex gap-2 items-center px-6 mt-2 h-12 text-sm font-black text-white rounded-xl shadow-md transition-all bg-primary shadow-primary/20 active:scale-95">
                                             <span class="material-symbols-outlined text-[20px]">add</span> إنشاء أول رحلة
                                         </a>
                                     </div>
@@ -218,13 +218,13 @@
                             <td colspan="4" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
                                     <div
-                                        class="flex justify-center items-center w-16 h-16 bg-slate-50 rounded-full border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark text-gray-400">
+                                        class="flex justify-center items-center w-16 h-16 text-gray-400 rounded-full border border-gray-100 bg-slate-50 dark:bg-boxdark-2 dark:border-boxdark">
                                         <span class="material-symbols-outlined text-[32px]">search_off</span>
                                     </div>
                                     <div>
-                                        <h3 class="mb-1 font-headline text-base font-black text-slate-700 dark:text-white">
+                                        <h3 class="mb-1 text-base font-black font-headline text-slate-700 dark:text-white">
                                             لا توجد نتائج مطابقة</h3>
-                                        <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر
+                                        <p class="text-sm font-medium text-gray-500 font-body dark:text-gray-400">لم نعثر
                                             على رحلات تطابق بحثك.</p>
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@
 
             @if ($trips->hasPages())
                 <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 rounded-b-2xl custom-pagination">
+                    class="px-6 py-5 rounded-b-2xl border-t border-gray-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 custom-pagination">
                     {{ $trips->links('vendor.pagination.tailwind') }}
                 </div>
             @endif

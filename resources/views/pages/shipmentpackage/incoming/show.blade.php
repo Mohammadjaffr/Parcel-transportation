@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تفاصيل الإرسالية الواردة - ' . $package->tracking_number)
+@section('title', 'تفاصيل الإرسالية الواردة - ' . $package->id)
 @section('Breadcrumb', 'إدارة الشحنات / تفاصيل الإرسالية الواردة')
 
 @section('content')
@@ -17,7 +17,7 @@
                 </a>
                 <div>
                     <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">
-                        إرسالية واردة #{{ $package->tracking_number }}</h1>
+                        إرسالية واردة #{{ $package->id }}</h1>
                     <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">
                         {{ $package->created_at->format('Y-m-d h:i A') }}</p>
                 </div>
@@ -62,6 +62,11 @@
                     class="flex gap-2 items-center px-5 h-11 text-xs font-black text-gray-700 bg-white rounded-xl border border-gray-100 shadow-sm transition-all dark:bg-boxdark-2 dark:text-white hover:bg-gray-50 dark:hover:bg-boxdark dark:border-boxdark">
                     <span class="material-symbols-outlined text-[18px]">print</span>
                     طباعة الكشف
+                </a>
+                <a href="{{ route('shipmentpackage.incoming.edit', $package->id) }}"
+                    class="flex gap-2 items-center px-5 h-11 text-xs font-black text-emerald-700 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm transition-all hover:bg-emerald-500 hover:text-white dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 dark:hover:bg-emerald-500 dark:hover:text-white">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    تعديل الإرسالية / إضافة طرد
                 </a>
 
                 {{-- أزرار الإجراءات للرحلة كاملة --}}
@@ -170,7 +175,7 @@
                                     'مرحباً كابتن *' .
                                     ($package->driver->name ?? 'السائق') .
                                     "*،\nنحن في انتظار وصول الإرسالية رقم: *" .
-                                    $package->tracking_number .
+                                    $package->id .
                                     "* إلى مستودعنا.\nمتى تتوقع الوصول؟";
                             @endphp
                             <a href="https://wa.me/{{ ltrim($package->driver->phone, '+') }}?text={{ urlencode($driverMsg) }}"

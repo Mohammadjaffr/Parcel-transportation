@@ -39,18 +39,18 @@
         <div class="relative p-6 border-b border-slate-200 bg-slate-50/50 print:bg-transparent print-compact">
             <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-[0.03] rounded-bl-full print:hidden"></div>
 
-            <div class="relative flex items-start justify-between gap-6">
-                <div class="flex items-start gap-4 min-w-0 flex-1">
+            <div class="flex relative gap-6 justify-between items-start">
+                <div class="flex flex-1 gap-4 items-start min-w-0">
                     @if (!empty($company['logo']))
                         <div
-                            class="flex justify-center items-center p-1.5 w-16 h-16 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0">
+                            class="flex justify-center items-center p-1.5 w-16 h-16 bg-white rounded-xl border shadow-sm border-slate-200 shrink-0">
                             <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-full h-full">
                         </div>
                     @endif
-                    <div class="min-w-0 flex-1 pt-1">
-                        <h1 class="text-xl font-black tracking-tight text-slate-900 leading-tight">
+                    <div class="flex-1 pt-1 min-w-0">
+                        <h1 class="text-xl font-black tracking-tight leading-tight text-slate-900">
                             {{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="mt-1.5 text-xs font-semibold text-slate-500 flex items-center gap-1.5 leading-relaxed">
+                        <p class="flex gap-1.5 items-center mt-1.5 text-xs font-semibold leading-relaxed text-slate-500">
                             <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -64,13 +64,13 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col items-end gap-2 shrink-0 pt-1">
-    <div class="inline-flex justify-center items-center px-4 py-1.5 text-sm font-black text-indigo-800 bg-indigo-100 rounded-lg border border-indigo-200/60 shadow-sm print:border-slate-300">
+                <div class="flex flex-col gap-2 items-end pt-1 shrink-0">
+    <div class="inline-flex justify-center items-center px-4 py-1.5 text-sm font-black text-indigo-800 bg-indigo-100 rounded-lg border shadow-sm border-indigo-200/60 print:border-slate-300">
         {{ $title ?? 'كشف حمولة الرسائل' }}
     </div>
     
-    <div class="flex flex-col items-end gap-1.5 mt-0.5">
-        <div class="flex gap-1.5 items-center text-xs font-bold text-slate-400 font-sans">
+    <div class="flex flex-col gap-1.5 items-end mt-0.5">
+        <div class="flex gap-1.5 items-center font-sans text-xs font-bold text-slate-400">
             <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -97,8 +97,8 @@
             <div class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 print:grid-cols-2 print-gap-compact">
 
                 <div
-                    class="relative p-4 rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50/20 to-white shadow-sm">
-                    <div class="flex gap-2 items-center mb-3 pb-2 border-b border-indigo-100/60">
+                    class="relative p-4 bg-gradient-to-br to-white rounded-xl border border-indigo-100 shadow-sm from-indigo-50/20">
+                    <div class="flex gap-2 items-center pb-2 mb-3 border-b border-indigo-100/60">
                         <div class="flex justify-center items-center w-8 h-8 bg-indigo-100 rounded-md">
                             <svg class="w-4 h-4 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -111,7 +111,7 @@
                         <div class="flex gap-1.5 items-center">
                             <span class="font-semibold text-slate-400">رقم الإرسالية:</span>
                             <span
-                                class="px-2 py-0.5 font-bold font-mono text-indigo-800 bg-indigo-100/50 rounded">{{ $package_number ?? '---' }}</span>
+                                class="px-2 py-0.5 font-mono font-bold text-indigo-800 rounded bg-indigo-100/50">{{ $package_number ?? '---' }}</span>
                         </div>
                         <div class="flex gap-1.5">
                             <span class="font-semibold text-slate-400">فرع الإرسال:</span>
@@ -125,8 +125,8 @@
                 </div>
 
                 <div
-                    class="relative p-4 rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50/50 to-white shadow-sm">
-                    <div class="flex gap-2 items-center mb-3 pb-2 border-b border-slate-200/60">
+                    class="relative p-4 bg-gradient-to-br to-white rounded-xl border shadow-sm border-slate-200 from-slate-50/50">
+                    <div class="flex gap-2 items-center pb-2 mb-3 border-b border-slate-200/60">
                         <div class="flex justify-center items-center w-8 h-8 rounded-md bg-slate-200">
                             <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -142,14 +142,14 @@
                         </div>
                         <div class="flex gap-1.5">
                             <span class="font-semibold text-slate-400">رقم الهاتف:</span>
-                            <span class="font-bold font-sans text-slate-800" dir="ltr">{{ $driver_phone ?? '---' }}</span>
+                            <span class="font-sans font-bold text-slate-800" dir="ltr">{{ $driver_phone ?? '---' }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="mb-6">
-                <div class="flex items-center gap-2 mb-3">
+                <div class="flex gap-2 items-center mb-3">
                     <span class="w-1.5 h-5 bg-indigo-600 rounded-full"></span>
                     @if($isReceiver)
                         <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المستلمه</h2>
@@ -158,30 +158,30 @@
                     @endif
                 </div>
 
-                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                <div class="overflow-x-auto rounded-xl border shadow-sm border-slate-200">
                     <table class="w-full text-xs text-right bg-white divide-y divide-slate-200">
                         <thead class="bg-slate-50 print:bg-slate-100">
                             <tr>
-                                <th class="py-2.5 px-3 w-10 font-bold text-center text-slate-500">#</th>
-                                <th class="py-2.5 px-3 w-28 font-bold text-slate-500">رقم السند</th>
-                                <th class="py-2.5 px-3 font-bold text-slate-500">المرسل</th>
-                                <th class="py-2.5 px-3 font-bold text-slate-500">المستلم</th>
-                                <th class="py-2.5 px-3 w-28 font-bold text-slate-500">الوجهة</th>
-                                <th class="py-2.5 px-3 w-40 font-bold text-slate-500">النوع / الوزن / تفاصيل</th>
-                                <th class="py-2.5 px-3 w-28 font-bold text-slate-500 text-center">طريقة الدفع</th>
-                                <th class="py-2.5 px-3 w-24 font-bold text-center text-slate-500">الإجمالي</th>
-                                <th class="py-2.5 px-3 w-24 font-bold text-center text-slate-500">المتبقي</th>
+                                <th class="px-3 py-2.5 w-10 font-bold text-center text-slate-500">#</th>
+                                <th class="px-3 py-2.5 w-28 font-bold text-slate-500">رقم السند</th>
+                                <th class="px-3 py-2.5 font-bold text-slate-500">المرسل</th>
+                                <th class="px-3 py-2.5 font-bold text-slate-500">المستلم</th>
+                                <th class="px-3 py-2.5 w-28 font-bold text-slate-500">الوجهة</th>
+                                <th class="px-3 py-2.5 w-40 font-bold text-slate-500">النوع / الوزن / تفاصيل</th>
+                                <th class="px-3 py-2.5 w-28 font-bold text-center text-slate-500">طريقة الدفع</th>
+                                <th class="px-3 py-2.5 w-24 font-bold text-center text-slate-500">الإجمالي</th>
+                                <th class="px-3 py-2.5 w-24 font-bold text-center text-slate-500">المتبقي</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @forelse($shipments ?? [] as $shipment)
                                 <tr class="transition-colors hover:bg-slate-50/30">
-                                    <td class="py-2.5 px-3 font-bold text-center text-slate-400">{{ $loop->iteration }}</td>
-                                    <td class="py-2.5 px-3 font-black text-slate-700 font-mono" dir="ltr">
+                                    <td class="px-3 py-2.5 font-bold text-center text-slate-400">{{ $loop->iteration }}</td>
+                                    <td class="px-3 py-2.5 font-mono font-black text-slate-700" dir="ltr">
                                         {{ $shipment['bond_number'] }}
                                     </td>
                                     @if($shipment['sender_phone'] !== '---')
-                                        <td class="py-2.5 px-3">
+                                        <td class="px-3 py-2.5">
                                             <div class="font-bold text-slate-900">
                                                 {{ $shipment['sender_name'] }}
                                             </div>
@@ -190,22 +190,22 @@
                                             </div>
                                         </td>
                                     @else
-                                        <td class="py-2.5 px-3">
+                                        <td class="px-3 py-2.5">
                                            غير مسجل
                                         </td>
                                     @endif
-                                    <td class="py-2.5 px-3">
+                                    <td class="px-3 py-2.5">
                                         <div class="font-bold text-slate-900">{{ $shipment['receiver_name'] }}</div>
                                         <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
                                             {{ $shipment['receiver_phone'] }}</div>
                                     </td>
-                                    <td class="py-2.5 px-3">
+                                    <td class="px-3 py-2.5">
                                         <span
                                             class="inline-flex items-center px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 text-slate-700">
                                             {{ $shipment['receiver_branch'] }}
                                         </span>
                                     </td>
-                                    <td class="py-2.5 px-3 leading-tight">
+                                    <td class="px-3 py-2.5 leading-tight">
                                         <span class="font-bold text-slate-800">{{ $shipment['package_type'] }}</span>
                                         @if (!empty($shipment['weight']))
                                             <span class="text-[10px] font-semibold text-slate-400 mx-1">|</span><span
@@ -217,7 +217,7 @@
                                                 {{ $shipment['honey_details'] }}</div>
                                         @endif
                                     </td>
-                                    <td class="py-2.5 px-3 text-center">
+                                    <td class="px-3 py-2.5 text-center">
                                         @php
                                             $paymentColors = [
                                                 'prepaid' => 'bg-emerald-50 text-emerald-800 border-emerald-200/60',
@@ -232,7 +232,7 @@
                                             {{ $shipment['payment_method'] }}
                                         </span>
                                     </td>
-                                    <td class="py-2.5 px-3 font-bold text-center text-slate-900 font-sans" dir="ltr">
+                                    <td class="px-3 py-2.5 font-sans font-bold text-center text-slate-900" dir="ltr">
                                         {{ $shipment['total_amount'] }}
                                     </td>
                                     <td class="py-2.5 px-3 text-center font-bold font-sans {{ $shipment['remaining_amount'] !== '0' ? 'text-rose-600' : 'text-emerald-600' }}"
@@ -252,7 +252,7 @@
 
                     @if (!empty($shipments))
                         <div
-                            class="grid grid-cols-1 md:grid-cols-3 print:grid-cols-3 divide-y md:divide-y-0 print:divide-y-0 md:divide-x md:divide-x-reverse print:divide-x print:divide-x-reverse divide-slate-200 bg-slate-50 border-t border-slate-200">
+                            class="grid grid-cols-1 border-t divide-y md:grid-cols-3 print:grid-cols-3 md:divide-y-0 print:divide-y-0 md:divide-x md:divide-x-reverse print:divide-x print:divide-x-reverse divide-slate-200 bg-slate-50 border-slate-200">
 
                             {{-- 1. ملخص الطرود --}}
                             <div class="p-4">
@@ -261,11 +261,11 @@
                                 <div class="flex justify-between items-end">
                                     <div>
                                         <p class="text-[10px] font-bold text-slate-400 mb-0.5">العدد الإجمالي</p>
-                                        <p class="text-lg font-black text-slate-900 font-sans">{{ $total_shipments ?? 0 }}</p>
+                                        <p class="font-sans text-lg font-black text-slate-900">{{ $total_shipments ?? 0 }}</p>
                                     </div>
                                     <div class="text-left">
                                         <p class="text-[10px] font-bold text-slate-400 mb-0.5">إجمالي المبالغ</p>
-                                        <p class="text-lg font-black text-indigo-700 font-sans" dir="ltr">
+                                        <p class="font-sans text-lg font-black text-indigo-700" dir="ltr">
                                             @php
                                                 $totalAmounts = collect($shipments)->sum(
                                                     fn($s) => (float) str_replace(',', '', $s['total_amount']),
@@ -285,7 +285,7 @@
                                 <div class="flex justify-between items-end">
                                     <div>
                                         <p class="text-[10px] font-bold text-emerald-600 mb-0.5">المدفوع</p>
-                                        <p class="text-lg font-black text-emerald-700 font-sans">
+                                        <p class="font-sans text-lg font-black text-emerald-700">
                                             {{-- الحسبة الذكية: إجمالي المبالغ مطروحاً منها ما سيحصله السائق كاش --}}
                                             {{ number_format($totalAmounts - ($totals['expected_cash'] ?? 0), 0) }} <span
                                                 class="text-[10px] font-normal text-emerald-500">ر.ي</span>
@@ -293,7 +293,7 @@
                                     </div>
                                     <div class="text-left">
                                         <p class="text-[10px] font-bold text-rose-600 mb-0.5">المتبقي للتحصيل</p>
-                                        <p class="text-lg font-black text-rose-700 font-sans">
+                                        <p class="font-sans text-lg font-black text-rose-700">
                                             {{-- القيمة القادمة مباشرة من الـ Accessor الخاص بموديل الـ Shipment --}}
                                             {{ number_format($totals['expected_cash'] ?? 0, 0) }} <span
                                                 class="text-[10px] font-normal text-rose-500">ر.ي</span>
@@ -307,22 +307,22 @@
                             <div class="p-4 bg-emerald-50/30 print:bg-transparent">
                                 <h4 class="mb-2 text-[10px] font-black uppercase tracking-wider text-emerald-800">تفصيل العمولات
                                 </h4>
-                                <div class="flex justify-between items-end gap-2">
+                                <div class="flex gap-2 justify-between items-end">
                                     <div>
                                         <p class="text-[10px] font-bold text-emerald-600/80 mb-0.5">عمولة الطرود</p>
-                                        <p class="text-sm font-black text-emerald-700 font-sans">
+                                        <p class="font-sans text-sm font-black text-emerald-700">
                                             {{ number_format($totals['package_commission'] ?? 0, 0) }}
                                         </p>
                                     </div>
                                     <div>
                                         <p class="text-[10px] font-bold text-amber-600/80 mb-0.5">عمولة العسل</p>
-                                        <p class="text-sm font-black text-amber-700 font-sans">
+                                        <p class="font-sans text-sm font-black text-amber-700">
                                             {{ number_format($totals['honey_commission'] ?? 0, 0) }}
                                         </p>
                                     </div>
-                                    <div class="text-left pl-1 border-r pr-2 border-emerald-200/80">
+                                    <div class="pr-2 pl-1 text-left border-r border-emerald-200/80">
                                         <p class="text-[10px] font-bold text-emerald-800 mb-0.5">الإجمالي</p>
-                                        <p class="text-lg font-black text-emerald-900 font-sans">
+                                        <p class="font-sans text-lg font-black text-emerald-900">
                                             {{ number_format($totals['grand_commission'] ?? 0, 0) }} <span
                                                 class="text-[10px] font-normal text-emerald-700">ر.ي</span>
                                         </p>
@@ -336,27 +336,14 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-6 mt-10 mb-4 print:mt-8">
-                <div class="text-center">
-                    <p class="mb-6 text-xs font-bold text-slate-500">توقيع مسؤول الفرع</p>
-                    <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-                </div>
-                <div class="text-center">
-                    <p class="mb-6 text-xs font-bold text-slate-500">توقيع السائق</p>
-                    <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-                </div>
-                <div class="text-center">
-                    <p class="mb-6 text-xs font-bold text-slate-500">ختم الفرع المستلم</p>
-                    <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-                </div>
-            </div>
+           
         </div>
 
         <div class="bg-slate-900 border-t border-slate-800 p-4 text-center sm:rounded-b-[1.5rem] print:rounded-none">
             <p class="text-[10px] font-medium text-slate-400">
                 تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> |
-                بواسطة: <span class="text-slate-300 font-bold">{{ $creator_name ?? 'مسؤول النظام' }}</span> |
-                الطباعة: <span class="text-slate-300 font-bold font-sans"
+                بواسطة: <span class="font-bold text-slate-300">{{ $creator_name ?? 'مسؤول النظام' }}</span> |
+                الطباعة: <span class="font-sans font-bold text-slate-300"
                     dir="ltr">{{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}</span>
             </p>
 

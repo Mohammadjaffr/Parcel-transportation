@@ -107,16 +107,7 @@
                 @endif
             </div>
 
-            <div class="grid grid-cols-2 gap-8 mt-10 mb-2">
-                <div class="text-center">
-                    <p class="mb-8 text-sm font-bold text-slate-500">توقيع العميل المستلم/الدافع</p>
-                    <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-                </div>
-                <div class="text-center">
-                    <p class="mb-8 text-sm font-bold text-slate-500">توقيع الموظف المختص</p>
-                    <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-                </div>
-            </div>
+           
         </div>
 
         <div class="bg-slate-800 p-4 text-center rounded-b-[2rem]">

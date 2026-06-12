@@ -32,6 +32,11 @@ class PassengerTrip extends Model
         return $this->hasMany(Passengers::class, 'trip_id');
     }
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

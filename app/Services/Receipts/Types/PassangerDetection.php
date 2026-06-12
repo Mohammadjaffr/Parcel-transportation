@@ -100,19 +100,28 @@ class PassangerDetection implements ReceiptStrategyInterface
             ];
         }
 
+       $totalOffice = $passengers->sum('office_commission');
+        $totalOther  = $passengers->sum('other_commission');
+        $totalAll    = $totalOffice + $totalOther;
+
         return [
             'company' => [
                 'name' => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo' => $logoBase64,
             ],
-            'title'              => "كشف تسليم السائق",
-            'date_from'          => $filters['from'] ?? null,
-            'date_to'            => $filters['to'] ?? null,
-            'drivers'            => $driversData,
-            'total_passengers'   => $passengers->count(),
-            'total_count'        => $passengers->sum('count'),
-            'creator_name'       => $user->name ?? 'مسؤول النظام',
-            'print_date'         => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'title'                    => "كشف تسليم السائق",
+            'date_from'                => $filters['from'] ?? null,
+            'date_to'                  => $filters['to'] ?? null,
+            'drivers'                  => $driversData,
+            
+            'totalOfficeCommissionAll' => $totalOffice, 
+            'totalOtherCommissionAll'  => $totalOther,
+            'totalCommissionall'       => $totalAll,
+            
+            'total_passengers'         => $passengers->count(),
+            'total_count'              => $passengers->sum('count'),
+            'creator_name'             => $user->name ?? 'مسؤول النظام',
+            'print_date'               => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
         ];
     }
 

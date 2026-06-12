@@ -17,7 +17,7 @@
                 <a :href="'{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => '__ID__']) }}'.replace('__ID__', getPrintUrl())" target="_blank"
                     class="flex justify-center items-center h-12 px-4 gap-1 text-primary bg-primary/10 hover:bg-primary hover:text-white rounded-[1rem] shadow-sm transition-all active:scale-95 border border-primary/20">
                     <span class="text-xl material-symbols-outlined">print</span>
-                    <span class="font-bold text-sm">طباعة الكشف</span>
+                    <span class="text-sm font-bold">طباعة الكشف</span>
                 </a>
                 <a href="{{ route('passengers.create') }}">
                     <button type="button"
@@ -44,8 +44,8 @@
             </div>
         </div>
 
-        <div class="pl-4 pr-4 -mt-2">
-            <div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar"
+        <div class="pr-4 pl-4 -mt-2">
+            <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar"
                 style="scrollbar-width: none; -ms-overflow-style: none;">
                 <style>
                     .custom-scrollbar::-webkit-scrollbar {
@@ -100,16 +100,16 @@
                     class="bg-white rounded-[1.75rem] p-5 shadow-sm border border-slate-100 relative transition-all duration-300 passenger-card cursor-pointer hover:border-slate-200"
                     :class="expanded ? 'shadow-md ring-1 ring-slate-100/50' : ''" @click="expanded = !expanded">
 
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex gap-2 items-center">
                             <div
-                                class="flex justify-center items-center w-8 h-8 bg-slate-50 text-slate-700 rounded-lg border border-slate-100 shadow-inner">
-                                <span class="material-symbols-outlined text-base">layers</span>
+                                class="flex justify-center items-center w-8 h-8 rounded-lg border shadow-inner bg-slate-50 text-slate-700 border-slate-100">
+                                <span class="text-base material-symbols-outlined">layers</span>
                             </div>
-                            <h4 class="text-base font-black text-slate-800 font-mono">#{{ $passenger->id }}</h4>
+                            <h4 class="font-mono text-base font-black text-slate-800">#{{ $passenger->id }}</h4>
                         </div>
 
-                        <div class="flex items-center gap-2" @click.stop>
+                        <div class="flex gap-2 items-center" @click.stop>
                             <span
                                 class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
                                 {{ $statusLabel }}
@@ -117,7 +117,7 @@
 
                             <div x-data="{ open: false }" class="relative">
                                 <button @click="open = !open" type="button"
-                                    class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100">
+                                    class="flex justify-center items-center w-8 h-8 rounded-full border bg-slate-50 text-slate-500 hover:bg-slate-100 border-slate-100">
                                     <span class="material-symbols-outlined text-[18px]">more_vert</span>
                                 </button>
                                 <div x-show="open" @click.away="open = false" x-cloak
@@ -137,22 +137,22 @@
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">print</span>   طباعة كشف ركاب 
                                     </a>
-                                    @if ($statusKey === 'pending')
+                                
                                         <a href="{{ route('passengers.edit', $passenger->id) }}"
                                             class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-600 font-headline">
                                             <span class="material-symbols-outlined text-[16px]">edit</span> تعديل
                                         </a>
-                                    @endif
+                                    
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div
-                        class="flex items-center justify-between bg-slate-50/50 p-3 rounded-2xl border border-slate-100/60 mb-4">
-                        <div class="flex items-center gap-3 min-w-0">
+                        class="flex justify-between items-center p-3 mb-4 rounded-2xl border bg-slate-50/50 border-slate-100/60">
+                        <div class="flex gap-3 items-center min-w-0">
                             <div
-                                class="flex justify-center items-center w-10 h-10 text-sm font-black bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100/70 shrink-0">
+                                class="flex justify-center items-center w-10 h-10 text-sm font-black text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100/70 shrink-0">
                                 {{ mb_substr($passenger->broker?->name ?? 'و', 0, 1, 'UTF-8') }}
                             </div>
                             <div class="min-w-0">
@@ -165,20 +165,20 @@
 
                         <div class="text-left" @click.stop>
                             <span class="text-[9px] font-bold text-slate-400 block mb-0.5">رقم هاتف الراكب</span>
-                            <span class="text-primary font-mono text-xs dir-ltr font-black bg-primary/5 px-2.5 py-1 rounded-lg">
+                            <span class="px-2.5 py-1 font-mono text-xs font-black rounded-lg text-primary dir-ltr bg-primary/5">
                                 <x-phone-number :value="$passenger->passenger_number" class="text-primary" />
                             </span>
                         </div>
                     </div>
 
                     @if(!empty($passenger->destination))
-                        <div class="relative pr-6 my-4 border-r-2 border-dashed border-slate-200 space-y-3">
+                        <div class="relative pr-6 my-4 space-y-3 border-r-2 border-dashed border-slate-200">
                             <div class="relative">
                                 <span
                                     class="absolute right-[-29px] top-0.5 w-2.5 h-2.5 rounded-full bg-slate-300 border-2 border-white ring-4 ring-slate-100"></span>
                                 <div class="text-xs">
                                     <span class="text-slate-400 font-bold block text-[9px]">مكان الصعود:</span>
-                                    <span class="text-slate-700 font-black">{{ $passenger->pickup_location ?? 'غير محدد' }}</span>
+                                    <span class="font-black text-slate-700">{{ $passenger->pickup_location ?? 'غير محدد' }}</span>
                                 </div>
                             </div>
 
@@ -187,23 +187,23 @@
                                     class="absolute right-[-29px] top-0.5 w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white ring-4 ring-amber-100"></span>
                                 <div class="text-xs">
                                     <span class="text-amber-500 font-bold block text-[9px]">الوجهة:</span>
-                                    <span class="text-amber-600 font-black">{{ $passenger->destination }}</span>
+                                    <span class="font-black text-amber-600">{{ $passenger->destination }}</span>
                                 </div>
                             </div>
                         </div>
                     @endif
 
-                    <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100 text-xs">
+                    <div class="grid grid-cols-2 gap-3 pt-3 mt-3 text-xs border-t border-slate-100">
                         <div>
                             <span class="text-slate-400 font-bold block text-[9px] mb-0.5">تاريخ الرحلة:</span>
-                            <div class="flex items-center gap-1 text-slate-700 font-bold">
+                            <div class="flex gap-1 items-center font-bold text-slate-700">
                                 <span class="material-symbols-outlined text-[14px] text-slate-400">calendar_today</span>
                                 <span>{{ \Carbon\Carbon::parse($passenger->date)->format('Y/m/d') }}</span>
                             </div>
                         </div>
                         <div>
                             <span class="text-slate-400 font-bold block text-[9px] mb-0.5">عدد الركاب:</span>
-                            <div class="flex items-center gap-1 text-slate-700 font-black">
+                            <div class="flex gap-1 items-center font-black text-slate-700">
                                 <span class="material-symbols-outlined text-[14px] text-slate-400">group</span>
                                 <span>{{ $passenger->count }} راكب</span>
                             </div>
@@ -233,7 +233,7 @@
             x-transition:leave-end="opacity-0 translate-y-full"
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
+            <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60" @click="closeModals()"></div>
 
             <div
                 class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto text-right">
@@ -279,7 +279,7 @@
             x-transition:leave-end="opacity-0 translate-y-full"
             class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
 
-            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto" @click="closeModals()"></div>
+            <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60" @click="closeModals()"></div>
 
             <div
                 class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 text-center pointer-events-auto">
@@ -294,7 +294,7 @@
                 <h3 class="mb-3 text-2xl font-black font-headline text-slate-800">تأكيد الحذف</h3>
                 <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
                     هل أنت متأكد من حذف الراكب رقم:<br>
-                    <span class="text-base font-bold text-slate-800 font-mono dir-ltr inline-block"
+                    <span class="inline-block font-mono text-base font-bold text-slate-800 dir-ltr"
                         x-text="deletePassengerData.passenger_number"></span>؟<br>
                     <span class="inline-block mt-2 text-rose-500/80">لا يمكن التراجع عن هذا الإجراء.</span>
                 </p>

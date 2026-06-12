@@ -392,6 +392,152 @@ class ShipmentPackagesController extends Controller
 
         return view('pages.shipmentpackage.incoming.create', compact('offices', 'drivers', 'customers'));
     }
+    public function incomingEdit(Request $request, $id)
+    {
+        $user = auth()->user();
+        
+        // جلب الإرسالية مع الطرود المرتبطة بها والعملاء والسائق
+        $package = ShipmentPackage::with([
+            'shipments.senderCustomer',
+            'shipments.receiverCustomer',
+            'driver'
+        ])->findOrFail($id);
+
+        $offices = Office::with('branches')->get();
+        $customers = Customer::get(['id', 'name', 'phone']);
+        $drivers = Driver::where('app_id', $user->app_id)->get(['id', 'name', 'phone']);
+
+        if ($request->isMobile) {
+            return view('mobile.pages.shipmentpackage.incoming.edit', compact('package', 'offices', 'drivers', 'customers'));
+        }
+
+        return view('pages.shipmentpackage.incoming.edit', compact('package', 'offices', 'drivers', 'customers'));
+    }
+    public function incomingUpdate(Request $request, $id)
+    {
+        $package = ShipmentPackage::findOrFail($id);
+
+        // 1. التحقق من صحة المدخلات (مع استثناء رقم التتبع الحالي من الفلترة)
+        $validator = Validator::make($request->all(), [
+            'tracking_number' => 'required|string|unique:shipment_packages,tracking_number,' . $package->id,
+            'sender_office_branch_id' => 'required',
+            'driver_phone' => 'required|string',
+            'driver_name' => 'required_without:driver_id|string',
+            'items' => 'required|array|min:1',
+            'items.*.receiver_name' => 'required|string',
+            'items.*.receiver_phone' => 'required|string',
+            'items.*.payment_status' => 'required|in:paid,unpaid',
+            'items.*.amount' => 'required_if:items.*.payment_status,unpaid|numeric|min:0',
+            'items.*.package_type' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            $detailedErrors = implode(' • ', $validator->errors()->all());
+            return back()->withErrors($validator)->withInput()->with('error', 'يرجى مراجعة الحقول: ' . $detailedErrors);
+        }
+
+        try {
+            DB::beginTransaction();
+            $user = auth()->user();
+
+            // ==========================================
+            // 1. معالجة السائق (مع إزالة كود الدولة عند التخزين)
+            // ==========================================
+            $driverId = $request->driver_id;
+            if (!$driverId && $request->driver_phone) {
+                // إزالة كود الدولة (مثل +967 أو 00967) لضمان التخزين بدونه
+                $cleanDriverPhone = preg_replace('/^(\+|00)[1-9]\d{1,2}/', '', $request->driver_phone);
+
+                $driver = Driver::firstOrCreate(
+                    ['phone' => $cleanDriverPhone, 'app_id' => $user->app_id],
+                    ['name' => $request->driver_name, 'created_by' => $user->id]
+                );
+                $driverId = $driver->id;
+            }
+
+            // ==========================================
+            // 2. تحديث بيانات الإرسالية (الرحلة)
+            // ==========================================
+            $package->update([
+                'tracking_number' => $request->tracking_number,
+                'driver_id' => $driverId,
+                'sender_office_branch_id' => $request->sender_office_branch_id,
+                'notes' => $request->notes,
+            ]);
+
+            // ==========================================
+            // 3. معالجة الطرود (التحديث والإضافة)
+            // ==========================================
+            $processedShipmentIds = [];
+
+            foreach ($request->items as $item) {
+                
+                // معالجة العميل المستلم (إزالة كود الدولة)
+                $receiverId = null;
+                if (!empty($item['receiver_phone'])) {
+                    $cleanReceiverPhone = preg_replace('/^(\+|00)[1-9]\d{1,2}/', '', $item['receiver_phone']);
+                    
+                    $receiver = Customer::firstOrCreate(
+                        ['phone' => $cleanReceiverPhone, 'app_id' => $user->app_id],
+                        [
+                            'name' => $item['receiver_name'],
+                            'branch_id' => $user->branch_id,
+                            'created_by' => $user->id
+                        ]
+                    );
+                    $receiverId = $receiver->id;
+                }
+
+                $paymentMethod = $item['payment_status'] === 'paid' ? 'prepaid' : 'cod';
+                $totalAmount = $item['payment_status'] === 'paid' ? 0 : ($item['amount'] ?? 0);
+
+                if (isset($item['id']) && !empty($item['id'])) {
+                    // تحديث طرد موجود مسبقاً في هذه الرحلة
+                    $shipment = Shipment::findOrFail($item['id']);
+                    $shipment->update([
+                        'code' => $item['bond_number'],
+                        'sender_office_branch_id' => $request->sender_office_branch_id,
+                        'receiver_customer_id' => $receiverId,
+                        'package_type' => $item['package_type'],
+                        'payment_method' => $paymentMethod,
+                        'total_amount' => $totalAmount,
+                        'notes' => $item['item_notes'] ?? null,
+                    ]);
+                    $processedShipmentIds[] = $shipment->id;
+                } else {
+                    // إنشاء طرد جديد تمت إضافته أثناء عملية التعديل
+                    $newShipment = Shipment::create([
+                        'shipment_package_id' => $package->id,
+                        'code' => $item['bond_number'],
+                        'sender_office_branch_id' => $request->sender_office_branch_id,
+                        'receiver_branch_id' => $user->branch_id,
+                        'receiver_customer_id' => $receiverId,
+                        'package_type' => $item['package_type'],
+                        'payment_method' => $paymentMethod,
+                        'total_amount' => $totalAmount,
+                        'notes' => $item['item_notes'] ?? null,
+                        'status' => 'received_at_branch',
+                        'created_by' => $user->id,
+                    ]);
+                    $processedShipmentIds[] = $newShipment->id;
+                }
+            }
+
+            // (اختياري): إذا كنت تريد حذف الطرود التي تم مسحها من واجهة التعديل
+            // Shipment::where('shipment_package_id', $package->id)
+            //         ->whereNotIn('id', $processedShipmentIds)
+            //         ->delete();
+
+            DB::commit();
+
+            return redirect()->route('shipmentpackage.incoming.show', $package->id)
+                ->with('success', 'تم تحديث الإرسالية الواردة بنجاح!');
+                
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'حدث خطأ أثناء التحديث: ' . $e->getMessage());
+        }
+    }
     public function incomingStore(Request $request)
 {
     // 1. إنشاء الـ Validator يدوياً

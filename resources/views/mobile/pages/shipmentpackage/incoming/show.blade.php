@@ -1,6 +1,6 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'تفاصيل الإرسالية الواردة - ' . $package->tracking_number)
+@section('title', 'تفاصيل الإرسالية الواردة - ' . $package->id)
 
 @section('content')
     <div class="flex relative flex-col gap-5 px-4 pt-6 pb-8 min-h-screen bg-slate-50/50" x-data="{ 
@@ -16,7 +16,7 @@
                 </a>
                 <div>
                     <h1 class="text-lg font-black font-headline text-slate-800">إرسالية واردة</h1>
-                    <p class="text-sm font-bold tracking-wider text-primary">{{ $package->tracking_number }}</p>
+                    <p class="text-sm font-bold tracking-wider text-primary">{{ $package->id }}</p>
                 </div>
             </div>
 
@@ -147,7 +147,7 @@
             </div>
 
             @php
-                $driverMsg = "مرحباً كابتن *" . ($package->driver->name ?? 'السائق') . "*،\nنحن في انتظار وصول الإرسالية رقم: *" . $package->tracking_number . "* إلى مستودعنا.\nمتى تتوقع الوصول؟";
+                $driverMsg = "مرحباً كابتن *" . ($package->driver->name ?? 'السائق') . "*،\nنحن في انتظار وصول الإرسالية رقم: *" . $package->id . "* إلى مستودعنا.\nمتى تتوقع الوصول؟";
             @endphp
 
             <div class="relative z-10 pr-6 pl-2 space-y-8">
@@ -270,7 +270,7 @@
 
                 {{-- التفاصيل المختصرة --}}
                 <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
+                    <div class="flex gap-2 items-center mb-1">
                         <span class="font-mono text-sm font-black tracking-tight text-slate-800">{{ $shipment->code }}</span>
                         {{-- نوع الطرد --}}
                         <span class="text-[9px] font-bold text-indigo-500 bg-indigo-50/50 px-1.5 py-0.5 rounded border border-indigo-100/50">
@@ -285,7 +285,7 @@
                 </div>
 
                 {{-- منطقة الأزرار --}}
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex gap-2 items-center shrink-0">
                     
                     {{-- الاستلام السريع --}}
                     @if($shipment->status === 'in_transit')
@@ -293,14 +293,14 @@
                             @csrf
                             <input type="hidden" name="status" value="received_at_branch">
                             <button type="submit" :disabled="isSubmitting" title="تأكيد الوصول للمستودع"
-                                class="flex items-center justify-center w-8 h-8 bg-blue-50 text-blue-600 hover:bg-blue-500 hover:text-white rounded-full transition-all active:scale-95 border border-blue-100 hover:border-blue-500 shadow-sm">
+                                class="flex justify-center items-center w-8 h-8 text-blue-600 bg-blue-50 rounded-full border border-blue-100 shadow-sm transition-all hover:bg-blue-500 hover:text-white active:scale-95 hover:border-blue-500">
                                 <span class="material-symbols-outlined text-[16px]">inventory_2</span>
                             </button>
                         </form>
                     
                     {{-- بادج "بالمستودع" --}}
                     @elseif(in_array($shipment->status, ['received_at_branch', 'out_for_delivery', 'delivered']))
-                        <div class="flex items-center justify-center w-8 h-8 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100" title="تم الاستلام بالمستودع">
+                        <div class="flex justify-center items-center w-8 h-8 text-emerald-600 bg-emerald-50 rounded-full border border-emerald-100" title="تم الاستلام بالمستودع">
                             <span class="material-symbols-outlined text-[16px]">check_circle</span>
                         </div>
                     @endif
@@ -318,7 +318,7 @@
                             class="absolute left-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_15px_40px_-10px_rgba(0,0,0,0.15)] border border-slate-100 p-1.5 z-[50]">
 
                             {{-- 💡 نقلنا حالة الدفع إلى هنا (كمعلومة فقط وليست رابط) --}}
-                            <div class="px-3 py-2.5 mb-1 bg-slate-50/80 rounded-xl border border-slate-100/50">
+                            <div class="px-3 py-2.5 mb-1 rounded-xl border bg-slate-50/80 border-slate-100/50">
                                 <div class="text-[9px] font-bold text-slate-400 mb-1">حالة الدفع:</div>
                                 <div class="flex items-center gap-1.5 text-xs font-black {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-600' : 'text-rose-600' }}">
                                     <span class="material-symbols-outlined text-[14px]">payments</span>

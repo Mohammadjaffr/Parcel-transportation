@@ -210,21 +210,6 @@
             </div>
         </div>
 
-        <!-- Signatures -->
-        <div class="grid grid-cols-3 gap-8 mt-12 mb-4">
-            <div class="text-center">
-                <p class="mb-8 text-sm font-bold text-slate-500">توقيع مسؤول الفرع</p>
-                <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-            </div>
-            <div class="text-center">
-                <p class="mb-8 text-sm font-bold text-slate-500">توقيع السائق</p>
-                <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-            </div>
-            <div class="text-center">
-                <p class="mb-8 text-sm font-bold text-slate-500">ختم الفرع</p>
-                <div class="mx-auto w-3/4 border-b border-dashed border-slate-300"></div>
-            </div>
-        </div>
     </div>
     
     <!-- Footer -->

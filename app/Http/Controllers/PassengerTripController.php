@@ -91,31 +91,43 @@ class PassengerTripController extends Controller
     }
 }
 
-    public function show(Request $request, $id)
+  public function show(Request $request, $id)
     {
-    $trip = PassengerTrip::with([
-        'driver', 
-        'passengers', 
-    ])->findOrFail($id);
-    if ($request->isMobile) {
-            return view('mobile.pages.passenger.trips.show', compact('trip'));
-        }
-        // اكتب مسار الصفحة على الدسك توب
-    return view('pages.passenger.trips.show', compact('trip'));
-    }
-    public function edit(Request $request, $id)
-    {
-        $trip = PassengerTrip::with('passengers')->findOrFail($id);
-        $drivers = Driver::all();
+        $trip = PassengerTrip::with(['driver', 'passengers'])->findOrFail($id);
+        
+        // جلب قائمة الركاب قيد الانتظار في النظام لإتاحة إضافتهم
         $pendingPassengers = Passengers::where('status', 'pending')
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->get();
 
         if ($request->isMobile) {
-            return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+            return view('mobile.pages.passenger.trips.show', compact('trip', 'pendingPassengers'));
         }
-        return view('pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+        
+        return view('pages.passenger.trips.show', compact('trip', 'pendingPassengers'));
+    }
+
+    // دالة جديدة لإضافة راكب للرحلة مباشرة
+    public function addPassenger(Request $request, $tripId)
+    {
+        $request->validate([
+            'passenger_id' => ['required', 'exists:passengers,id'],
+        ]);
+
+        try {
+            $trip = PassengerTrip::findOrFail($tripId);
+            $passenger = Passengers::findOrFail($request->passenger_id);
+
+            // ربط الراكب بالرحلة وتحديث حالته
+            $passenger->trip_id = $trip->id;
+            $passenger->status  = 'completed'; 
+            $passenger->save();
+
+            return redirect()->back()->with('success', 'تم إضافة الراكب للرحلة بنجاح.');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', 'حدث خطأ أثناء إضافة الراكب.');
+        }
     }
 
     public function update(Request $request, $id)

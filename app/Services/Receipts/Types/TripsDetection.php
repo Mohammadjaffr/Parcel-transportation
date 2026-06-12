@@ -17,11 +17,6 @@ class TripsDetection implements ReceiptStrategyInterface
     public function fetchData(string $referenceId): array
     {
         $user = auth()->user();
-         // 🔒 حماية دفاعية: إذا كان المستخدم غير مسجل، اقطع الطلب فوراً واعرض صفحة غير مصرح
-        if (!$user) {
-            abort(403, 'غير مصرح لك بالوصول إلى هذه البيانات، يرجى تسجيل الدخول أولاً.');
-        }
-
         $filters = [];
         if (is_numeric($referenceId)) {
             $trips = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
@@ -74,6 +69,7 @@ class TripsDetection implements ReceiptStrategyInterface
         $totalCount = 0;
         $totalOfficeCommission = 0;
         $totalOtherOfficeCommission = 0;
+        $totalOfficeCommissionAll = 0;
 
         foreach ($trips as $trip) {
             $driverName = $trip->driver->name ?? 'سائق غير محدد';
@@ -93,6 +89,7 @@ class TripsDetection implements ReceiptStrategyInterface
             $tripTotalOffice = 0;
             $tripTotalOther = 0;
 
+
             foreach ($trip->passengers as $p) {
                 $pNum = $p->passenger_number ?? '---';
                 $pPickup = $p->pickup_location ?? '---';
@@ -103,12 +100,13 @@ class TripsDetection implements ReceiptStrategyInterface
                 $tripTotalCount += $pCnt;
                 $tripTotalOffice += $p->office_commission ?? 0;
                 $tripTotalOther += $p->other_office_commission ?? 0;
+                $totalOfficeCommissionAll += $p->office_commission + $p->other_office_commission ?? 0;   
                 $totalPassengers++;
 
                 $passengersData[] = [
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
                     'passenger_number'        => $pNum,
-                    'broker_name'             => $p->broker?->name ?? 'بدون وسيط',
+'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
                     'pickup_location'         => $pPickup,
                     'destination'             => $pDest,
                     'count'                   => $pCnt,
@@ -117,6 +115,7 @@ class TripsDetection implements ReceiptStrategyInterface
                     'status_key'              => $p->status ?? 'pending',
                     'status_label'            => $statusLabels[$p->status ?? 'pending'] ?? 'غير محدد',
                     'note'                    => $p->note,
+
                 ];
 
                 $msg .= "{$i}. الراكب: {$pNum}\n";
@@ -133,7 +132,7 @@ class TripsDetection implements ReceiptStrategyInterface
             // بناء رابط الـ PDF للرحلة
             $pdfLink = route('receipt.generate', [
                 'type' => 'trip',
-                'id'   => $trip->id
+                'id'   => $trip->uuid
             ]);
 
             $msg .= "📊 إجمالي عدد الركاب: *{$tripTotalCount}* راكب\n";
@@ -161,6 +160,7 @@ class TripsDetection implements ReceiptStrategyInterface
             $totalCount += $tripTotalCount;
             $totalOfficeCommission += $tripTotalOffice;
             $totalOtherOfficeCommission += $tripTotalOther;
+            $totalOfficeCommissionAll += $tripTotalOffice + $tripTotalOther;
         }
 
         return [

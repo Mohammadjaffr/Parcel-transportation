@@ -107,7 +107,7 @@
                     $name         = $currentStatus['name'];
                     $sideBarClass = $currentStatus['sidebar'];
                 @endphp
-                <a x-show="searchQuery === '' || '{{ $package->tracking_number }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
+                <a x-show="searchQuery === '' || '{{ $package->id }}'.includes(searchQuery) || '{{ $package->driver->name ?? '' }}'.includes(searchQuery)"
                     href="{{ route('shipmentpackage.incoming.show', $package->id) }}"
                     class="block bg-white rounded-[1.5rem] border border-slate-200/60 shadow-sm overflow-hidden relative active:scale-[0.98] transition-transform">
                     
@@ -119,7 +119,7 @@
                         <div class="flex justify-between items-start mb-3">
                             <div>
                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1 block">رقم الإرسالية</span>
-                                <h3 class="font-mono text-sm font-black text-slate-800">{{ $package->tracking_number }}</h3>
+                                <h3 class="font-mono text-sm font-black text-slate-800">{{ $package->id }}</h3>
                             </div>
 
                             <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-[10px] shadow-sm {{ $colorClass }}">

@@ -31,23 +31,23 @@
         class="max-w-2xl w-full mx-auto bg-white rounded-[1.5rem] shadow-[0_4px_25px_rgb(0,0,0,0.03)] print-no-shadow overflow-hidden border border-slate-100 print:border-slate-200 my-6 print:my-0 print:rounded-none">
 
         <div
-            class="p-5 bg-gradient-to-l from-teal-50/40 via-transparent to-transparent border-b border-slate-100 print-compact">
-            <div class="flex items-start justify-between gap-4">
+            class="p-5 bg-gradient-to-l via-transparent to-transparent border-b from-teal-50/40 border-slate-100 print-compact">
+            <div class="flex gap-4 justify-between items-start">
 
-                <div class="flex items-start gap-3 min-w-0 flex-1">
+                <div class="flex flex-1 gap-3 items-start min-w-0">
                     @php
                         $logo_path = !empty($company['logo']) ? $company['logo'] : public_path('assets/image/icon_without_bg.png');
                     @endphp
                     <div
-                        class="flex justify-center items-center p-1.5 w-16 h-16 bg-white rounded-xl border border-slate-100 shadow-sm shrink-0">
+                        class="flex justify-center items-center p-1.5 w-16 h-16 bg-white rounded-xl border shadow-sm border-slate-100 shrink-0">
                         <img src="{{ $logo_path }}" alt="Logo" class="object-contain w-full h-full">
                     </div>
 
-                    <div class="min-w-0 flex-1 pt-1">
-                        <h1 class="text-base font-black tracking-tight text-slate-800 leading-tight">
+                    <div class="flex-1 pt-1 min-w-0">
+                        <h1 class="text-base font-black tracking-tight leading-tight text-slate-800">
                             {{ $company['name'] ?? 'شركة مرسال' }}
                         </h1>
-                        <p class="mt-1 text-xs font-semibold text-slate-500 leading-relaxed">
+                        <p class="mt-1 text-xs font-semibold leading-relaxed text-slate-500">
                             {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
                         </p>
                         <p class="mt-1 text-[11px] font-medium text-slate-400">رقم الفرع: <span
@@ -55,17 +55,17 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col items-end gap-1.5 shrink-0 pt-1">
+                <div class="flex flex-col gap-1.5 items-end pt-1 shrink-0">
                     <span
-                        class="inline-flex items-center px-3 py-1 text-xs font-bold text-teal-700 bg-teal-50 rounded-lg border border-teal-100/70 shadow-sm">
+                        class="inline-flex items-center px-3 py-1 text-xs font-bold text-teal-700 bg-teal-50 rounded-lg border shadow-sm border-teal-100/70">
                         {{ $title ?? 'سند استلام طرد' }}
                     </span>
                     <span
-                        class="inline-flex items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-lg border border-red-100 shadow-sm ">
+                        class="inline-flex items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-lg border border-red-100 shadow-sm">
                         رقم السند: {{ $bond_number ?? '---' }}
                     </span>
                      <span
-                        class="items-center gap-1.5 px-3 py-1 text-xs font-black text-slate-700 bg-slate-100 border border-slate-200/80 rounded-full shadow-sm">
+                        class="gap-1.5 items-center px-3 py-1 text-xs font-black rounded-full border shadow-sm text-slate-700 bg-slate-100 border-slate-200/80">
                         {{ $user_branch ?? '---' }}
                     </span>
                 </div>
@@ -74,11 +74,11 @@
 
         <div class="p-5 space-y-4 print-compact">
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 print:grid-cols-2 gap-3 print-grid-compact">
-                <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 relative overflow-hidden">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 print:grid-cols-2 print-grid-compact">
+                <div class="overflow-hidden relative p-3.5 rounded-xl border border-slate-200 bg-slate-50/50">
                     
-                    <div class="flex gap-2 items-center mb-2 border-b border-slate-200/60 pb-1.5">
-                        <div class="flex justify-center items-center w-6 h-6 bg-slate-200 rounded-md">
+                    <div class="flex gap-2 items-center pb-1.5 mb-2 border-b border-slate-200/60">
+                        <div class="flex justify-center items-center w-6 h-6 rounded-md bg-slate-200">
                             <svg class="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                     d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
@@ -90,7 +90,7 @@
                         <div class="flex gap-1"><span class="text-slate-400">الاسم:</span> <span
                                 class="font-bold text-slate-800">{{ $sender_name ?? '---' }}</span></div>
                         <div class="flex gap-1"><span class="text-slate-400">الهاتف:</span> <span
-                                class="font-bold font-sans text-slate-800" dir="ltr">{{ $sender_phone ?? '---' }}</span>
+                                class="font-sans font-bold text-slate-800" dir="ltr">{{ $sender_phone ?? '---' }}</span>
                         </div>
                         <div class="flex gap-1"><span class="text-slate-400">الفرع:</span> <span
                                 class="font-medium text-slate-700">{{ $sender_branch ?? '---' }}</span></div>
@@ -100,9 +100,9 @@
                 </div>
 
                 <div
-                    class="p-3.5 rounded-xl border-2 border-teal-200 bg-teal-50/20 ring-2 ring-teal-100/30 relative overflow-hidden">
+                    class="overflow-hidden relative p-3.5 rounded-xl border-2 border-teal-200 ring-2 bg-teal-50/20 ring-teal-100/30">
                     
-                    <div class="flex gap-2 items-center mb-2 border-b border-teal-100/50 pb-1.5">
+                    <div class="flex gap-2 items-center pb-1.5 mb-2 border-b border-teal-100/50">
                         <div class="flex justify-center items-center w-6 h-6 bg-teal-100 rounded-md">
                             <svg class="w-3 h-3 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
@@ -115,7 +115,7 @@
                         <div class="flex gap-1"><span class="text-slate-400">الاسم:</span> <span
                                 class="font-bold text-slate-800">{{ $receiver_name ?? '---' }}</span></div>
                         <div class="flex gap-1"><span class="text-slate-400">الهاتف:</span> <span
-                                class="font-bold font-sans text-slate-800" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
+                                class="font-sans font-bold text-slate-800" dir="ltr">{{ $receiver_phone ?? '---' }}</span>
                         </div>
                         <div class="flex gap-1"><span class="text-slate-400">الفرع:</span> <span
                                 class="font-medium text-slate-700">{{ $receiver_branch ?? '---' }}</span></div>
@@ -125,32 +125,32 @@
                 </div>
             </div>
 
-            <div class="p-3.5 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+            <div class="p-3.5 bg-white rounded-xl border shadow-sm border-slate-200/80">
                 <h3 class="flex gap-2 items-center mb-2.5 text-xs font-black text-slate-800">
                     <span class="w-1 h-3.5 bg-teal-500 rounded-full"></span>
                     تفاصيل الطرد
                 </h3>
-                <div class="grid grid-cols-2 gap-3 border-t border-slate-100 pt-2">
+                <div class="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
                     <div>
                         <p class="text-[11px] font-bold text-slate-400">نوع الطرد</p>
-                        <p class="font-bold text-xs text-slate-800 mt-0.5">{{ $package_type ?? '---' }}</p>
+                        <p class="mt-0.5 text-xs font-bold text-slate-800">{{ $package_type ?? '---' }}</p>
                     </div>
                     @if(!empty($weight))
                         <div>
                             <p class="text-[11px] font-bold text-slate-400">الوزن</p>
-                            <p class="font-bold text-xs text-slate-800 mt-0.5">{{ $weight ?? 'غير محدد' }}</p>
+                            <p class="mt-0.5 text-xs font-bold text-slate-800">{{ $weight ?? 'غير محدد' }}</p>
                         </div>
                     @endif
                     @if(!empty($honey_details))
-                        <div class="col-span-2 bg-amber-50/40 p-2 rounded-lg border border-amber-100/60">
+                        <div class="col-span-2 p-2 rounded-lg border bg-amber-50/40 border-amber-100/60">
                             <p class="text-[11px] font-bold text-amber-800">تفاصيل العسل</p>
-                            <p class="font-bold text-xs text-amber-900 mt-0.5">{{ $honey_details }}</p>
+                            <p class="mt-0.5 text-xs font-bold text-amber-900">{{ $honey_details }}</p>
                         </div>
                     @endif
                     @if(!empty($notes) && $notes !== 'لا توجد ملاحظات إضافية')
-                        <div class="col-span-2 bg-slate-50 p-2 rounded-lg">
+                        <div class="col-span-2 p-2 rounded-lg bg-slate-50">
                             <p class="text-[11px] font-bold text-slate-400">ملاحظات</p>
-                            <p class="text-xs text-slate-600 mt-0.5">{{ $notes }}</p>
+                            <p class="mt-0.5 text-xs text-slate-600">{{ $notes }}</p>
                         </div>
                     @endif
                 </div>
@@ -170,7 +170,7 @@
                     ];
                     $paymentClass = $paymentColors[$payment_key ?? 'prepaid'] ?? 'bg-slate-50 text-slate-700 border-slate-200';
                 @endphp
-                <div class="grid grid-cols-4 gap-2 text-center border-t border-slate-200/60 pt-2.5">
+                <div class="grid grid-cols-4 gap-2 pt-2.5 text-center border-t border-slate-200/60">
                     <div>
                         <p class="mb-1 text-[11px] font-bold text-slate-400">طريقة الدفع</p>
                         <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold border {{ $paymentClass }}">
@@ -179,17 +179,17 @@
                     </div>
                     <div>
                         <p class="text-[11px] font-bold text-slate-400">الإجمالي</p>
-                        <p class="text-sm font-black text-slate-800 mt-0.5 font-sans">{{ $total_amount ?? 0 }} <span
+                        <p class="mt-0.5 font-sans text-sm font-black text-slate-800">{{ $total_amount ?? 0 }} <span
                                 class="text-[10px] font-normal text-slate-500">ر.ي</span></p>
                     </div>
                     <div>
                         <p class="text-[11px] font-bold text-slate-400">المدفوع</p>
-                        <p class="text-sm font-black text-emerald-600 mt-0.5 font-sans">{{ $partial_amount ?? 0 }} <span
+                        <p class="mt-0.5 font-sans text-sm font-black text-emerald-600">{{ $partial_amount ?? 0 }} <span
                                 class="text-[10px] font-normal text-slate-500">ر.ي</span></p>
                     </div>
                     <div>
                         <p class="text-[11px] font-bold text-slate-400">المتبقي</p>
-                        <p class="text-sm font-black text-rose-600 mt-0.5 font-sans">{{ $remaining_amount ?? 0 }} <span
+                        <p class="mt-0.5 font-sans text-sm font-black text-rose-600">{{ $remaining_amount ?? 0 }} <span
                                 class="text-[10px] font-normal text-slate-500">ر.ي</span></p>
                     </div>
                 </div>
@@ -207,16 +207,7 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-2 gap-6 mt-4 pt-2">
-                <div class="text-center">
-                    <p class="mb-4 text-[11px] font-bold text-slate-400">توقيع المستلم</p>
-                    <div class="mx-auto w-2/3 border-b border-dashed border-slate-200"></div>
-                </div>
-                <div class="text-center">
-                    <p class="mb-4 text-[11px] font-bold text-slate-400">توقيع الموظف</p>
-                    <div class="mx-auto w-2/3 border-b border-dashed border-slate-200"></div>
-                </div>
-            </div>
+         
         </div>
 
         <div class="bg-slate-900 p-3 text-center rounded-b-[1.5rem] print:rounded-none">
@@ -224,7 +215,7 @@
                 تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> | بواسطة:
                 <span class="text-slate-300">{{ $creator_name ?? 'مسؤول النظام' }}</span> | الطباعة:
                 <span
-                    class="text-slate-300 font-sans">{{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}</span>
+                    class="font-sans text-slate-300">{{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}</span>
             </p>
 
             <div class="pt-1.5 mt-1.5 border-t border-slate-800">

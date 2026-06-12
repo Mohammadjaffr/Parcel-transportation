@@ -93,7 +93,7 @@
 
         {{-- ====================== Search & Table Section ====================== --}}
         <div
-            class="bg-white dark:bg-boxdark my-4 rounded-2xl border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
+            class="overflow-visible mx-auto my-4 max-w-7xl bg-white rounded-2xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2">
 
             {{-- Search --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
@@ -103,7 +103,7 @@
                             class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                             <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                                 placeholder="ابحث برقم الراكب، المكان، السائق، الوسيط..."
-                                class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-body text-gray-600 dark:text-gray-300">
+                                class="flex-1 px-3 w-full h-12 text-sm text-left text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
                             <div
                                 class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[22px]">search</span>
@@ -118,7 +118,7 @@
                         <div
                             class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
                             <select x-model="statusFilter" @change="updateVisibility()"
-                                class="pr-11 pl-9 w-full h-12 text-sm font-bold bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 text-gray-600 dark:text-gray-300 font-body">
+                                class="pr-11 pl-9 w-full h-12 text-sm font-bold text-gray-600 bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 dark:text-gray-300 font-body">
                                 <option value="">كل الحالات</option>
                                 <option value="pending">قيد الانتظار</option>
                                 <option value="completed">مكتمل</option>
@@ -138,7 +138,7 @@
                         <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                         </span>
-                        <span>النتائج المعروضة: <span class="text-primary font-bold" x-text="visibleCount"></span> من
+                        <span>النتائج المعروضة: <span class="font-bold text-primary" x-text="visibleCount"></span> من
                             <span>{{ $passengers->count() }}</span></span>
                     </div>
                 </div>
@@ -146,23 +146,23 @@
 
             {{-- Desktop View Table --}}
             <div class="hidden overflow-visible w-full lg:block">
-                <table class="table-auto w-full text-right border-collapse">
+                <table class="w-full text-right border-collapse table-auto">
                     <thead>
-                        <tr class="bg-gray-50/80 dark:bg-boxdark-2 border-b border-gray-100 dark:border-boxdark-2">
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">التاريخ
+                        <tr class="border-b border-gray-100 bg-gray-50/80 dark:bg-boxdark-2 dark:border-boxdark-2">
+                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">التاريخ
                                 واليوم</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الراكب
+                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">الراكب
                             </th>
                             <th
-                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                class="px-6 py-4 text-sm font-black text-center text-gray-600 font-headline dark:text-gray-300">
                                 المكان</th>
                             <th
-                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                class="px-6 py-4 text-sm font-black text-center text-gray-600 font-headline dark:text-gray-300">
                                 العدد والعمولة</th>
-                            <th class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300">الوسيط
+                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">الوسيط
                             </th>
                             <th
-                                class="px-6 py-4 text-sm font-black font-headline text-gray-600 dark:text-gray-300 text-center">
+                                class="px-6 py-4 text-sm font-black text-center text-gray-600 font-headline dark:text-gray-300">
                                 الإجراءات</th>
                         </tr>
                     </thead>
@@ -209,9 +209,9 @@
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-1.5">
                                         <span
-                                            class="font-body text-sm font-bold text-gray-800 dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
+                                            class="text-sm font-bold text-gray-800 font-body dark:text-white">{{ optional($passenger->date)->format('Y-m-d') }}</span>
                                         <span
-                                            class="font-body text-xs text-gray-500 dark:text-gray-400">{{ $dayName }}</span>
+                                            class="text-xs text-gray-500 font-body dark:text-gray-400">{{ $dayName }}</span>
                                         <span
                                             class="inline-flex gap-1 items-center justify-center px-2.5 py-1 mt-1 rounded-md text-[10px] font-bold {{ $statusClass }} w-max">
                                             <span class="material-symbols-outlined text-[14px]">{{ $statusIcon }}</span>
@@ -222,19 +222,19 @@
 
                                 {{-- الراكب --}}
                                 <td class="px-6 py-4 align-top">
-                                    <div class="flex items-center gap-3">
+                                    <div class="flex gap-3 items-center">
                                         <div
-                                            class="flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 text-primary font-bold shadow-sm shrink-0">
+                                            class="flex justify-center items-center w-11 h-11 font-bold rounded-full shadow-sm bg-primary/10 text-primary shrink-0">
                                             {{ $avatarLetters }}
                                         </div>
                                         <div class="flex flex-col gap-1">
                                             <span
-                                                class="font-body text-sm font-bold text-gray-800 dark:text-white dir-ltr text-right">
-                                                <x-phone-number :value="$passenger->passenger_number" class="text-primary font-bold" />
+                                                class="text-sm font-bold text-right text-gray-800 font-body dark:text-white dir-ltr">
+                                                <x-phone-number :value="$passenger->passenger_number" class="font-bold text-primary" />
                                             </span>
                                             @if ($passenger->note)
                                                 <span
-                                                    class="font-body text-xs text-gray-500 dark:text-gray-400 line-clamp-1"
+                                                    class="text-xs text-gray-500 font-body dark:text-gray-400 line-clamp-1"
                                                     title="{{ $passenger->note }}">
                                                     {{ $passenger->note }}
                                                 </span>
@@ -244,9 +244,9 @@
                                 </td>
 
                                 {{-- المكان --}}
-                                <td class="px-6 py-4 align-top text-center">
+                                <td class="px-6 py-4 text-center align-top">
                                     <span
-                                        class="inline-block px-3 py-1.5 font-body text-xs font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-100 shadow-sm dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
+                                        class="inline-block px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-50 rounded-lg border border-gray-100 shadow-sm font-body dark:bg-boxdark dark:text-gray-300 dark:border-boxdark-2">
                                         {{ $passenger->pickup_location ?: 'غير محدد' }}
                                     </span>
                                     @if ($passenger->destination)
@@ -261,17 +261,17 @@
                                 </td>
 
                                 {{-- العدد والعمولة --}}
-                                <td class="px-6 py-4 align-top text-center">
+                                <td class="px-6 py-4 text-center align-top">
                                     <div class="flex flex-col gap-2 items-center">
                                         <span
-                                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary">
+                                            class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold rounded-lg bg-primary/10 text-primary">
                                             <span class="material-symbols-outlined text-[16px]">group</span>
                                             العدد: {{ $passenger->count ?? 0 }}
                                         </span>
                                         <div class="flex flex-col gap-1 text-[11px] font-body text-center">
-                                            <span class="text-gray-600 dark:text-gray-300 font-bold">المكتب: <span
+                                            <span class="font-bold text-gray-600 dark:text-gray-300">المكتب: <span
                                                     class="text-emerald-600 dark:text-emerald-400">{{ number_format($passenger->office_commission ?? 0, 0) }}</span></span>
-                                            <span class="text-gray-600 dark:text-gray-300 font-bold">أخرى: <span
+                                            <span class="font-bold text-gray-600 dark:text-gray-300">أخرى: <span
                                                     class="text-amber-600 dark:text-amber-400">{{ number_format($passenger->other_office_commission ?? 0, 0) }}</span></span>
                                         </div>
                                     </div>
@@ -280,20 +280,20 @@
                                 {{-- الوسيط والسائق --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-3">
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex gap-2 items-center">
                                             <span
-                                                class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                                class="flex justify-center items-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
                                                 <span class="material-symbols-outlined text-[14px]">handshake</span>
                                             </span>
                                             <span
-                                                class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
+                                                class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
                                         </div>
-                                        {{-- <div class="flex items-center gap-2">
-                                            <span class="flex items-center justify-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                        {{-- <div class="flex gap-2 items-center">
+                                            <span class="flex justify-center items-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
                                                 <span class="material-symbols-outlined text-[14px]">local_taxi</span>
                                             </span>
                                             <div class="flex flex-col">
-                                                <span class="font-body text-xs font-bold text-gray-700 dark:text-gray-300">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
+                                                <span class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
                                                 @if ($passenger->driver)
                                                 <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
                                                     <x-phone-number :value="$passenger->driver->phone ?? ''" />
@@ -305,8 +305,8 @@
                                 </td>
 
                                 {{-- الإجراءات --}}
-                                <td class="px-6 py-4 align-middle text-center" x-data="{ openOptions: false }">
-                                    <div class="relative flex justify-center items-center">
+                                <td class="px-6 py-4 text-center align-middle" x-data="{ openOptions: false }">
+                                    <div class="flex relative justify-center items-center">
                                         <button @click="openOptions = !openOptions" @click.away="openOptions = false"
                                             class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-boxdark-2 dark:hover:text-gray-300">
                                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
@@ -321,7 +321,7 @@
                                                 عرض التفاصيل
                                             </a>
 
-                                            @if ($statusKey === 'pending')
+                                           
                                                 <button type="button"
                                                     @click="openEditModal({
                                                     id: {{ $passenger->id }},
@@ -340,7 +340,7 @@
                                                     driver_phone: @js($passenger->driver->phone ?? ''),
                                                     note: @js($passenger->note)
                                                 }); openOptions = false"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:text-gray-300 dark:hover:bg-amber-500/10 text-right">
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:text-gray-300 dark:hover:bg-amber-500/10">
                                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                                     تعديل البيانات
                                                 </button>
@@ -361,11 +361,11 @@
                                                     driver_name: @js($passenger->driver->name ?? ''),
                                                     note: @js($passenger->note)
                                                 }); openOptions = false"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10 text-right">
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10">
                                                     <span class="material-symbols-outlined text-[18px]">fact_check</span>
                                                     تعيين الحالة
                                                 </button>
-                                            @endif
+                                          
 
                                             <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}"
                                                 target="_blank"
@@ -373,15 +373,16 @@
                                                 <span class="material-symbols-outlined text-[18px]">print</span>
                                                 طباعة الكشف
                                             </a>
-                                       
-                                            <div class="my-1 border-t border-gray-50 dark:border-boxdark-2"></div>
 
-                                            {{-- <button type="button"
-                                                @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number)); openOptions = false"
-                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-gray-600 transition-colors hover:bg-error/10 hover:text-error dark:text-gray-300 dark:hover:bg-error/20 text-right">
-                                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                                                حذف الراكب
-                                            </button> --}}
+                                            <div class="my-1 border-t border-gray-50 dark:border-boxdark-2"></div>
+                                            @if ($statusKey != 'completed')
+                                                <button type="button"
+                                                    @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number)); openOptions = false"
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-error/10 hover:text-error dark:text-gray-300 dark:hover:bg-error/20">
+                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                                    حذف الراكب
+                                                </button>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>
@@ -397,9 +398,9 @@
                                         </div>
                                         <div>
                                             <h3
-                                                class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">
+                                                class="mb-1 text-base font-bold text-gray-800 font-headline dark:text-white">
                                                 لا توجد بيانات للركاب</h3>
-                                            <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم
+                                            <p class="text-sm font-medium text-gray-500 font-body dark:text-gray-400">لم
                                                 نعثر على أي ركاب مسجلين في النظام حالياً.</p>
                                         </div>
                                     </div>
@@ -415,9 +416,9 @@
                                         <span class="material-symbols-outlined text-[28px] text-gray-400">search_off</span>
                                     </div>
                                     <div>
-                                        <h3 class="mb-1 font-headline text-base font-bold text-gray-800 dark:text-white">لا
+                                        <h3 class="mb-1 text-base font-bold text-gray-800 font-headline dark:text-white">لا
                                             توجد نتائج مطابقة</h3>
-                                        <p class="font-body text-sm font-medium text-gray-500 dark:text-gray-400">لم نعثر
+                                        <p class="text-sm font-medium text-gray-500 font-body dark:text-gray-400">لم نعثر
                                             على ركاب يطابقون بحثك أو الحالة المحددة.</p>
                                     </div>
                                 </div>
@@ -429,7 +430,7 @@
 
             @if ($passengers->hasPages())
                 <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-2xl">
+                    class="px-6 py-5 rounded-b-2xl border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50">
                     {{ $passengers->links('vendor.pagination.tailwind') }}
                 </div>
             @endif
@@ -555,7 +556,7 @@
 
                                 <input type="hidden" name="broker_id" :value="selectedId">
 
-                                <div class="relative flex items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
                                     :class="selectedId ?
                                         'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' :
                                         ''">
@@ -584,7 +585,7 @@
                                             class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                             <span class="text-sm font-bold text-on-surface dark:text-white"
                                                 x-text="broker.name"></span>
-                                            <span class="text-xs text-emerald-500 font-medium flex items-center gap-1">
+                                            <span class="flex gap-1 items-center text-xs font-medium text-emerald-500">
                                                 اختيار <span class="material-symbols-outlined text-[14px]">done</span>
                                             </span>
                                         </button>
@@ -868,7 +869,7 @@
                                     المكتب <span class="text-error">*</span></label>
                                 <input type="hidden" name="broker_id" :value="selectedId">
 
-                                <div class="relative flex items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
                                     :class="selectedId ?
                                         'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' :
                                         ''">
@@ -898,7 +899,7 @@
                                             <span class="text-sm font-bold text-on-surface dark:text-white"
                                                 x-text="broker.name"></span>
                                             <span
-                                                class="text-xs text-emerald-500 font-medium flex items-center gap-1">تعديل
+                                                class="flex gap-1 items-center text-xs font-medium text-emerald-500">تعديل
                                                 إلى <span class="material-symbols-outlined text-[14px]">done</span></span>
                                         </button>
                                     </template>

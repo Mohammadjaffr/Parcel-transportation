@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [LandingPageController::class, 'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
+Route::get('/receipt/{type}/{id}/pdf', [ReceiptController::class, 'downloadPdf'])->name('receipt.pdf');
 Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
 Route::middleware('guest')->group(function () {
 
@@ -238,7 +239,11 @@ Route::middleware('auth')->group(function () {
 
         // Database Backup
         Route::post('/backup/upload', [BackupController::class, 'uploadBackup'])->name('backup.upload');
-
+Route::post('/trips/{trip}/passengers/add', [PassengerTripController::class, 'addPassenger'])->name('trip.addPassenger');
+// المسار الخاص بك للحذف (تأكد من وجوده)
+Route::post('/trips/{trip}/passengers/{passenger}/remove', [PassengerTripController::class, 'removePassenger'])->name('trip.removePassenger');
+Route::get('/shipmentpackage/incoming/{id}/edit', [ShipmentPackagesController::class, 'incomingEdit'])->name('shipmentpackage.incoming.edit');
+Route::put('/shipmentpackage/incoming/{id}', [ShipmentPackagesController::class, 'incomingUpdate'])->name('shipmentpackage.incoming.update');
         // بيانات الاستلام
         Route::get('/receipts', [ReceiptHeaderController::class, 'index'])->name('receipts.index');
         Route::get('/receipts/create', [ReceiptHeaderController::class, 'create'])->name('receipts.create');

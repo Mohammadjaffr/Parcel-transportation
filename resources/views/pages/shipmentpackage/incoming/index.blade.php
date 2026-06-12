@@ -224,7 +224,7 @@
 
                     <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all incoming-package-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
                         x-show="showRow(
-                            @js($package->tracking_number),
+                            @js($package->id),
                             @js($senderName),
                             @js($package->driver->name ?? ''),
                             @js($package->driver->phone ?? '')
@@ -239,7 +239,7 @@
 
                                 <div class="flex flex-col gap-1 min-w-0">
                                     <span class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
-                                        {{ $package->tracking_number }}
+                                        {{ $package->id }}
                                     </span>
 
                                     <div
@@ -364,7 +364,7 @@
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group incoming-package-row"
                                 x-show="showRow(
-                                    @js($package->tracking_number),
+                                    @js($package->id),
                                     @js($senderName),
                                     @js($package->driver->name ?? ''),
                                     @js($package->driver->phone ?? '')
@@ -380,7 +380,7 @@
 
                                         <div class="flex flex-col gap-1">
                                             <span class="text-sm font-black text-gray-800 dark:text-white">
-                                                {{ $package->tracking_number }}
+                                                {{ $package->id }}
                                             </span>
 
                                             <span
