@@ -68,6 +68,12 @@
                         class="items-center gap-1.5 px-3 py-1 text-xs font-black text-slate-700 bg-slate-100 border border-slate-200/80 rounded-full shadow-sm">
                         {{ $user_branch ?? '---' }}
                     </span>
+                    @if(isset($status) && $status === 'delivered')
+                    <span
+                        class="inline-flex items-center px-3 py-1 text-xs font-black text-green-700 bg-green-100 rounded-lg border border-green-300 shadow-sm mt-1">
+                        تم التسليم
+                    </span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -210,7 +216,13 @@
             <div class="grid grid-cols-2 gap-6 mt-4 pt-2">
                 <div class="text-center">
                     <p class="mb-4 text-[11px] font-bold text-slate-400">توقيع المستلم</p>
-                    <div class="mx-auto w-2/3 border-b border-dashed border-slate-200"></div>
+                    @if(isset($status) && $status === 'delivered')
+                        <div class="mx-auto text-sm font-black text-green-600 border-2 border-green-500 rounded-lg py-1 px-4 inline-block transform -rotate-3 bg-green-50">
+                            تم استلام الطرد
+                        </div>
+                    @else
+                        <div class="mx-auto w-2/3 border-b border-dashed border-slate-200"></div>
+                    @endif
                 </div>
                 <div class="text-center">
                     <p class="mb-4 text-[11px] font-bold text-slate-400">توقيع الموظف</p>

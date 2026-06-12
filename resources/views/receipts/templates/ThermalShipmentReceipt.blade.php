@@ -42,6 +42,12 @@
             <p class="text-lg font-black tracking-widest" dir="ltr">{{ $bond_number ?? '---' }}</p>
         </div>
 
+        @if(isset($status) && $status === 'delivered')
+        <div class="text-center">
+            <span class="inline-block px-4 py-1.5 bg-green-100 text-green-700 font-black text-sm border-2 border-green-300 rounded-lg transform -rotate-2">تم التسليم</span>
+        </div>
+        @endif
+
         <div class="text-center text-xs text-slate-400" dir="ltr">{{ $date ?? date('Y-m-d H:i') }}</div>
 
         <!-- Divider -->
