@@ -11,9 +11,6 @@ class ShipmentObserver
      */
     private function calculateFinancials(Shipment $shipment): void
     {
-        if (($shipment->package_fee ?? 0) == 0 && ($shipment->honey_fee ?? 0) == 0 && ($shipment->total_amount ?? 0) > 0) {
-            return;
-        }
         // 1. حساب مبالغ العمولات بناءً على النسب المئوية (إذا لم تكن موجودة نعتبرها صفر)
         $shipment->package_commission_amount = (($shipment->package_fee ?? 0) * ($shipment->package_commission_rate ?? 0)) / 100;
         
