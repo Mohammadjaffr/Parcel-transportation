@@ -256,7 +256,7 @@
                 },
 
                 getPrintUrl() {
-                    return 'all';
+                    return 'branch_id:{{ auth()->user()->branch_id }}';
                 },
 
                 showRow(driverName, driverPhone) {

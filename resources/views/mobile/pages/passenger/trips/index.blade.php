@@ -13,7 +13,7 @@
                 <p class="text-xs text-gray-400 mt-0.5">إدارة وتجميع الركاب داخل الرحلات</p>
             </div>
             <div class="flex gap-2">
-                <a href="{{ route('receipt.generate', ['type' => 'trip', 'id' => 'all']) }}" target="_blank"
+                <a href="{{ route('receipt.generate', ['type' => 'all_trips', 'id' => 'branch_id:' . auth()->user()->branch_id]) }}" target="_blank"
                     class="flex justify-center items-center w-11 h-11 bg-primary/10 text-primary border border-primary/20 rounded-[1rem] shadow-sm transition-all active:scale-90 hover:bg-primary hover:text-white">
                     <span class="material-symbols-outlined text-[24px]">print</span>
                 </a>

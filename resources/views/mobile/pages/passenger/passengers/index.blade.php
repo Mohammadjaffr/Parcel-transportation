@@ -133,7 +133,7 @@
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">visibility</span> عرض التفاصيل
                                     </a>
-                                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank" title="طباعة "
+                                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->uuid]) }}" target="_blank" title="طباعة "
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">print</span>   طباعة كشف ركاب 
                                     </a>
@@ -365,7 +365,8 @@
                 getPrintUrl() {
                     let parts = [];
                     if (this.selectedStatus) parts.push('status:' + this.selectedStatus);
-                    return parts.length > 0 ? parts.join('|') : 'all';
+                    parts.push('branch_id:{{ auth()->user()->branch_id }}');
+                    return parts.join('|');
                 },
                 matchSearch(number, location, cName, cPhone, dName, dPhone, statusKey) {
                     if (this.selectedStatus !== '' && statusKey !== this.selectedStatus) {

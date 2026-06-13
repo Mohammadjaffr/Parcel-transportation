@@ -137,18 +137,18 @@
                     {{-- إدارة الأفراد (تظهر فقط إذا كان أحد الموديولات مفعل) --}}
                     @php
                         $app = auth()->user()->app;
-                        $hasPeople = $app && ($app->hasService('Drivers') || (auth()->user()->type != 'user' && $app->hasService('Users')) || $app->hasService('Customers') || $app->hasService('Passengers'));
+                        $hasPeople = $app && ($app->hasService('Drivers') || (auth()->user()->type != 'user' && $app->hasService('Users')) || $app->hasService('Customers'));
                     @endphp
                     @if($hasPeople)
-                    <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*') || request()->routeIs('passengers.*')) selected = 'People' @endif">
+                    <li x-init="@if (request()->routeIs('drivers.*') || request()->routeIs('users.*') || request()->routeIs('customers.*')) selected = 'People' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'People' ? '' : 'People')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*', 'passengers.*') ? 'true' : 'false' }} ?
+                            :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*', 'passengers.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('drivers.*', 'users.*', 'customers.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 group
                             </span>
                             <span :class="{ 'lg:hidden': sidebarToggle }">الأفراد</span>
@@ -197,22 +197,6 @@
                                         </a>
                                     </li>
                                     @endhasservice
-
-                                    {{-- الركاب متاح افتراضيا --}}
-                                    @hasservice('Passengers')
-                                    <li>
-                                        <a href="{{ route('passengers.index') }}"
-                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('passengers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            ركاب
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ route('trips.index') }}"
-                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('trips.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
-                                            رحلات الركاب
-                                        </a>
-                                    </li>
-                                    @endhasservice
                                   
                                     
                                 </ul>
@@ -220,6 +204,57 @@
                         </div>
                     </li>
                     @endif
+
+                    {{-- إدارة الركاب --}}
+                    @hasservice('Passengers')
+                    <li x-init="@if (request()->routeIs('passengers.*') || request()->routeIs('trips.*')) selected = 'PassengersMenu' @endif">
+                        <a href="#" @click.prevent="selected = (selected === 'PassengersMenu' ? '' : 'PassengersMenu')"
+                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
+                            :class="{{ request()->routeIs('passengers.*', 'trips.*') ? 'true' : 'false' }} ?
+                            'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
+                            'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
+
+                            <span class="material-symbols-outlined text-[22px] transition-colors"
+                                :class="{{ request()->routeIs('passengers.*', 'trips.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                airline_seat_recline_normal
+                            </span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الركاب</span>
+
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'PassengersMenu', 'lg:hidden': sidebarToggle }">
+                                expand_more
+                            </span>
+                        </a>
+
+                        <div x-cloak x-show="selected === 'PassengersMenu'" x-collapse>
+                            <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul
+                                    class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                    
+                                    <li>
+                                        <a href="{{ route('passengers.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('passengers.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            الركاب
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="{{ route('trips.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('trips.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            رحلات الركاب
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    @endhasservice
                     
 
                     {{-- إدارة المكاتب (المكاتب الموثوقة/غير الموثوقة) --}}

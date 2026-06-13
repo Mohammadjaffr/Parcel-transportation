@@ -85,7 +85,7 @@
             @forelse($drivers ?? [] as $driver)
                 <div class="mb-10 page-break-inside-avoid">
                     {{-- Driver Card Header --}}
-                    <div class="flex flex-col gap-4 justify-between items-start p-4 rounded-t-2xl border border-b-0 sm:flex-row sm:items-center bg-slate-50 border-slate-200">
+                    {{-- <div class="flex flex-col gap-4 justify-between items-start p-4 rounded-t-2xl border border-b-0 sm:flex-row sm:items-center bg-slate-50 border-slate-200">
                         <div class="flex gap-3 items-center">
                             <div class="flex justify-center items-center w-10 h-10 text-white bg-indigo-500 rounded-xl shrink-0">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,7 +108,7 @@
                             <span class="px-3 py-1.5 text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-100">عمولة المكتب: <strong>{{ number_format($driver['total_office_commission'], 0) }}</strong></span>
                             <span class="px-3 py-1.5 text-amber-700 bg-amber-50 rounded-lg border border-amber-100">عمولة أخرى: <strong>{{ number_format($driver['total_other_office_commission'], 0) }}</strong></span>
                         </div>
-                    </div>
+                    </div> --}}
 
                     {{-- Passengers Table --}}
                     <div class="overflow-x-auto rounded-b-2xl border border-slate-200">
@@ -135,7 +135,7 @@
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
                                         <td class="font-bold text-slate-800">{{ $passenger['broker_name'] }}</td>
-                                        <td class="font-medium text-slate-600">{{ $passenger['location'] }}</td>
+                                        <td class="font-medium text-slate-600">{{ $passenger['pickup_location'] }}</td>
                                         <td class="font-black text-center text-slate-800">{{ $passenger['count'] }}</td>
                                         <td class="font-black text-center text-emerald-600" dir="ltr">{{ $passenger['office_commission'] }}</td>
                                         <td class="font-black text-center text-amber-600" dir="ltr">{{ $passenger['other_office_commission'] }}</td>

@@ -18,11 +18,22 @@ class PassangerDetection implements ReceiptStrategyInterface
         $user = auth()->user();
         $filters = [];
         
-        if (is_numeric($referenceId)) {
-            $query = Passengers::with(['driver', 'branch'])->where('branch_id', $user->branch_id)->where('id', $referenceId);
+        if (is_numeric($referenceId) || \Illuminate\Support\Str::isUuid($referenceId)) {
+            $query = Passengers::with(['driver', 'branch']);
+            if (is_numeric($referenceId)) {
+                $query->where('id', $referenceId);
+            } else {
+                $query->where('uuid', $referenceId);
+            }
         } else {
             $filters = $this->parseFilters($referenceId);
-            $query = Passengers::with(['driver', 'branch'])->where('branch_id', $user->branch_id)->latest('date');
+            $branchId = $filters['branch_id'] ?? ($user ? $user->branch_id : null);
+            
+            if (!$branchId) {
+                abort(400, 'معرف الفرع مطلوب لعرض هذه البيانات.');
+            }
+
+            $query = Passengers::with(['driver', 'branch'])->where('branch_id', $branchId)->latest('date');
 
             if (!empty($filters['from'])) {
                 $query->whereDate('date', '>=', $filters['from']);
@@ -39,7 +50,13 @@ class PassangerDetection implements ReceiptStrategyInterface
         }
 
         $passengers = $query->get();
-        $app = $user->app ?? null;
+        
+        $app = null;
+        if ($passengers->isNotEmpty()) {
+            $app = $passengers->first()->branch?->app ?? null;
+        } elseif ($user) {
+            $app = $user->app ?? null;
+        }
 
         $imagePath = $app?->logo
             ? public_path('storage/' . $app->logo)
@@ -101,7 +118,7 @@ class PassangerDetection implements ReceiptStrategyInterface
         }
 
        $totalOffice = $passengers->sum('office_commission');
-        $totalOther  = $passengers->sum('other_commission');
+        $totalOther  = $passengers->sum('other_office_commission');
         $totalAll    = $totalOffice + $totalOther;
 
         return [
@@ -138,7 +155,7 @@ class PassangerDetection implements ReceiptStrategyInterface
 
     private function parseFilters(string $referenceId): array
     {
-        $filters = ['status' => null, 'from' => null, 'to' => null, 'driver_id' => null];
+        $filters = ['status' => null, 'from' => null, 'to' => null, 'driver_id' => null, 'branch_id' => null];
         if ($referenceId === 'all') return $filters;
 
         $parts = explode('|', $referenceId);

@@ -18,13 +18,39 @@ class PassangersDetection implements ReceiptStrategyInterface
     {
         $user = auth()->user();
        
-        // referenceId يمكن أن يكون 'all' أو يحتوي فلاتر أو رقم معرف راكب مفرد
+        // referenceId يمكن أن يكون 'all' أو يحتوي فلاتر أو رقم معرف راكب مفرد أو معرف الفرع
         $filters = [];
-        if (is_numeric($referenceId)) {
-            $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->where('id', $referenceId);
+        if (is_numeric($referenceId) || \Illuminate\Support\Str::isUuid($referenceId)) {
+            $branchId = $user ? $user->branch_id : null;
+            
+            $isBranchId = false;
+            if (is_numeric($referenceId)) {
+                if ($branchId && (int)$referenceId === (int)$branchId) {
+                    $isBranchId = true;
+                } elseif (\App\Models\Branch::where('id', $referenceId)->exists() && !Passengers::where('id', $referenceId)->exists()) {
+                    $isBranchId = true;
+                }
+            }
+
+            if ($isBranchId) {
+                $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $referenceId)->latest('date');
+            } else {
+                $query = Passengers::with(['driver', 'broker', 'branch']);
+                if (is_numeric($referenceId)) {
+                    $query->where('id', $referenceId);
+                } else {
+                    $query->where('uuid', $referenceId);
+                }
+            }
         } else {
             $filters = $this->parseFilters($referenceId);
-            $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)->latest('date');
+            $branchId = $filters['branch_id'] ?? ($user ? $user->branch_id : null);
+            
+            if (!$branchId) {
+                abort(400, 'معرف الفرع مطلوب لعرض هذه البيانات.');
+            }
+
+            $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $branchId)->latest('date');
 
             if (!empty($filters['from'])) {
                 $query->whereDate('date', '>=', $filters['from']);
@@ -42,7 +68,12 @@ class PassangersDetection implements ReceiptStrategyInterface
 
         $passengers = $query->get();
 
-        $app = $user->app ?? null;
+        $app = null;
+        if ($passengers->isNotEmpty()) {
+            $app = $passengers->first()->branch?->app ?? null;
+        } elseif ($user) {
+            $app = $user->app ?? null;
+        }
 
         $imagePath = $app?->logo
             ? public_path('storage/' . $app->logo)
@@ -86,7 +117,7 @@ class PassangersDetection implements ReceiptStrategyInterface
             $i = 1;
             foreach ($groupPassengers as $p) {
                 $pNum = $p->passenger_number ?? '---';
-                $pLoc = $p->location ?? '---';
+                $pLoc = $p->pickup_location ?? '---';
                 $pCnt = $p->count ?? 0;
                 $pNote = $p->note ? $p->note : '---';
 
@@ -94,7 +125,7 @@ class PassangersDetection implements ReceiptStrategyInterface
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
                     'passenger_number'        => $pNum,
                     'broker_name'             => $p->broker?->name ?? 'بدون وسيط',
-                    'location'                => $pLoc,
+                    'pickup_location'                => $pLoc,
                     'count'                   => $pCnt,
                     'office_commission'       => number_format($p->office_commission ?? 0, 0),
                     'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
@@ -194,7 +225,7 @@ class PassangersDetection implements ReceiptStrategyInterface
      */
     private function parseFilters(string $referenceId): array
     {
-        $filters = ['status' => null, 'from' => null, 'to' => null, 'driver_id' => null];
+        $filters = ['status' => null, 'from' => null, 'to' => null, 'driver_id' => null, 'branch_id' => null];
 
         if ($referenceId === 'all') {
             return $filters;

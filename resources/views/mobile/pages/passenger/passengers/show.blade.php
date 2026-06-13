@@ -43,7 +43,7 @@
                     class="flex justify-center items-center w-10 h-10 bg-white dark:bg-boxdark rounded-full border shadow-sm transition-all border-slate-100 dark:border-boxdark-2 text-slate-500 dark:text-gray-400 hover:text-primary active:scale-90">
                     <span class="material-symbols-outlined text-[20px] mr-1">arrow_forward_ios</span>
                 </a>
-                <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->uuid]) }}" target="_blank"
                     class="flex gap-3 items-center px-2 py-1 text-md font-bold   text-green-500 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10">
                     <span class="material-symbols-outlined text-[18px]">print</span>
                 </a>

@@ -124,6 +124,14 @@
                 <span class="material-symbols-outlined text-[18px]">print</span>
                 طباعة
             </a>
+            @if($package->sender_office_branch_id)
+              <a href="{{ route('shipmentpackage.incoming.edit', $package->id) }}"
+                    class="flex flex-1 gap-2 justify-center items-center h-12 text-xs font-bold text-white rounded-2xl border shadow-sm transition-all bg-primary border-slate-100 hover:bg-primary/80 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    تعديل 
+                </a>
+                @endif
+
         </div>
 
         {{-- ================= بطاقة المسار (من المصدر -> السائق -> إلينا) ================= --}}

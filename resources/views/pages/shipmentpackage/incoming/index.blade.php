@@ -476,6 +476,13 @@
                                                     <span class="material-symbols-outlined text-[18px]">print</span>
                                                     طباعة الكشف
                                                 </a>
+                                                @if($package->sender_office_branch_id)
+                                                <a href="{{ route('shipmentpackage.incoming.edit', $package->id) }}"
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-green-50 hover:text-green-600 dark:hover:bg-boxdark-2 dark:hover:text-green-400">
+                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                                    تعديل الإرسالية
+                                                </a>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>

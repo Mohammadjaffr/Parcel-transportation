@@ -272,14 +272,14 @@
                                     <label class="block mb-1.5 text-[11px] font-bold text-slate-500">رقم الإرسالية (التتبع)
                                         <span class="text-rose-500">*</span></label>
                                     <div class="relative group">
-                                        <input type="text" name="id" value="{{ old('id', $package->id) }}"
+                                        <input type="text" name="tracking_number" value="{{ old('tracking_number', $package->tracking_number) }}"
                                             required placeholder="PKG-1001"
                                             class="pr-11 pl-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none bg-slate-50 border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white text-slate-700">
                                         <div class="flex absolute inset-y-0 right-0 items-center pr-3.5 pointer-events-none text-slate-400 group-focus-within:text-primary">
                                             <span class="material-symbols-outlined text-[20px]">tag</span>
                                         </div>
                                     </div>
-                                    @error('id') <p class="mt-1 text-[10px] font-bold text-rose-500">{{ $message }}</p> @enderror
+                                    @error('tracking_number') <p class="mt-1 text-[10px] font-bold text-rose-500">{{ $message }}</p> @enderror
                                 </div>
 
                                 {{-- اختيار المكتب والفرع --}}

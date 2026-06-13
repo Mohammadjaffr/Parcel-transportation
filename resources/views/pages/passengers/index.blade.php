@@ -20,8 +20,7 @@
                 </div>
 
                 <div class="flex gap-2 items-center shrink-0">
-                    <a :href="'{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => '__ID__']) }}'.replace('__ID__',
-                        getPrintUrl())"
+                    <a :href="'{{ route('receipt.generate', ['type' => 'all_passenger', 'id' => '__ID__']) }}'.replace('__ID__', getPrintUrl())"
                         target="_blank"
                         class="inline-flex gap-2 items-center px-5 h-12 text-sm font-black rounded-2xl border-2 transition-all border-primary text-primary hover:bg-primary hover:text-white active:scale-95">
                         <span class="material-symbols-outlined text-[20px]">print</span>
@@ -367,7 +366,7 @@
                                                 </button>
                                           
 
-                                            <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}"
+                                            <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->uuid]) }}"
                                                 target="_blank"
                                                 class="flex gap-3 items-center px-4 py-2.5 text-sm font-bold text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-500 dark:text-gray-300 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">print</span>
@@ -1126,6 +1125,13 @@
                 searchQuery: '',
                 statusFilter: '',
                 visibleCount: {{ $passengers->count() }},
+
+                getPrintUrl() {
+                    let parts = [];
+                    if (this.statusFilter) parts.push('status:' + this.statusFilter);
+                    parts.push('branch_id:{{ auth()->user()->branch_id }}');
+                    return parts.join('|');
+                },
 
                 editPassengerData: {
                     id: '',

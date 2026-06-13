@@ -20,7 +20,7 @@ public function fetchData(string $referenceId): array
     $filters = [];
     $user = auth()->user();
 
-    // سند رحلة واحدة يكون عام إذا الرابط UUID
+    // سند رحلة واحدة يكون عام إذا الرابط UUID أو الرقم المعرف
     $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
 
     if ($isSingleTrip) {
@@ -30,8 +30,13 @@ public function fetchData(string $referenceId): array
             'passengers.branch',
             'branch.app',
         ])
-            // مهم: للسند العام استخدم UUID فقط، لا تستخدم id
-            ->where('uuid', $referenceId)
+            ->where(function($q) use ($referenceId) {
+                if (is_numeric($referenceId)) {
+                    $q->where('id', $referenceId);
+                } else {
+                    $q->where('uuid', $referenceId);
+                }
+            })
             ->get();
 
         if ($trips->isEmpty()) {
@@ -43,12 +48,12 @@ public function fetchData(string $referenceId): array
         $userBranch = $tripBranch;
         $creatorName = 'النظام';
     } else {
-        // كشف كل الرحلات والفلاتر يحتاج تسجيل دخول
-        if (!$user) {
-            abort(403, 'غير مصرح لك بالوصول إلى هذه البيانات، يرجى تسجيل الدخول أولاً.');
-        }
-
         $filters = $this->parseFilters($referenceId);
+        $branchId = $filters['branch_id'] ?? ($user ? $user->branch_id : null);
+
+        if (!$branchId) {
+            abort(403, 'غير مصرح لك بالوصول إلى هذه البيانات، يرجى تحديد الفرع أو تسجيل الدخول أولاً.');
+        }
 
         $query = PassengerTrip::with([
             'driver',
@@ -56,7 +61,7 @@ public function fetchData(string $referenceId): array
             'passengers.branch',
             'branch.app',
         ])
-            ->where('branch_id', $user->branch_id)
+            ->where('branch_id', $branchId)
             ->latest();
 
         if (!empty($filters['from'])) {
@@ -73,8 +78,9 @@ public function fetchData(string $referenceId): array
 
         $trips = $query->get();
 
-        $app = $user?->app ?? $user?->branch?->app ?? null;
-        $userBranch = $user?->branch ?? null;
+        $firstTrip = $trips->first();
+        $app = $firstTrip?->branch?->app ?? ($user?->app ?? $user?->branch?->app ?? null);
+        $userBranch = $firstTrip?->branch ?? ($user?->branch ?? null);
         $creatorName = $user?->name ?? 'مسؤول النظام';
     }
 
@@ -311,7 +317,7 @@ public function fetchData(string $referenceId): array
      */
     private function parseFilters(string $referenceId): array
     {
-        $filters = ['from' => null, 'to' => null, 'driver_id' => null];
+        $filters = ['from' => null, 'to' => null, 'driver_id' => null, 'branch_id' => null];
 
         if ($referenceId === 'all') {
             return $filters;

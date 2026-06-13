@@ -18,15 +18,24 @@ class TripsDetection implements ReceiptStrategyInterface
     {
         $user = auth()->user();
         $filters = [];
-        if (is_numeric($referenceId)) {
-            $trips = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
-                ->where('branch_id', $user->branch_id)
-                ->where('id', $referenceId)
-                ->get();
+        if (is_numeric($referenceId) || \Illuminate\Support\Str::isUuid($referenceId)) {
+            $query = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch']);
+            if (is_numeric($referenceId)) {
+                $query->where('id', $referenceId);
+            } else {
+                $query->where('uuid', $referenceId);
+            }
+            $trips = $query->get();
         } else {
             $filters = $this->parseFilters($referenceId);
+            $branchId = $filters['branch_id'] ?? ($user ? $user->branch_id : null);
+            
+            if (!$branchId) {
+                abort(400, 'معرف الفرع مطلوب لعرض هذه البيانات.');
+            }
+
             $query = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])
-                ->where('branch_id', $user->branch_id)
+                ->where('branch_id', $branchId)
                 ->latest();
 
             if (!empty($filters['from'])) {
@@ -42,7 +51,12 @@ class TripsDetection implements ReceiptStrategyInterface
             $trips = $query->get();
         }
 
-        $app = $user->app ?? null;
+        $app = null;
+        if ($trips->isNotEmpty()) {
+            $app = $trips->first()->branch?->app ?? null;
+        } elseif ($user) {
+            $app = $user->app ?? null;
+        }
 
         $imagePath = $app?->logo
             ? public_path('storage/' . $app->logo)
@@ -198,7 +212,7 @@ class TripsDetection implements ReceiptStrategyInterface
      */
     private function parseFilters(string $referenceId): array
     {
-        $filters = ['from' => null, 'to' => null, 'driver_id' => null];
+        $filters = ['from' => null, 'to' => null, 'driver_id' => null, 'branch_id' => null];
 
         if ($referenceId === 'all') {
             return $filters;
