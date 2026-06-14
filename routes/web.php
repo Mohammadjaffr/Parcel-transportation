@@ -116,8 +116,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
         Route::resource('offices', OfficeController::class);
         Route::resource('trips', PassengerTripController::class)->names('trips');
-        Route::post('/passenger-trips/{trip}/passengers/{passenger}/remove', [PassengerTripController::class, 'removePassenger'])
-    ->name('trip.removePassenger');
 
         Route::post('/users/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
         Route::post('/customers/{id}/add-payment', [CustomerController::class, 'addPayment'])->name('customers.addPayment');
