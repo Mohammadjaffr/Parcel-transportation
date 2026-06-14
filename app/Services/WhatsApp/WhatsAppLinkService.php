@@ -10,6 +10,7 @@ use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Services\WhatsApp\Messages\CustomerAccountStatementMessage;
 use App\Services\WhatsApp\Messages\CustomerTransactionMessage; 
 use App\Services\WhatsApp\Messages\PassengerDriverMessage;
+use App\Services\WhatsApp\Messages\PassengerBookingMessage;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\PassengerTrip;
 use App\Services\WhatsApp\Messages\TripDriverMessage;
@@ -29,6 +30,7 @@ class WhatsAppLinkService
             'transaction' => new CustomerTransactionMessage(), 
             'passengerDriver' => new PassengerDriverMessage(),
             'tripDriver' => new TripDriverMessage(),
+            'passengerBooking' => new PassengerBookingMessage(),
             default    => null,
         };
 

@@ -194,7 +194,7 @@
                                 <span class="material-symbols-outlined text-[24px]">{{ $statusStyle['icon'] }}</span>
                             </div>
                             <div>
-                                <p class="font-mono text-sm font-black text-slate-800">{{ $shipment->bond_number }}</p>
+                                <p class="font-mono text-sm font-black text-slate-800">{{ $shipment->id }}</p>
                                 <p class="text-[10px] font-bold text-slate-400 mt-1">
                                     {{ $shipment->senderCustomer->name ?? 'عميل' }}
                                     <span class="mx-1 text-slate-300">»</span>

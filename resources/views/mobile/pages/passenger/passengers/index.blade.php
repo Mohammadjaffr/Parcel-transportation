@@ -133,15 +133,44 @@
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">visibility</span> عرض التفاصيل
                                     </a>
-                                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->uuid]) }}" target="_blank" title="طباعة "
-                                        class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
-                                        <span class="material-symbols-outlined text-[16px]">print</span>   طباعة كشف ركاب 
-                                    </a>
-                                
-                                        <a href="{{ route('passengers.edit', $passenger->id) }}"
+
+                                    <a href="{{ route('passengers.edit', $passenger->id) }}"
+                                        class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-600 font-headline">
+                                        <span class="material-symbols-outlined text-[16px]">edit</span> تعديل
+</a>
+                                    @if ($statusKey == 'pending')
+                                        @php
+                                            $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerBooking');
+                                        @endphp
+                                        @if ($whatsappUrl)
+                                            <a href="{{ $whatsappUrl }}" target="_blank" @click="open = false"
+                                                class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
+                                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                                                </svg>
+                                                إرسال الحجز 
+                                            </a>
+                                        @endif
+                                    @endif
+                                    @if ($statusKey != 'cancel' && $statusKey != 'completed')
+                                        <button type="button"
+                                            @click="openStatusModal({
+                                                id: {{ $passenger->id }},
+                                                passenger_number: @js($passenger->passenger_number),
+                                                status: 'cancel'
+                                            }); open = false"
                                             class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-600 font-headline">
-                                            <span class="material-symbols-outlined text-[16px]">edit</span> تعديل
-                                        </a>
+                                            <span class="material-symbols-outlined text-[16px]">block</span> إلغاء الراكب
+                                        </button>
+                                    @endif
+                                     @if ($statusKey != 'completed')
+                                                <button type="button"
+                                                    @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number)); open = false"
+                                                    class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-rose-50 hover:text-rose-600 font-headline">
+                                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                                    حذف الراكب
+                                                </button>
+                                            @endif
                                     
                                 </div>
                             </div>
@@ -226,7 +255,7 @@
             {{ $passengers->links('vendor.pagination.mobile') }}
         </div>
 
-        {{-- ================= Status Modal (Bottom Sheet) ================= --}}
+        {{-- ================= Status Modal - Cancel Only (Bottom Sheet) ================= --}}
         <div x-show="showStatusModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
@@ -236,37 +265,33 @@
             <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60" @click="closeModals()"></div>
 
             <div
-                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-8 max-w-xl mx-auto pointer-events-auto text-right">
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-8 text-center pointer-events-auto">
                 <div @click="closeModals()"
                     class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
                 </div>
 
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-xl font-black font-headline text-slate-800">تعيين حالة الراكب</h3>
-                    <button type="button" @click="closeModals()"
-                        class="flex justify-center items-center w-10 h-10 rounded-[1rem] transition-colors bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-rose-500">
-                        <span class="material-symbols-outlined">close</span>
-                    </button>
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-amber-50 text-amber-500 rounded-[1.5rem] shadow-sm border border-amber-100">
+                    <span class="text-4xl material-symbols-outlined">block</span>
                 </div>
+                <h3 class="mb-3 text-2xl font-black font-headline text-slate-800">تأكيد إلغاء الراكب</h3>
+                <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
+                    هل أنت متأكد من إلغاء الراكب رقم<br>
+                    <span class="inline-block font-mono text-base font-bold text-slate-800 dir-ltr"
+                        x-text="statusPassengerData.passenger_number"></span>؟<br>
+                    <span class="inline-block mt-2 text-amber-500/80">سيتم تغيير حالة الراكب إلى ملغي.</span>
+                </p>
 
-                <form :action="statusPassengerData.url" method="POST" class="space-y-6">
+                <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true" class="flex gap-3 w-full">
                     @csrf
-
-                    <div>
-                        <label class="block px-1 mb-2 text-xs font-bold text-slate-500 font-headline">تحديث الحالة
-                            إلى:</label>
-                        <select name="status" x-model="statusPassengerData.status" required
-                            class="px-4 w-full h-14 text-sm font-bold rounded-[1rem] border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-200 focus:ring-2 focus:ring-primary/40 font-headline text-slate-700">
-                            <option value="pending">قيد الانتظار</option>
-                            <option value="completed">مكتمل</option>
-                            <option value="cancel">ملغي</option>
-                        </select>
-                    </div>
-
-                    <button type="submit"
-                        class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-[1rem] shadow-lg transition-all bg-emerald-500 font-headline shadow-emerald-500/30 active:scale-95">
-                        <span class="material-symbols-outlined">fact_check</span>
-                        حفظ الحالة
+                    <input type="hidden" name="status" value="cancel">
+                    <button type="button" @click="closeModals()"
+                        class="flex-1 h-14 text-sm font-bold text-slate-600 rounded-[1rem] transition-all bg-slate-50 hover:bg-slate-100 active:scale-95 font-headline">تراجع</button>
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex flex-1 gap-2 justify-center items-center h-14 text-sm font-bold text-white rounded-[1rem] shadow-lg transition-all bg-amber-500 hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
+                        <span x-show="isSubmitting"
+                            class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
                     </button>
                 </form>
             </div>
@@ -325,6 +350,7 @@
                 showEditModal: false,
                 showDeleteModal: false,
                 showStatusModal: false,
+                isSubmitting: false,
                 deletePassengerData: {
                     id: null,
                     passenger_number: '',
