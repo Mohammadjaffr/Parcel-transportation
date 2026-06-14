@@ -465,7 +465,7 @@
                     </button>
                 </div>
 
-                <form action="{{ route('passengers.store') }}" method="POST" class="space-y-6">
+                <form action="{{ route('passengers.store') }}" method="POST" @submit="isSubmitting = true" class="space-y-6">
                     @csrf
                     <div class="grid grid-cols-1 gap-5">
 
@@ -726,9 +726,18 @@
 
                     </div>
                     <div class="pt-2">
-                        <button type="submit"
-                            class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95">
-                            <span class="material-symbols-outlined">save</span> حفظ البيانات
+                        <button type="submit" :disabled="isSubmitting"
+                            class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
+                            <template x-if="!isSubmitting">
+                                <span class="flex gap-2 justify-center items-center">
+                                    <span class="material-symbols-outlined">save</span> حفظ البيانات
+                                </span>
+                            </template>
+                            <template x-if="isSubmitting">
+                                <span class="flex gap-2 justify-center items-center">
+                                    <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span> جاري الحفظ...
+                                </span>
+                            </template>
                         </button>
                     </div>
                 </form>
@@ -754,7 +763,7 @@
                     </button>
                 </div>
 
-                <form :action="editPassengerData.url" method="POST" class="space-y-6">
+                <form :action="editPassengerData.url" method="POST" @submit="isSubmitting = true" class="space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -1041,9 +1050,18 @@
                     </div>
 
                     <div class="pt-2">
-                        <button type="submit"
-                            class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95">
-                            <span class="material-symbols-outlined">update</span> حفظ التعديلات
+                        <button type="submit" :disabled="isSubmitting"
+                            class="flex gap-2 justify-center items-center w-full h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
+                            <template x-if="!isSubmitting">
+                                <span class="flex gap-2 justify-center items-center">
+                                    <span class="material-symbols-outlined">update</span> حفظ التعديلات
+                                </span>
+                            </template>
+                            <template x-if="isSubmitting">
+                                <span class="flex gap-2 justify-center items-center">
+                                    <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span> جاري الحفظ...
+                                </span>
+                            </template>
                         </button>
                     </div>
                 </form>
