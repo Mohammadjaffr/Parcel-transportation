@@ -116,7 +116,7 @@
                             <thead>
                                 <tr>
                                     <th class="w-10 text-center">#</th>
-                                    <th class="w-24">التاريخ</th>
+                                    <th class="w-28">التاريخ</th>
                                     
                                     <th>رقم الراكب (الهاتف)</th>
                                     @auth
@@ -124,7 +124,7 @@
                                     @endauth
                                    
                                     
-                                    <th class="w-28 text-right">مكان الركوب</th>
+                                    <th class="w-28 text-right">مكان الراكب</th>
                                     <th class="w-28 text-right">الوجهة</th>
                                     <th class="w-12 text-center">العدد</th>
                                     <th class="w-20 text-center">عمولة المكتب</th>

@@ -30,7 +30,7 @@
                     @endif
                     <div>
                         <h1 class="text-2xl font-black tracking-tight text-slate-800">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="mt-1 text-sm font-medium text-slate-500">{{ $title ?? "كشف الراكب {$driver_name}" }}</p>
+                        {{-- <p class="mt-1 text-sm font-medium text-slate-500">{{ $title ?? "كشف الراكب {$driver_name}" }}</p> --}}
                     </div>
                 </div>
                 <div class="text-right">
@@ -116,7 +116,7 @@
                             <thead>
                                 <tr>
                                     <th class="w-10 text-center">#</th>
-                                    <th class="w-24">التاريخ</th>
+                                    <th class="w-28">التاريخ</th>
                                     
                                     <th>رقم الراكب (الهاتف)</th>
                                     <th>الوسيط</th>

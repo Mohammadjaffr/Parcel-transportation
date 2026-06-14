@@ -29,7 +29,7 @@ class TripsDetection implements ReceiptStrategyInterface
         } else {
             $filters = $this->parseFilters($referenceId);
             $branchId = $filters['branch_id'] ?? ($user ? $user->branch_id : null);
-            
+
             if (!$branchId) {
                 abort(400, 'معرف الفرع مطلوب لعرض هذه البيانات.');
             }
@@ -47,7 +47,7 @@ class TripsDetection implements ReceiptStrategyInterface
             if (!empty($filters['driver_id']) && $filters['driver_id'] !== 'all') {
                 $query->where('driver_id', $filters['driver_id']);
             }
-            
+
             $trips = $query->get();
         }
 
@@ -98,7 +98,7 @@ class TripsDetection implements ReceiptStrategyInterface
 
             $passengersData = [];
             $i = 1;
-            
+
             $tripTotalCount = 0;
             $tripTotalOffice = 0;
             $tripTotalOther = 0;
@@ -114,13 +114,13 @@ class TripsDetection implements ReceiptStrategyInterface
                 $tripTotalCount += $pCnt;
                 $tripTotalOffice += $p->office_commission ?? 0;
                 $tripTotalOther += $p->other_office_commission ?? 0;
-                $totalOfficeCommissionAll += $p->office_commission + $p->other_office_commission ?? 0;   
+                $totalOfficeCommissionAll += $p->office_commission + $p->other_office_commission ?? 0;
                 $totalPassengers++;
 
                 $passengersData[] = [
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
                     'passenger_number'        => $pNum,
-'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
+                    'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
                     'pickup_location'         => $pPickup,
                     'destination'             => $pDest,
                     'count'                   => $pCnt,
@@ -133,7 +133,7 @@ class TripsDetection implements ReceiptStrategyInterface
                 ];
 
                 $msg .= "{$i}. الراكب: {$pNum}\n";
-                $msg .= "📍 مكان الركوب: {$pPickup}\n";
+                $msg .= "📍 مكان الراكب: {$pPickup}\n";
                 $msg .= "🏁 الوجهة: {$pDest}\n";
                 $msg .= "👥 العدد: {$pCnt}\n";
                 if ($p->note) {

@@ -97,7 +97,7 @@
                 <div class="flex justify-between items-center px-2">
                     <h3 class="flex gap-1.5 items-center text-sm font-black text-slate-800 dark:text-white font-headline">
                         <span class="material-symbols-outlined text-[18px] text-slate-400">group</span>
-                        ركاب نظام الزاجل المقيدين 
+                         الركاب المقيدين في الرحلة
                     </h3>
                     <span class="text-[11px] font-bold text-gray-400" x-text="'المعروض: ' + countVisible"></span>
                 </div>

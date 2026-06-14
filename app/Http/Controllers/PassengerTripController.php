@@ -130,20 +130,46 @@ class PassengerTripController extends Controller
         }
     }
 
+    public function edit(Request $request, $id)
+    {
+        $trip = PassengerTrip::with(['driver', 'passengers'])->findOrFail($id);
+        $drivers = Driver::all();
+        $pendingPassengers = Passengers::where('status', 'pending')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->latest()
+            ->get();
+
+        if ($request->isMobile) {
+            return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+        }
+
+        return view('pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+    }
+
     public function update(Request $request, $id)
     {
         $trip = PassengerTrip::findOrFail($id);
 
         $request->validate([
-            'driver_id' => ['nullable', 'exists:drivers,id'],
-            'passenger_ids' => ['required', 'array', 'min:1'],
+            'driver_id'     => ['nullable', 'exists:drivers,id'],
+            'driver_phone'  => ['required_without:driver_id', 'string'],
+            'driver_name'   => ['required_without:driver_id', 'string'],
+            'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
         ]);
 
         try {
             DB::beginTransaction();
 
+            $driverId = $request->driver_id;
+            if (empty($driverId)) {
+                $driverId = $this->resolvePassengerDriver(
+                    $this->normalizePhone($request->driver_phone),
+                    $request->driver_name
+                );
+            }
+
             $trip->update([
-                'driver_id' => $request->driver_id,
+                'driver_id' => $driverId,
             ]);
 
             // الركاب الحاليين في هذه الرحلة

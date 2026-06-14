@@ -135,7 +135,7 @@
                                 <h3
                                     class="flex gap-2 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
                                     <span class="material-symbols-outlined text-primary">group</span>
-                                    ركاب نظام الزاجل المقيدين في الرحلة
+                                    الركاب المقيدين في الرحلة
                                 </h3>
                                 <p class="mt-1 text-xs font-bold text-gray-500">قائمة الركاب الذين تم تسييرهم في هذه الرحلة.</p>
                             </div>

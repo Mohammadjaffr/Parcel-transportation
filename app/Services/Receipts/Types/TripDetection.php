@@ -208,7 +208,7 @@ public function fetchData(string $referenceId): array
             ];
 
             $msg .= "{$i}. الراكب: {$pNum}\n";
-            $msg .= "📍 مكان الركوب: {$pPickup}\n";
+            $msg .= "📍 مكان الراكب: {$pPickup}\n";
             $msg .= "🏁 الوجهة: {$pDest}\n";
             $msg .= "👥 العدد: {$pCnt}\n";
 
@@ -239,7 +239,7 @@ public function fetchData(string $referenceId): array
             'trip_id'                       => $trip->id,
             'trip_uuid'                     => $trip->uuid ?? null,
             'driver_id'                     => $trip->driver_id ?: 'unassigned',
-            'driver_name'                   => $driverName . " (رحلة #{$trip->id})",
+            'driver_name'                   => $driverName,
             'driver_phone'                  => $driverPhone ?: '---',
             'passengers'                    => $passengersData,
             'total_passengers_count'        => count($passengersData),

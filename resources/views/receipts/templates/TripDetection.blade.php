@@ -22,15 +22,16 @@
         <div class="p-6 bg-gradient-to-l to-white border-b from-indigo-50/50 sm:p-8 border-slate-100">
             <div class="flex flex-col gap-6 justify-between items-start sm:flex-row sm:items-center">
                 <div class="flex gap-4 items-center">
-                    @if(!empty($company['logo']))
+                    @if (!empty($company['logo']))
                         <div
                             class="flex justify-center items-center p-2 w-16 h-16 bg-white rounded-2xl border shadow-sm border-slate-100">
                             <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-full h-full">
                         </div>
                     @endif
                     <div>
-                        <h1 class="text-2xl font-black tracking-tight text-slate-800">{{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="mt-1 text-sm font-medium text-slate-500">{{ $title ?? "كشف الراكب {$driver_name}" }}</p>
+                        <h1 class="text-2xl font-black tracking-tight text-slate-800">{{ $company['name'] ?? 'شركة مرسال' }}
+                        </h1>
+                        {{-- <p class="mt-1 text-sm font-medium text-slate-500">{{ $title ?? "كشف الراكب {$driver_name}" }}</p> --}}
                     </div>
                 </div>
                 <div class="text-right">
@@ -52,7 +53,7 @@
 
         <div class="p-6 sm:p-8">
             {{-- Filter Info --}}
-            @if(!empty($date_from) || !empty($date_to) || (!empty($status_filter) && $status_filter !== 'all'))
+            @if (!empty($date_from) || !empty($date_to) || (!empty($status_filter) && $status_filter !== 'all'))
                 <div class="p-4 mb-6 rounded-2xl border border-indigo-100 bg-indigo-50/50">
                     <div class="flex gap-3 items-center mb-2">
                         <div class="flex justify-center items-center w-8 h-8 bg-indigo-100 rounded-lg">
@@ -65,15 +66,20 @@
                         <span class="text-sm font-bold text-indigo-600">فلاتر التقرير</span>
                     </div>
                     <div class="flex flex-wrap gap-4 text-sm text-slate-600">
-                        @if(!empty($date_from))
+                        @if (!empty($date_from))
                             <span>من: <strong dir="ltr">{{ $date_from }}</strong></span>
                         @endif
-                        @if(!empty($date_to))
+                        @if (!empty($date_to))
                             <span>إلى: <strong dir="ltr">{{ $date_to }}</strong></span>
                         @endif
-                        @if(!empty($status_filter) && $status_filter !== 'all')
+                        @if (!empty($status_filter) && $status_filter !== 'all')
                             @php
-                                $filterLabels = ['pending' => 'قيد الانتظار', 'confirmed' => 'مؤكد', 'completed' => 'مكتمل', 'cancel' => 'ملغي'];
+                                $filterLabels = [
+                                    'pending' => 'قيد الانتظار',
+                                    'confirmed' => 'مؤكد',
+                                    'completed' => 'مكتمل',
+                                    'cancel' => 'ملغي',
+                                ];
                             @endphp
                             <span>الحالة: <strong>{{ $filterLabels[$status_filter] ?? $status_filter }}</strong></span>
                         @endif
@@ -85,9 +91,11 @@
             @forelse($drivers ?? [] as $driver)
                 <div class="mb-10 page-break-inside-avoid">
                     {{-- Driver Card Header --}}
-                    <div class="flex flex-col gap-4 justify-between items-start p-4 rounded-t-2xl border border-b-0 sm:flex-row sm:items-center bg-slate-50 border-slate-200">
+                    <div
+                        class="flex flex-col gap-4 justify-between items-start p-4 rounded-t-2xl border border-b-0 sm:flex-row sm:items-center bg-slate-50 border-slate-200">
                         <div class="flex gap-3 items-center">
-                            <div class="flex justify-center items-center w-10 h-10 text-white bg-indigo-500 rounded-xl shrink-0">
+                            <div
+                                class="flex justify-center items-center w-10 h-10 text-white bg-indigo-500 rounded-xl shrink-0">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4">
@@ -97,14 +105,17 @@
                             <div>
                                 <h3 class="text-base font-black text-slate-800">السائق: {{ $driver['driver_name'] }}</h3>
                                 <div class="flex gap-2 items-center mt-0.5">
-                                    <span class="text-xs font-bold text-slate-500" dir="ltr">{{ $driver['driver_phone'] }}</span>
-                                  
+                                    <span class="text-xs font-bold text-slate-500"
+                                        dir="ltr">{{ $driver['driver_phone'] }}</span>
+
                                 </div>
                             </div>
                         </div>
                         <div class="flex gap-4 text-xs font-bold text-slate-600">
-                            <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">الركاب: <strong>{{ $driver['total_passengers_count'] }}</strong></span>
-                            <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">العدد الكلي: <strong>{{ $driver['total_count'] }}</strong></span>
+                            <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">الركاب:
+                                <strong>{{ $driver['total_passengers_count'] }}</strong></span>
+                            <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">العدد الكلي:
+                                <strong>{{ $driver['total_count'] }}</strong></span>
 
                         </div>
                     </div>
@@ -115,34 +126,37 @@
                             <thead>
                                 <tr>
                                     <th class="w-10 text-center">#</th>
-                                    <th class="w-24">التاريخ</th>
-                                    
+                                    <th class="w-28">التاريخ</th>
+
                                     <th>رقم الراكب (الهاتف)</th>
-                                    
-                                  @auth
-    <th>الوسيط</th>
-@endauth
-                                    <th class="w-28 text-right">مكان الركوب</th>
+
+                                    @auth
+                                        <th>الوسيط</th>
+                                    @endauth
+                                    <th class="w-28 text-right">مكان الراكب</th>
                                     <th class="w-28 text-right">الوجهة</th>
                                     <th class="w-12 text-center">العدد</th>
-                                   
+
                                     <th class="w-32 text-right">الملاحظات</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($driver['passengers'] as $passenger)
+                                @foreach ($driver['passengers'] as $passenger)
                                     <tr class="transition-colors hover:bg-slate-50">
                                         <td class="font-bold text-center text-slate-400">{{ $loop->iteration }}</td>
                                         <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
-                                        <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['passenger_number'] }}</td>
+                                        <td class="font-bold text-slate-700" dir="ltr">
+                                            {{ $passenger['passenger_number'] }}</td>
                                         @auth
-    <td>{{ $passenger['broker_name'] }}</td>
-@endauth
-                                        <td class="text-xs font-bold text-slate-600">{{ $passenger['pickup_location'] }}</td>
+                                            <td>{{ $passenger['broker_name'] }}</td>
+                                        @endauth
+                                        <td class="text-xs font-bold text-slate-600">{{ $passenger['pickup_location'] }}
+                                        </td>
                                         <td class="text-xs font-bold text-slate-600">{{ $passenger['destination'] }}</td>
                                         <td class="font-black text-center text-slate-800">{{ $passenger['count'] }}</td>
-                                      
-                                        <td class="max-w-xs text-xs font-medium truncate text-slate-500">{{ $passenger['note'] ?? '---' }}</td>
+
+                                        <td class="max-w-xs text-xs font-medium truncate text-slate-500">
+                                            {{ $passenger['note'] ?? '---' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -150,15 +164,17 @@
                     </div>
                 </div>
             @empty
-                <div class="py-12 font-medium text-center rounded-2xl border border-slate-200 text-slate-400 bg-slate-50/50">
+                <div
+                    class="py-12 font-medium text-center rounded-2xl border border-slate-200 text-slate-400 bg-slate-50/50">
                     لا توجد بيانات كشوفات ركاب للسائقين.
                 </div>
             @endforelse
 
             {{-- Grand Totals --}}
-            @if(!empty($drivers))
+            @if (!empty($drivers))
                 <div class="overflow-hidden mb-8 rounded-2xl border border-slate-200">
-                    <div class="grid grid-cols-3 gap-4 p-4 text-center divide-x divide-x-reverse bg-slate-50 sm:grid-cols-3 divide-slate-200">
+                    <div
+                        class="grid grid-cols-3 gap-4 p-4 text-center divide-x divide-x-reverse bg-slate-50 sm:grid-cols-3 divide-slate-200">
                         <div>
                             <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي الركاب </p>
                             <p class="text-lg font-black text-slate-800">{{ $total_passengers ?? 0 }}</p>
@@ -169,9 +185,10 @@
                         </div>
                         <div>
                             <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي العمولات</p>
-                            <p class="text-lg font-black text-slate-800">{{ number_format($totalOfficeCommissionAll ?? 0, 0) }} ر.ي</p>
+                            <p class="text-lg font-black text-slate-800">
+                                {{ number_format($totalOfficeCommissionAll ?? 0, 0) }} ر.ي</p>
                         </div>
-                        
+
                     </div>
                 </div>
             @endif
@@ -187,7 +204,8 @@
                 <p class="text-[10px] font-bold text-slate-500">
                     تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
                     <span class="mx-1">|</span>
-                    لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">{{ config('app.company_phone') }}</span>
+                    لطلب النظام: <span dir="ltr"
+                        class="font-mono text-slate-400">{{ config('app.company_phone') }}</span>
                 </p>
             </div>
         </div>

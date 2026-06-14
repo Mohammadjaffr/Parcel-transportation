@@ -139,7 +139,11 @@
 
                                             {{-- تفاصيل الراكب (الرقم والوجهة فقط لمنع التداخل) --}}
                                             <div class="flex-1 min-w-0">
-                                                <span class="block font-headline text-sm font-black text-slate-800 dark:text-white tracking-tight truncate mb-1" style="direction: ltr; text-align: right;" x-text="passenger.passenger_number"></span>
+                                                <div class="flex items-center gap-2 mb-1 text-sm font-black tracking-tight font-headline text-slate-800 dark:text-white" style="direction: ltr; justify-content: flex-end;">
+                                                    <span x-text="getPassengerPhoneDetails(passenger.passenger_number).localNumber"></span>
+                                                    <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden shrink-0" 
+                                                         x-html="getPassengerPhoneDetails(passenger.passenger_number).flag"></div>
+                                                </div>
                                                 
                                                 <div class="flex gap-1 items-center">
                                                     <span class="material-symbols-outlined text-[14px] text-primary">flag</span>
@@ -296,6 +300,26 @@
                 selectAllFiltered() {
                     const visibleIds = this.filteredPassengers().map(p => p.id);
                     this.selectedPassengers = [...new Set([...this.selectedPassengers, ...visibleIds])];
+                },
+                getPassengerPhoneDetails(number) {
+                    if (!number) return { flag: '', localNumber: '' };
+                    const cleanNumber = String(number).replace(/[^\d]/g, '');
+                    const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                    for (const country of sorted) {
+                        const dial = country.dial_code.replace('+', '');
+                        if (cleanNumber.startsWith(dial)) {
+                            const local = cleanNumber.substring(dial.length);
+                            return {
+                                flag: country.svg,
+                                localNumber: local
+                            };
+                        }
+                    }
+                    const defaultCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    return {
+                        flag: defaultCountry ? defaultCountry.svg : '',
+                        localNumber: number
+                    };
                 }
             }
         }

@@ -5,12 +5,18 @@
 
 @section('content')
 
+@php
+    // دمج الركاب المضافين حالياً للرحلة مع الركاب قيد الانتظار
+    $allPassengers = collect($trip->passengers)->merge($pendingPassengers)->unique('id')->values();
+    $selectedIds = $trip->passengers->pluck('id')->toArray();
+@endphp
+
 <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
 
-    {{-- Header --}}
+    {{-- الهيدر --}}
     <div class="mx-auto w-full max-w-7xl">
         <div class="flex items-center gap-4 mb-6">
-            <a href="{{ route('trips.index') }}" class="flex justify-center items-center w-12 h-12 bg-white dark:bg-boxdark rounded-2xl border shadow-sm transition-all border-slate-100 dark:border-boxdark-2 text-slate-500 dark:text-gray-400 hover:text-primary hover:border-primary/30 active:scale-95">
+            <a href="{{ route('trips.index') }}" class="flex justify-center items-center w-12 h-12 bg-white dark:bg-boxdark rounded-2xl border shadow-sm transition-all border-slate-100 dark:border-boxdark-2 text-slate-500 dark:text-gray-400 hover:text-amber-500 hover:border-amber-550/30 active:scale-95">
                 <span class="material-symbols-outlined text-[24px]">arrow_forward</span>
             </a>
             <div>
@@ -18,107 +24,368 @@
                     تعديل الرحلة
                     <span class="text-amber-500 font-mono bg-amber-500/10 px-2 py-0.5 rounded-lg text-lg">#{{ $trip->id }}</span>
                 </h1>
-                <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mt-1">تغيير السائق المسؤول عن هذه الرحلة.</p>
+                <p class="text-sm font-bold text-gray-500 dark:text-gray-400 mt-1">تعديل بيانات السائق والركاب المنضمين للرحلة.</p>
             </div>
         </div>
     </div>
 
-    {{-- Content --}}
-    <div class="mx-auto w-full max-w-3xl">
-        <div class="bg-white dark:bg-boxdark rounded-[2rem] p-6 md:p-10 border border-gray-100 dark:border-boxdark-2 shadow-sm">
-            
-            <form action="{{ route('trips.update', $trip->id) }}" method="POST"
-                x-data="{
-                    driverId: '{{ $trip->driver_id }}',
-                    searchDriver: '',
-                    dropdownOpen: false,
-                    drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
-                    get selectedDriver() {
-                        return this.drivers.find(d => String(d.id) === String(this.driverId));
-                    },
-                    get filteredDrivers() {
-                        if (this.searchDriver === '') return this.drivers;
-                        return this.drivers.filter(d => 
-                            String(d.name).includes(this.searchDriver) || 
-                            String(d.phone).includes(this.searchDriver)
-                        );
-                    }
-                }">
+    {{-- حاوية الفورم --}}
+    <div class="mx-auto w-full max-w-7xl">
+        <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2">
+
+            <form action="{{ route('trips.update', $trip->id) }}" method="POST" 
+                x-data="editTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($allPassengers), @js($selectedIds), @js($trip->driver ? ['id' => $trip->driver->id, 'name' => $trip->driver->name, 'phone' => $trip->driver->phone] : null))">
                 @csrf
                 @method('PUT')
 
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-lg font-black text-slate-800 dark:text-white font-headline flex items-center gap-2 mb-2">
-                            <span class="material-symbols-outlined text-amber-500">local_taxi</span>
-                            تحديد السائق الجديد
-                        </h3>
-                        <p class="text-sm font-bold text-gray-500 dark:text-gray-400">اختر السائق الذي سيتولى هذه الرحلة من القائمة أدناه.</p>
-                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    {{-- العمود الأول: تفاصيل السائق وزر الحفظ --}}
+                    <div class="space-y-6 lg:col-span-1 border-b pb-8 lg:border-b-0 lg:pb-0 lg:border-l border-slate-100 dark:border-boxdark-2 lg:pl-8">
+                        <div>
+                            <h2 class="text-lg font-black text-slate-800 dark:text-white font-headline mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-500">local_taxi</span>
+                                بيانات السائق المسؤول
+                            </h2>
+                            <p class="text-xs text-gray-500 mb-6 font-bold leading-relaxed">يرجى كتابة رقم الجوال لاختيار سائق مسجل، أو كتابة رقمه واسمه لإضافته كسائق جديد.</p>
+                        </div>
 
-                    <div class="relative">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2">السائق المسؤول <span class="text-rose-500">*</span></label>
-                        <input type="hidden" name="driver_id" :value="driverId">
-                        
-                        {{-- Custom Select Button --}}
-                        <div @click="dropdownOpen = !dropdownOpen" @click.away="dropdownOpen = false" 
-                            class="flex items-center justify-between w-full h-16 px-4 bg-slate-50 dark:bg-boxdark-2 border border-slate-200 dark:border-boxdark-2 rounded-xl cursor-pointer hover:border-amber-500 transition-colors focus:ring-2 focus:ring-amber-500/20"
-                            :class="dropdownOpen ? 'border-amber-500 ring-2 ring-amber-500/20' : ''">
+                        {{-- إدخال رقم السائق --}}
+                        <div class="space-y-4">
+                            <input type="hidden" name="driver_id" x-model="selectedDriverId">
+                            <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
+
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2">رقم الجوال <span class="text-rose-500">*</span></label>
+                                <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 transition-all group ring-slate-200 dark:bg-boxdark-2 dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-amber-500/50 h-14"
+                                    :class="selectedDriverId ? 'bg-amber-550/5 ring-amber-500/30 dark:bg-amber-500/5' : ''" style="direction: ltr;">
+
+                                    <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                        <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                            class="flex gap-2 items-center px-4 h-full rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark dark:border-boxdark-2 text-slate-600 dark:text-gray-300">
+                                            <div class="w-6 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden" x-html="selectedCountry?.svg"></div>
+                                            <span class="text-sm font-bold" x-text="selectedCountry?.dial_code"></span>
+                                        </button>
+
+                                        <div x-show="openCountryDropdown" x-cloak x-transition
+                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl z-[60] overflow-hidden">
+                                            <div class="p-3 border-b border-slate-50 dark:border-boxdark-2">
+                                                <input type="text" x-model="searchCountryQuery" placeholder="بحث عن دولة..."
+                                                    class="px-4 w-full h-10 text-sm rounded-xl outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white focus:ring-2 focus:ring-amber-500/30" dir="rtl">
+                                            </div>
+                                            <div class="overflow-y-auto max-h-60 custom-scrollbar" dir="ltr">
+                                                <template x-for="country in filteredCountries" :key="country.code">
+                                                    <button type="button" @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
+                                                        class="flex gap-3 items-center px-4 py-3 w-full text-left transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200 border-b border-slate-50 dark:border-boxdark-2 last:border-0">
+                                                        <div class="w-6 h-auto flex items-center justify-center rounded-[2px] overflow-hidden shadow-sm" x-html="country.svg"></div>
+                                                        <span class="flex-1 text-sm font-bold" x-text="country.name"></span>
+                                                        <span class="text-xs text-slate-400 font-mono" x-text="country.dial_code"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
+                                        @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
+                                        placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                        class="flex-1 px-4 w-full h-full text-base text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800 dark:text-white tracking-widest"
+                                        :class="selectedDriverId ? 'font-black text-amber-500 dark:text-amber-400' : ''">
+
+                                    <button type="button" x-show="selectedDriverId" @click="resetSelection" x-cloak
+                                        class="absolute right-4 z-10 p-1 bg-white dark:bg-boxdark rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors border border-slate-100 dark:border-boxdark-2 shadow-sm">
+                                        <span class="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
+                                </div>
+
+                                {{-- نتائج البحث المنسدلة للسائقين --}}
+                                <div x-show="showDriverDropdown && localPhoneNumber.length > 0 && !selectedDriverId" x-transition x-cloak
+                                    class="absolute top-[4.5rem] right-0 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl overflow-hidden max-h-60 overflow-y-auto z-50">
+                                    <template x-for="driver in filteredDrivers" :key="driver.id">
+                                        <button type="button" @click="selectDriver(driver)"
+                                            class="flex justify-between items-center px-5 py-3.5 w-full text-right border-b transition-colors hover:bg-amber-500/5 dark:hover:bg-boxdark-2 border-slate-50 dark:border-boxdark-2 group">
+                                            <div class="flex flex-col gap-1">
+                                                <span class="text-sm font-black text-slate-800 dark:text-white group-hover:text-amber-500 transition-colors" x-text="driver.name"></span>
+                                                <span class="text-xs text-slate-500 font-mono dir-ltr text-right" x-text="driver.phone"></span>
+                                            </div>
+                                            <span class="material-symbols-outlined text-slate-300 text-[20px] group-hover:text-amber-500 transition-colors transform group-hover:-translate-x-1">arrow_back</span>
+                                        </button>
+                                    </template>
+                                    <div x-show="filteredDrivers.length === 0" class="px-5 py-4 text-center bg-slate-50/50 dark:bg-boxdark-2/30">
+                                        <div class="flex items-center justify-center mb-2 w-10 h-10 mx-auto rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500">
+                                            <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-600 dark:text-gray-300">سائق جديد</span>
+                                        <p class="text-xs text-slate-400 mt-1">سيتم إنشاء حساب للسائق تلقائياً عند حفظ التعديلات.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- إدخال اسم السائق --}}
+                            <div class="mt-4">
+                                <label class="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-2">اسم السائق <span class="text-rose-500">*</span></label>
+                                <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedDriverId !== null"
+                                    placeholder="أدخل الاسم الثلاثي للسائق..." required
+                                    class="px-4 w-full h-14 text-sm rounded-xl border transition-colors outline-none font-bold"
+                                    :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 text-slate-800 dark:text-white'">
+                            </div>
+                        </div>
+
+                        {{-- أزرار الحفظ للديسكتوب --}}
+                        <div class="pt-8 mt-8 border-t border-slate-100 dark:border-boxdark-2" x-data="{ isSubmitting: false }">
+                            <button type="submit"
+                                @click="if(selectedPassengers.length > 0 && $el.closest('form').checkValidity()) { setTimeout(() => isSubmitting = true, 50); }"
+                                :disabled="selectedPassengers.length === 0 || isSubmitting" 
+                                class="w-full h-14 bg-amber-500 text-white rounded-xl font-black text-sm transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 flex items-center justify-center gap-3 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-boxdark-2 dark:disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed group">
+
+                                <template x-if="isSubmitting">
+                                    <div class="flex gap-2 items-center">
+                                        <span class="material-symbols-outlined animate-spin text-[22px]">progress_activity</span>
+                                        <span>جاري حفظ التعديلات...</span>
+                                    </div>
+                                </template>
+
+                                <template x-if="!isSubmitting">
+                                    <div class="flex gap-3 items-center w-full px-6 justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[22px] transform group-hover:-translate-y-1 transition-transform">save</span>
+                                            <span>حفظ تعديلات الرحلة</span>
+                                        </div>
+                                        <div class="flex justify-center items-center w-8 h-8 rounded-lg bg-white/20 font-mono text-sm" title="إجمالي الركاب المحددين">
+                                            <span x-text="selectedPassengers.length">0</span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </button>
                             
-                            <div class="flex items-center gap-3">
-                                <template x-if="selectedDriver">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-black text-slate-800 dark:text-white" x-text="selectedDriver.name"></span>
-                                        <span class="text-xs text-gray-500 font-mono text-right dir-ltr block mt-0.5" style="direction: ltr;" x-text="selectedDriver.phone"></span>
-                                    </div>
-                                </template>
-                                <template x-if="!selectedDriver">
-                                    <span class="text-sm text-gray-400 font-bold">-- اختر سائقاً --</span>
-                                </template>
-                            </div>
-                            <span class="material-symbols-outlined text-gray-400 transition-transform" :class="dropdownOpen ? 'rotate-180 text-amber-500' : ''">expand_more</span>
+                            <a href="{{ route('trips.index') }}" class="w-full flex justify-center items-center h-14 rounded-xl font-bold text-sm text-slate-600 dark:text-gray-300 bg-slate-100 dark:bg-boxdark-2 hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors active:scale-95 mt-3">
+                                إلغاء
+                            </a>
+
+                            <p class="text-xs text-center text-rose-500 mt-4 font-bold" x-show="selectedPassengers.length === 0" x-cloak>
+                                يرجى تحديد راكب واحد على الأقل للمتابعة.
+                            </p>
                         </div>
 
-                        {{-- Dropdown Menu --}}
-                        <div x-show="dropdownOpen" x-cloak x-transition
-                            class="absolute z-50 w-full mt-2 bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl overflow-hidden">
-                            <div class="p-3 border-b border-slate-50 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50">
-                                <div class="relative">
-                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[18px]">search</span>
-                                    <input type="text" x-model="searchDriver" placeholder="ابحث باسم السائق أو رقمه..."
-                                        class="w-full pl-3 pr-10 py-2.5 bg-white dark:bg-boxdark border border-slate-200 dark:border-boxdark-2 rounded-xl text-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all">
-                                </div>
-                            </div>
-                            <div class="max-h-60 overflow-y-auto custom-scrollbar py-2">
-                                <template x-for="driver in filteredDrivers" :key="driver.id">
-                                    <div @click="driverId = driver.id; dropdownOpen = false; searchDriver = ''"
-                                        class="flex flex-col px-4 py-2.5 cursor-pointer transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 group"
-                                        :class="driverId === String(driver.id) ? 'bg-amber-50 dark:bg-amber-500/10' : ''">
-                                        <span class="text-sm font-black group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors"
-                                            :class="driverId === String(driver.id) ? 'text-amber-600 dark:text-amber-400' : 'text-slate-700 dark:text-gray-200'" x-text="driver.name"></span>
-                                        <span class="text-xs text-gray-500 font-mono text-right dir-ltr block mt-0.5" style="direction: ltr;" x-text="driver.phone"></span>
-                                    </div>
-                                </template>
-                                <div x-show="filteredDrivers.length === 0" class="px-4 py-6 text-center text-gray-400 text-sm font-bold">
-                                    لم يتم العثور على سائق يطابق بحثك.
-                                </div>
-                            </div>
-                        </div>
                     </div>
-                </div>
 
-                <div class="mt-10 pt-6 border-t border-slate-100 dark:border-boxdark-2 flex justify-end gap-3">
-                    <a href="{{ route('trips.index') }}" class="px-6 py-3 rounded-xl font-bold text-sm text-slate-600 dark:text-gray-300 bg-slate-100 dark:bg-boxdark-2 hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors active:scale-95">
-                        إلغاء
-                    </a>
-                    <button type="submit" class="px-8 py-3 rounded-xl font-black text-sm text-white bg-amber-500 hover:bg-amber-600 shadow-sm shadow-amber-500/30 transition-all active:scale-95 flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[20px]">save</span>
-                        حفظ التعديلات
-                    </button>
+                    {{-- العمود الثاني والثالث: الركاب المنضمين وقيد الانتظار --}}
+                    <div class="lg:col-span-2 space-y-6">
+                        
+                        <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+                            <div>
+                                <h3 class="flex gap-3 items-center font-black text-slate-800 dark:text-white font-headline text-lg">
+                                    ركاب الرحلة والانتظار 
+                                    <span class="flex items-center justify-center bg-amber-500/10 text-amber-500 px-3 py-1 rounded-lg text-sm font-bold" x-text="selectedPassengers.length + ' محددين'">0</span>
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-1 font-bold">يمكنك إضافة أو فك ارتباط ركاب الرحلة عن طريق تحديد بطاقاتهم.</p>
+                            </div>
+
+                            <div class="flex gap-3 items-center shrink-0">
+                                <div class="relative w-full md:w-64">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-gray-400 text-[20px]">search</span>
+                                    <input type="text" x-model="searchQuery" placeholder="بحث برقم الجوال..."
+                                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 dark:bg-boxdark-2 border border-slate-200 dark:border-boxdark-2 rounded-xl text-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-slate-700 dark:text-white transition-all">
+                                </div>
+                                
+                                <div class="flex gap-2 bg-slate-100 p-1 rounded-xl dark:bg-boxdark-2 shrink-0">
+                                    <button type="button" @click="selectAllFiltered()"
+                                        class="px-4 py-2 rounded-lg text-xs font-bold transition-colors bg-white shadow-sm text-amber-500 dark:bg-boxdark hover:text-amber-600 active:scale-95">
+                                        تحديد المعروض
+                                    </button>
+                                    <button type="button" @click="selectedPassengers = []"
+                                        class="px-4 py-2 rounded-lg text-xs font-bold transition-colors text-slate-600 hover:bg-slate-200 dark:text-gray-300 dark:hover:bg-boxdark active:scale-95">
+                                        إلغاء التحديد
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- شبكة عرض الركاب --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-max custom-scrollbar" style="max-height: 600px; overflow-y: auto; padding-right: 4px;">
+                            <template x-for="passenger in filteredPassengers()" :key="passenger.id">
+                                <label class="block relative cursor-pointer group h-full">
+                                    <input type="checkbox" name="passenger_ids[]" :value="passenger.id" class="hidden peer"
+                                        :checked="selectedPassengers.includes(passenger.id)"
+                                        @change="togglePassenger(passenger.id)">
+
+                                    <div class="h-full bg-white dark:bg-boxdark p-5 rounded-2xl border border-slate-200 dark:border-boxdark-2 shadow-sm peer-checked:ring-2 peer-checked:ring-amber-500 peer-checked:border-transparent peer-checked:bg-amber-550/5 transition-all flex items-center justify-between gap-4 hover:border-amber-500/30">
+                                        
+                                        <div class="flex items-center gap-4 min-w-0 flex-1">
+                                            {{-- العداد --}}
+                                            <div class="flex flex-col justify-center items-center w-14 h-14 rounded-xl transition-all bg-slate-50 dark:bg-boxdark-2 text-slate-600 dark:text-gray-300 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:shadow-md shrink-0 border border-slate-100 dark:border-boxdark-2 peer-checked:border-transparent">
+                                                <span class="text-xl font-black leading-none font-headline" x-text="passenger.count"></span>
+                                                <span class="text-[10px] font-bold mt-1">ركاب</span>
+                                            </div>
+
+                                            {{-- التفاصيل --}}
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center gap-2 mb-1.5 text-base font-black tracking-tight font-headline text-slate-800 dark:text-white" style="direction: ltr; justify-content: flex-end;">
+                                                    <span x-text="getPassengerPhoneDetails(passenger.passenger_number).localNumber"></span>
+                                                    <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden shrink-0" 
+                                                         x-html="getPassengerPhoneDetails(passenger.passenger_number).flag"></div>
+                                                </div>
+                                                
+                                                <div class="flex gap-1.5 items-center bg-slate-50 dark:bg-boxdark-2 w-max px-2.5 py-1 rounded-md">
+                                                    <span class="material-symbols-outlined text-[14px] text-amber-500">location_on</span>
+                                                    <span class="text-xs font-bold text-slate-600 dark:text-gray-300 truncate" x-text="passenger.destination"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- علامة الصح --}}
+                                        <div class="flex justify-center items-center w-7 h-7 rounded-full border-2 transition-all border-slate-300 dark:border-boxdark-2 peer-checked:bg-amber-500 peer-checked:border-amber-500 shrink-0 peer-checked:shadow-sm">
+                                            <span class="material-symbols-outlined text-white text-[18px] hidden peer-checked:block">check</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </template>
+
+                            {{-- حالة عدم وجود ركاب --}}
+                            <div x-show="filteredPassengers().length === 0" class="col-span-1 md:col-span-2 bg-slate-50 dark:bg-boxdark p-12 rounded-[2rem] border border-dashed border-slate-200 dark:border-boxdark-2 flex flex-col items-center justify-center text-slate-400">
+                                <div class="flex justify-center items-center mb-4 w-20 h-20 rounded-full bg-white dark:bg-boxdark-2 shadow-sm text-slate-300">
+                                    <span class="material-symbols-outlined text-[40px]">person_off</span>
+                                </div>
+                                <h3 class="text-base font-black text-slate-600 dark:text-white mb-1 font-headline">لا يوجد ركاب متاحين</h3>
+                                <p class="text-sm font-bold text-slate-400 dark:text-gray-500 text-center max-w-sm">
+                                    لم يتم العثور على ركاب قيد الانتظار أو لا توجد نتائج تطابق بحثك الحالي.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+@endsection
+
+@section('script')
+    <script>
+        function editTripForm(driversList, countriesList, allPassengersList, initialSelectedIds, initialDriver) {
+            return {
+                // بيانات السائق
+                drivers: driversList || [],
+                countries: countriesList || [],
+                localPhoneNumber: '',
+                selectedCountry: null,
+                openCountryDropdown: false,
+                searchCountryQuery: '',
+                showDriverDropdown: false,
+                selectedDriverId: null,
+                nameInput: '',
+                initialDriver: initialDriver,
+
+                // بيانات الركاب المتاحة
+                passengers: (allPassengersList || []).map(p => ({
+                    id: p.id,
+                    passenger_number: p.passenger_number, // رقم الجوال الخاص بالراكب
+                    count: p.count || 1,
+                    destination: p.destination || 'غير محدد'
+                })),
+                searchQuery: '',
+                selectedBranch: '',
+                selectedPassengers: initialSelectedIds || [],
+
+                init() {
+                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                    if (this.initialDriver) {
+                        this.selectDriver(this.initialDriver);
+                    }
+                },
+
+                get filteredCountries() {
+                    const query = this.searchCountryQuery.toLowerCase().trim();
+                    if (!query) return this.countries;
+                    return this.countries.filter(c => String(c.name || '').toLowerCase().includes(query) || String(c.dial_code || '').includes(query));
+                },
+                get fullPhoneNumber() {
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    return local ? dial + local : '';
+                },
+                get filteredDrivers() {
+                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '');
+                    if (!local) return [];
+                    return this.drivers.filter(d => String(d.phone || '').includes(local));
+                },
+                searchDriver() {
+                    const exact = this.drivers.find(d => String(d.phone || '').replace(/[^\d]/g, '') === String(this.fullPhoneNumber).replace(/[^\d]/g, ''));
+                    if (exact) {
+                        this.selectDriver(exact);
+                    } else {
+                        this.selectedDriverId = null;
+                        this.showDriverDropdown = true;
+                    }
+                },
+                selectDriver(driver) {
+                    this.selectedDriverId = driver.id;
+                    this.nameInput = driver.name;
+                    this.showDriverDropdown = false;
+                    
+                    const clean = String(driver.phone || '').replace(/[^\d]/g, '');
+                    const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                    const country = sorted.find(c => clean.startsWith(c.dial_code.replace('+', '')));
+                    if (country) {
+                        this.selectedCountry = country;
+                        this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length);
+                    }
+                },
+                resetSelection() {
+                    this.selectedDriverId = null;
+                    this.nameInput = '';
+                    this.localPhoneNumber = '';
+                    this.showDriverDropdown = false;
+                },
+
+                // فلاتر وتحديد الركاب
+                filteredPassengers() {
+                    return this.passengers.filter(p => {
+                        const matchSearch = this.searchQuery === '' || 
+                            String(p.passenger_number).includes(this.searchQuery);
+                        
+                        const matchBranch = this.selectedBranch === '' || 
+                            p.branch_name === this.selectedBranch;
+
+                        return matchSearch && matchBranch;
+                    });
+                },
+                togglePassenger(id) {
+                    if (this.selectedPassengers.includes(id)) {
+                        this.selectedPassengers = this.selectedPassengers.filter(pId => pId !== id);
+                    } else {
+                        this.selectedPassengers.push(id);
+                    }
+                },
+                selectAllFiltered() {
+                    const visibleIds = this.filteredPassengers().map(p => p.id);
+                    this.selectedPassengers = [...new Set([...this.selectedPassengers, ...visibleIds])];
+                },
+                getPassengerPhoneDetails(number) {
+                    if (!number) return { flag: '', localNumber: '' };
+                    const cleanNumber = String(number).replace(/[^\d]/g, '');
+                    const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                    for (const country of sorted) {
+                        const dial = country.dial_code.replace('+', '');
+                        if (cleanNumber.startsWith(dial)) {
+                            const local = cleanNumber.substring(dial.length);
+                            return {
+                                flag: country.svg,
+                                localNumber: local
+                            };
+                        }
+                    }
+                    const defaultCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                    return {
+                        flag: defaultCountry ? defaultCountry.svg : '',
+                        localNumber: number
+                    };
+                }
+            }
+        }
+    </script>
 @endsection
