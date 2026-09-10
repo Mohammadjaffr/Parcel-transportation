@@ -13,15 +13,18 @@
 
     @php
         $appName = $currentApp->name ?? 'نظام مرسل';
-        $appLogo = (isset($currentApp) && $currentApp->logo) 
-                    ? asset('storage/' . $currentApp->logo) 
-                    : asset('assets/images/mursal-preview.png');
+        $appLogo =
+            isset($currentApp) && $currentApp->logo
+                ? asset('storage/' . $currentApp->logo)
+                : asset('assets/images/mursal-preview.png');
     @endphp
 
     <title>@yield('title', $appName . ' | لإدارة ونقل الطرود وتتبع الشحنات')</title>
 
-    <meta name="description" content="{{ $appName }} هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. نوفر حلولاً لوجستية متكاملة لتسهيل إدارة المناديب، تتبع الطلبات، وضمان سرعة التوصيل." />
-    <meta name="keywords" content="نظام مرسل, نقل طرود, تتبع الشحنات, إدارة التوصيل, نظام لوجستي, شحن وتوصيل, إدارة المناديب, برنامج نقل طرود" />
+    <meta name="description"
+        content="{{ $appName }} هو الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. نوفر حلولاً لوجستية متكاملة لتسهيل إدارة المناديب، تتبع الطلبات، وضمان سرعة التوصيل." />
+    <meta name="keywords"
+        content="نظام مرسل, نقل طرود, تتبع الشحنات, إدارة التوصيل, نظام لوجستي, شحن وتوصيل, إدارة المناديب, برنامج نقل طرود" />
     <meta name="author" content="{{ $appName }}" />
     <meta name="robots" content="index, follow" />
 
@@ -31,7 +34,8 @@
     <meta property="og:site_name" content="{{ $appName }}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="@yield('title', $appName . ' | لإدارة ونقل الطرود وتتبع الشحنات')" />
-    <meta property="og:description" content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في إدارة العمليات اللوجستية." />
+    <meta property="og:description"
+        content="الحل الأمثل لإدارة عمليات نقل الطرود وتتبع الشحنات باحترافية. سرعة، أمان، وسهولة في إدارة العمليات اللوجستية." />
     <meta property="og:url" content="{{ url()->current() }}" />
 
     <meta property="og:image" content="{{ $appLogo }}" />
@@ -50,62 +54,91 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('assets/favicons/favicon.ico') }}" />
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
     <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('assets/favicons/favicon-96x96.png') }}" />
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('assets/favicons/web-app-manifest-192x192.png') }}" />
+    <link rel="icon" type="image/png" sizes="192x192"
+        href="{{ asset('assets/favicons/web-app-manifest-192x192.png') }}" />
     <link rel="apple-touch-icon" href="{{ asset('assets/favicons/apple-touch-icon.png') }}" />
     <link rel="manifest" href="{{ asset('assets/favicons/site.webmanifest') }}" />
 
     <meta name="msapplication-TileImage" content="{{ asset('assets/favicons/favicon-96x96.png') }}" />
     <meta name="msapplication-TileColor" content="{{ $currentApp->color ?? '#f79009' }}" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@100;300;400;500;700;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet" />
 
     <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        // يمكنك لاحقاً ربط هذه الألوان بـ $currentApp->theme إذا أردت تخصيص الألوان لكل تطبيق
-                        "primary": "{{ $currentApp->color ?? '#f79009' }}",
-                        "primary-hover": "#dc6803",
-                        "primary-container": "#fffaeb",
-                        "on-primary-container": "#b54708",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface": "#191c1d",
-                        "on-surface-variant": "#454652",
-                        "error": "#ba1a1a",
-                        "surface-container-low": "#f3f4f5",
-                        "secondary-container": "#ff9800",
-                        "on-secondary-fixed-variant": "#693c00",
-                        "secondary": "#8b5000",
-                        "tertiary-fixed": "#94f990",
-                        "on-tertiary-fixed-variant": "#005313",
-                        "tertiary": "#004e11",
-                        "surface-container-highest": "#e1e3e4",
-                        "secondary-fixed": "#ffdcbe",
-                        "surface": "#f8fafc",
-                    },
-                    fontFamily: {
-                        "headline": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
-                        "body": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
-                    },
+   <script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    // ألوان تطبيقك الحالية
+                    "primary": "{{ $currentApp->color ?? '#f79009' }}",
+                    "primary-hover": "#dc6803",
+                    "primary-container": "#fffaeb",
+                    "on-primary-container": "#b54708",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface": "#191c1d",
+                    "on-surface-variant": "#454652",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f3f4f5",
+                    "secondary-container": "#ff9800",
+                    "on-secondary-fixed-variant": "#693c00",
+                    "secondary": "#8b5000",
+                    "tertiary-fixed": "#94f990",
+                    "on-tertiary-fixed-variant": "#005313",
+                    "tertiary": "#004e11",
+                    "surface-container-highest": "#e1e3e4",
+                    "secondary-fixed": "#ffdcbe",
+                    "surface": "#f8fafc",
+                    
+                    // الألوان الناقصة للوضع الليلي التي يطلبها التصميم (تمت إضافتها)
+                    "boxdark": "#24303f",
+                    "boxdark-2": "#1a222c",
+                    "bodydark": "#8a99af",
+                    "bodydark1": "#deebff",
+                    "bodydark2": "#8a99af",
+                },
+                fontFamily: {
+                    "headline": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
+                    "body": ["IBM Plex Sans Arabic", "Be Vietnam Pro", "sans-serif"],
                 },
             },
-        }
-    </script>
+        },
+    }
+</script>
     <style type="text/tailwindcss">
         @layer base {
-            [x-cloak] { display: none !important; }
-            body { @apply font-body bg-surface text-on-surface min-h-screen; }
-            .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+            [x-cloak] {
+                display: none !important;
+            }
+
+            body {
+                @apply font-body bg-surface text-on-surface min-h-screen;
+            }
+
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
         }
+
         @layer components {
-            .glass-nav { @apply bg-white/80 backdrop-blur-md dark:bg-boxdark/80; }
-            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .glass-nav {
+                @apply bg-white/80 backdrop-blur-md dark:bg-boxdark/80;
+            }
+
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
         }
     </style>
     @yield('style')
@@ -132,9 +165,9 @@
                 @yield('content')
             </main>
 
-            <x-modals.warning-modal />
+            {{-- <x-modals.warning-modal />
             <x-modals.error-modal-desktop />
-            <x-modals.success-modal-desktop />
+            <x-modals.success-modal-desktop /> --}}
         </div>
     </div>
 

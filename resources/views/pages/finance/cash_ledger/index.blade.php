@@ -8,7 +8,7 @@
 <div class="space-y-6 font-body" dir="rtl" x-data="cashLedgerHandler()">
 
     {{-- 1. بطاقات المؤشرات والإحصائيات اللحظية (KPI Cards) --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         
         {{-- كرت إجمالي الوارد --}}
         <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
@@ -210,12 +210,22 @@
                                 {{ $trx->notes ?? '-' }}
                             </td>
                             <td class="p-4 text-center whitespace-nowrap">
-                                <button type="button" @click="viewDetails({{ $trx->id }})" class="px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
-                                    تفاصيل
-                                </button>
-                                <a href="{{ route('cash.ledger.receipt', $trx->id) }}" target="_blank" class="px-3 py-1.5 mr-1 text-xs font-bold text-brand-600 transition-colors bg-brand-50 rounded-lg hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-400">
-                                    طباعة
-                                </a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" @click="viewDetails({{ $trx->id }})" class="px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+                                        تفاصيل
+                                    </button>
+                                    
+                                    <a href="{{ route('cash.ledger.receipt', $trx->id) }}" 
+                                       target="_blank" 
+                                       title="طباعة السند"
+                                       class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all rounded-lg text-primary bg-primary/10 hover:bg-primary hover:text-white dark:bg-primary/20 dark:text-primary dark:hover:text-white dark:hover:bg-primary">
+                                       
+                                        <span class="material-symbols-outlined text-[16px]">
+                                            print
+                                        </span>
+                                        <span>طباعة</span>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     @empty

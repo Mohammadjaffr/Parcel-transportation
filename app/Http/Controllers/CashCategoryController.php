@@ -113,6 +113,9 @@ class CashCategoryController extends Controller
     /**
      * تحديث بيانات الفئة أو تبديل حالتها
      */
+/**
+     * تحديث بيانات الفئة أو تبديل حالتها
+     */
     public function update(Request $request, CashCategory $cashCategory)
     {
         // تبديل حالة التفعيل بشكل مباشر
@@ -136,12 +139,16 @@ class CashCategoryController extends Controller
                 'max:100',
                 Rule::unique('cash_categories', 'name')
                     ->ignore($cashCategory->id)
-                    ->where(fn ($q) => $q->where('app_id', $appId)->where('type', $cashCategory->type)),
+                    // تم التعديل هنا للتحقق من النوع الجديد المرسل وليس القديم
+                    ->where(fn ($q) => $q->where('app_id', $appId)->where('type', $request->type)),
             ],
+            'type'      => ['required', 'in:income,expense'], // تمت إضافة التحقق من النوع
             'is_active' => ['nullable', 'boolean'],
         ], [
             'name.required' => 'اسم الفئة مطلوب.',
             'name.unique'   => 'اسم الفئة مسجل مسبقاً لهذا النوع.',
+            'type.required' => 'نوع الحركة المالية مطلوب.',
+            'type.in'       => 'نوع الحركة المحدد غير صالح (قبض/صرف).',
         ]);
 
         if ($validator->fails()) {
@@ -151,6 +158,7 @@ class CashCategoryController extends Controller
         try {
             $cashCategory->update([
                 'name'      => trim($request->name),
+                'type'      => $request->type, // تمت إضافة تحديث النوع هنا
                 'is_active' => $request->boolean('is_active', $cashCategory->is_active),
             ]);
 
@@ -164,7 +172,6 @@ class CashCategoryController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
-
     /**
      * حذف الفئة مع التأكد من عدم ارتباطها بحركات مالية
      */

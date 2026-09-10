@@ -53,6 +53,7 @@ class PackageSeeder extends Seeder
             'is_phone_verified' => true,
 
         ]);
+       
         
         
      

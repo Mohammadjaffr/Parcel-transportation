@@ -61,13 +61,13 @@ class RegisteredUserController extends Controller
             ]);
         }
         
-        if (!$this->oTPService->hasWhatsApp($request->phone)) {
-            return back()
-                ->withInput() 
-                ->withErrors([
-                    'phone' => 'هذا الرقم غير مسجل في الواتساب. يرجى إدخال رقم واتساب فعال لاستلام كود التحقق.'
-                ]);
-        }
+        // if (!$this->oTPService->hasWhatsApp($request->phone)) {
+        //     return back()
+        //         ->withInput() 
+        //         ->withErrors([
+        //             'phone' => 'هذا الرقم غير مسجل في الواتساب. يرجى إدخال رقم واتساب فعال لاستلام كود التحقق.'
+        //         ]);
+        // }
         RateLimiter::clear($throttleKey);
         $otpCode = (string) random_int(100000, 999999);
         $user = DB::transaction(function () use ($request,$otpCode) {
