@@ -1,291 +1,192 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-
+<html dir="rtl" lang="ar">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سند رقم {{ $transaction->receipt_number }}</title>
     <style>
-        /* إعدادات الخط والصفحة */
+        @page {
+            size: 80mm auto;
+            margin: 2mm;
+        }
+        * {
+            box-sizing: border-box;
+        }
         body {
-            font-family: 'aealarabiya', 'dejavusans', sans-serif;
+            font-family: 'dejavusans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
             direction: rtl;
             margin: 0;
-            padding: 0;
-            color: #333;
-            line-height: 1.4;
-        }
-
-        @page {
-            margin: 10mm;
-        }
-
-        /* الهيدر الاحترافي */
-        .header-table {
-            width: 100%;
-            border-bottom: 3px solid #fb6514;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-        }
-
-        .brand-name {
-            color: #fb6514;
-            font-size: 32pt;
-            font-weight: bold;
-            margin: 0;
-            line-height: 1;
-        }
-
-        .brand-subtitle {
-            color: #333;
-            font-size: 15pt;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        .document-title-badge {
-            background-color: #333;
-            color: #fff;
-            padding: 4px 15px;
-            font-size: 13pt;
-            display: inline-block;
-            margin-top: 10px;
-            margin-left: 10px;
-            border-radius: 4px;
-        }
-
-        .header-info-text {
-            font-size: 11pt;
-            color: #555;
-            line-height: 1.6;
-        }
-
-        .header-phones {
-            color: #fb6514;
-            font-weight: bold;
-            font-size: 12pt;
-            margin-top: 5px;
-        }
-
-        /* بيانات المعاملة */
-        .trip-info-box {
-            width: 100%;
-            background-color: #fcfcfc;
-            border: 1px solid #eee;
             padding: 12px;
-            margin-bottom: 15px;
+            background-color: #f1f5f9;
+            color: #111827;
+        }
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-right { text-align: right; }
+        .border-bottom { border-bottom: 1px dashed #94a3b8; padding-bottom: 8px; margin-bottom: 8px; }
+        .row { width: 100%; margin-bottom: 6px; display: table; }
+        .row-cell { display: table-cell; }
+        .bold { font-weight: bold; }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
             border-radius: 4px;
-        }
-
-        .trip-info-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .trip-info-table tr td {
-            padding: 6px 0;
-        }
-
-        .label {
-            color: #fb6514;
+            font-size: 10px;
             font-weight: bold;
-            width: 120px;
-            font-size: 12pt;
+            background-color: #e2e8f0;
         }
-
-        .value {
+        .receipt-card {
+            width: 80mm;
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .no-print {
+            max-width: 80mm;
+            margin: 0 auto 12px auto;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 7px 12px;
+            font-size: 11px;
             font-weight: bold;
-            font-size: 13pt;
-            color: #222;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.2s;
         }
-
-        /* صندوق المبلغ المميز */
-        .amount-highlight-box {
-            width: 100%;
-            background-color: {{ $transaction->category && $transaction->category->type == 'in' ? '#e8f5e9' : '#ffebee' }};
-            border: 2px solid {{ $transaction->category && $transaction->category->type == 'in' ? '#4caf50' : '#f44336' }};
-            border-radius: 4px;
-            padding: 15px;
-            margin: 15px 0;
-            text-align: center;
+        .btn-print {
+            background-color: #0284c7;
+            color: #ffffff;
         }
-
-        .amount-highlight-box .amount-label {
-            font-size: 13pt;
-            color: #333;
-            font-weight: bold;
-            margin-bottom: 8px;
+        .btn-print:hover {
+            background-color: #0369a1;
         }
-
-        .amount-highlight-box .amount-value {
-            font-size: 22pt;
-            font-weight: bold;
-            color: {{ $transaction->category && $transaction->category->type == 'in' ? '#2e7d32' : '#c62828' }};
+        .btn-pdf {
+            background-color: #ffffff;
+            color: #334155;
+            border-color: #cbd5e1;
         }
-
-        /* قسم التواقيع - 3 أعمدة */
-        .signatures-container {
-            width: 100%;
-            margin-top: 30px;
-            border-collapse: collapse;
+        .btn-pdf:hover {
+            background-color: #f8fafc;
         }
-
-        .sig-cell {
-            width: 33.33%;
-            text-align: center;
-            padding: 10px;
-            vertical-align: top;
+        .btn-close {
+            background-color: #f1f5f9;
+            color: #64748b;
         }
-
-        .sig-title {
-            font-size: 12pt;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 35px;
-            display: block;
-        }
-
-        .sig-line {
-            width: 80%;
-            margin: 10px auto;
-            border-top: 1px solid #333;
-        }
-
-        /* الفوتر */
-        .footer-text {
-            margin-top: 30px;
-            padding-top: 15px;
-            border-top: 1px solid #ddd;
-            font-size: 10pt;
-            color: #666;
-            text-align: center;
-            line-height: 1.6;
+        @media print {
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .receipt-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
         }
     </style>
 </head>
+<body @if(!($isPdf ?? false)) onload="if(!window.location.search.includes('noprint')) { setTimeout(() => window.print(), 300); }" @endif>
 
-<body>
-    {{-- الهيدر الاحترافي --}}
-    <table class="header-table">
-        <tr>
-            <td width="35%" style="vertical-align: top;">
-                <h1 class="brand-name">الـزاجـل</h1>
-                <div class="brand-subtitle">للنقل والشحن السريع</div>
-                <div class="document-title-badge">
-                    @if ($transaction->category && $transaction->category->type == 'in')
-                        سند قبض
-                    @else
-                        سند صرف
-                    @endif
-                </div>
-                <div style="font-size: 10.5pt; margin-top: 8px; color: #666;">
-                    {{ $transaction->category && $transaction->category->type == 'in' ? 'Payment Receipt' : 'Payment Voucher' }}<br>
-                    رقم السند: {{ $transaction->receipt_number ?? $transaction->id }}
-                </div>
-            </td>
-            <td width="30%" style="text-align: center; vertical-align: middle;">
-                <img src="{{ public_path('images/new.svg') }}" style="width: 200px; height: auto;">
-            </td>
-            <td width="35%" style="text-align: left; vertical-align: top;" class="header-info-text">
-                <div style="font-weight: bold; font-size: 12px; color: #333; margin-bottom: 4px;">
-                    فرع / القطن -عمارة شظي - خلف بنك التضامن
-                </div>
-                <div style="font-weight: bold; font-size: 9px; color: #000;">
-                    781216757 - 773136727 - 730831802
-                </div>
-                <div class="header-info">الفرع / المكلا - اربعين شقة - بجانب بنك المجاد</div>
-                <div style="margin-top: 2px; font-size: 12px;">خدمة الشحن إلى جميع المحافظات ودول الخليج</div>
-                <div class="header-phones">
-                    للتواصل / 774996316 - 772038561<br>735637947
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    {{-- بيانات المعاملة --}}
-    <div class="trip-info-box">
-        <table class="trip-info-table">
-            <tr>
-                <td class="label">التاريخ:</td>
-                <td class="value">{{ $transaction->created_at->format('Y-m-d h:i A') }}</td>
-                <td class="label" style="padding-right: 20px;">الفرع:</td>
-                <td class="value">{{ $transaction->branch ? $transaction->branch->name : $transaction->branch_code }}
-                </td>
-            </tr>
-            <tr>
-                <td class="label">الفئة:</td>
-                <td class="value">{{ $transaction->category ? $transaction->category->name : 'غير محدد' }}</td>
-                @if ($transaction->reference_number)
-                    <td class="label" style="padding-right: 20px;">رقم المرجع:</td>
-                    <td class="value">{{ $transaction->reference_number }}</td>
-                @else
-                    <td colspan="2"></td>
-                @endif
-            </tr>
-            @if ($transaction->customer)
-                <tr>
-                    <td class="label">اسم العميل:</td>
-                    <td class="value">{{ $transaction->customer->name }}</td>
-                    <td class="label" style="padding-right: 20px;">رقم الهاتف:</td>
-                    <td class="value">{{ $transaction->customer->phone }}</td>
-                </tr>
-            @endif
-            @if ($transaction->user)
-                <tr>
-                    <td class="label">تم الإنشاء بواسطة:</td>
-                    <td class="value" colspan="3">{{ $transaction->user->name }}</td>
-                </tr>
-            @endif
-        </table>
+    @if(!($isPdf ?? false))
+    {{-- شريط أزرار الطباعة والتحميل السريع (يختفي في الطباعة تلقائياً) --}}
+    <div class="no-print">
+        <button type="button" onclick="window.print()" class="btn btn-print">
+            🖨️ طباعة
+        </button>
+        <a href="{{ request()->fullUrlWithQuery(['format' => 'pdf']) }}" class="btn btn-pdf">
+            📄 ملف PDF
+        </a>
+        <button type="button" onclick="window.close()" class="btn btn-close">
+            ✕ إغلاق
+        </button>
     </div>
-
-    {{-- صندوق المبلغ المميز --}}
-    <div class="amount-highlight-box">
-        <div class="amount-label">
-            @if ($transaction->category && $transaction->category->type == 'in')
-                المبلغ المستلم
-            @else
-                المبلغ المدفوع
-            @endif
-        </div>
-        <div class="amount-value"><span dir="ltr" class="font-bold text-red-600">
-                {{ number_format($transaction->amount) }}
-            </span> ر.ي</div>
-    </div>
-
-    {{-- البيان --}}
-    @if ($transaction->description)
-        <div class="trip-info-box">
-            <table class="trip-info-table">
-                <tr>
-                    <td class="label">البيان:</td>
-                    <td class="value">{{ $transaction->description }}</td>
-                </tr>
-            </table>
-        </div>
     @endif
 
-    {{-- التواقيع - 3 أعمدة --}}
-    <table class="signatures-container">
-        <tr>
-            <td class="sig-cell">
-                <span class="sig-title">المستلم / الدافع</span>
-                <div class="sig-line"></div>
-            </td>
-            <td class="sig-cell">
-                <span class="sig-title">المحاسب</span>
-                <div class="sig-line"></div>
-            </td>
-            <td class="sig-cell">
-                <span class="sig-title">المدير</span>
-                <div class="sig-line"></div>
-            </td>
-        </tr>
-    </table>
+    <div class="receipt-card">
+        {{-- رأس السند والشعار --}}
+        <div class="text-center border-bottom">
+            <h3 style="margin: 0 0 4px 0; font-size: 13px;">{{ $transaction->app->name ?? 'مُرسَل للنقل اللوجستي' }}</h3>
+            <p style="margin: 0 0 4px 0; font-size: 10px; color: #475569;">فرع: {{ $transaction->branch->name ?? '-' }}</p>
+            <div style="margin: 6px 0;">
+                <span class="badge" style="{{ $transaction->type === 'income' ? 'background:#dcfce7; color:#15803d;' : 'background:#ffe4e6; color:#be123c;' }}">
+                    {{ $transaction->type === 'income' ? 'سند قبض نقدية (وارد)' : 'سند صرف نقدية (منصرف)' }}
+                </span>
+            </div>
+            <div class="bold" style="font-size: 12px; margin-top: 4px; letter-spacing: 0.5px;">
+                {{ $transaction->receipt_number }}
+            </div>
+        </div>
 
-    {{-- الفوتر --}}
-    <div class="footer-text">
-        هذا سند الكتروني تم إنشاؤه تلقائياً من نظام إدارة الشحنات<br>
-        تاريخ الطباعة: {{ now()->format('Y-m-d h:i A') }}
+        {{-- تفاصيل السند --}}
+        <div style="margin: 10px 0;">
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">التاريخ:</div>
+                <div class="row-cell text-left">{{ $transaction->transaction_date->format('Y-m-d') }}</div>
+            </div>
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">التصنيف:</div>
+                <div class="row-cell text-left">{{ $transaction->category->name ?? '-' }}</div>
+            </div>
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">طريقة الدفع:</div>
+                <div class="row-cell text-left">{{ $transaction->payment_method === 'cash' ? 'نقداً (كاش الخزينة)' : 'تحويل بنكي' }}</div>
+            </div>
+            
+            @if($transaction->reference_number)
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">رقم المرجع:</div>
+                <div class="row-cell text-left">{{ $transaction->reference_number }}</div>
+            </div>
+            @endif
+
+            @if($transaction->notes)
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">البيان:</div>
+                <div class="row-cell text-left">{{ $transaction->notes }}</div>
+            </div>
+            @endif
+
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">المسؤول:</div>
+                <div class="row-cell text-left">{{ $transaction->user->name ?? '-' }}</div>
+            </div>
+        </div>
+
+        {{-- المبلغ الإجمالي --}}
+        <div class="border-bottom" style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #94a3b8; background: #fafafa; padding: 8px; border-radius: 6px;">
+            <div class="row" style="margin: 0;">
+                <div class="row-cell bold" style="font-size: 11px; vertical-align: middle;">المبلغ:</div>
+                <div class="row-cell text-left bold" style="font-size: 14px; color: {{ $transaction->type === 'income' ? '#15803d' : '#be123c' }};">
+                    {{ number_format($transaction->amount, 2) }} <span style="font-size: 10px; font-weight: normal;">ر.ي</span>
+                </div>
+            </div>
+        </div>
+
+        {{-- تذييل السند --}}
+        <div class="text-center" style="margin-top: 12px; font-size: 9px; color: #64748b;">
+            <p style="margin: 0 0 2px 0;">شكراً لتعاملكم معنا</p>
+            <p style="margin: 0;">تاريخ الطباعة: {{ now()->format('Y-m-d h:i A') }}</p>
+        </div>
     </div>
-</body>
 
+</body>
 </html>

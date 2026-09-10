@@ -47,4 +47,9 @@ class Branch extends Model
     {
         return $this->hasMany(User::class);
     }
+    // معتمد
+    public function cashTransactions()
+    {
+        return $this->hasMany(CashTransaction::class, 'branch_id');
+    }
 }

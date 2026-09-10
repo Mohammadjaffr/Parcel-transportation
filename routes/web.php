@@ -5,7 +5,9 @@ use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\BranchFinanceController;
+use App\Http\Controllers\CashCategoryController;
 use App\Http\Controllers\CashClosingController;
+use App\Http\Controllers\CashTransactionController;
 use App\Http\Controllers\ConnectionController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerFinanceController;
@@ -106,6 +108,13 @@ Route::middleware('auth')->group(function () {
             Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
             Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
         });
+        Route::prefix('finance/cash-ledger')->name('cash.ledger.')->group(function () {
+            Route::get('/', [CashTransactionController::class, 'index'])->name('index');
+            Route::post('/store', [CashTransactionController::class, 'store'])->name('store');
+            Route::get('/{id}/details', [CashTransactionController::class, 'showDetails'])->name('details');
+            Route::get('/{id}/receipt', [CashTransactionController::class, 'printReceipt'])->name('receipt');
+        });
+        Route::resource('cash-categories', CashCategoryController::class)->except(['create', 'show', 'edit']);
 
         // 2. العملاء (محمية بـ Customers)
         Route::resource('customers', CustomerController::class)->middleware('check.service:Customers');

@@ -256,7 +256,6 @@
                     </li>
                     @endhasservice
                     
-
                     {{-- إدارة المكاتب (المكاتب الموثوقة/غير الموثوقة) --}}
                     <li x-init="@if (request()->routeIs('app.*') || request()->routeIs('branch.*') || request()->routeIs('offices.*') || request()->routeIs('offices.unverified.*')) selected = 'Offices' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'Offices' ? '' : 'Offices')"
@@ -432,10 +431,58 @@
                         </div>
                     </li>
                     @endif
-                    
 
-                    
-                    @endif
+                    {{-- الصندوق المالي --}}
+                    <li x-init="@if (request()->routeIs('cash.*') || request()->routeIs('cash-categories.*') || request()->routeIs('closings.*')) selected = 'CashBox' @endif">
+                        <a href="#" @click.prevent="selected = (selected === 'CashBox' ? '' : 'CashBox')"
+                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
+                            :class="{{ request()->routeIs('cash.*', 'cash-categories.*', 'closings.*') ? 'true' : 'false' }} ?
+                            'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
+                            'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
+
+                            <span class="material-symbols-outlined text-[22px] transition-colors"
+                                :class="{{ request()->routeIs('cash.*', 'cash-categories.*', 'closings.*') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                account_balance_wallet
+                            </span>
+                            <span :class="{ 'lg:hidden': sidebarToggle }">الصندوق المالي</span>
+
+                            <span
+                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
+                                :class="{ 'rotate-180': selected === 'CashBox', 'lg:hidden': sidebarToggle }">
+                                expand_more
+                            </span>
+                        </a>
+
+                        <div x-cloak x-show="selected === 'CashBox'" x-collapse>
+                            <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
+                                :class="{ 'lg:hidden': sidebarToggle }">
+                                <div
+                                    class="absolute top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 {{ app()->getLocale() == 'ar' ? 'right-9' : 'left-9' }}">
+                                </div>
+                                <ul class="flex flex-col gap-1 {{ app()->getLocale() == 'ar' ? 'pr-8' : 'pl-8' }} py-1">
+                                    {{-- رابط دفتر الصندوق --}}
+                                    <li>
+                                        <a href="{{ route('cash.ledger.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('cash.ledger.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            دفتر الحسابات
+                                        </a>
+                                    </li>
+
+                                    {{-- رابط فئات الصندوق --}}
+                                    @if (in_array(auth()->user()->type, ['admin', 'super_admin']))
+                                    <li>
+                                        <a href="{{ route('cash-categories.index') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('cash-categories.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            فئات الحسابات
+                                        </a>
+                                    </li>
+                                    @endif
+
+                                </ul>
+                            </div>
+                        </div>
+                    </li>
+                    @endif    
                 </ul>
             </div>
         </nav>
