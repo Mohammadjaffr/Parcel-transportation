@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Shipment; 
 use App\Observers\ShipmentObserver;
+use App\Observers\PassengerObserver;
+use App\Models\Passengers;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,5 +33,6 @@ class AppServiceProvider extends ServiceProvider
             return $currentApp && $currentApp->hasService($serviceSlug);
         });
         Shipment::observe(ShipmentObserver::class);
+        Passengers::observe(PassengerObserver::class);
     }
 }

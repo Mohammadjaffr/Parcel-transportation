@@ -4,9 +4,10 @@ namespace App\Services;
 
 use App\Models\CashCategory;
 use App\Models\CashTransaction;
+use App\Models\Passengers;
 use App\Models\Shipment;
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class CashTransactionService
 {
@@ -120,6 +121,71 @@ class CashTransactionService
             'source_type'      => Shipment::class,
             'source_id'        => $shipment->id,
             'notes'            => "تسقيط عمولة الشحنة رقم {$shipment->bond_number}",
+            'transaction_date' => now()->toDateString(),
+        ]);
+    }
+    public function recordPassengerCommission(Passengers $passenger): ?CashTransaction
+    {
+        $commissionAmount = (float) $passenger->total_commission;
+
+        if ($commissionAmount <= 0 || !$passenger->branch_id) {
+            return null;
+        }
+
+        $appId = $passenger->app_id 
+            ?? $passenger->branch?->app_id 
+            ?? auth()->user()?->app_id;
+
+        if (!$appId) {
+            return null;
+        }
+
+        // منع التكرار المالي لنفس الراكب (Idempotency)
+        $alreadyRecorded = CashTransaction::withoutGlobalScopes()
+            ->where('app_id', $appId)
+            ->where('source_type', Passengers::class)
+            ->where('source_id', $passenger->id)
+            ->where('type', 'income')
+            ->where('notes', 'like', '%عمولة الراكب%')
+            ->exists();
+
+        if ($alreadyRecorded) {
+            return null;
+        }
+
+        // فئة عمولة الركاب
+        $category = CashCategory::withoutGlobalScopes()
+            ->where('app_id', $appId)
+            ->where('name', 'عمولة حجز ركاب')
+            ->first();
+
+        if (!$category) {
+            $category = CashCategory::withoutGlobalScopes()
+                ->where('app_id', $appId)
+                ->where('type', 'income')
+                ->first();
+        }
+
+        if (!$category) {
+            $category = CashCategory::create([
+                'app_id'    => $appId,
+                'name'      => 'عمولة حجز ركاب',
+                'type'      => 'income',
+                'is_active' => true,
+            ]);
+        }
+
+        return $this->recordIncome([
+            'app_id'           => $appId,
+            'branch_id'        => $passenger->branch_id,
+            'user_id'          => auth()->id() ?? 1,
+            'cash_category_id' => $category->id,
+            'amount'           => $commissionAmount,
+            'payment_method'   => 'cash',
+            'reference_number' => (string) ($passenger->passenger_number ?? $passenger->uuid),
+            'source_type'      => Passengers::class,
+            'source_id'        => $passenger->id,
+            'notes'            => "تسقيط عمولة الراكب رقم {$passenger->passenger_number}",
             'transaction_date' => now()->toDateString(),
         ]);
     }

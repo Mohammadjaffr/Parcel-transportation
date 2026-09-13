@@ -69,18 +69,22 @@ class PassengerTripController extends Controller
                 $request->driver_name
             );
         }
+        $user = auth()->user();
         $trip = PassengerTrip::create([
-            'app_id'     => auth()->user()->app_id,
-            'branch_id'  => auth()->user()->branch_id,
-            'created_by' => auth()->id(),
+            'app_id'     => $user->app_id,
+            'branch_id'  => $user->branch_id,
+            'created_by' => $user->id,
             'driver_id'  => $driverId,
         ]);
 
         // تحديث ركاب الرحلة: ربطهم بالـ trip_id وتحويل حالتهم إلى "مؤكد confirmed" أو "in_transit"
-        Passengers::whereIn('id', $request->passenger_ids)->update([
-            'trip_id' => $trip->id,
-            'status'  => 'completed' // تم تأكيد ركوبهم بالرحلة مع السائق
-        ]);
+        $passengers = Passengers::whereIn('id', $request->passenger_ids)->get();
+        foreach ($passengers as $passenger) {
+            $passenger->update([
+                'trip_id' => $trip->id,
+                'status'  => 'completed',
+            ]);
+        }
 
         DB::commit();
         return redirect()->route('trips.index')->with('success', 'تم إنشاء الرحلة وتأكيد الركاب بنجاح.');
