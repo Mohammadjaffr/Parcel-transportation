@@ -239,9 +239,9 @@ class ShipmentPackagesController extends Controller
                 // تحديث حالة الطرود فقط إذا كانت الإرسالية "في الطريق"
                 // (لأننا لا نريد تغيير حالة الطرود يدوياً إذا كانت الإرسالية delivered، بل نتركها لحالتها الفعلية)
                 if ($newStatus === 'in_transit') {
-                    Shipment::where('shipment_package_id', $package->id)->update([
-                        'status' => $newStatus
-                    ]);
+                    $package->shipments()->each(function (Shipment $shipment) {
+                        $shipment->update(['status' => 'in_transit']);
+                    });
                 }
 
                 $message = 'تم تحديث حالة الإرسالية بنجاح.';

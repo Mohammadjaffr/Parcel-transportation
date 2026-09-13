@@ -57,6 +57,73 @@ class CashTransactionService
         });
     }
 
+    public function recordShipmentCommission(Shipment $shipment): ?CashTransaction
+    {
+        $commissionAmount = (float) $shipment->total_commission;
+
+        if ($commissionAmount <= 0 || !$shipment->sender_branch_id) {
+            return null;
+        }
+
+        // استخراج معرف المستأجر من الشحنة أو الفرع أو المستخدم
+        $appId = $shipment->app_id 
+            ?? $shipment->senderBranch?->app_id 
+            ?? auth()->user()?->app_id;
+
+        if (!$appId) {
+            return null;
+        }
+
+        // الحماية من التكرار المالي لنفس الشحنة (Idempotency)
+        $alreadyRecorded = CashTransaction::withoutGlobalScopes()
+            ->where('app_id', $appId)
+            ->where('source_type', Shipment::class)
+            ->where('source_id', $shipment->id)
+            ->where('type', 'income')
+            ->where('notes', 'like', '%عمولة الشحنة%')
+            ->exists();
+
+        if ($alreadyRecorded) {
+            return null;
+        }
+
+        // جلب أو إنشاء فئة عمولة الشحنات لهذا المستأجر
+        $category = CashCategory::withoutGlobalScopes()
+            ->where('app_id', $appId)
+            ->where('name', 'عمولة شحنة')
+            ->first();
+
+        if (!$category) {
+            $category = CashCategory::withoutGlobalScopes()
+                ->where('app_id', $appId)
+                ->where('type', 'income')
+                ->first();
+        }
+
+        if (!$category) {
+            $category = CashCategory::create([
+                'app_id'    => $appId,
+                'name'      => 'عمولة شحنة',
+                'type'      => 'income',
+                'is_active' => true,
+            ]);
+        }
+
+        return $this->recordIncome([
+            'app_id'           => $appId,
+            'branch_id'        => $shipment->sender_branch_id,
+            'user_id'          => auth()->id() ?? $shipment->created_by,
+            'cash_category_id' => $category->id,
+            'amount'           => $commissionAmount,
+            'payment_method'   => 'cash',
+            'reference_number' => $shipment->bond_number,
+            'source_type'      => Shipment::class,
+            'source_id'        => $shipment->id,
+            'notes'            => "تسقيط عمولة الشحنة رقم {$shipment->bond_number}",
+            'transaction_date' => now()->toDateString(),
+        ]);
+    }
+
     /**
      * تسجيل سند منصرف (صرف) مع التحقق الفوري من السيولة
      */

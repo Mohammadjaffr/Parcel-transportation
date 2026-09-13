@@ -2,10 +2,21 @@
 
 namespace App\Observers;
 
+use App\Models\Branch;
+use App\Models\BranchLedger;
+use App\Models\CashCategory;
+use App\Models\CashTransaction;
 use App\Models\Shipment;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Services\CashTransactionService;
+
 
 class ShipmentObserver
 {
+    public function __construct(
+        protected CashTransactionService $cashTransactionService
+    ) {}
     /**
      * دالة مركزية لحساب كل الأمور المالية للشنحة
      */
@@ -36,7 +47,11 @@ class ShipmentObserver
     public function updating(Shipment $shipment): void
     {
         $this->calculateFinancials($shipment);
+        if ($shipment->isDirty('status') && $shipment->status === 'in_transit') {
+            $this->cashTransactionService->recordShipmentCommission($shipment);
+        }
     }
+    
 
     /**
      * Handle the Shipment "deleted" event.
