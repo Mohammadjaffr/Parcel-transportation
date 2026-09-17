@@ -16,9 +16,13 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Broker;
 use App\Services\WhatsApp\WhatsAppLinkService;
 
+use App\Services\CashTransactionService;
 
 class PassengersController extends Controller
 {
+    public function __construct(
+        private CashTransactionService $cashTransactionService
+    ) {}
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -243,12 +247,15 @@ class PassengersController extends Controller
             // تحديث سجل الراكب ببياناته الجديدة والوسيط الجديد
             $passenger->update($data);
 
-            // 💰 إذا تحولت حالة الرحلة إلى "مكتمل" ولم تكن مكتملة من قبل، نقوم بتسجيل العمولة ماليًا
-            // if ($passenger->status === 'completed' && $oldStatus !== 'completed') {
-            //     // 💡 تنبيه مالي: تأكد من مراجعة كود السيرفس بالأسفل ليتعامل مع الـ broker_id بدلاً من العميل
-            //     // $transactionService = new CustomerTransactionService(); 
-            //     // $transactionService->recordPassengerCommission($passenger);
-            // }
+            // 💰 تسقيط العمولة تلقائياً عند تغيير الحالة إلى مكتمل
+            if (
+                isset($data['status']) &&
+                $data['status'] === 'completed' &&
+                $oldStatus !== 'completed'
+            ) {
+                $passenger->refresh(); // تحديث الموديل لضمان جلب علاقة branch
+                $this->cashTransactionService->recordPassengerCommission($passenger);
+            }
 
             DB::commit();
             return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة للوسيط.', 'حسناً', 'passengers.index');
@@ -280,10 +287,15 @@ class PassengersController extends Controller
             }
 
             $passenger->update(['status' => $newStatus]);
+            $passenger->refresh(); // تحديث الموديل لضمان وجود بيانات الفرع
 
             if ($newStatus === 'completed' && $oldStatus !== 'completed') {
-                // $transactionService = new CustomerTransactionService();
-                // $transactionService->recordPassengerCommission($passenger);
+                \Log::info('[CONTROLLER] استدعاء recordPassengerCommission من updateStatus', [
+                    'passenger_id' => $passenger->id,
+                    'old_status'   => $oldStatus,
+                    'new_status'   => $newStatus,
+                ]);
+                $this->cashTransactionService->recordPassengerCommission($passenger);
             }
 
             DB::commit();

@@ -126,19 +126,28 @@ class CashTransactionService
     }
     public function recordPassengerCommission(Passengers $passenger): ?CashTransaction
     {
-        $commissionAmount = (float) $passenger->total_commission;
+        $office_commission = (float) $passenger->office_commission;
 
-        if ($commissionAmount <= 0 || !$passenger->branch_id) {
+        \Log::channel('stack')->info('[COMMISSION] بدء معالجة عمولة الراكب', [
+            'passenger_id'      => $passenger->id,
+            'passenger_number'  => $passenger->passenger_number,
+            'commission_amount' => $office_commission,
+            'branch_id'         => $passenger->branch_id,
+            'status'            => $passenger->status,
+        ]);
+
+        if ($office_commission <= 0 || !$passenger->branch_id) {
+            \Log::channel('stack')->warning('[COMMISSION] رجع null — العمولة صفر أو branch_id فارغ', [
+                'commission_amount' => $office_commission,
+                'branch_id'         => $passenger->branch_id,
+            ]);
             return null;
         }
 
-        $appId = $passenger->app_id 
-            ?? $passenger->branch?->app_id 
+        $appId = $passenger->app_id
+            ?? $passenger->branch?->app_id
+            ?? optional($passenger->branch()->first())->app_id
             ?? auth()->user()?->app_id;
-
-        if (!$appId) {
-            return null;
-        }
 
         // منع التكرار المالي لنفس الراكب (Idempotency)
         $alreadyRecorded = CashTransaction::withoutGlobalScopes()
@@ -149,45 +158,39 @@ class CashTransactionService
             ->where('notes', 'like', '%عمولة الراكب%')
             ->exists();
 
-        if ($alreadyRecorded) {
-            return null;
-        }
 
-        // فئة عمولة الركاب
-        $category = CashCategory::withoutGlobalScopes()
-            ->where('app_id', $appId)
-            ->where('name', 'عمولة حجز ركاب')
-            ->first();
-
-        if (!$category) {
-            $category = CashCategory::withoutGlobalScopes()
-                ->where('app_id', $appId)
-                ->where('type', 'income')
-                ->first();
-        }
-
-        if (!$category) {
-            $category = CashCategory::create([
-                'app_id'    => $appId,
-                'name'      => 'عمولة حجز ركاب',
+        // فئة عمولة الركاب — إيجاد أو إنشاء تصنيف خاص بالركاب فقط
+        $category = CashCategory::withoutGlobalScopes()->firstOrCreate(
+            [
+                'app_id' => $appId,
+                'name'   => 'عمولة ركاب',
+            ],
+            [
                 'type'      => 'income',
                 'is_active' => true,
+            ]
+        );
+        try {
+            $result = $this->recordIncome([
+                'app_id'           => $appId,
+                'branch_id'        => $passenger->branch_id,
+                'user_id'          => auth()->id() ?? 1,
+                'cash_category_id' => $category->id,
+                'amount'           => $office_commission,
+                'payment_method'   => 'cash',
+                'reference_number' => (string) ($passenger->passenger_number ?? $passenger->uuid),
+                'source_type'      => Passengers::class,
+                'source_id'        => $passenger->id,
+                'notes'            => "تسقيط عمولة الراكب رقم {$passenger->passenger_number}",
+                'transaction_date' => now()->toDateString(),
             ]);
-        }
 
-        return $this->recordIncome([
-            'app_id'           => $appId,
-            'branch_id'        => $passenger->branch_id,
-            'user_id'          => auth()->id() ?? 1,
-            'cash_category_id' => $category->id,
-            'amount'           => $commissionAmount,
-            'payment_method'   => 'cash',
-            'reference_number' => (string) ($passenger->passenger_number ?? $passenger->uuid),
-            'source_type'      => Passengers::class,
-            'source_id'        => $passenger->id,
-            'notes'            => "تسقيط عمولة الراكب رقم {$passenger->passenger_number}",
-            'transaction_date' => now()->toDateString(),
-        ]);
+            return $result;
+
+        } catch (\Exception $e) {
+            \log::error($e->getMessage());
+            return null;
+        }
     }
 
     /**
