@@ -89,76 +89,78 @@
         </div>
 
         {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-       {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
-@if (isset($subscription))
-    <div class="px-4 mt-6 space-y-4">
-        <div class="flex justify-between items-center">
-            <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
-                <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                تفاصيل الباقة
-            </h3>
+        {{-- ================= قسم تفاصيل الاشتراك والاستهلاك ================= --}}
+        @if (isset($subscription))
+            <div class="px-4 mt-6 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                        <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                        تفاصيل الباقة
+                    </h3>
 
-            <a href="{{ route('pricing.page') }}"
-                class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
-                ترقية
-                <span class="material-symbols-outlined text-[14px]">upgrade</span>
-            </a>
-        </div>
+                    <a href="{{ route('pricing.page') }}"
+                        class="flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold text-primary bg-primary/10 rounded-xl transition-colors hover:bg-primary/20">
+                        ترقية
+                        <span class="material-symbols-outlined text-[14px]">upgrade</span>
+                    </a>
+                </div>
 
-        <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
-            {{-- حالة الاشتراك --}}
-            <div class="relative z-10 mb-5">
-                <p class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
-                    {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
-                    (متبقي {{ $remainingDays }} يوماً)
-                </p>
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+                    {{-- حالة الاشتراك --}}
+                    <div class="relative z-10 mb-5">
+                        <p
+                            class="text-sm font-bold {{ $remainingDays > 5 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center gap-2">
+                            <span
+                                class="w-2 h-2 rounded-full {{ $remainingDays > 5 ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse' }}"></span>
+                            {{ $subscription->status == 'active' ? 'نشط' : 'منتهي' }}
+                            (متبقي {{ $remainingDays }} يوماً)
+                        </p>
+                    </div>
+
+                    <div class="grid relative z-10 grid-cols-1 gap-5 md:grid-cols-2">
+                        {{-- 1. الفروع --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الفروع',
+                            'icon' => 'domain',
+                            'current' => $limits['branches']['used'],
+                            'limit' => $limits['branches']['limit'],
+                            'percent' => $limits['branches']['percent'],
+                            'color' => 'bg-amber-500',
+                        ])
+
+                        {{-- 2. السائقين --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد السائقين',
+                            'icon' => 'person_pin_circle',
+                            'current' => $limits['drivers']['used'],
+                            'limit' => $limits['drivers']['limit'],
+                            'percent' => $limits['drivers']['percent'],
+                            'color' => 'bg-blue-500',
+                        ])
+
+                        {{-- 3. الطرود --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الطرود',
+                            'icon' => 'inventory_2',
+                            'current' => $limits['shipments']['used'],
+                            'limit' => $limits['shipments']['limit'],
+                            'percent' => $limits['shipments']['percent'],
+                            'color' => 'bg-primary',
+                        ])
+
+                        {{-- 4. الشحنات / الحزم --}}
+                        @include('pages.company.partials.usage-bar', [
+                            'label' => 'عدد الشحنات',
+                            'icon' => 'local_shipping',
+                            'current' => $limits['packages']['used'],
+                            'limit' => $limits['packages']['limit'],
+                            'percent' => $limits['packages']['percent'],
+                            'color' => 'bg-indigo-500',
+                        ])
+                    </div>
+                </div>
             </div>
-
-            <div class="grid relative z-10 grid-cols-1 gap-5 md:grid-cols-2">
-                {{-- 1. الفروع --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الفروع',
-                    'icon' => 'domain',
-                    'current' => $limits['branches']['used'],
-                    'limit' => $limits['branches']['limit'],
-                    'percent' => $limits['branches']['percent'],
-                    'color' => 'bg-amber-500',
-                ])
-
-                {{-- 2. السائقين --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد السائقين',
-                    'icon' => 'person_pin_circle',
-                    'current' => $limits['drivers']['used'],
-                    'limit' => $limits['drivers']['limit'],
-                    'percent' => $limits['drivers']['percent'],
-                    'color' => 'bg-blue-500',
-                ])
-
-                {{-- 3. الطرود --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الطرود',
-                    'icon' => 'inventory_2',
-                    'current' => $limits['shipments']['used'],
-                    'limit' => $limits['shipments']['limit'],
-                    'percent' => $limits['shipments']['percent'],
-                    'color' => 'bg-primary',
-                ])
-
-                {{-- 4. الشحنات / الحزم --}}
-                @include('pages.company.partials.usage-bar', [
-                    'label' => 'عدد الشحنات',
-                    'icon' => 'local_shipping',
-                    'current' => $limits['packages']['used'],
-                    'limit' => $limits['packages']['limit'],
-                    'percent' => $limits['packages']['percent'],
-                    'color' => 'bg-indigo-500',
-                ])
-            </div>
-        </div>
-    </div>
-@endif
+        @endif
 
         <div class="px-4 mt-6 space-y-4">
             <div class="flex justify-between items-center">
@@ -461,30 +463,31 @@
                         </div>
 
                         <div>
-    <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
-        رابط موقع الفرع (Google Maps)
-    </label>
-    
-    <div class="relative group/input">
-        {{-- حقل الإدخال --}}
-        <input type="url" name="map_link" x-model="editBranchForm.map_link"
-            placeholder="https://maps.google.com/..." dir="ltr"
-            class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-        
-        {{-- زر فتح الخرائط القابل للنقر --}}
-        <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
-            <a href="https://www.google.com/maps" target="_blank" title="افتح خرائط جوجل للبحث عن الموقع"
-                class="flex justify-center items-center w-9 h-9 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors active:scale-95 cursor-pointer">
-                <span class="text-[18px] material-symbols-outlined">map</span>
-            </a>
-        </div>
-    </div>
-    
-    {{-- نص إرشادي --}}
-    <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
-        اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
-    </p>
-</div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
+                                رابط موقع الفرع (Google Maps)
+                            </label>
+
+                            <div class="relative group/input">
+                                {{-- حقل الإدخال --}}
+                                <input type="url" name="map_link" x-model="editBranchForm.map_link"
+                                    placeholder="https://maps.google.com/..." dir="ltr"
+                                    class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+
+                                {{-- زر فتح الخرائط القابل للنقر --}}
+                                <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
+                                    <a href="https://www.google.com/maps" target="_blank"
+                                        title="افتح خرائط جوجل للبحث عن الموقع"
+                                        class="flex justify-center items-center w-9 h-9 text-blue-600 bg-blue-50 rounded-lg transition-colors cursor-pointer hover:bg-blue-100 active:scale-95">
+                                        <span class="text-[18px] material-symbols-outlined">map</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            {{-- نص إرشادي --}}
+                            <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
+                                اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
+                            </p>
+                        </div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
@@ -603,27 +606,27 @@
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب
                                 (التمييز البصري)</label> --}}
 
-                            {{-- <div
+                        {{-- <div
                                 class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"> --}}
 
-                                {{-- حقل اختيار اللون --}}
-                                {{-- <input type="color" name="color" x-model="companyColor"
+                        {{-- حقل اختيار اللون --}}
+                        {{-- <input type="color" name="color" x-model="companyColor"
                                     class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm"> --}}
 
-                                {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
-                                {{-- <div class="flex-1 px-3">
+                        {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
+                        {{-- <div class="flex-1 px-3">
                                     <input type="text" x-model="companyColor" placeholder="#000000" dir="ltr"
                                         class="w-full font-mono text-sm text-left uppercase bg-transparent border-none outline-none text-slate-600 focus:ring-0 placeholder:text-slate-400">
                                 </div> --}}
 
-                                {{-- أيقونة جمالية --}}
-                                {{-- <div class="pr-2 pointer-events-none text-slate-400">
+                        {{-- أيقونة جمالية --}}
+                        {{-- <div class="pr-2 pointer-events-none text-slate-400">
                                     <span class="text-lg material-symbols-outlined">palette</span>
                                 </div>
                             </div> --}}
 
-                            {{-- 💡 الرسالة التوضيحية الأنيقة --}}
-                            {{-- <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
+                        {{-- 💡 الرسالة التوضيحية الأنيقة --}}
+                        {{-- <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
                                 <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
                                 <p class="text-[10px] leading-relaxed font-medium">
                                     سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
@@ -787,9 +790,8 @@
                             <div>
                                 <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
                                     (مميز)
-                                    </label>
-                                <input type="text" name="code" x-model="editBranchForm.code"
-                                    dir="ltr"
+                                </label>
+                                <input type="text" name="code" x-model="editBranchForm.code" dir="ltr"
                                     class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                             </div>
                             <div>
@@ -859,30 +861,31 @@
                         </div>
 
                         <div>
-    <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
-        رابط موقع الفرع (Google Maps)
-    </label>
-    
-    <div class="relative group/input">
-        {{-- حقل الإدخال --}}
-        <input type="url" name="map_link" x-model="editBranchForm.map_link"
-            placeholder="https://maps.google.com/..." dir="ltr"
-            class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-        
-        {{-- زر فتح الخرائط القابل للنقر --}}
-        <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
-            <a href="https://www.google.com/maps" target="_blank" title="افتح خرائط جوجل للبحث عن الموقع"
-                class="flex justify-center items-center w-9 h-9 bg-blue-50 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors active:scale-95 cursor-pointer">
-                <span class="text-[18px] material-symbols-outlined">map</span>
-            </a>
-        </div>
-    </div>
-    
-    {{-- نص إرشادي --}}
-    <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
-        اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
-    </p>
-</div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
+                                رابط موقع الفرع (Google Maps)
+                            </label>
+
+                            <div class="relative group/input">
+                                {{-- حقل الإدخال --}}
+                                <input type="url" name="map_link" x-model="editBranchForm.map_link"
+                                    placeholder="https://maps.google.com/..." dir="ltr"
+                                    class="pr-14 pl-4 w-full h-12 text-sm text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+
+                                {{-- زر فتح الخرائط القابل للنقر --}}
+                                <div class="absolute right-1.5 top-1/2 -translate-y-1/2">
+                                    <a href="https://www.google.com/maps" target="_blank"
+                                        title="افتح خرائط جوجل للبحث عن الموقع"
+                                        class="flex justify-center items-center w-9 h-9 text-blue-600 bg-blue-50 rounded-lg transition-colors cursor-pointer hover:bg-blue-100 active:scale-95">
+                                        <span class="text-[18px] material-symbols-outlined">map</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            {{-- نص إرشادي --}}
+                            <p class="mt-1.5 px-1 text-[10px] font-bold text-slate-400">
+                                اضغط على الأيقونة للبحث عن الفرع في خرائط جوجل، ثم انسخ الرابط والصقه هنا.
+                            </p>
+                        </div>
                     </div>
 
                     <div class="pt-4 mt-auto border-t border-slate-100 shrink-0">
