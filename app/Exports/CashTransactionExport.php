@@ -10,23 +10,40 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Illuminate\Database\Eloquent\Builder;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class CashTransactionExport implements
+class CashTransactionExport extends DefaultValueBinder implements
     FromQuery,
     WithHeadings,
     WithMapping,
     ShouldAutoSize,
     WithEvents,
     WithChunkReading,
-    WithColumnFormatting
+    WithColumnFormatting,
+    WithCustomValueBinder
 {
+    /**
+     * إجبار عمود الرقم المرجعي (I) على النوع String
+     * لمنع Excel من تحويل أرقام الجوال إلى Scientific Notation
+     */
+    public function bindValue(Cell $cell, mixed $value): bool
+    {
+        if ($cell->getColumn() === 'I' && $value !== null && $value !== '—') {
+            $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
+            return true;
+        }
+        return parent::bindValue($cell, $value);
+    }
     protected array $filters;
 
     public function __construct(array $filters = [])
@@ -44,7 +61,9 @@ class CashTransactionExport implements
     public function columnFormats(): array
     {
         return [
-            'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2, // #,##0.00
+            'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2, // المبلغ: #,##0.00
+            'I' => NumberFormat::FORMAT_TEXT,                    // رقم المرجع: نص (يمنع 9.67E+11)
+            'J' => NumberFormat::FORMAT_TEXT,                    // ملاحظات: نص
         ];
     }
 
@@ -59,11 +78,11 @@ class CashTransactionExport implements
                 'cash_transactions.type',
                 'cash_transactions.payment_method',
                 'cash_transactions.amount',
-                'cash_transactions.reference_number',
-                'cash_transactions.notes',
-                'cash_categories.name   as category_name',
-                'branches.name          as branch_name',
-                'users.name             as user_name',
+                'cash_transactions.reference_number  as ref_number',
+                'cash_transactions.notes             as tx_notes',
+                'cash_categories.name                as category_name',
+                'branches.name                       as branch_name',
+                'users.name                          as user_name',
             ])
             ->leftJoin('cash_categories', 'cash_categories.id', '=', 'cash_transactions.cash_category_id')
             ->leftJoin('branches', 'branches.id', '=', 'cash_transactions.branch_id')
@@ -127,12 +146,12 @@ class CashTransactionExport implements
                 : '',
             $row->type === 'income' ? 'قبض ' : 'صرف ',
             $row->payment_method === 'cash' ? 'نقدي' : 'تحويل بنكي',
-            (float) $row->amount,           // رقم حقيقي لا نص → أسرع وأدق
+            (float) $row->amount,
             $row->category_name ?? '—',
             $row->branch_name   ?? '—',
             $row->user_name     ?? '—',
-            $row->reference_number ?? '—',
-            $row->notes ?? '—',
+            $row->ref_number    ?? '—',   // ← alias صريح بعيداً عن تضارب الأسماء
+            $row->tx_notes      ?? '—',   // ← alias صريح
         ];
     }
 

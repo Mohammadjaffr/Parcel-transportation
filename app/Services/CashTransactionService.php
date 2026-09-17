@@ -128,14 +128,6 @@ class CashTransactionService
     {
         $office_commission = (float) $passenger->office_commission;
 
-        \Log::channel('stack')->info('[COMMISSION] بدء معالجة عمولة الراكب', [
-            'passenger_id'      => $passenger->id,
-            'passenger_number'  => $passenger->passenger_number,
-            'commission_amount' => $office_commission,
-            'branch_id'         => $passenger->branch_id,
-            'status'            => $passenger->status,
-        ]);
-
         if ($office_commission <= 0 || !$passenger->branch_id) {
             \Log::channel('stack')->warning('[COMMISSION] رجع null — العمولة صفر أو branch_id فارغ', [
                 'commission_amount' => $office_commission,
@@ -178,7 +170,7 @@ class CashTransactionService
                 'cash_category_id' => $category->id,
                 'amount'           => $office_commission,
                 'payment_method'   => 'cash',
-                'reference_number' => (string) ($passenger->passenger_number ?? $passenger->uuid),
+                'reference_number' => $passenger->passenger_number,
                 'source_type'      => Passengers::class,
                 'source_id'        => $passenger->id,
                 'notes'            => "تسقيط عمولة الراكب رقم {$passenger->passenger_number}",
