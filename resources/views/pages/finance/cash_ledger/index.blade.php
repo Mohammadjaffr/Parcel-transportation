@@ -145,6 +145,9 @@
                     <button type="button" @click="openCreateModal('expense')" class="px-4 py-2.5 bg-rose-600 text-white text-sm font-bold rounded-xl hover:bg-rose-700 transition-colors flex items-center gap-1.5 shadow-sm">
                         <span>-</span> سند صرف (منصرف)
                     </button>
+                    <a href="{{ route('cash.ledger.export', request()->query()) }}" class="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i class="fa fa-file-excel"></i> تصدير إكسل
+                    </a>
                 </div>
             </div>
         </form>

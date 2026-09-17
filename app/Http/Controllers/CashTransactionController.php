@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Classes\WebResponseClass;
+use App\Exports\CashTransactionExport;
 use App\Models\Branch;
 use App\Models\CashCategory;
 use App\Models\CashTransaction;
 use App\Services\CashTransactionService;
 use App\Services\ImageService;
 use Exception;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use TCPDF;
 
 class CashTransactionController extends Controller
 {
+
     public function __construct(
         private CashTransactionService $cashService,
         private ImageService $imageService
@@ -120,6 +123,21 @@ class CashTransactionController extends Controller
             'startDate',
             'endDate'
         ));
+    }
+    public function export(Request $request)
+    {
+        $filters = [
+            'from_date'         => $request->input('start_date'),
+            'to_date'           => $request->input('end_date'),
+            'branch_id'         => $request->input('branch_id'),
+            'type'              => $request->input('type'),
+            'cash_category_id'  => $request->input('cash_category_id'),
+            'payment_method'    => $request->input('payment_method'),
+            'search'            => $request->input('search'),
+        ];
+        $fileName = 'cash_ledger_' . now()->format('Y_m_d_His') . '.xlsx';
+
+        return Excel::download(new CashTransactionExport($filters), $fileName);
     }
 
     /**

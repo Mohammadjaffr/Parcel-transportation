@@ -49,7 +49,42 @@ class ShipmentObserver
         $this->calculateFinancials($shipment);
         if ($shipment->isDirty('status') && $shipment->status === 'in_transit') {
             $this->cashTransactionService->recordShipmentCommission($shipment);
+            return;
         }
+        if ($shipment->isDirty('total_commission')) {
+            $this->updateCommissionTransactionAmount($shipment);
+        }
+    }
+    protected function updateCommissionTransactionAmount(Shipment $shipment): void
+    {
+        $appId = $shipment->app_id 
+            ?? $shipment->senderBranch?->app_id 
+            ?? auth()->user()?->app_id;
+
+        $newCommission = (float) $shipment->total_commission;
+
+        DB::transaction(function () use ($shipment, $appId, $newCommission) {
+            // البحث عن نفس قيد العمولة المرتبط بالشحنة
+            $transaction = CashTransaction::withoutGlobalScopes()
+                ->when($appId, fn($q) => $q->where('app_id', $appId))
+                ->where('source_type', Shipment::class)
+                ->where('source_id', $shipment->id)
+                ->where('type', 'income')
+                ->where('notes', 'like', '%عمولة الشحنة%')
+                ->first();
+
+            if ($transaction) {
+                // تعديل حقل amount مباشرة في نفس الريكورد دون أي قيود جديدة
+                $transaction->update([
+                    'amount' => $newCommission,
+                ]);
+            } else {
+                // في حال لم يكن الريكورد موجوداً مسبقاً
+                if ($newCommission > 0 && $shipment->status === 'in_transit') {
+                    $this->cashTransactionService->recordShipmentCommission($shipment);
+                }
+            }
+        });
     }
     
 

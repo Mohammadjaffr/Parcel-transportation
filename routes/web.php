@@ -113,9 +113,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', [CashTransactionController::class, 'store'])->name('store');
             Route::get('/{id}/details', [CashTransactionController::class, 'showDetails'])->name('details');
             Route::get('/{id}/receipt', [CashTransactionController::class, 'printReceipt'])->name('receipt');
+            Route::get('/export', [CashTransactionController::class, 'export'])->name('export');
+
         });
         Route::resource('cash-categories', CashCategoryController::class)->except(['create', 'show', 'edit']);
-
+        
         // 2. العملاء (محمية بـ Customers)
         Route::resource('customers', CustomerController::class)->middleware('check.service:Customers');
         Route::resource('passengers', PassengersController::class)->middleware('check.service:Passengers');
