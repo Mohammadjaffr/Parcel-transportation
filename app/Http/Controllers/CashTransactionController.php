@@ -217,7 +217,7 @@ class CashTransactionController extends Controller
                 'type_text'        => $trx->type === 'income' ? 'وارد (قبض)' : 'منصرف (صرف)',
                 'category'         => $trx->category->name,
                 'amount'           => number_format($trx->amount, 2),
-                'payment_method'   => $trx->payment_method === 'cash' ? 'نقداً (كاش الدرج)' : 'تحويل بنكي / حوالة',
+                'payment_method'   => $trx->payment_method === 'cash' ? 'نقداً ' : 'تحويل بنكي / حوالة',
                 'transaction_date' => $trx->transaction_date->format('Y-m-d'),
                 'created_at'       => $trx->created_at->format('Y-m-d h:i A'),
                 'branch'           => $trx->branch->name ?? '-',

@@ -11,10 +11,10 @@
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         
         {{-- كرت إجمالي الوارد --}}
-        <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-gray-400">إجمالي الوارد للفترة (🟢)</span>
-                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 font-black">↓</span>
+        <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-400">إجمالي الوارد للفترة </span>
+                <span class="flex justify-center items-center w-8 h-8 font-black text-emerald-600 bg-emerald-50 rounded-lg dark:bg-emerald-500/10">↓</span>
             </div>
             <div class="mt-3">
                 <span class="text-2xl font-black text-emerald-600">{{ number_format($totalIncome, 2) }}</span>
@@ -23,10 +23,10 @@
         </div>
 
         {{-- كرت إجمالي المنصرف --}}
-        <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
-            <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-gray-400">إجمالي المنصرف للفترة (🔴)</span>
-                <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/10 font-black">↑</span>
+        <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-400">إجمالي المنصرف للفترة </span>
+                <span class="flex justify-center items-center w-8 h-8 font-black text-rose-600 bg-rose-50 rounded-lg dark:bg-rose-500/10">↑</span>
             </div>
             <div class="mt-3">
                 <span class="text-2xl font-black text-rose-600">{{ number_format($totalExpense, 2) }}</span>
@@ -35,10 +35,10 @@
         </div>
 
         {{-- كرت صافي حركة الفترة --}}
-        <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
-            <div class="flex items-center justify-between">
+        <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+            <div class="flex justify-between items-center">
                 <span class="text-xs font-bold text-gray-400">صافي الفترة (الفارق)</span>
-                <span class="flex items-center justify-center w-8 h-8 text-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 dark:text-gray-300">⚖</span>
+                <span class="flex justify-center items-center w-8 h-8 text-gray-600 bg-gray-50 rounded-lg dark:bg-gray-800 dark:text-gray-300">⚖</span>
             </div>
             <div class="mt-3">
                 <span class="text-2xl font-black {{ $netPeriod >= 0 ? 'text-gray-900 dark:text-white' : 'text-rose-600' }}">
@@ -49,10 +49,10 @@
         </div>
 
         {{-- كرت عدد الحركات --}}
-        <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
-            <div class="flex items-center justify-between">
+        <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
+            <div class="flex justify-between items-center">
                 <span class="text-xs font-bold text-gray-400">عدد العمليات</span>
-                <span class="flex items-center justify-center w-8 h-8 text-blue-600 rounded-lg bg-blue-50 dark:bg-blue-500/10 font-bold">#</span>
+                <span class="flex justify-center items-center w-8 h-8 font-bold text-blue-600 bg-blue-50 rounded-lg dark:bg-blue-500/10">#</span>
             </div>
             <div class="mt-3">
                 <span class="text-2xl font-black text-gray-800 dark:text-gray-200">{{ number_format($totalCount) }}</span>
@@ -62,14 +62,14 @@
     </div>
 
     {{-- 2. شريط الفلترة والأزرار التشغيلية السريعة --}}
-    <div class="p-5 bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
+    <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
         <form method="GET" action="{{ route('cash.ledger.index') }}" class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             
             {{-- فلتر الفرع للمدراء فقط --}}
             @if(in_array(auth()->user()->type, ['admin', 'super_admin']) && $branches->isNotEmpty())
                 <div>
                     <label class="block mb-1 text-xs font-bold text-gray-500">الفرع</label>
-                    <select name="branch_id" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                    <select name="branch_id" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <option value="">كافة الفروع</option>
                         @foreach($branches as $branch)
                             <option value="{{ $branch->id }}" {{ $selectedBranchId == $branch->id ? 'selected' : '' }}>
@@ -83,19 +83,19 @@
             {{-- من تاريخ --}}
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-500">من تاريخ</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
             </div>
 
             {{-- إلى تاريخ --}}
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-500">إلى تاريخ</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
             </div>
 
             {{-- نوع السند --}}
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-500">نوع الحركة</label>
-                <select name="type" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                <select name="type" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                     <option value="">الكل (وارد ومنصرف)</option>
                     <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>وارد فقط (🟢)</option>
                     <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>منصرف فقط (🔴)</option>
@@ -105,7 +105,7 @@
             {{-- التصنيف المالي --}}
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-500">التصنيف المالي</label>
-                <select name="cash_category_id" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                <select name="cash_category_id" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                     <option value="">كافة التصنيفات</option>
                     @foreach($categories as $cat)
                         <option value="{{ $cat->id }}" {{ request('cash_category_id') == $cat->id ? 'selected' : '' }}>
@@ -118,7 +118,7 @@
             {{-- طريقة الدفع --}}
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-500">طريقة الدفع</label>
-                <select name="payment_method" class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                <select name="payment_method" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                     <option value="">الكل</option>
                     <option value="cash" {{ request('payment_method') == 'cash' ? 'selected' : '' }}>نقداً</option>
                     <option value="bank_transfer" {{ request('payment_method') == 'bank_transfer' ? 'selected' : '' }}>حوالة</option>
@@ -126,27 +126,31 @@
             </div>
 
             {{-- حقل البحث والإجراءات --}}
-            <div class="flex flex-wrap items-end gap-2 lg:col-span-6">
+            <div class="flex flex-wrap gap-2 items-end lg:col-span-6">
                 <div class="flex-1 min-w-[240px]">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="ابحث برقم السند، رقم الإيداع، أو البيان..." class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="ابحث برقم السند، رقم الإيداع، أو البيان..." class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                 </div>
-                <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-colors">
+                <button type="submit" class="px-6 py-2.5 text-sm font-bold text-white bg-gray-900 rounded-xl transition-colors hover:bg-gray-800">
                     تصفية
                 </button>
-                <a href="{{ route('cash.ledger.index') }}" class="px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-300">
+                <a href="{{ route('cash.ledger.index') }}" class="px-4 py-2.5 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
                     إعادة ضبط
                 </a>
 
                 {{-- أزرار فتح النوافذ السريعة --}}
                 <div class="flex gap-2 mr-auto">
-                    <button type="button" @click="openCreateModal('income')" class="px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-sm">
-                        <span>+</span> سند قبض (وارد)
+                    <button type="button" @click="openCreateModal('income')" class="flex gap-1.5 items-center px-4 py-2.5 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-sm transition-colors hover:bg-emerald-700">
+                        <span>+</span> سند قبض 
                     </button>
-                    <button type="button" @click="openCreateModal('expense')" class="px-4 py-2.5 bg-rose-600 text-white text-sm font-bold rounded-xl hover:bg-rose-700 transition-colors flex items-center gap-1.5 shadow-sm">
-                        <span>-</span> سند صرف (منصرف)
+                    <button type="button" @click="openCreateModal('expense')" class="flex gap-1.5 items-center px-4 py-2.5 text-sm font-bold text-white bg-rose-600 rounded-xl shadow-sm transition-colors hover:bg-rose-700">
+                        <span>-</span> سند صرف 
                     </button>
-                    <a href="{{ route('cash.ledger.export', request()->query()) }}" class="px-4 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm">
-                        <i class="fa fa-file-excel"></i> تصدير إكسل
+                    <a href="{{ route('cash.ledger.export', request()->query()) }}" class="flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-white bg-[#107c41] rounded-lg shadow-sm transition-all hover:bg-[#0c5e31] hover:scale-105">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14.504 3.033L5.435 4.544C5.19 4.585 5 4.793 5 5.042v14.416c0 .249.19.457.435.498l9.069 1.511c.3.05.572-.18.572-.483V3.516c0-.303-.272-.533-.572-.483zM9.544 16.513l-1.34-3.136-1.42 3.136H5.4l2.128-4.316L5.514 8.013h1.411l1.24 3.018 1.34-3.018h1.34l-2.008 4.254 2.127 4.246h-1.42z"/>
+                            <path d="M15.548 3.327v17.846h5.816c.35 0 .636-.286.636-.636V3.963c0-.35-.286-.636-.636-.636h-5.816zm2.348 11.233H16.64v-1.251h1.256v1.251zm0-2.484H16.64v-1.25h1.256v1.25zm0-2.484H16.64V8.342h1.256v1.25zm2.49 4.968h-1.256v-1.251h1.256v1.251zm0-2.484h-1.256v-1.25h1.256v1.25zm0-2.484h-1.256V8.342h1.256v1.25z"/>
+                        </svg>
+                        تصدير
                     </a>
                 </div>
             </div>
@@ -154,10 +158,10 @@
     </div>
 
     {{-- 3. جدول دفتر الحركات اليومية --}}
-    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-2xl dark:bg-gray-900 dark:border-gray-800">
+    <div class="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm dark:bg-gray-900 dark:border-gray-800">
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-right">
-                <thead class="font-bold text-gray-500 border-b border-gray-100 bg-gray-50 dark:bg-gray-800/50 dark:border-gray-800 dark:text-gray-400">
+                <thead class="font-bold text-gray-500 bg-gray-50 border-b border-gray-100 dark:bg-gray-800/50 dark:border-gray-800 dark:text-gray-400">
                     <tr>
                         <th class="p-4">رقم السند</th>
                         <th class="p-4">التاريخ</th>
@@ -166,8 +170,8 @@
                         @endif
                         <th class="p-4">التصنيف / البيان</th>
                         <th class="p-4">طريقة الدفع</th>
-                        <th class="p-4">الوارد (🟢)</th>
-                        <th class="p-4">المنصرف (🔴)</th>
+                        <th class="p-4">الوارد </th>
+                        <th class="p-4">المنصرف </th>
                         <th class="p-4">المسؤول</th>
                         <th class="p-4">ملاحظات</th>
                         <th class="p-4 text-center">الإجراءات</th>
@@ -190,14 +194,14 @@
                             <td class="p-4">
                                 <span class="font-bold text-gray-900 dark:text-white">{{ $trx->category->name }}</span>
                                 @if($trx->reference_number)
-                                    <span class="block text-xs font-mono text-gray-400">مرجع: {{ $trx->reference_number }}</span>
+                                    <span class="block font-mono text-xs text-gray-400">مرجع: {{ $trx->reference_number }}</span>
                                 @endif
                             </td>
                             <td class="p-4 whitespace-nowrap">
                                 @if($trx->payment_method === 'cash')
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">نقداً (كاش)</span>
+                                    <span class="px-2.5 py-1 text-xs font-bold text-amber-700 bg-amber-50 rounded-md dark:bg-amber-500/10 dark:text-amber-400">نقداً (كاش)</span>
                                 @else
-                                    <span class="px-2.5 py-1 text-xs font-bold rounded-md bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">تحويل بنكي</span>
+                                    <span class="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 rounded-md dark:bg-blue-500/10 dark:text-blue-400">تحويل بنكي</span>
                                 @endif
                             </td>
                             <td class="p-4 font-bold text-emerald-600 whitespace-nowrap">
@@ -213,15 +217,15 @@
                                 {{ $trx->notes ?? '-' }}
                             </td>
                             <td class="p-4 text-center whitespace-nowrap">
-                                <div class="flex items-center justify-center gap-2">
-                                    <button type="button" @click="viewDetails({{ $trx->id }})" class="px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+                                <div class="flex gap-2 justify-center items-center">
+                                    <button type="button" @click="viewDetails({{ $trx->id }})" class="px-3 py-1.5 text-xs font-bold text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
                                         تفاصيل
                                     </button>
                                     
                                     <a href="{{ route('cash.ledger.receipt', $trx->id) }}" 
                                        target="_blank" 
                                        title="طباعة السند"
-                                       class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all rounded-lg text-primary bg-primary/10 hover:bg-primary hover:text-white dark:bg-primary/20 dark:text-primary dark:hover:text-white dark:hover:bg-primary">
+                                       class="inline-flex gap-1.5 justify-center items-center px-3 py-1.5 text-xs font-bold rounded-lg transition-all text-primary bg-primary/10 hover:bg-primary hover:text-white dark:bg-primary/20 dark:text-primary dark:hover:text-white dark:hover:bg-primary">
                                        
                                         <span class="material-symbols-outlined text-[16px]">
                                             print
