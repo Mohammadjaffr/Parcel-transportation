@@ -2,8 +2,7 @@
 @section('title', 'فئات الصندوق والتدفقات')
 
 @section('content')
-    <x-modals.success-modal />
-    <x-modals.error-modal />
+   
 
     <div class="space-y-6 font-body" dir="rtl" x-data="{
         editModalOpen: false,

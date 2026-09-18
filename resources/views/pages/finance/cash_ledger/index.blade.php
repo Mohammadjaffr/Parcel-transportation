@@ -2,8 +2,7 @@
 @section('title', 'دفتر الصندوق والتدفقات النقدية')
 
 @section('content')
-<x-modals.success-modal />
-<x-modals.error-modal />
+
 
 <div class="space-y-6 font-body" dir="rtl" x-data="cashLedgerHandler()">
 
