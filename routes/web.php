@@ -156,6 +156,8 @@ Route::middleware('auth')->group(function () {
         Route::view('/mobile/office', 'mobile.pages.office.index')->name('mobile.office');
         Route::view('/mobile/shipment', 'mobile.pages.shipment.index')->name('mobile.shipment');
         Route::view('/mobile/passenger', 'mobile.pages.passenger.index')->name('mobile.passenger');
+        Route::view('/mobile/cash', 'mobile.pages.cash.index')->name('mobile.cash.index');
+
 
         //=============================================================================   معتمد   ======================================
 
