@@ -155,19 +155,19 @@
 
         @include('layouts.sidebar')
 
-        <div class="flex flex-col flex-1 relative overflow-x-hidden overflow-y-auto bg-surface dark:bg-boxdark-2">
+        <div class="flex overflow-y-auto overflow-x-hidden relative flex-col flex-1 bg-surface dark:bg-boxdark-2">
 
             @include('layouts.header')
 
-            <main class="container p-4 mx-auto md:p-6 2xl:p-10 flex-1 flex flex-col">
+            <main class="container flex flex-col flex-1 p-4 mx-auto md:p-6 2xl:p-10">
                 @include('layouts.Breadcrumb')
 
                 @yield('content')
             </main>
 
-            {{-- <x-modals.warning-modal />
+            <x-modals.warning-modal />
             <x-modals.error-modal-desktop />
-            <x-modals.success-modal-desktop /> --}}
+            <x-modals.success-modal-desktop />
         </div>
     </div>
 

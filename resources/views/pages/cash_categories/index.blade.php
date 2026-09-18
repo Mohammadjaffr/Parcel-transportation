@@ -7,9 +7,17 @@
     <div class="space-y-6 font-body" dir="rtl" x-data="{
         editModalOpen: false,
         activeCategory: { id: '', name: '', type: '' },
+        toggleModalOpen: false,
+        toggleActionUrl: '',
+        toggleIsActive: false,
         openEditModal(category) {
             this.activeCategory = Object.assign({}, category);
             this.editModalOpen = true;
+        },
+        openToggleModal(id, currentStatus) {
+            this.toggleActionUrl = '{{ url('cash-categories') }}/' + id;
+            this.toggleIsActive = currentStatus;
+            this.toggleModalOpen = true;
         }
     }">
 
@@ -100,17 +108,13 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4">
-                                    <form action="{{ route('cash-categories.update', $category) }}" method="POST">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="toggle_status" value="1">
-                                        <button type="submit"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors {{ $category->is_active ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20' : 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' }}">
-                                            <span
-                                                class="w-1.5 h-1.5 rounded-full {{ $category->is_active ? 'bg-green-500' : 'bg-gray-400' }}"></span>
-                                            <span>{{ $category->is_active ? 'نشط' : 'معطل' }}</span>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        @click="openToggleModal({{ $category->id }}, {{ $category->is_active ? 'true' : 'false' }})"
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors {{ $category->is_active ? 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20' : 'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700' }}">
+                                        <span
+                                            class="w-1.5 h-1.5 rounded-full {{ $category->is_active ? 'bg-green-500' : 'bg-gray-400' }}"></span>
+                                        <span>{{ $category->is_active ? 'نشط' : 'معطل' }}</span>
+                                    </button>
                                 </td>
                                 <td class="px-6 py-4 text-xs font-medium text-gray-500 dark:text-gray-400">
                                     {{ $category->created_at->format('Y-m-d') }}
@@ -119,10 +123,19 @@
                                     <div class="flex gap-2 justify-center items-center">
                                         {{-- زر التعديل --}}
                                         <button type="button"
-                                            @click="openEditModal({ id: {{ $category->id }}, name: '{{ addslashes($category->name) }}', type: '{{ $category->type }}' })"
+                                            @click="openEditModal({ id: {{ $category->id }}, name: '{{ addslashes($category->name) }}', type: '{{ $category->type }}', is_active: {{ $category->is_active ? 'true' : 'false' }} })"
                                             class="p-2 text-gray-500 rounded-xl transition-all hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-800"
                                             title="تعديل">
                                             <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        </button>
+
+                                        {{-- زر التعطيل / التفعيل --}}
+                                        <button type="button"
+                                            @click="openToggleModal({{ $category->id }}, {{ $category->is_active ? 'true' : 'false' }})"
+                                            class="p-2 text-gray-500 rounded-xl transition-all hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                                            title="{{ $category->is_active ? 'تعطيل' : 'تفعيل' }}">
+                                            <span
+                                                class="material-symbols-outlined text-[18px]">{{ $category->is_active ? 'block' : 'check_circle' }}</span>
                                         </button>
 
                                         {{-- زر الحذف --}}
@@ -164,5 +177,49 @@
         {{-- تضمين المودالات --}}
         @include('pages.cash_categories.modals.create-category-modal')
         @include('pages.cash_categories.modals.edit-category-modal')
+
+        {{-- مودال تأكيد تفعيل / تعطيل --}}
+        <div x-show="toggleModalOpen" x-cloak
+            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+            x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+
+            <div @click.outside="toggleModalOpen = false"
+                class="p-6 w-full max-w-md text-center bg-white rounded-2xl border border-gray-100 shadow-2xl dark:bg-gray-900 dark:border-gray-800">
+
+                <div class="flex justify-center mb-4">
+                    <div class="flex justify-center items-center w-16 h-16 rounded-full"
+                        :class="toggleIsActive ? 'bg-orange-100 text-orange-500' : 'bg-emerald-100 text-emerald-500'">
+                        <span class="material-symbols-outlined text-[32px]"
+                            x-text="toggleIsActive ? 'block' : 'check_circle'"></span>
+                    </div>
+                </div>
+
+                <h3 class="mb-2 text-xl font-black text-gray-900 dark:text-white"
+                    x-text="toggleIsActive ? 'تأكيد التعطيل' : 'تأكيد التفعيل'"></h3>
+                <p class="mb-6 text-sm text-gray-500 dark:text-gray-400"
+                    x-text="toggleIsActive ? 'هل أنت متأكد من رغبتك في تعطيل هذه الفئة؟ لن تظهر مجدداً في خيارات السندات.' : 'هل أنت متأكد من رغبتك في تفعيل هذه الفئة؟ ستصبح متاحة للاستخدام في السندات.'">
+                </p>
+
+                <div class="flex gap-3 justify-center items-center">
+                    <button type="button" @click="toggleModalOpen = false"
+                        class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl transition-colors hover:bg-gray-200">
+                        إلغاء
+                    </button>
+
+                    <form method="POST" :action="toggleActionUrl">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="toggle_status" value="1">
+                        <button type="submit"
+                            class="px-6 py-2.5 text-sm font-bold text-white rounded-xl transition-colors"
+                            :class="toggleIsActive ? 'bg-orange-500 hover:bg-orange-600' : 'bg-emerald-500 hover:bg-emerald-600'"
+                            x-text="toggleIsActive ? 'نعم، قم بالتعطيل' : 'نعم، قم بالتفعيل'">
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection

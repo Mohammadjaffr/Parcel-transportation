@@ -69,6 +69,15 @@
                     </div>
                 </div>
 
+                {{-- حالة التفعيل --}}
+                <div class="flex items-center gap-3 py-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="is_active" value="1" x-model="activeCategory.is_active" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:-translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </label>
+                    <span class="text-sm font-bold text-slate-700">تفعيل الفئة تلقائياً</span>
+                </div>
+
                 {{-- أزرار التحكم --}}
                 <div class="pt-4 flex gap-3 border-t border-slate-100">
                     <button type="submit" class="flex-1 h-14 text-white rounded-2xl font-black text-sm shadow-[0_8px_20px_rgb(0,0,0,0.15)] active:scale-95 transition-all bg-primary shadow-primary/30">
