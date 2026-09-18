@@ -2,8 +2,7 @@
 
 @section('title', 'إدارة الرحلات')
 @section('Breadcrumb', 'إدارة الرحلات')
- <x-modals.error-modal />
-    <x-modals.success-modal />
+
 @section('content')
     <div x-data="tripsData()" class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
 
