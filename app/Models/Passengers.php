@@ -23,7 +23,8 @@ class Passengers extends Model
         'branch_id',
         'driver_id',
         'note',
-        'status'
+        'status',
+        'trip_id'
     ];
 
     public function uniqueIds(): array

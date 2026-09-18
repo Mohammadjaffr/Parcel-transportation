@@ -111,6 +111,21 @@ class CashTransactionController extends Controller
         $branches = ($isAdmin || $isSuperAdmin) ? Branch::all() : collect();
         $categories = CashCategory::active()->orderBy('name')->get();
 
+        if ($request->isMobile) {
+            return view('mobile.pages.finance.cash_ledger.index', compact(
+                'transactions',
+                'totalIncome',
+                'totalExpense',
+                'netPeriod',
+                'totalCount',
+                'branches',
+                'categories',
+                'selectedBranchId',
+                'startDate',
+                'endDate'
+            ));
+        }
+
         return view('pages.finance.cash_ledger.index', compact(
             'transactions',
             'totalIncome',
@@ -193,6 +208,10 @@ class CashTransactionController extends Controller
             } else {
                 $this->cashService->recordExpense($data);
                 $message = 'تم تسجيل سند الصرف وخصمه من الصندوق بنجاح.';
+            }
+
+            if ($request->isMobile) {
+                return WebResponseClass::sendResponse('تم بنجاح', $message, 'العودة لدفتر الصندوق', 'cash.ledger.index');
             }
 
             return WebResponseClass::sendResponse('تم بنجاح', $message);

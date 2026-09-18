@@ -123,6 +123,10 @@ class FinanceSettlementController extends Controller
 
             DB::commit();
 
+            if ($request->isMobile) {
+                return WebResponseClass::sendResponse('تمت التسوية بنجاح', 'تم تحديث الصندوق وتصفير رصيد الفرع.', 'رجوع', 'finance.branches.index');
+            }
+
             return back()->with('success', 'تمت التسوية بنجاح: تم تحديث الصندوق وتصفير رصيد الفرع.');
 
         } catch (\Exception $e) {

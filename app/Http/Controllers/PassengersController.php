@@ -94,6 +94,7 @@ class PassengersController extends Controller
 
     public function store(Request $request)
     {
+        
         $validator = Validator::make($request->all(), [
             'date' => ['required', 'date'],
             'pickup_location' => 'required|string|max:255', // مكان الصعود الجديد

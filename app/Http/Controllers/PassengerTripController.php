@@ -9,9 +9,12 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\WhatsApp\WhatsAppLinkService;
+use App\Classes\WebResponseClass;
+
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PassengerTripController extends Controller
 {
@@ -21,7 +24,7 @@ class PassengerTripController extends Controller
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->paginate(10);
-              $trips->getCollection()->transform(function ($trip) {     
+        $trips->getCollection()->transform(function ($trip) {
 
             $trip->driver_pdf_link = WhatsAppLinkService::generate($trip, 'passengerDriver');
 
@@ -32,73 +35,77 @@ class PassengerTripController extends Controller
         }
         //ضبظ حق الدسك توب 
         return view('pages.passenger.trips.index', compact('trips'));
-        
     }
 
     public function create(Request $request)
     {
-    $drivers = Driver::all();
-    $pendingPassengers = Passengers::where('status', 'pending')
-        ->where('branch_id', auth()->user()->branch_id)
-        ->latest()
-        ->get();
+        $drivers = Driver::all();
+        $pendingPassengers = Passengers::where('status', 'pending')
+            ->where('branch_id', auth()->user()->branch_id)
+            ->latest()
+            ->get();
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
         }
         // ضبظ حق الدسك توب 
         return view('pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
-
-    
     }
 
     public function store(Request $request)
-{
-    $request->validate([
-        'driver_id'     => ['nullable', 'exists:drivers,id'],
-        'driver_phone'  => ['required_without:driver_id', 'string'],
-        'driver_name'   => ['required_without:driver_id', 'string'],
-        'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
-    ]);
-
-    try {
-        DB::beginTransaction();
-        $driverId = $request->driver_id;
-        if (empty($driverId)) {
-            $driverId = $this->resolvePassengerDriver(
-                $this->normalizePhone($request->driver_phone),
-                $request->driver_name
-            );
-        }
-        $user = auth()->user();
-        $trip = PassengerTrip::create([
-            'app_id'     => $user->app_id,
-            'branch_id'  => $user->branch_id,
-            'created_by' => $user->id,
-            'driver_id'  => $driverId,
+    {
+        $validator = Validator::make($request->all(), [
+            'driver_id'     => ['nullable', 'exists:drivers,id'],
+            'driver_phone'  => ['required_without:driver_id', 'string'],
+            'driver_name'   => ['required_without:driver_id', 'string'],
+            'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
         ]);
 
-        // تحديث ركاب الرحلة: ربطهم بالـ trip_id وتحويل حالتهم إلى "مؤكد confirmed" أو "in_transit"
-        $passengers = Passengers::whereIn('id', $request->passenger_ids)->get();
-        foreach ($passengers as $passenger) {
-            $passenger->update([
-                'trip_id' => $trip->id,
-                'status'  => 'completed',
-            ]);
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
         }
 
-        DB::commit();
-        return redirect()->route('trips.index')->with('success', 'تم إنشاء الرحلة وتأكيد الركاب بنجاح.');
+        try {
+            DB::beginTransaction();
+            $driverId = $request->driver_id;
+            if (empty($driverId)) {
+                $driverId = $this->resolvePassengerDriver(
+                    $this->normalizePhone($request->driver_phone),
+                    $request->driver_name
+                );
+            }
+            $user = auth()->user();
+            $trip = PassengerTrip::create([
+                'app_id'     => $user->app_id,
+                'branch_id'  => $user->branch_id,
+                'created_by' => $user->id,
+                'driver_id'  => $driverId,
+            ]);
 
-    } catch (Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'حدث خطأ: ' . $e->getMessage());
+            // تحديث ركاب الرحلة: ربطهم بالـ trip_id وتحويل حالتهم إلى "مؤكد confirmed" أو "in_transit"
+            $passengers = Passengers::whereIn('id', $request->passenger_ids)->get();
+            foreach ($passengers as $passenger) {
+                $passenger->update([
+                    'trip_id' => $trip->id,
+                    'status'  => 'completed',
+                ]);
+            }
+
+            DB::commit();
+          return WebResponseClass::sendResponse(
+                'تم الإضافة!',
+                'تم حفظ الرحلة وتحديث الصندوق المالي بنجاح.',
+                'حسناً',
+                'trips.index'
+            );
+        } catch (Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
-}
 
-  public function show(Request $request, $id)
+    public function show(Request $request, $id)
     {
         $trip = PassengerTrip::with(['driver', 'passengers'])->findOrFail($id);
-        
+
         // جلب قائمة الركاب قيد الانتظار في النظام لإتاحة إضافتهم
         $pendingPassengers = Passengers::where('status', 'pending')
             ->where('branch_id', auth()->user()->branch_id)
@@ -108,16 +115,20 @@ class PassengerTripController extends Controller
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.show', compact('trip', 'pendingPassengers'));
         }
-        
+
         return view('pages.passenger.trips.show', compact('trip', 'pendingPassengers'));
     }
 
     // دالة جديدة لإضافة راكب للرحلة مباشرة
     public function addPassenger(Request $request, $tripId)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'passenger_id' => ['required', 'exists:passengers,id'],
         ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
 
         try {
             $trip = PassengerTrip::findOrFail($tripId);
@@ -125,12 +136,16 @@ class PassengerTripController extends Controller
 
             // ربط الراكب بالرحلة وتحديث حالته
             $passenger->trip_id = $trip->id;
-            $passenger->status  = 'completed'; 
+            $passenger->status  = 'completed';
             $passenger->save();
-
-            return redirect()->back()->with('success', 'تم إضافة الراكب للرحلة بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تم الإضافة!',
+                'تم إضافة الراكب للرحلة بنجاح.',
+                'حسناً',
+                'passenger.trips.show?id=' . $tripId
+            );
         } catch (Exception $e) {
-            return redirect()->back()->with('error', 'حدث خطأ أثناء إضافة الراكب.');
+            return WebResponseClass::sendExceptionError($e);
         }
     }
 
@@ -154,12 +169,16 @@ class PassengerTripController extends Controller
     {
         $trip = PassengerTrip::findOrFail($id);
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'driver_id'     => ['nullable', 'exists:drivers,id'],
             'driver_phone'  => ['required_without:driver_id', 'string'],
             'driver_name'   => ['required_without:driver_id', 'string'],
-            'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
+            'passenger_ids' => ['required', 'array', 'min:1'],
         ]);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
 
         try {
             DB::beginTransaction();
@@ -199,22 +218,31 @@ class PassengerTripController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('trips.index')->with('success', 'تم تحديث الرحلة بنجاح.');
+            return WebResponseClass::sendResponse(
+                'تم التعديل!',
+                'تم تعديل بيانات الرحلة بنجاح.',
+                'حسناً',
+                'trips.index'
+            );
         } catch (Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'حدث خطأ أثناء التحديث.');
+            return WebResponseClass::sendExceptionError($e);
         }
     }
     public function removePassenger($tripId, $passengerId)
     {
         $passenger = Passengers::findOrFail($passengerId);
         if ($passenger->trip_id != $tripId) {
-            return redirect()->back()->with('error', 'الراكب غير مرتبط بهذه الرحلة بالأساس.');
+            return  WebResponseClass::sendExceptionError('error', 'الراكب غير مرتبط بهذه الرحلة بالأساس.');
         }
         $passenger->trip_id = null;
         $passenger->status  = 'pending';
         $passenger->save();
-        return redirect()->back()->with('success', 'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.');
+        return WebResponseClass::sendResponse(
+            'تم التعديل!',
+            'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.',
+            'حسناً',
+            'passenger.trips.index'
+        );
     }
     private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int
     {

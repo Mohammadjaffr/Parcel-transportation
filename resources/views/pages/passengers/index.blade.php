@@ -2,7 +2,8 @@
 
 @section('title', 'إدارة الركاب')
 @section('Breadcrumb', 'إدارة الركاب')
-
+ <x-modals.error-modal />
+    <x-modals.success-modal />
 @section('content')
 
     <div x-data="passengerRegistry()" class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl">
@@ -468,7 +469,6 @@
                 <form action="{{ route('passengers.store') }}" method="POST" @submit="isSubmitting = true" class="space-y-6">
                     @csrf
                     <div class="grid grid-cols-1 gap-5">
-
                         <div
                             class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 md:grid-cols-3 bg-gray-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div>
@@ -1111,7 +1111,7 @@
                         <input type="hidden" name="status" value="cancel">
 
                         <button type="button" @click="showStatusModal = false"
-                            class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                            class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
                             تراجع
                         </button>
 
@@ -1170,7 +1170,7 @@
                         @method('DELETE')
 
                         <button type="button" @click="showDeleteModal = false"
-                            class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                            class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
                             تراجع
                         </button>
 

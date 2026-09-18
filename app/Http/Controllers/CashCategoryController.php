@@ -26,8 +26,15 @@ class CashCategoryController extends Controller
             ->orderBy('name')
             ->paginate(15)
             ->withQueryString();
+        if ($request->isMobile) {
+            return view('mobile.pages.cash_categories.index', compact(
+                'categories'
+            ));
+        }
 
-        return view('pages.cash_categories.index', compact('categories'));
+        return view('pages.cash_categories.index', compact(
+            'categories',
+        ));
     }
 
     /**
@@ -44,7 +51,7 @@ class CashCategoryController extends Controller
                 'max:100',
                 Rule::unique('cash_categories', 'name')->where(function ($query) use ($appId, $request) {
                     return $query->where('app_id', $appId)
-                                 ->where('type', $request->type);
+                        ->where('type', $request->type);
                 }),
             ],
             'type'      => ['required', 'in:income,expense'],
@@ -113,7 +120,7 @@ class CashCategoryController extends Controller
     /**
      * تحديث بيانات الفئة أو تبديل حالتها
      */
-/**
+    /**
      * تحديث بيانات الفئة أو تبديل حالتها
      */
     public function update(Request $request, CashCategory $cashCategory)
@@ -140,7 +147,7 @@ class CashCategoryController extends Controller
                 Rule::unique('cash_categories', 'name')
                     ->ignore($cashCategory->id)
                     // تم التعديل هنا للتحقق من النوع الجديد المرسل وليس القديم
-                    ->where(fn ($q) => $q->where('app_id', $appId)->where('type', $request->type)),
+                    ->where(fn($q) => $q->where('app_id', $appId)->where('type', $request->type)),
             ],
             'type'      => ['required', 'in:income,expense'], // تمت إضافة التحقق من النوع
             'is_active' => ['nullable', 'boolean'],
