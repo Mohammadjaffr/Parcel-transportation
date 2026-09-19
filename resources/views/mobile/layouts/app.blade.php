@@ -75,12 +75,8 @@
             display: none;
         }
 
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
     </style>
-
+    @livewireStyles
 </head>
 
 <body class="min-h-screen bg-gray-50 bg-surface text-on-surface">
@@ -128,6 +124,7 @@
     </script>
 
     @yield('script')
+    @livewireScripts
 </body>
 
 </html>

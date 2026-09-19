@@ -36,6 +36,7 @@ use App\Http\Controllers\TransactionCategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
+use App\Http\Controllers\ShipmentScanController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -107,6 +108,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('check.service:Shipment_In')->group(function () {
             Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
             Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
+            Route::get('/shipment/quick-scan', [ShipmentController::class, 'quickScan'])->name('shipment.quickScan');
         });
         Route::prefix('finance/cash-ledger')->name('cash.ledger.')->group(function () {
             Route::get('/', [CashTransactionController::class, 'index'])->name('index');
@@ -114,10 +116,9 @@ Route::middleware('auth')->group(function () {
             Route::get('/{id}/details', [CashTransactionController::class, 'showDetails'])->name('details');
             Route::get('/{id}/receipt', [CashTransactionController::class, 'printReceipt'])->name('receipt');
             Route::get('/export', [CashTransactionController::class, 'export'])->name('export');
-
         });
         Route::resource('cash-categories', CashCategoryController::class)->except(['create', 'show', 'edit']);
-        
+
         // 2. العملاء (محمية بـ Customers)
         Route::resource('customers', CustomerController::class)->middleware('check.service:Customers');
         Route::resource('passengers', PassengersController::class)->middleware('check.service:Passengers');
@@ -250,11 +251,11 @@ Route::middleware('auth')->group(function () {
 
         // Database Backup
         Route::post('/backup/upload', [BackupController::class, 'uploadBackup'])->name('backup.upload');
-Route::post('/trips/{trip}/passengers/add', [PassengerTripController::class, 'addPassenger'])->name('trip.addPassenger');
-// المسار الخاص بك للحذف (تأكد من وجوده)
-Route::post('/trips/{trip}/passengers/{passenger}/remove', [PassengerTripController::class, 'removePassenger'])->name('trip.removePassenger');
-Route::get('/shipmentpackage/incoming/{id}/edit', [ShipmentPackagesController::class, 'incomingEdit'])->name('shipmentpackage.incoming.edit');
-Route::put('/shipmentpackage/incoming/{id}', [ShipmentPackagesController::class, 'incomingUpdate'])->name('shipmentpackage.incoming.update');
+        Route::post('/trips/{trip}/passengers/add', [PassengerTripController::class, 'addPassenger'])->name('trip.addPassenger');
+        // المسار الخاص بك للحذف (تأكد من وجوده)
+        Route::post('/trips/{trip}/passengers/{passenger}/remove', [PassengerTripController::class, 'removePassenger'])->name('trip.removePassenger');
+        Route::get('/shipmentpackage/incoming/{id}/edit', [ShipmentPackagesController::class, 'incomingEdit'])->name('shipmentpackage.incoming.edit');
+        Route::put('/shipmentpackage/incoming/{id}', [ShipmentPackagesController::class, 'incomingUpdate'])->name('shipmentpackage.incoming.update');
         // بيانات الاستلام
         Route::get('/receipts', [ReceiptHeaderController::class, 'index'])->name('receipts.index');
         Route::get('/receipts/create', [ReceiptHeaderController::class, 'create'])->name('receipts.create');
@@ -275,6 +276,15 @@ Route::put('/shipmentpackage/incoming/{id}', [ShipmentPackagesController::class,
         Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
 
         Route::get('/whatsapp/customer-account-statement/{id}', [WhatsAppController::class, 'sendCustomerAccountStatement'])->name('whatsapp.customer.account.statement');
+
+
+        Route::middleware('check.service:Shipment_In')->group(function () {
+
+            Route::get('/shipment/incoming', [ShipmentController::class, 'incomingIndex'])->name('shipment.incoming.index');
+            Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
+            Route::get('/shipment/incoming/scan', [ShipmentScanController::class, 'incoming'])->name('shipment.incoming.scan');
+            Route::post('/shipment/incoming/scan/receive', [ShipmentScanController::class, 'receive'])->name('shipment.incoming.scan.receive');
+        });
     });
 });
 

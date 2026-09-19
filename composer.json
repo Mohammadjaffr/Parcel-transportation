@@ -16,6 +16,7 @@
         "livewire/livewire": "^3.6",
         "maatwebsite/excel": "^4.0",
         "mehradsadeghi/laravel-filter-querystring": "^1.1",
+        "milon/barcode": "^13.5",
         "tecnickcom/tcpdf": "^6.7",
         "twilio/sdk": "^8.8"
     },

@@ -142,6 +142,7 @@
         }
     </style>
     @yield('style')
+    @livewireStyles
 </head>
 
 <body class="dark:bg-boxdark-2 dark:text-bodydark">
@@ -177,6 +178,7 @@
     </div>
 
     @yield('script')
+    @livewireScripts
 </body>
 
 </html>

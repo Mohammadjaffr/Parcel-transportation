@@ -314,15 +314,16 @@
                     @if($hasShipments)
                     <li x-init="@if (request()->routeIs('shipment.outgoing.*') ||
                             request()->routeIs('shipment.incoming.*') ||
+                            request()->routeIs('shipment.quickScan') ||
                             request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
                         <a href="#" @click.prevent="selected = (selected === 'Shipments' ? '' : 'Shipments')"
                             class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
-                            :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }} ?
+                            :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.quickScan', 'shipment.index') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
                             'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.quickScan', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
                                 inventory_2
                             </span>
                             <span :class="{ 'lg:hidden': sidebarToggle }">الطرود</span>
@@ -359,6 +360,7 @@
                                             الطرود المستلمة
                                         </a>
                                     </li>
+                                 
                                     @endhasservice
 
                                 </ul>
@@ -421,6 +423,13 @@
                                         <a href="{{ route('shipmentpackage.incoming.index') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipmentpackage.incoming.*') ? 'text-primary bg-primary/5 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             الشحنات المستلمة
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('shipment.quickScan') }}"
+                                            class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.quickScan') ? 'text-primary bg-primary/10 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
+                                            <span class="material-symbols-outlined text-[18px]">barcode_scanner</span>
+                                            استلام سريع (باركود)
                                         </a>
                                     </li>
                                     @endhasservice
