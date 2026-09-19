@@ -1210,6 +1210,7 @@ class ShipmentController extends Controller
         $oldStatus = $shipment->status;
         $newStatus = $request->status;
         $transactionService = new CustomerTransactionService();
+        $statusService = new \App\Services\ShipmentStatusService();
 
         // ========================================================
         // 2. الحماية البرمجية (Backend State Validation) 🛡️
@@ -1237,7 +1238,7 @@ class ShipmentController extends Controller
                     'status' => 'pending',
                     'shipment_package_id' => null,
                 ]);
-                $this->checkAndClosePackage($packageId);
+                $statusService->checkAndClosePackage($packageId);
                 $newStatus = 'pending';
             }
             // ب. المرحلة الأولى للمرتجع الحقيقي (رفض المستلم)
@@ -1248,7 +1249,7 @@ class ShipmentController extends Controller
                     'status' => 'pending',
                     'shipment_package_id' => null,
                 ]);
-                $this->checkAndClosePackage($packageId);
+                $statusService->checkAndClosePackage($packageId);
                 $newStatus = 'pending';
             } 
             // ج. المرحلة النهائية للمرتجع (تسليم الطرد للتاجر/المُرسل)
@@ -1272,8 +1273,8 @@ class ShipmentController extends Controller
         // ========================================================
         // 4. الإشعارات والإجراءات الجانبية
         // ========================================================
-        $this->handleNotifications($shipment, $newStatus, $user = auth()->user());
-        $this->handlePackageSideEffects($shipment, $newStatus);
+        $statusService->handleNotifications($shipment, $newStatus, $user = auth()->user());
+        $statusService->handlePackageSideEffects($shipment, $newStatus, $user);
 
         DB::commit();
 
@@ -1295,58 +1296,6 @@ class ShipmentController extends Controller
     } catch (Exception $e) {
         DB::rollBack();
         return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
-    }
-}
-
-/**
- * دالة مساعدة للتحقق من الإرسالية وإغلاقها إذا فرغت
- */
-private function checkAndClosePackage($packageId)
-{
-    if ($packageId) {
-        $activeCount = Shipment::where('shipment_package_id', $packageId)
-            ->whereNotIn('status', ['delivered', 'cancelled', 'returned'])->count();
-        if ($activeCount === 0) {
-            ShipmentPackage::where('id', $packageId)->update(['status' => 'delivered']);
-        }
-    }
-}
-
-/**
- * دالة معالجة الإشعارات للإدارة والفروع
- */
-private function handleNotifications($shipment, $newStatus, $user)
-{
-    $admins = User::where('app_id', $user->app_id)->where('type', 'admin')->get();
-    if ($admins->isNotEmpty()) {
-        $statusNamesAr = [
-            'pending' => 'قيد التجهيز', 'in_transit' => 'قيد النقل',
-            'received_at_branch' => 'وصل المستودع', 'out_for_delivery' => 'خرج للتوصيل',
-            'delivered' => 'تم التسليم', 'cancelled' => 'ملغي',
-        ];
-        $statusText = ($shipment->is_returned && $newStatus === 'pending') ? 'مرتجع قيد العودة' : ($statusNamesAr[$newStatus] ?? $newStatus);
-        
-        Notification::send($admins, new \App\Notifications\AdminShipmentStatusUpdated($user->name, $shipment->bond_number, $statusText, $shipment->id));
-    }
-}
-
-/**
- * معالجة الإجراءات الجانبية للإرساليات (Packages)
- */
-private function handlePackageSideEffects($shipment, $newStatus)
-{
-    if ($shipment->shipment_package_id && in_array($newStatus, ['received_at_branch', 'delivered'])) {
-        $package = ShipmentPackage::find($shipment->shipment_package_id);
-        if ($package && $package->status === 'in_transit') {
-            // إرسال إشعار لفرع المصدر بوصول الطرد
-            $senderBranchUsers = User::where('branch_id', $shipment->sender_branch_id)->get();
-            if ($senderBranchUsers->isNotEmpty()) {
-                Notification::send($senderBranchUsers, new \App\Notifications\PackageReceivedNotification($package->tracking_number, auth()->user()->branch->name ?? 'الفرع المستلم', $shipment->tracking_number, $shipment->id));
-            }
-            // إغلاق الإرسالية إذا سلمت كل طرودها
-            $remaining = Shipment::where('shipment_package_id', $package->id)->whereIn('status', ['pending', 'in_transit'])->count();
-            if ($remaining === 0) { $package->update(['status' => 'delivered']); }
-        }
     }
 }
 
@@ -1379,5 +1328,14 @@ private function handlePackageSideEffects($shipment, $newStatus)
                 )
             );
         }
+    }
+
+    /**
+     * صفحة الاستلام السريع عبر الباركود للفروع والمكاتب الخارجية
+     */
+    public function quickScan(\Illuminate\Http\Request $request)
+    {
+        $view = $request->isMobile ? 'mobile.pages.shipments.scan' : 'pages.shipments.scan';
+        return view($view);
     }
 }

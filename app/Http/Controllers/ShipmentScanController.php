@@ -188,6 +188,18 @@ class ShipmentScanController extends Controller
                         'received_at_branch',
                 ]);
 
+                // 4. الإشعارات والإجراءات الجانبية + Audit Trail
+                $statusService = new \App\Services\ShipmentStatusService();
+                $statusService->handleNotifications($shipment, 'received_at_branch', $user);
+                $statusService->handlePackageSideEffects($shipment, 'received_at_branch', $user);
+
+                \App\Services\AdminLoggerService::log(
+                    'barcode_receive',
+                    'Shipment',
+                    $shipment->id,
+                    "استلام شحنة بالباركود #{$shipment->bond_number}"
+                );
+
 
                 return [
                     'status' => 200,

@@ -1502,6 +1502,8 @@
 
 
 
+            scanHistory: [],
+
             /*
             |--------------------------------------------------------------------------
             | Init
@@ -1744,6 +1746,10 @@
                     */
 
                     if (!response.ok) {
+                        if (response.status === 409 || (result && result.message && result.message.includes('مستلمة'))) {
+                            this.logScan(code, 'duplicate', result.message || 'الشحنة مستلمة مسبقاً.');
+                            return;
+                        }
 
                         throw new Error(
                             result.message
@@ -1775,6 +1781,15 @@
                     */
 
                     this.successFeedback();
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | سجل التاريخ
+                    |--------------------------------------------------------------------------
+                    */
+                    
+                    this.logScan(code, 'success', result.message || 'تم الاستلام بنجاح');
 
 
                     /*
@@ -1814,6 +1829,8 @@
                         error.message
                         ||
                         'حدث خطأ أثناء تسجيل استلام الشحنة.';
+
+                    this.logScan(code, 'error', this.errorMessage);
 
                 }
                 finally {
@@ -2305,6 +2322,29 @@
             },
 
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | Log Scan
+            |--------------------------------------------------------------------------
+            */
+
+            logScan(bondNumber, status, message) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                this.scanHistory.unshift({
+                    bond_number: bondNumber,
+                    status: status, // 'success', 'duplicate', 'error'
+                    message: message,
+                    time: timeString
+                });
+
+                // Keep only the last 50 scans
+                if (this.scanHistory.length > 50) {
+                    this.scanHistory.pop();
+                }
+            },
 
             /*
             |--------------------------------------------------------------------------

@@ -112,9 +112,22 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             'title'             => 'سند استلام طرد',
-            'bond_number'       => $shipment->id ?? 'غير متوفر',
-            'tracking_code'     => $shipment->code ?? 'بدون تتبع',
-            'date'              => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+
+            // رقم السند الحقيقي الموجود في قاعدة البيانات
+            'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
+
+            // قيمة الباركود ستكون نفس رقم السند
+            'tracking_code'     => $shipment->bond_number ?? 'غير متوفر',
+
+            // الأفضل عرض تاريخ إنشاء السند وليس وقت إعادة طباعته
+            'date'              => $shipment->created_at
+                ? $shipment->created_at
+                ->timezone('Asia/Aden')
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i')
+                : now()->timezone('Asia/Aden')
+                ->locale('ar')
+                ->translatedFormat('l Y-m-d H:i'),
 
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
@@ -134,7 +147,11 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount'    => number_format($shipment->total_amount - $shipment->amount_to_collect_from_receiver ?? 0, 0),
+            'partial_amount' => number_format(
+                (float) ($shipment->total_amount ?? 0)
+                    - (float) ($shipment->amount_to_collect_from_receiver ?? 0),
+                0
+            ),
 
             'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
 

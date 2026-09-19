@@ -137,6 +137,14 @@
             <p>{{ $notes }}</p>
         </div>
         @endif
+
+        <div class="border-t border-dashed border-slate-200 mt-2 mb-2"></div>
+        <div class="text-center pb-2">
+            <div class="flex justify-center mb-1">
+                {!! DNS1D::getBarcodeSVG($bond_number, 'C128', 1.5, 40, 'black', false) !!}
+            </div>
+            <p class="text-[11px] font-black tracking-widest text-slate-800" dir="ltr">{{ $bond_number }}</p>
+        </div>
     </div>
     
     <!-- Footer -->

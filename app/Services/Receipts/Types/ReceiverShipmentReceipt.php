@@ -117,8 +117,8 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             'title'             => 'سند تسليم طرد',
-            'bond_number'       =>$shipment->code ?? $shipment->id ?? 'غير متوفر',
-            'tracking_code'     => $shipment->code ?? 'بدون تتبع',
+            'bond_number'       =>$shipment->bond_number ?? 'غير متوفر',
+            'tracking_code'     => $shipment->bond_number ?? 'بدون تتبع',
             // 🎯 دمج وتنسيق احترافي مرة واحدة فقط
 'date' => ($shipment->created_at ?? now())->timezone('Asia/Aden')->locale('ar')->translatedFormat('l | Y-m-d | h:i A'),
 

@@ -113,8 +113,8 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
 
             // --- معلومات السند ---
             'title'             => 'سند استلام طرد',
-            'bond_number'       => $shipment->id ?? 'غير متوفر',
-            'tracking_code'     => $shipment->code ?? 'بدون تتبع',
+            'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
+            'tracking_code'     => $shipment->bond_number ?? 'بدون تتبع',
             
             // 🛡️ تم إصلاح الثغرة المخفية في التاريخ
             'date'              => ($shipment->created_at ? $shipment->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'))

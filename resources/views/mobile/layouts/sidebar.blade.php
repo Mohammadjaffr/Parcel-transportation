@@ -57,6 +57,16 @@
                 الصندوق المالي
             </span>
         </a>
+
+        <a href="{{ route('shipment.quickScan') }}"
+            class="flex items-center gap-4 px-4 py-3 transition-colors rounded-xl {{ Route::is('shipment.quickScan') ? 'bg-[#fb6514]/10 text-[#fb6514]' : 'text-slate-600 hover:bg-slate-50' }}">
+            <span class="material-symbols-outlined text-[24px] text-[#fb6514]">
+                barcode_scanner
+            </span>
+            <span class="font-headline text-[13px] font-bold text-[#fb6514]">
+                الاستلام السريع (باركود)
+            </span>
+        </a>
     </div>
 
     <!-- Main Navigation Bar -->

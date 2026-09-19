@@ -209,6 +209,14 @@
 
          
         </div>
+            <div class="px-5 pb-5">
+                <div class="p-4 mx-auto max-w-sm text-center bg-white rounded-xl border border-slate-200">
+                    <div class="flex justify-center mb-1">
+                        {!! DNS1D::getBarcodeSVG($bond_number, 'C128', 1.8, 45, 'black', false) !!}
+                    </div>
+                    <p class="font-mono text-sm font-black tracking-widest text-slate-800">{{ $bond_number }}</p>
+                </div>
+            </div>
 
         <div class="bg-slate-900 p-3 text-center rounded-b-[1.5rem] print:rounded-none">
             <p class="text-[10px] font-medium text-slate-400">
