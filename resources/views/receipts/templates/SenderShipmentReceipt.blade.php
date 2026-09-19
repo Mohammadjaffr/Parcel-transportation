@@ -82,14 +82,7 @@
             class="flex overflow-hidden justify-center items-center w-full"
             dir="ltr"
         >
-            {!! DNS1D::getBarcodeSVG(
-                $bond_number,
-                'C128',
-                1.8,
-                38,
-                'black',
-                false
-            ) !!}
+         {!! \Milon\Barcode\Facades\DNS2DFacade::getBarcodeSVG((string)$tracking_code, 'QRCODE', 3, 3, 'black', false) !!}
         </div>
 
         {{-- الرقم المقروء بشرياً --}}

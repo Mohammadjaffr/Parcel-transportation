@@ -22,27 +22,27 @@
 <div class="thermal-receipt w-full mx-auto bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] print-no-shadow overflow-hidden border border-slate-100 print-border my-8 print:my-0 print:rounded-none print:border-none print:shadow-none">
     
     <!-- Header -->
-    <div class="text-center p-4 border-b border-dashed border-slate-300">
+    <div class="p-4 text-center border-b border-dashed border-slate-300">
         @if(!empty($company['logo']))
-        <div class="w-12 h-12 mx-auto rounded-xl bg-white shadow-sm flex items-center justify-center p-1 border border-slate-100 mb-2">
-            <img src="{{ $company['logo'] }}" alt="Logo" class="w-full h-full object-contain">
+        <div class="flex justify-center items-center p-1 mx-auto mb-2 w-12 h-12 bg-white rounded-xl border shadow-sm border-slate-100">
+            <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-full h-full">
         </div>
         @endif
         <h1 class="text-base font-black text-slate-800">{{ $company['name'] ?? 'مرسال' }}</h1>
-        <p class="text-xs text-slate-500 font-medium mt-0.5">{{ $company['main_branch']['title'] ?? '' }}</p>
+        <p class="mt-0.5 text-xs font-medium text-slate-500">{{ $company['main_branch']['title'] ?? '' }}</p>
         @if(!empty($company['main_branch']['phones']))
-        <p class="text-xs text-slate-400 mt-1" dir="ltr">{{ $company['main_branch']['phones'] }}</p>
+        <p class="mt-1 text-xs text-slate-400" dir="ltr">{{ $company['main_branch']['phones'] }}</p>
         @endif
     </div>
 
     <div class="p-4 space-y-3">
         <!-- Bond Info -->
-        <div class="text-center bg-slate-800 text-white px-3 py-2 rounded-xl">
+        <div class="px-3 py-2 text-center text-white rounded-xl bg-slate-800">
             <p class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">رقم السند</p>
             <p class="text-lg font-black tracking-widest" dir="ltr">{{ $bond_number ?? '---' }}</p>
         </div>
 
-        <div class="text-center text-xs text-slate-400" dir="ltr">{{ $date ?? date('Y-m-d H:i') }}</div>
+        <div class="text-xs text-center text-slate-400" dir="ltr">{{ $date ?? date('Y-m-d H:i') }}</div>
 
         <!-- Divider -->
         <div class="border-t border-dashed border-slate-200"></div>
@@ -87,7 +87,7 @@
         <div class="border-t border-dashed border-slate-200"></div>
 
         <!-- Package -->
-        <div class="text-sm space-y-1.5">
+        <div class="space-y-1.5 text-sm">
             <div class="flex justify-between">
                 <span class="text-slate-500">نوع الطرد</span>
                 <span class="font-bold text-slate-800">{{ $package_type ?? '---' }}</span>
@@ -109,7 +109,7 @@
         <div class="border-t border-dashed border-slate-200"></div>
 
         <!-- Financial -->
-        <div class="text-sm space-y-1.5">
+        <div class="space-y-1.5 text-sm">
             <div class="flex justify-between">
                 <span class="text-slate-500">طريقة الدفع</span>
                 <span class="font-bold text-slate-800">{{ $payment_method ?? '---' }}</span>
@@ -133,15 +133,15 @@
         @if(!empty($notes) && $notes !== 'لا توجد ملاحظات إضافية')
         <div class="border-t border-dashed border-slate-200"></div>
         <div class="text-xs text-slate-500">
-            <p class="font-bold text-slate-600 mb-0.5">ملاحظات:</p>
+            <p class="mb-0.5 font-bold text-slate-600">ملاحظات:</p>
             <p>{{ $notes }}</p>
         </div>
         @endif
 
-        <div class="border-t border-dashed border-slate-200 mt-2 mb-2"></div>
-        <div class="text-center pb-2">
+        <div class="mt-2 mb-2 border-t border-dashed border-slate-200"></div>
+        <div class="pb-2 text-center">
             <div class="flex justify-center mb-1">
-                {!! DNS1D::getBarcodeSVG($bond_number, 'C128', 1.5, 40, 'black', false) !!}
+         {!! \Milon\Barcode\Facades\DNS2DFacade::getBarcodeSVG((string)$tracking_code, 'QRCODE', 3, 3, 'black', false) !!}
             </div>
             <p class="text-[11px] font-black tracking-widest text-slate-800" dir="ltr">{{ $bond_number }}</p>
         </div>
@@ -153,11 +153,11 @@
      
 
         {{-- الخط الفاصل التسويقي لشركة تيار --}}
-        <div class="mt-1 p-1 border-slate-700/50">
+        <div class="p-1 mt-1 border-slate-700/50">
             <p class="text-[10px] font-bold text-slate-500">
                 تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
                 <span class="mx-1">|</span>
-                لطلب النظام: <span dir="ltr" class="text-slate-400 font-mono">{{ config('app.company_phone') }}</span>
+                لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">{{ config('app.company_phone') }}</span>
             </p>
         </div>
     </div>
