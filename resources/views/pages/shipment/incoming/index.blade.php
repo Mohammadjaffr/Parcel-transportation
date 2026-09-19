@@ -8,7 +8,7 @@
     <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl" x-data="incomingShipmentsRegistry()">
 
         <div class="mx-auto w-full max-w-7xl">
-            <div class="flex gap-4 justify-between items-start">
+            <div class="flex gap-4 justify-between items-center">
                 <div class="text-right">
                     <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
                         الطرود الواردة
@@ -17,6 +17,11 @@
                         إجمالي {{ $shipments->total() ?? 0 }} طرد وارد
                     </p>
                 </div>
+                <a href="{{ route('shipment.incoming.scan') }}"
+                    class="inline-flex gap-2 items-center px-4 h-12 text-sm font-black text-white rounded-2xl transition-all bg-[#fb6514] hover:bg-[#e0550c] shadow-sm hover:shadow-lg hover:shadow-[#fb6514]/20 active:scale-95 shrink-0">
+                    <span class="material-symbols-outlined text-[22px]">barcode_scanner</span>
+                    <span>الاستلام السريع (باركود)</span>
+                </a>
             </div>
         </div>
         @php
@@ -282,7 +287,7 @@
                                     @if(in_array($shipment->status, ['delivered', 'returned', 'cancelled']))
                                         {{-- حالة الإغلاق --}}
                                         <div
-                                            class="flex gap-3 items-center px-4 py-2 text-xs font-bold text-slate-400 cursor-not-allowed">
+                                            class="flex gap-3 items-center px-4 py-2 text-xs font-bold cursor-not-allowed text-slate-400">
                                             <span class="material-symbols-outlined text-[18px]">lock</span>
                                             تم إغلاق هذا الطرد
                                         </div>
@@ -301,7 +306,7 @@
                                             @csrf
                                             <input type="hidden" name="status" value="received_at_branch">
                                             <button type="submit" :disabled="isSubmitting"
-                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
+                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
                                                 <span class="material-symbols-outlined text-[18px]"
                                                     x-show="!isSubmitting">inventory_2</span>
                                                 <span class="material-symbols-outlined animate-spin text-[18px]"
@@ -321,7 +326,7 @@
                                                 {{-- تسليم المرتجع للتاجر --}}
                                                 <button type="button" :disabled="isSubmitting"
                                                     @click="$refs.statusInput.value = 'delivered'; $refs.statusForm.submit(); menuOpen = false"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                     <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                                                     <span>تأكيد تسليم المرتجع للتاجر</span>
                                                 </button>
@@ -337,7 +342,7 @@
                                                                         menuOpen = false;
                                                                     @endif
                                                                 "
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                     <span class="material-symbols-outlined text-[18px]">task_alt</span>
                                                     <span>تأكيد التسليم للعميل</span>
                                                 </button>
@@ -345,7 +350,7 @@
                                                 {{-- رفض الاستلام / إرجاع --}}
                                                 <button type="button" :disabled="isSubmitting"
                                                     @click="$refs.statusInput.value = 'returned'; $refs.statusForm.submit(); menuOpen = false"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10">
                                                     <span class="material-symbols-outlined text-[18px]">assignment_return</span>
                                                     <span>رفض الاستلام (إرجاع)</span>
                                                 </button>
@@ -756,7 +761,7 @@
                                                     @csrf
                                                     <input type="hidden" name="status" value="received_at_branch">
                                                     <button type="submit" :disabled="isSubmitting"
-                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
+                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10">
                                                         <span class="material-symbols-outlined text-[18px]" x-show="!isSubmitting">inventory_2</span>
                                                         <span class="material-symbols-outlined animate-spin text-[18px]" x-show="isSubmitting">progress_activity</span>
                                                         <span x-text="isSubmitting ? 'جاري التأكيد...' : 'تأكيد وصول المستودع'"></span>
@@ -772,7 +777,7 @@
                                                     @if($shipment->is_returned)
                                                         <button type="button" :disabled="isSubmitting"
                                                             @click="$refs.statusInput.value = 'delivered'; $refs.statusForm.submit(); open = false"
-                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">inventory_2</span>
                                                             <span>تأكيد تسليم المرتجع للتاجر</span>
                                                         </button>
@@ -788,14 +793,14 @@
                                                                     open = false;
                                                                 @endif
                                                             "
-                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">task_alt</span>
                                                             <span>تأكيد التسليم للعميل</span>
                                                         </button>
 
                                                         <button type="button" :disabled="isSubmitting"
                                                             @click="$refs.statusInput.value = 'returned'; $refs.statusForm.submit(); open = false"
-                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-right text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-right text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">assignment_return</span>
                                                             <span>رفض الاستلام (إرجاع)</span>
                                                         </button>
