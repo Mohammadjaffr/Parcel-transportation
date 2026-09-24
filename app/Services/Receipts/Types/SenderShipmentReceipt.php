@@ -10,7 +10,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return 'A4'; // Default size
+        return 'A5 landscape'; // Default size
     }
     public function fetchData(string $referenceId): array
     {
@@ -111,7 +111,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 'other_phones' => $otherPhonesStr,
             ],
 
-            'title'             => 'سند استلام طرد',
+            'title'             => 'سند ارسال طرد',
 
             // رقم السند الحقيقي الموجود في قاعدة البيانات
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',

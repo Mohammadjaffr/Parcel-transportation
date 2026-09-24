@@ -17,6 +17,7 @@
         "maatwebsite/excel": "^4.0",
         "mehradsadeghi/laravel-filter-querystring": "^1.1",
         "milon/barcode": "^13.5",
+        "spatie/browsershot": "^5.4",
         "tecnickcom/tcpdf": "^6.7",
         "twilio/sdk": "^8.8"
     },

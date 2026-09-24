@@ -11,7 +11,7 @@ class TripsDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return 'A4';
+        return 'A4 landscape';
     }
 
     public function fetchData(string $referenceId): array

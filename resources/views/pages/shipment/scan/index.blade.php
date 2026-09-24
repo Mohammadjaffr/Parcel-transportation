@@ -1344,10 +1344,10 @@
                         class="
                             relative
 
-                            w-[82%]
-                            h-28
+                            w-64
+                            h-64
 
-                            rounded-2xl
+                            rounded-3xl
 
                             border-2
                             border-white/80
@@ -1355,25 +1355,6 @@
                             shadow-[0_0_0_9999px_rgba(0,0,0,0.25)]
                         "
                     >
-
-                        <div
-                            class="
-                                absolute
-
-                                left-3
-                                right-3
-                                top-1/2
-
-                                h-0.5
-
-                                bg-red-500
-
-                                shadow-[0_0_12px_rgba(239,68,68,0.9)]
-
-                                animate-pulse
-                            "
-                        ></div>
-
                     </div>
 
                 </div>
@@ -1398,7 +1379,7 @@
             <p
                 class="mt-4 text-xs font-bold text-center text-gray-400"
             >
-                ضع خطوط الباركود داخل الإطار حتى تتم قراءته تلقائياً
+                ضع الباركود (QR) داخل الإطار حتى تتم قراءته تلقائياً
             </p>
 
 
@@ -1516,6 +1497,11 @@
 
                     this.focusScannerInput();
 
+                    // فتح الكاميرا تلقائياً في الجوال
+                    if (window.innerWidth <= 1024) {
+                        this.openCamera();
+                    }
+
                 });
 
             },
@@ -1610,7 +1596,7 @@
                 if (
                     this.lastScannedCode === code
                     &&
-                    now - this.lastScannedAt < 1200
+                    now - this.lastScannedAt < 3000
                 ) {
 
                     return;
@@ -1805,12 +1791,8 @@
                         '';
 
 
-                    this.lastScannedCode =
-                        '';
+                    // نترك lastScannedCode و lastScannedAt كما هي لمنع تكرار نفس الشحنة فوراً
 
-
-                    this.lastScannedAt =
-                        0;
 
                 }
                 catch (error) {
@@ -1906,10 +1888,8 @@
                             {
 
                                 formatsToSupport: [
-
-                                    Html5QrcodeSupportedFormats
-                                        .CODE_128,
-
+                                    Html5QrcodeSupportedFormats.QR_CODE,
+                                    Html5QrcodeSupportedFormats.CODE_128,
                                 ],
 
                                 verbose: false,
@@ -2001,15 +1981,9 @@
 
                             /*
                             |--------------------------------------------------------------------------
-                            | إيقاف الكاميرا
+                            | استمرار الكاميرا مفتوحة (تم إزالة الإغلاق)
                             |--------------------------------------------------------------------------
                             */
-
-                            await this.stopCamera();
-
-
-                            this.cameraOpen =
-                                false;
 
 
                             /*

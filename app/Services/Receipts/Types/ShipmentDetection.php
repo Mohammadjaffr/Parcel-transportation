@@ -10,7 +10,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return ['a4', 'landscape'];
+        return 'A4 landscape';
     }
 
     public function fetchData(string $referenceId): array

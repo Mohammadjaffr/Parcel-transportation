@@ -10,7 +10,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm" 
+         class="fixed inset-0 backdrop-blur-sm bg-slate-900/20" 
          style="display: none; z-index: -1;">
     </div>
 
@@ -22,7 +22,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100 translate-y-0"
          x-transition:leave-end="opacity-0 translate-y-12"
-         class="absolute bottom-full left-4 right-4 mb-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 flex flex-col gap-1 overflow-hidden" 
+         class="flex overflow-hidden absolute right-4 left-4 bottom-full flex-col gap-1 p-2 mb-2 bg-white rounded-2xl border shadow-xl border-slate-100" 
          style="display: none; z-index: -1;">
          
         <a href="{{ route('people.index') }}"
@@ -58,7 +58,7 @@
             </span>
         </a>
 
-        <a href="{{ route('shipment.quickScan') }}"
+        {{-- <a href="{{ route('shipment.quickScan') }}"
             class="flex items-center gap-4 px-4 py-3 transition-colors rounded-xl {{ Route::is('shipment.quickScan') ? 'bg-[#fb6514]/10 text-[#fb6514]' : 'text-slate-600 hover:bg-slate-50' }}">
             <span class="material-symbols-outlined text-[24px] text-[#fb6514]">
                 barcode_scanner
@@ -66,11 +66,11 @@
             <span class="font-headline text-[13px] font-bold text-[#fb6514]">
                 الاستلام السريع (باركود)
             </span>
-        </a>
+        </a> --}}
     </div>
 
     <!-- Main Navigation Bar -->
-    <div class="flex flex-row justify-around items-center px-1 sm:px-2 pb-4 pt-4 bg-white rounded-t-3xl relative z-10 w-full overflow-x-auto">
+    <div class="flex overflow-x-auto relative z-10 flex-row justify-around items-center px-1 pt-4 pb-4 w-full bg-white rounded-t-3xl sm:px-2">
         <a href="{{ route('dashboard.index') }}"
             class="flex flex-col items-center justify-center px-1 py-2 xs:px-2 transition-all active:scale-90 rounded-2xl {{ Route::is('dashboard.index') ? 'bg-primary-container text-primary' : 'text-slate-400 hover:text-primary' }}">
             <span class="material-symbols-outlined text-[20px] xs:text-[24px]"
@@ -115,7 +115,7 @@
 
         <!-- More Toggle Button -->
         <button @click="showMoreMenu = !showMoreMenu"
-            class="flex flex-col items-center justify-center px-1 py-2 xs:px-2 transition-all active:scale-90 rounded-2xl text-slate-400 hover:text-primary outline-none"
+            class="flex flex-col justify-center items-center px-1 py-2 rounded-2xl transition-all outline-none xs:px-2 active:scale-90 text-slate-400 hover:text-primary"
             :class="showMoreMenu ? 'text-primary' : ''">
             <span class="material-symbols-outlined text-[20px] xs:text-[24px]"
                 :style="showMoreMenu ? 'font-variation-settings: \'FILL\' 1;' : 'font-variation-settings: \'FILL\' 0;'">

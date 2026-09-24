@@ -10,7 +10,7 @@ class PassangerDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return 'A4'; // يفضل A4 عمودي (Portrait) أو أفقي (Landscape) حسب الواجهة
+        return 'A4 landscape';
     }
 
     public function fetchData(string $referenceId): array

@@ -388,21 +388,22 @@
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
+                        {{-- <div class="grid gap-3 grid1-cols-"> --}}
+                        {{-- <div>
                                 <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
                                     (مميز)
+                                    
                                 </label>
                                 <input type="text" name="code" placeholder="مثال: RUH-01" dir="ltr"
                                     class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div>
-                            <div>
-                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
-                                    <span class="text-rose-500">*</span></label>
-                                <input type="text" name="city" required placeholder="مثال: الرياض"
-                                    class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div>
+                            </div> --}}
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
+                                <span class="text-rose-500">*</span></label>
+                            <input type="text" name="city" required placeholder="مثال: الرياض"
+                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
+                        {{-- </div> --}}
 
                         <div class="relative z-40">
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
@@ -458,9 +459,10 @@
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
                                 التفصيلي</label>
-                            <input type="text" name="address" placeholder="الشارع، الحي، المبنى..." required
-                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            <textarea name="address" placeholder="الشارع، الحي، المبنى..." required rows="3"
+                                class="p-4 w-full min-h-[100px] text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline resize-y"></textarea>
                         </div>
+
 
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
@@ -786,21 +788,21 @@
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
+                        {{-- <div class="grid grid-cols-2 gap-3"> --}}
+                        {{-- <div>
                                 <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
                                     (مميز)
                                 </label>
                                 <input type="text" name="code" x-model="editBranchForm.code" dir="ltr"
                                     class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div>
-                            <div>
-                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
-                                    <span class="text-rose-500">*</span></label>
-                                <input type="text" name="city" x-model="editBranchForm.city" required
-                                    class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div>
+                            </div> --}}
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
+                                <span class="text-rose-500">*</span></label>
+                            <input type="text" name="city" x-model="editBranchForm.city" required
+                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
+                        {{-- </div> --}}
 
                         <div class="relative z-40">
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
@@ -853,12 +855,13 @@
                         </div>
 
                         <div>
-                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">العنوان
-                                التفصيلي</label>
-                            <input type="text" name="address" x-model="editBranchForm.address"
-                                placeholder="الشارع، الحي، المبنى..."
-                                class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">
+                                العنوان التفصيلي
+                            </label>
+                            <textarea name="address" x-model="editBranchForm.address" placeholder="الشارع، الحي، المبنى..." rows="3"
+                                class="p-4 w-full min-h-[100px] text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline resize-y"></textarea>
                         </div>
+
 
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">

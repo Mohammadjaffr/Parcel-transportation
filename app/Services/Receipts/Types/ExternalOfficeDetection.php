@@ -11,7 +11,7 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return array(300, 300);
+        return 'A4 landscape';
     }
 
     public function fetchData(string $referenceId): array

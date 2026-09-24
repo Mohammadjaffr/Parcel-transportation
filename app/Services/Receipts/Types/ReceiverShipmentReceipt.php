@@ -10,7 +10,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 {
     public function sizepage(): string|array
     {
-        return 'A4'; // Default size
+        return 'A5 landscape'; // Default size
     }
 
     public function fetchData(string $referenceId): array

@@ -191,7 +191,7 @@ class AppController extends Controller
                 'app.settings'
             );
         } catch (\Exception $e) {
-            return back()->with('error', 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage());
+            return WebResponseClass::sendError('حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage(), 'حسناً', 'error');
         }
     }
 }

@@ -75,7 +75,7 @@ class BranchController extends Controller
             Branch::create([
                 'app_id'   => $user->app_id,
                 'name'     => $request->name,
-                'code'     => strtoupper($request->code)?? null,
+                'code'     => $request->filled('code') ? strtoupper($request->code) : null,
                 'city'     => $request->city,
                 'phone'    => $request->phone,
                 'address'  => $request->address,
@@ -268,7 +268,7 @@ class BranchController extends Controller
 
             $branch->update([
                 'name'     => $request->name,
-                'code'     => strtoupper($request->code)?? null,
+                'code'     => $request->filled('code') ? strtoupper($request->code) : null,
                 'city'     => $request->city,
                 'phone'    => $request->phone,
                 'address'  => $request->address,

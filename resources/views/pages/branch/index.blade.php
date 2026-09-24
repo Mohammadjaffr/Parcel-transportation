@@ -168,7 +168,7 @@
                                 </div>
                             </div>
                             <div class="flex gap-1 items-center">
-                                <a href="{{ route('branch.show', $branch->code) }}"
+                                <a href="{{ route('branch.show', $branch->id) }}"
                                     class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
                                     title="عرض التفاصيل">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
@@ -323,7 +323,7 @@
                                     class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         {{-- زر العرض --}}
-                                        <a href="{{ route('branch.show', $branch->code) }}"
+                                        <a href="{{ route('branch.show', $branch->id) }}"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="عرض التفاصيل">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"

@@ -96,8 +96,8 @@
                 <label class="block mb-1 text-xs font-bold text-gray-500">نوع الحركة</label>
                 <select name="type" class="w-full text-sm bg-gray-50 rounded-xl border-gray-200 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                     <option value="">الكل (وارد ومنصرف)</option>
-                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>وارد فقط (🟢)</option>
-                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>منصرف فقط (🔴)</option>
+                    <option value="income" {{ request('type') == 'income' ? 'selected' : '' }}>وارد فقط </option>
+                    <option value="expense" {{ request('type') == 'expense' ? 'selected' : '' }}>منصرف فقط </option>
                 </select>
             </div>
 

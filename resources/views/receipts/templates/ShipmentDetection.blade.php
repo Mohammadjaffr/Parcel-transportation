@@ -4,356 +4,218 @@
 
 @push('styles')
     <style>
-        /* تحسينات الطباعة لضمان المظهر المتناسق واحتواء الصفحة */
+        /* تحسينات الطباعة لضمان الاحتواء (50 طرد) مع الحفاظ على الأناقة */
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 0.5cm;
+                margin: 4mm;
             }
-
             body {
                 background: #fff;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-
-            .print-no-shadow {
-                box-shadow: none !important;
+            .print-no-shadow { box-shadow: none !important; }
+            .print-hidden { display: none !important; }
+            
+            table {
+                page-break-inside: avoid;
+                width: 100% !important;
             }
-
-            .print-compact {
-                padding: 1rem !important;
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
             }
-
-            .print-gap-compact {
-                gap: 0.75rem !important;
+            
+            /* الحفاظ على الكثافة مع أناقة */
+            table th, table td {
+                padding: 2px 4px !important;
+                font-size: 9px !important;
+                height: 16px !important;
+                border-color: #e2e8f0 !important;
             }
+            
+            table th {
+                background-color: #f8fafc !important;
+                color: #475569 !important;
+                font-weight: 900 !important;
+            }
+            
+            table td {
+                color: #0f172a !important;
+                font-weight: 700 !important;
+            }
+            
+            .print-badge { padding: 4px 12px !important; font-size: 11px !important; }
         }
     </style>
 @endpush
 
 @section('content')
-    <div dir="rtl"
-        class="max-w-7xl w-full mx-auto bg-white sm:rounded-[1.5rem] shadow-[0_4px_24px_rgb(0,0,0,0.06)] print-no-shadow overflow-hidden border border-slate-200 my-8 print:border-none print:my-0 print:rounded-none">
-
-        <div class="relative p-6 border-b border-slate-200 bg-slate-50/50 print:bg-transparent print-compact">
+    <div dir="rtl" class="w-full bg-white overflow-hidden print-no-shadow print:border-none print:my-0 print:rounded-none {{ !empty($is_pdf) ? 'max-w-none my-0 rounded-none shadow-none border-none' : 'max-w-7xl mx-auto sm:rounded-[1.5rem] shadow-2xl shadow-indigo-100/50 border border-slate-200 my-8' }}">
+        
+        {{-- الترويسة الرئيسية الأنيقة --}}
+        <div class="relative px-6 py-4 border-b border-slate-200 bg-slate-50/50 print:bg-transparent">
             <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 opacity-[0.03] rounded-bl-full print:hidden"></div>
 
-            <div class="flex relative gap-6 justify-between items-start">
-                <div class="flex flex-1 gap-4 items-start min-w-0">
-                    @if (!empty($company['logo']))
-                        <div
-                            class="flex justify-center items-center p-1.5 w-16 h-16 bg-white rounded-xl border shadow-sm border-slate-200 shrink-0">
-                            <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-full h-full">
-                        </div>
-                    @endif
-                    <div class="flex-1 pt-1 min-w-0">
-                        <h1 class="text-xl font-black tracking-tight leading-tight text-slate-900">
-                            {{ $company['name'] ?? 'شركة مرسال' }}</h1>
-                        <p class="flex gap-1.5 items-center mt-1.5 text-xs font-semibold leading-relaxed text-slate-500">
-                            <svg class="w-3.5 h-3.5 text-indigo-500 shrink-0" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
+            <div class="flex relative z-10 justify-between items-center">
+                
+                {{-- يمين: بيانات الشركة --}}
+                <div class="flex-1 text-right">
+                    <h1 class="mb-2 text-2xl font-black tracking-tight text-slate-900">
+                        {{ $company['name'] ?? 'شركة مرسال' }}
+                    </h1>
+                    <div class="inline-flex flex-col gap-1.5 text-xs font-bold text-slate-600">
+                        <span class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200">
+                            <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
                             {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
-                        </p>
+                        </span>
+                        <span class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200">
+                            <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
+                            فرع الترحيل: {{ $package_sender_branch ?? $user_branch ?? 'الفرع الرئيسي' }}
+                        </span>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 items-end pt-1 shrink-0">
-    <div class="inline-flex justify-center items-center px-4 py-1.5 text-sm font-black text-indigo-800 bg-indigo-100 rounded-lg border shadow-sm border-indigo-200/60 print:border-slate-300">
-        {{ $title ?? 'كشف حمولة الرسائل' }}
-    </div>
-    
-    <div class="flex flex-col gap-1.5 items-end mt-0.5">
-        <div class="flex gap-1.5 items-center font-sans text-xs font-bold text-slate-400">
-            <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                </path>
-            </svg>
-            <span dir="ltr">{{ $print_date ?? date('Y-m-d H:i') }}</span>
-        </div>
-
-        <div class="flex gap-1.5 items-center text-xs font-bold text-slate-500">
-            <svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                </path>
-            </svg>
-            <span>{{ $user_branch ?? 'الفرع الرئيسي' }}</span>
-        </div>
-    </div>
-</div>
-            </div>
-        </div>
-
-        <div class="p-6 print-compact">
-
-            <div class="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 print:grid-cols-2 print-gap-compact">
-
-                <div
-                    class="relative p-4 bg-gradient-to-br to-white rounded-xl border border-indigo-100 shadow-sm from-indigo-50/20">
-                    <div class="flex gap-2 items-center pb-2 mb-3 border-b border-indigo-100/60">
-                        <div class="flex justify-center items-center w-8 h-8 bg-indigo-100 rounded-md">
-                            <svg class="w-4 h-4 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                            </svg>
+                {{-- وسط: الشعار والبطاقة --}}
+                <div class="flex flex-col justify-center items-center px-4 shrink-0">
+                    @if (!empty($company['logo']))
+                        <div class="flex justify-center items-center mb-3 w-28 h-28 bg-white rounded-3xl border-2 shadow-lg shadow-slate-200/50 border-slate-100 print:w-20 print:h-20 print:shadow-none print:border-slate-200 print:mb-1">
+                            <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-[80%] h-[80%]">
                         </div>
-                        <h3 class="text-sm font-black tracking-wider text-indigo-900">بيانات الإرسالية</h3>
-                    </div>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex gap-1.5 items-center">
-                            <span class="font-semibold text-slate-400">رقم الإرسالية:</span>
-                            <span
-                                class="px-2 py-0.5 font-mono font-bold text-indigo-800 rounded bg-indigo-100/50">{{ $package_number ?? '---' }}</span>
-                        </div>
-                        <div class="flex gap-1.5">
-                            <span class="font-semibold text-slate-400">فرع الإرسال:</span>
-                            <span class="font-bold text-slate-800">{{ $package_sender_branch ?? '---' }}</span>
-                        </div>
-                        <div class="flex gap-1.5 items-center">
-                            <span class="font-semibold text-slate-400">عدد الطرود الإجمالي:</span>
-                            <span class="text-sm font-black text-indigo-600">{{ $total_shipments ?? 0 }}</span>
-                        </div>
+                    @endif
+                    <div class="inline-flex justify-center items-center px-6 py-1.5 text-sm font-black text-indigo-900 bg-indigo-100 rounded-full border border-indigo-200 shadow-sm print-badge">
+                        {{ $title ?? 'استمارة نقل يومي' }}
                     </div>
                 </div>
 
-                <div
-                    class="relative p-4 bg-gradient-to-br to-white rounded-xl border shadow-sm border-slate-200 from-slate-50/50">
-                    <div class="flex gap-2 items-center pb-2 mb-3 border-b border-slate-200/60">
-                        <div class="flex justify-center items-center w-8 h-8 rounded-md bg-slate-200">
-                            <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="text-sm font-black tracking-wider text-slate-900">بيانات السائق</h3>
-                    </div>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex gap-1.5">
-                            <span class="font-semibold text-slate-400">اسم السائق:</span>
+                {{-- يسار: بيانات الكشف والسائق --}}
+                <div class="flex flex-col flex-1 gap-2 items-end text-left">
+                    <div class="p-3 w-4/5 bg-white rounded-xl border shadow-sm border-slate-200 print:w-full print:shadow-none print:bg-transparent print:p-0 print:border-none">
+                        <div class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200">
                             <span class="font-bold text-slate-800">{{ $driver_name ?? '---' }}</span>
+                            <span class="font-semibold text-slate-500">اسم السائق</span>
                         </div>
-                        <div class="flex gap-1.5">
-                            <span class="font-semibold text-slate-400">رقم الهاتف:</span>
+                        <div class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200">
                             <span class="font-sans font-bold text-slate-800" dir="ltr">{{ $driver_phone ?? '---' }}</span>
+                            <span class="font-semibold text-slate-500">رقم الهاتف</span>
+                        </div>
+                        <div class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200">
+                            <span class="font-sans text-sm font-black text-indigo-700" dir="ltr">{{ $package_number ?? '---' }}</span>
+                            <span class="font-semibold text-slate-500">رقم الكشف</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="font-sans font-bold text-slate-800" dir="ltr">{{ $print_date ?? date('Y-m-d') }}</span>
+                            <span class="font-semibold text-slate-500">التاريخ</span>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <div class="mb-6">
-                <div class="flex gap-2 items-center mb-3">
-                    <span class="w-1.5 h-5 bg-indigo-600 rounded-full"></span>
-                    @if($isReceiver)
-                        <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المستلمه</h2>
-                    @else
-                        <h2 class="text-base font-black text-slate-900">تفاصيل الطرود المُرحلة</h2>
-                    @endif
-                </div>
-
-                <div class="overflow-x-auto rounded-xl border shadow-sm border-slate-200">
-                    <table class="w-full text-xs text-right bg-white divide-y divide-slate-200">
-                        <thead class="bg-slate-50 print:bg-slate-100">
-                            <tr>
-                                <th class="px-3 py-2.5 w-10 font-bold text-center text-slate-500">#</th>
-                                <th class="px-3 py-2.5 w-28 font-bold text-slate-500">رقم السند</th>
-                                <th class="px-3 py-2.5 font-bold text-slate-500">المرسل</th>
-                                <th class="px-3 py-2.5 font-bold text-slate-500">المستلم</th>
-                                <th class="px-3 py-2.5 w-28 font-bold text-slate-500">الوجهة</th>
-                                <th class="px-3 py-2.5 w-40 font-bold text-slate-500">النوع / الوزن / تفاصيل</th>
-                                <th class="px-3 py-2.5 w-28 font-bold text-center text-slate-500">طريقة الدفع</th>
-                                <th class="px-3 py-2.5 w-24 font-bold text-center text-slate-500">الإجمالي</th>
-                                <th class="px-3 py-2.5 w-24 font-bold text-center text-slate-500">المتبقي</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @forelse($shipments ?? [] as $shipment)
-                                <tr class="transition-colors hover:bg-slate-50/30">
-                                    <td class="px-3 py-2.5 font-bold text-center text-slate-400">{{ $loop->iteration }}</td>
-                                    <td class="px-3 py-2.5 font-mono font-black text-slate-700" dir="ltr">
-                                        {{ $shipment['bond_number'] }}
-                                    </td>
-                                    @if($shipment['sender_phone'] !== '---')
-                                        <td class="px-3 py-2.5">
-                                            <div class="font-bold text-slate-900">
-                                                {{ $shipment['sender_name'] }}
-                                            </div>
-                                            <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
-                                                {{ $shipment['sender_phone'] }}
-                                            </div>
-                                        </td>
-                                    @else
-                                        <td class="px-3 py-2.5">
-                                           غير مسجل
-                                        </td>
-                                    @endif
-                                    <td class="px-3 py-2.5">
-                                        <div class="font-bold text-slate-900">{{ $shipment['receiver_name'] }}</div>
-                                        <div class="text-[10px] font-semibold text-slate-400 mt-0.5 font-sans" dir="ltr">
-                                            {{ $shipment['receiver_phone'] }}</div>
-                                    </td>
-                                    <td class="px-3 py-2.5">
-                                        <span
-                                            class="inline-flex items-center px-2 py-0.5 rounded font-bold text-[10px] bg-slate-100 text-slate-700">
-                                            {{ $shipment['receiver_branch'] }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2.5 leading-tight">
-                                        <span class="font-bold text-slate-800">{{ $shipment['package_type'] }}</span>
-                                        @if (!empty($shipment['weight']))
-                                            <span class="text-[10px] font-semibold text-slate-400 mx-1">|</span><span
-                                                class="text-[10px] font-semibold text-slate-500 font-sans">{{ $shipment['weight'] }}</span>
-                                        @endif
-                                        @if (!empty($shipment['honey_details']))
-                                            <div
-                                                class="text-[10px] font-bold text-amber-700 mt-0.5 bg-amber-50 px-1 py-0.5 rounded inline-block border border-amber-100/50">
-                                                {{ $shipment['honey_details'] }}</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-3 py-2.5 text-center">
-                                        @php
-                                            $paymentColors = [
-                                                'prepaid' => 'bg-emerald-50 text-emerald-800 border-emerald-200/60',
-                                                'cod' => 'bg-blue-50 text-blue-800 border-blue-200/60',
-                                                'partial_payment' => 'bg-amber-50 text-amber-800 border-amber-200/60',
-                                                'customer_credit' => 'bg-rose-50 text-rose-800 border-rose-200/60',
-                                            ];
-                                            $colorClass = $paymentColors[$shipment['payment_key']] ?? 'bg-slate-50 text-slate-800 border-slate-200/60';
-                                        @endphp
-                                        <span
-                                            class="inline-flex justify-center min-w-[75px] items-center px-1.5 py-0.5 border rounded-md text-[10px] font-bold {{ $colorClass }}">
-                                            {{ $shipment['payment_method'] }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2.5 font-sans font-bold text-center text-slate-900" dir="ltr">
-                                        {{ $shipment['total_amount'] }}
-                                    </td>
-                                    <td class="py-2.5 px-3 text-center font-bold font-sans {{ $shipment['remaining_amount'] !== '0' ? 'text-rose-600' : 'text-emerald-600' }}"
-                                        dir="ltr">
-                                        {{ $shipment['remaining_amount'] }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="p-8 font-semibold text-center text-slate-500 bg-slate-50">
-                                        لا توجد طرود في هذه الإرسالية.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-
-                    @if (!empty($shipments))
-                        <div
-                            class="grid grid-cols-1 border-t divide-y md:grid-cols-3 print:grid-cols-3 md:divide-y-0 print:divide-y-0 md:divide-x md:divide-x-reverse print:divide-x print:divide-x-reverse divide-slate-200 bg-slate-50 border-slate-200">
-
-                            {{-- 1. ملخص الطرود --}}
-                            <div class="p-4">
-                                <h4 class="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">ملخص الإرسالية
-                                </h4>
-                                <div class="flex justify-between items-end">
-                                    <div>
-                                        <p class="text-[10px] font-bold text-slate-400 mb-0.5">العدد الإجمالي</p>
-                                        <p class="font-sans text-lg font-black text-slate-900">{{ $total_shipments ?? 0 }}</p>
-                                    </div>
-                                    <div class="text-left">
-                                        <p class="text-[10px] font-bold text-slate-400 mb-0.5">إجمالي المبالغ</p>
-                                        <p class="font-sans text-lg font-black text-indigo-700" dir="ltr">
-                                            @php
-                                                $totalAmounts = collect($shipments)->sum(
-                                                    fn($s) => (float) str_replace(',', '', $s['total_amount']),
-                                                );
-                                            @endphp
-                                            {{ number_format($totalAmounts, 0) }} <span
-                                                class="text-[10px] font-normal text-slate-400">ر.ي</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- 2. التحصيل المالي --}}
-                            <div class="p-4">
-                                <h4 class="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">التحصيل المالي
-                                </h4>
-                                <div class="flex justify-between items-end">
-                                    <div>
-                                        <p class="text-[10px] font-bold text-emerald-600 mb-0.5">المدفوع</p>
-                                        <p class="font-sans text-lg font-black text-emerald-700">
-                                            {{-- الحسبة الذكية: إجمالي المبالغ مطروحاً منها ما سيحصله السائق كاش --}}
-                                            {{ number_format($totalAmounts - ($totals['expected_cash'] ?? 0), 0) }} <span
-                                                class="text-[10px] font-normal text-emerald-500">ر.ي</span>
-                                        </p>
-                                    </div>
-                                    <div class="text-left">
-                                        <p class="text-[10px] font-bold text-rose-600 mb-0.5">المتبقي للتحصيل</p>
-                                        <p class="font-sans text-lg font-black text-rose-700">
-                                            {{-- القيمة القادمة مباشرة من الـ Accessor الخاص بموديل الـ Shipment --}}
-                                            {{ number_format($totals['expected_cash'] ?? 0, 0) }} <span
-                                                class="text-[10px] font-normal text-rose-500">ر.ي</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- 3. العمولات --}}
-                            @if(!$isReceiver)
-                            <div class="p-4 bg-emerald-50/30 print:bg-transparent">
-                                <h4 class="mb-2 text-[10px] font-black uppercase tracking-wider text-emerald-800">تفصيل العمولات
-                                </h4>
-                                <div class="flex gap-2 justify-between items-end">
-                                    <div>
-                                        <p class="text-[10px] font-bold text-emerald-600/80 mb-0.5">عمولة الطرود</p>
-                                        <p class="font-sans text-sm font-black text-emerald-700">
-                                            {{ number_format($totals['package_commission'] ?? 0, 0) }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-[10px] font-bold text-amber-600/80 mb-0.5">عمولة العسل</p>
-                                        <p class="font-sans text-sm font-black text-amber-700">
-                                            {{ number_format($totals['honey_commission'] ?? 0, 0) }}
-                                        </p>
-                                    </div>
-                                    <div class="pr-2 pl-1 text-left border-r border-emerald-200/80">
-                                        <p class="text-[10px] font-bold text-emerald-800 mb-0.5">الإجمالي</p>
-                                        <p class="font-sans text-lg font-black text-emerald-900">
-                                            {{ number_format($totals['grand_commission'] ?? 0, 0) }} <span
-                                                class="text-[10px] font-normal text-emerald-700">ر.ي</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                        </div>
-                    @endif
-                </div>
-            </div>
-
-           
         </div>
 
-        <div class="bg-slate-900 border-t border-slate-800 p-4 text-center sm:rounded-b-[1.5rem] print:rounded-none">
-            <p class="text-[10px] font-medium text-slate-400">
-                تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> |
-                بواسطة: <span class="font-bold text-slate-300">{{ $creator_name ?? 'مسؤول النظام' }}</span> |
-                الطباعة: <span class="font-sans font-bold text-slate-300"
-                    dir="ltr">{{ $print_date ?? str_replace(['AM', 'PM'], ['صباحاً', 'مساءً'], now()->timezone('Asia/Aden')->format('Y-m-d h:i A')) }}</span>
-            </p>
-
-            <div class="pt-2 mt-2 border-t border-slate-800/80 inline-block min-w-[40%]">
-                <p class="text-[9px] font-bold text-slate-500">
-                    تطوير <span class="text-slate-400">شركة تيار</span> للأنظمة وتقنية المعلومات
-                    <span class="mx-2 text-slate-700">|</span>
-                    لطلب النظام: <span dir="ltr" class="font-mono text-slate-400">{{ config('app.company_phone') }}</span>
-                </p>
+        {{-- الجدول العصري والأنيق --}}
+        <div class="p-4 print:p-0">
+            <div class="overflow-x-auto rounded-xl border shadow-sm border-slate-200 print:rounded-none print:shadow-none print:border-t-2 print:border-b-2 print:border-l-0 print:border-r-0 print:border-slate-800">
+                <table class="w-full text-xs text-center bg-white divide-y divide-slate-200">
+                    <thead class="bg-slate-50 print:bg-slate-100">
+                        <tr>
+                            <th class="px-2 py-3 w-8 font-black border-l text-slate-500 border-slate-200">#</th>
+                            <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200">المرسل</th>
+                            <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">رقم المرسل</th>
+                            <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200">المستلم</th>
+                            <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">رقم المستلم</th>
+                            <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">النوع</th>
+                            <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">مكان التسليم</th>
+                            <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">المحاسب</th>
+                            <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">آجل</th>
+                            <th class="px-2 py-3 w-24 font-black text-slate-500">رقم السند</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 print:divide-slate-200">
+                        @forelse($shipments ?? [] as $shipment)
+                            <tr class="transition-colors hover:bg-slate-50/50">
+                                <td class="px-2 py-2 font-black border-l text-slate-400 border-slate-100 print:border-slate-200">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $shipment['sender_name'] }}</td>
+                                <td class="px-2 py-2 font-sans font-bold border-l text-slate-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $shipment['sender_phone'] !== '---' ? $shipment['sender_phone'] : '' }}</td>
+                                <td class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $shipment['receiver_name'] }}</td>
+                                <td class="px-2 py-2 font-sans font-bold border-l text-slate-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $shipment['receiver_phone'] }}</td>
+                                <td class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">
+                                    <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">{{ $shipment['package_type'] }}</span>
+                                </td>
+                                <td class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">{{ $shipment['receiver_branch'] }}</td>
+                                <td class="px-2 py-2 font-sans font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-black" dir="ltr">{{ str_replace(',', '', $shipment['total_amount']) > 0 ? $shipment['total_amount'] : '' }}</td>
+                                <td class="px-2 py-2 font-sans font-black text-rose-600 border-l border-slate-100 print:border-slate-200 print:text-black" dir="ltr">{{ str_replace(',', '', $shipment['remaining_amount']) > 0 ? $shipment['remaining_amount'] : '' }}</td>
+                                <td class="px-2 py-2 font-mono font-black text-indigo-700 print:text-black" dir="ltr">{{ $shipment['bond_number'] }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="p-6 font-bold text-center text-slate-500 bg-slate-50">لا توجد طرود في هذه الإرسالية.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
+
+            {{-- التذييل (ملخص وتواقيع) بناءً على طلبك الأخير --}}
+            @if (!empty($shipments))
+                <div class="flex flex-col gap-6 mt-6 print:gap-4 print:mt-4">
+                       {{-- جدول الملخص العصري في الأسفل (محاذاة لليمين كما في الصورة) --}}
+                    @php
+                        $totalAmounts = collect($shipments)->sum(fn($s) => (float) str_replace(',', '', $s['total_amount']));
+                        $totalRemaining = collect($shipments)->sum(fn($s) => (float) str_replace(',', '', $s['remaining_amount']));
+                    @endphp
+                    <div class="mt-4 w-full print:mt-2">
+                        <div class="overflow-x-auto rounded-xl border shadow-sm border-slate-200 print:rounded-none print:shadow-none print:border-t-2 print:border-b-2 print:border-l-0 print:border-r-0 print:border-slate-800">
+                            <table class="w-full text-xs text-center bg-white divide-y divide-slate-200">
+                                <thead class="bg-indigo-50/50 print:bg-slate-100">
+                                    <tr>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800">إجمالي الرسائل</th>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800">إجمالي العمولة</th>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800">المبلغ المدفوع</th>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 print:text-slate-800">المتبقي (آجل)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 print:divide-slate-200">
+                                    <tr>
+                                        <td class="px-2 py-3 text-lg font-black border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $total_shipments ?? 0 }}</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800">{{ number_format($totals['grand_commission'] ?? 0, 0) }}</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-indigo-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800">{{ number_format($totalAmounts - $totalRemaining, 0) }}</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-rose-600 print:text-slate-800">{{ number_format($totalRemaining, 0) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {{-- فاصل أسود عريض --}}
+                    <div class="mt-2 w-full border-t-2 border-slate-900 print:border-black"></div>
+
+                    {{-- منطقة التواقيع --}}
+                    <div class="flex justify-between items-start px-8 mt-2 text-sm font-bold text-slate-500 print:px-4">
+                        <div class="flex flex-col items-center text-center">
+                            <span class="mb-6 font-black text-slate-700 print:text-black">توقيع السائق</span>
+                            <span class="w-32 border-b-2 border-dashed border-slate-300 print:border-slate-400"></span>
+                        </div>
+                        <div class="flex flex-col items-center text-center">
+                            <span class="mb-6 font-black text-slate-700 print:text-black">ختم المكتب</span>
+                            <span class="w-32 border-b-2 border-dashed border-slate-300 print:border-slate-400"></span>
+                        </div>
+                        <div class="flex flex-col items-center text-center">
+                            <span class="mb-6 font-black text-slate-700 print:text-black">الموظف المختص</span>
+                            <span class="w-32 border-b-2 border-dashed border-slate-300 print:border-slate-400"></span>
+                        </div>
+                    </div>
+
+                 
+                </div>
+            @endif
+
+        </div>
+        
+        <div class="bg-slate-900 p-4 text-center sm:rounded-b-[1.5rem] print:hidden">
+            <p class="text-xs font-medium text-slate-400">
+                تم الإنشاء إلكترونياً عبر نظام <span class="font-black text-white">مُرسَل</span> |
+                بواسطة: <span class="font-bold text-slate-300">{{ $creator_name ?? 'مسؤول النظام' }}</span>
+            </p>
         </div>
     </div>
 @endsection

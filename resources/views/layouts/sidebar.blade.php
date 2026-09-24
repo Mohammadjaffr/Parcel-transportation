@@ -425,13 +425,13 @@
                                             الشحنات المستلمة
                                         </a>
                                     </li>
-                                    <li>
+                                    {{-- <li>
                                         <a href="{{ route('shipment.quickScan') }}"
                                             class="relative flex items-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-colors {{ request()->routeIs('shipment.quickScan') ? 'text-primary bg-primary/10 dark:bg-gray-800 dark:text-white' : 'text-gray-500 hover:text-primary hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800' }}">
                                             <span class="material-symbols-outlined text-[18px]">barcode_scanner</span>
                                             استلام سريع (باركود)
                                         </a>
-                                    </li>
+                                    </li> --}}
                                     @endhasservice
                                     
 

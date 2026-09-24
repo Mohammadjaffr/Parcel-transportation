@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\Receipts\ReceiptFactory;
-use Barryvdh\DomPDF\Facade\Pdf;
+use Spatie\Browsershot\Browsershot;
 
 class ReceiptController extends Controller
 {
@@ -26,7 +26,7 @@ class ReceiptController extends Controller
     }
 
     /**
-     * تنزيل السند كملف PDF مع دعم كامل للغة العربية
+     * تنزيل السند كملف PDF مع دعم كامل للغة العربية باستخدام Browsershot
      */
     public function downloadPdf(Request $request, $type, $uuid)
     {
@@ -36,10 +36,9 @@ class ReceiptController extends Controller
             $template = $strategy->getTemplatePath();
             $size = $strategy->sizepage();
 
-            // تحديد اتجاه الصفحة
-            $orientation = 'portrait';
+            $landscape = false;
             if (is_string($size) && str_contains(strtolower($size), 'landscape')) {
-                $orientation = 'landscape';
+                $landscape = true;
             }
 
             // إضافة متغير لإخفاء أزرار الطباعة في PDF
@@ -48,21 +47,31 @@ class ReceiptController extends Controller
             // توليد HTML من القالب
             $html = view($template, $data)->render();
 
-            // إنشاء PDF باستخدام DomPDF
-            $pdf = Pdf::loadHTML($html)
-                ->setPaper('a4', $orientation)
-                ->setOption('isHtml5ParserEnabled', true)
-                ->setOption('isRemoteEnabled', true)
-                ->setOption('defaultFont', 'DejaVu Sans');
-
             $fileName = $strategy->getFileName($data);
 
-            // التحقق من طلب المشاركة (إرجاع الملف كـ inline) أو التنزيل
-            if ($request->has('inline')) {
-                return $pdf->stream($fileName);
+            // إنشاء PDF باستخدام Browsershot
+            $browsershot = Browsershot::html($html)
+                ->margins(0, 0, 0, 0)
+                ->showBackground()
+                ->waitUntilNetworkIdle()
+                ->noSandbox();
+                
+            if ($landscape) {
+                $browsershot->landscape();
             }
 
-            return $pdf->download($fileName);
+            // للورق الحراري أو مقاس A5
+            if (is_string($size) && str_contains(strtolower($size), 'a5')) {
+                $browsershot->format('A5');
+            } else {
+                $browsershot->format('A4'); // أو حسب الحجم الافتراضي
+            }
+
+            $pdf = $browsershot->pdf();
+
+            return response($pdf)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
 
         } catch (\Exception $e) {
             return response("حدث خطأ: " . $e->getMessage(), 500);
