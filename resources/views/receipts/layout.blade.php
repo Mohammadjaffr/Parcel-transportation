@@ -32,6 +32,10 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Print.js -->
+    <script src="https://printjs-4de6.kxcdn.com/print.min.js"></script>
+    <link rel="stylesheet" href="https://printjs-4de6.kxcdn.com/print.min.css">
+
     <!-- Google Fonts: Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -154,28 +158,17 @@
             try {
                 btn.disabled = true;
                 btn.classList.add('opacity-75', 'cursor-wait');
-                btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري التجهيز...`;
+                btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري التجهيز للطباعة...`;
 
                 const pdfUrl = window.location.pathname.replace(/\/$/, '') + '/pdf' + window.location.search;
-                const response = await fetch(pdfUrl, { cache: 'no-store' });
-                if (!response.ok) throw new Error('فشل التنزيل');
                 
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = blobUrl;
-                document.body.appendChild(iframe);
-                
-                iframe.onload = () => {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                    setTimeout(() => {
-                        document.body.removeChild(iframe);
-                        URL.revokeObjectURL(blobUrl);
-                    }, 15000); 
-                };
+                printJS({
+                    printable: pdfUrl,
+                    type: 'pdf',
+                    showModal: true,
+                    modalMessage: 'جاري جلب المستند للطباعة...'
+                });
+
             } catch (error) {
                 console.error(error);
                 alert('حدث خطأ أثناء التجهيز للطباعة.');

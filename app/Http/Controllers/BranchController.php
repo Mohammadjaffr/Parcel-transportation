@@ -293,61 +293,62 @@ class BranchController extends Controller
         try {
             $branch = Branch::findOrFail($id);
 
-            // Check for related records before deletion
-            if ($branch->users()->count() > 0) {
-                return WebResponseClass::sendResponse(
-                    'خطأ!',
-                    'لا يمكن حذف الفرع لوجود مستخدمين مرتبطين به.',
-                    'حسناً',
-                    null,
-                    false
-                );
-            }
+            DB::transaction(function () use ($branch) {
+                // Delete related customers and their transactions
+                $customers = \App\Models\Customer::where('branch_id', $branch->id)->get();
+                foreach ($customers as $customer) {
+                    \DB::table('customer_transactions')->where('customer_id', $customer->id)->delete();
+                    $customer->delete();
+                }
 
-            if ($branch->senderBranch()->count() > 0 || $branch->receiverBranch()->count() > 0) {
-                return WebResponseClass::sendResponse(
-                    'خطأ!',
-                    'لا يمكن حذف الفرع لوجود شحنات مرتبطة به.',
-                    'حسناً',
-                    null,
-                    false
-                );
-            }
+                // Delete related shipments and their dependent records
+                $shipments = \App\Models\Shipment::where('sender_branch_id', $branch->id)
+                    ->orWhere('receiver_branch_id', $branch->id)->get();
+                foreach ($shipments as $shipment) {
+                    \DB::table('customer_transactions')->where('shipment_id', $shipment->id)->delete();
+                    \DB::table('customer_payments')->where('shipment_id', $shipment->id)->delete();
+                    \DB::table('transactions')->where('shipment_id', $shipment->id)->delete();
+                    $shipment->delete();
+                }
 
-            // Check if branch has customers
-            $customerCount = \App\Models\Customer::where('branch_code', $branch->code)->count();
-            if ($customerCount > 0) {
-                return WebResponseClass::sendResponse(
-                    'خطأ!',
-                    'لا يمكن حذف الفرع لوجود عملاء مسجلين فيه.',
-                    'حسناً',
-                    null,
-                    false
-                );
-            }
+                // Delete pivot tables related to this branch code
+                $pivotIds = \DB::table('branch_shipment_package')->where('branch_code', $branch->code)->pluck('id');
+                if ($pivotIds->isNotEmpty()) {
+                    \DB::table('branch_package_payments')->whereIn('branch_shipment_package_id', $pivotIds)->delete();
+                    \DB::table('branch_shipment_package')->where('branch_code', $branch->code)->delete();
+                }
 
-            $branch->delete();
-            // AdminLoggerService::log('حذف فرع', 'Branch', $branch->code, "تم حذف الفرع بنجاح");
+                // Delete related packages
+                $packages = \App\Models\ShipmentPackage::where('sender_branch_id', $branch->id)->get();
+                foreach ($packages as $package) {
+                    $pkgPivotIds = \DB::table('branch_shipment_package')->where('shipment_package_id', $package->id)->pluck('id');
+                    if ($pkgPivotIds->isNotEmpty()) {
+                        \DB::table('branch_package_payments')->whereIn('branch_shipment_package_id', $pkgPivotIds)->delete();
+                        \DB::table('branch_shipment_package')->where('shipment_package_id', $package->id)->delete();
+                    }
+                    $package->delete();
+                }
 
+                // Delete related cash transactions
+                foreach ($branch->cashTransactions as $tx) {
+                    $tx->delete();
+                }
+
+                // Delete related users
+                foreach ($branch->users as $user) {
+                    $user->delete();
+                }
+
+                // Finally delete the branch
+                $branch->delete();
+            });
 
             return WebResponseClass::sendResponse(
                 'تم الحذف!',
-                'تم حذف الفرع بنجاح.',
+                'تم حذف الفرع وكافة البيانات المرتبطة به بنجاح.',
                 'حسناً',
-                'branch.index'
+                null
             );
-        } catch (\Illuminate\Database\QueryException $e) {
-            if ($e->getCode() == 23000) {
-                return WebResponseClass::sendResponse(
-                    'خطأ!',
-                    'لا يمكن حذف الفرع لوجود بيانات مرتبطة به (مثل المعاملات المالية أو العملاء).',
-                    'حسناً',
-                    null,
-                    false,
-                    'error'
-                );
-            }
-            return WebResponseClass::sendExceptionError($e);
         } catch (\Exception $e) {
             return WebResponseClass::sendExceptionError($e);
         }

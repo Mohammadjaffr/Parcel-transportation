@@ -75,28 +75,19 @@ class Shipment extends Model
             if (empty($shipment->uuid)) {
                 $shipment->uuid = (string) Str::uuid();
             }
-            // جلب الفرع المُرسل لاستخدام الكود الخاص به في رقم السند
-            $branch = Branch::find($shipment->sender_branch_id);
+            
+            // تعيين قيمة مؤقتة لرقم السند لتمرير قاعدة البيانات
+            $shipment->bond_number = 'temp-' . Str::random(8);
+        });
 
-            // إذا كان للفرع كود نستخدمه، وإلا نستخدم الحرف B مع رقم الفرع كبديل
-            $branchIdentifier = $branch && $branch->code ? $branch->code : 'B' . $shipment->sender_branch_id;
-
-            // التعديل هنا: حرف y الصغير يعطي 26 بدلاً من 2026
-            // النتيجة ستكون مثلاً: 260408 (سنة 26، شهر 04، يوم 08)
-            $date = now()->format('ymd');
-
-            // البحث عن آخر شحنة لنفس الفرع في نفس اليوم باستخدام الـ ID
-            $lastShipment = Shipment::where('sender_branch_id', $shipment->sender_branch_id)
-                ->whereDate('created_at', today())
-                ->latest('id')
-                ->first();
-
-            $newSeq = $lastShipment
-                ? str_pad((int) substr($lastShipment->bond_number, -3) + 1, 3, '0', STR_PAD_LEFT)
-                : '001';
-
-            // شكل السند سيكون مثلاً: SAN-260408001
-            $shipment->bond_number = "{$branchIdentifier}-{$date}{$newSeq}";
+        static::created(function ($shipment) {
+            // تحديث رقم السند ليكون B{branch_id}-{id} بناءً على طلبك
+            $bondNumber = 'B' . $shipment->sender_branch_id . '-' . $shipment->id;
+            
+            $shipment->bond_number = $bondNumber;
+            \Illuminate\Support\Facades\DB::table('shipments')
+                ->where('id', $shipment->id)
+                ->update(['bond_number' => $bondNumber]);
         });
     }
 

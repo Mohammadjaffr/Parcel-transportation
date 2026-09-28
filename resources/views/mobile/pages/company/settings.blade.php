@@ -8,8 +8,11 @@
         showAddBranchModal: false,
         showEditCompanyModal: false,
         showEditBranchModal: false,
+        showDeleteBranchModal: false,
         editBranchForm: { name: '', code: '', city: '', address: '', map_link: '', is_main: false },
         editBranchAction: '',
+        deleteBranchAction: '',
+        deleteBranchName: '',
     
         openEditBranchModal(branch) {
             this.editBranchForm = {
@@ -23,6 +26,11 @@
             this.editBranchAction = '/branch/' + branch.id;
             this.showEditBranchModal = true;
             this.$dispatch('load-edit-phone', { phone: branch.phone });
+        },
+        openDeleteBranchModal(branch) {
+            this.deleteBranchAction = '/branch/' + branch.id;
+            this.deleteBranchName = branch.name;
+            this.showDeleteBranchModal = true;
         }
     }" class="flex flex-col gap-6 pb-24 min-h-screen">
 
@@ -222,6 +230,12 @@
                                     class="flex justify-center items-center w-9 h-9 rounded-full transition-colors text-slate-400 hover:text-primary hover:bg-primary/5 active:scale-90">
                                     <span class="material-symbols-outlined text-[20px]">edit_square</span>
                                 </button>
+                                @if (isset($company) && $company->branches->count() > 1)
+                                    <button @click="openDeleteBranchModal({{ $branch }})"
+                                        class="flex justify-center items-center w-9 h-9 rounded-full transition-colors text-slate-400 hover:text-rose-500 hover:bg-rose-50 active:scale-90">
+                                        <span class="material-symbols-outlined text-[20px]">delete</span>
+                                    </button>
+                                @endif
                             </div>
                         </div>
                     @empty
@@ -896,6 +910,60 @@
                             <span x-text="isSubmittingEdit ? 'جاري التحديث...' : 'حفظ التعديلات'"></span>
                         </button>
                     </div>
+                </form>
+            </div>
+        </div>
+
+        <div x-show="showDeleteBranchModal" x-cloak
+            class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center pointer-events-none sm:p-4">
+
+            <div x-show="showDeleteBranchModal" x-transition.opacity.duration.300ms
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto"
+                @click="showDeleteBranchModal = false"></div>
+
+            <div x-show="showDeleteBranchModal" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-4 sm:scale-95"
+                class="relative w-full max-w-lg bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] sm:shadow-2xl p-6 pb-12 sm:pb-6 pointer-events-auto flex flex-col max-h-[90vh]">
+
+                <div @click="showDeleteBranchModal = false"
+                    class="mx-auto mb-6 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-95 sm:hidden">
+                </div>
+
+                <button @click="showDeleteBranchModal = false"
+                    class="absolute {{ app()->getLocale() == 'ar' ? 'left-6' : 'right-6' }} top-6 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors hidden sm:flex">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+
+                <div class="flex flex-col items-center mb-6 text-center shrink-0 pt-4">
+                    <div class="flex justify-center items-center w-16 h-16 text-rose-500 bg-rose-50 rounded-full shrink-0 mb-4">
+                        <span class="material-symbols-outlined text-[32px]">warning</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black font-headline text-slate-800 mb-2">تأكيد حذف الفرع</h3>
+                        <p class="text-sm font-bold text-slate-500 leading-relaxed">
+                            هل أنت متأكد من رغبتك في حذف فرع <span class="text-slate-800 font-black" x-text="deleteBranchName"></span>؟
+                            <br>
+                            <span class="text-rose-500">سيتم حذف هذا الفرع نهائياً مع كافة الشحنات والبيانات المرتبطة به.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <form :action="deleteBranchAction" method="POST" class="flex gap-3 w-full mt-auto">
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="button" @click="showDeleteBranchModal = false"
+                        class="flex-1 flex justify-center items-center h-14 font-bold text-slate-600 bg-slate-100 rounded-xl transition-all hover:bg-slate-200 active:scale-95">
+                        إلغاء
+                    </button>
+                    <button type="submit"
+                        class="flex-1 flex justify-center items-center h-14 font-black text-white bg-rose-500 rounded-xl shadow-lg transition-all shadow-rose-500/30 hover:bg-rose-600 active:scale-95">
+                        نعم، احذف الفرع
+                    </button>
                 </form>
             </div>
         </div>
