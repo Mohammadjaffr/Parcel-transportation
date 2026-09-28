@@ -166,7 +166,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 'secondary_color' => $theme['secondary'] ?? '#1e293b',
                 'bg_color'        => $theme['bg_light'] ?? '#fffaf5',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
-                'paper_size'      => 'a4',
+                'paper_size'      => 'A5 landscape',
             ]
         ];
     }
