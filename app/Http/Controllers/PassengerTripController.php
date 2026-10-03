@@ -241,7 +241,7 @@ class PassengerTripController extends Controller
             'تم التعديل!',
             'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.',
             'حسناً',
-            'passenger.trips.index'
+            'trips.index'
         );
     }
     private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int

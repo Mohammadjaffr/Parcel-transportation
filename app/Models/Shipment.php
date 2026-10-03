@@ -81,8 +81,50 @@ class Shipment extends Model
         });
 
         static::created(function ($shipment) {
-            // تحديث رقم السند ليكون B{branch_id}-{id} بناءً على طلبك
-            $bondNumber = 'B' . $shipment->sender_branch_id . '-' . $shipment->id;
+            $branchName = 'فرع';
+            
+            if ($shipment->sender_branch_id) {
+                $branch = \Illuminate\Support\Facades\DB::table('branches')->where('id', $shipment->sender_branch_id)->first();
+                if ($branch) {
+                    $branchName = trim(str_replace('فرع', '', $branch->name));
+                }
+            } elseif ($shipment->sender_office_branch_id) {
+                $office = \Illuminate\Support\Facades\DB::table('office_branches')->where('id', $shipment->sender_office_branch_id)->first();
+                if ($office) {
+                    $branchName = trim(str_replace('مكتب', '', $office->name));
+                }
+            }
+
+            // استخدام اسم الفرع كبادئة
+            $bondPrefix = $branchName . '-';
+
+            $existingBonds = \Illuminate\Support\Facades\DB::table('shipments')
+                ->select('bond_number')
+                ->where('bond_number', 'LIKE', $bondPrefix . '%')
+                ->where('id', '!=', $shipment->id)
+                ->pluck('bond_number');
+
+            $maxSeq = 0;
+            foreach ($existingBonds as $bond) {
+                $parts = explode('-', $bond);
+                if (count($parts) > 1) {
+                    $seq = (int) end($parts);
+                    if ($seq > $maxSeq) {
+                        $maxSeq = $seq;
+                    }
+                }
+            }
+            
+            $sequence = $maxSeq + 1;
+            $sequenceStr = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+            $bondNumber = $bondPrefix . $sequenceStr;
+
+            // التأكد من عدم وجود تكرار كإجراء احتياطي
+            while (\Illuminate\Support\Facades\DB::table('shipments')->where('bond_number', $bondNumber)->exists()) {
+                $sequence++;
+                $sequenceStr = str_pad($sequence, 3, '0', STR_PAD_LEFT);
+                $bondNumber = $bondPrefix . $sequenceStr;
+            }
             
             $shipment->bond_number = $bondNumber;
             \Illuminate\Support\Facades\DB::table('shipments')

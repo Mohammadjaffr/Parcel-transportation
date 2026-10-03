@@ -52,10 +52,14 @@ class PassangerDetection implements ReceiptStrategyInterface
         $passengers = $query->get();
         
         $app = null;
+        $currentBranch = null;
         if ($passengers->isNotEmpty()) {
-            $app = $passengers->first()->branch?->app ?? null;
+            $firstP = $passengers->first();
+            $app = $firstP->branch?->app ?? null;
+            $currentBranch = $firstP->branch ?? null;
         } elseif ($user) {
             $app = $user->app ?? null;
+            $currentBranch = $user->branch ?? null;
         }
 
         $imagePath = $app?->logo
@@ -121,10 +125,45 @@ class PassangerDetection implements ReceiptStrategyInterface
         $totalOther  = $passengers->sum('other_office_commission');
         $totalAll    = $totalOffice + $totalOther;
 
+        $mainBranchData = null;
+        if ($currentBranch) {
+            $mainBranchData = [
+                'title' => 'فرع / ' . $currentBranch->name . ($currentBranch->address ? ' - ' . $currentBranch->address : ''),
+                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $currentBranch->phone ?? ''))))
+            ];
+        }
+
+        $otherPhonesList = [];
+        $headquartersData = null;
+        if ($app) {
+            if ($app->phone) {
+                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
+                if (!empty($hqPhoneArray)) {
+                    $headquartersData = [
+                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                        'phones' => implode(' - ', $hqPhoneArray)
+                    ];
+                }
+            }
+
+            $allBranches = $app->branches()->get();
+            foreach ($allBranches as $b) {
+                if ($currentBranch && $b->id === $currentBranch->id) continue;
+                $phonesArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $b->phone ?? '')));
+                $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
+            }
+        }
+        $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
+
         return [
             'company' => [
                 'name' => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo' => $logoBase64,
+                'main_branch'  => $mainBranchData,
+                'headquarters' => $headquartersData,
+                'other_phones' => $otherPhonesStr,
+
+
             ],
             'title'                    => "كشف تسليم السائق",
             'date_from'                => $filters['from'] ?? null,

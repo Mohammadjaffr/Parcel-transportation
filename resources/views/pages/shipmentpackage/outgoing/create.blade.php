@@ -84,11 +84,11 @@
                 </div>
             </div>
 
-            {{-- ================= محتوى الصفحة (Grid Layout) ================= --}}
-            {{-- <div class="grid grid-cols-1 gap-6 items-start p-4 mx-auto w-full max-w-7xl md:p-6 lg:grid-cols-12"> --}}
+            {{-- ================= محتوى الصفحة ================= --}}
+            <div class="flex flex-col gap-6 p-4 mx-auto w-full max-w-7xl md:p-6">
 
-            {{-- ================= الجانب الأيمن: بيانات السائق (Col span 4) ================= --}}
-            <div class="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-[5.5rem] z-30 w-full">
+                {{-- ================= الجزء العلوي: بيانات السائق ================= --}}
+                <div class="flex flex-col gap-6 z-30 w-full">
 
                 {{-- بطاقة معلومات السائق --}}
                 <div
@@ -111,7 +111,7 @@
                         <input type="hidden" name="driver_id" x-model="selectedDriverId">
                         <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
 
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start">
                             {{-- رقم الهاتف (بحث واختيار السائق) --}}
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">رقم هاتف
@@ -224,11 +224,9 @@
 
             </div>
 
-            {{-- ================= الجانب الأيسر: الطرود (Col span 8) ================= --}}
-
-    {{-- </div> --}}
-    <div
-        class="lg:col-span-8 bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 p-5 md:p-0 md:pt-5 md:overflow-hidden rounded-[2rem] shadow-sm w-full">
+                {{-- ================= الجزء السفلي: الطرود ================= --}}
+                <div
+                    class="w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 p-5 md:p-0 md:pt-5 md:overflow-hidden rounded-[2rem] shadow-sm">
 
         <div class="flex justify-between items-center px-2 mb-4 md:px-6">
             <h3 class="flex gap-2 items-center text-sm font-black font-headline text-on-surface dark:text-white">
@@ -446,6 +444,8 @@
             @endforelse
         </div>
     </div>
+    </div>
+    
     {{-- ================= الشريط السفلي للموبايل (Sticky Bottom Bar) ================= --}}
     <div
         class="md:hidden fixed bottom-6 left-4 right-4 p-4 bg-white/95 dark:bg-boxdark-2/95 backdrop-blur-md border border-gray-100 dark:border-boxdark rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-black/50 flex justify-between items-center z-40">

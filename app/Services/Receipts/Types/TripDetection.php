@@ -20,7 +20,7 @@ public function fetchData(string $referenceId): array
     $filters = [];
     $user = auth()->user();
 
-    // سند رحلة واحدة يكون عام إذا الرابط UUID أو الرقم المعرف
+    // كشف رحلةواحدة يكون عام إذا الرابط UUID أو الرقم المعرف
     $isSingleTrip = $referenceId !== 'all' && !str_contains($referenceId, ':');
 
     if ($isSingleTrip) {
@@ -256,7 +256,7 @@ public function fetchData(string $referenceId): array
     }
 
     $tripId = $trips->first()?->id ?? '';
-    $reportTitle = $isSingleTrip ? "سند رحلة رقم #{$tripId}" : "كشف الرحلات";
+    $reportTitle = $isSingleTrip ? "كشف رحلةرقم #{$tripId}" : "كشف الرحلات";
 
     return [
         'company' => [
