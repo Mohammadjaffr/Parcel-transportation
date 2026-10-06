@@ -17,7 +17,7 @@
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#ffffff">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
