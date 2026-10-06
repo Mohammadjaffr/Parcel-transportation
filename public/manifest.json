@@ -1,6 +1,6 @@
 {
-  "name": "نظام الشحنات",
-  "short_name": "الشحنات",
+  "name": "مرسل",
+  "short_name": "مرسل",
   "start_url": "/", 
   "scope": "/",
   "display": "standalone",
