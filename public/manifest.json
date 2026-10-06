@@ -1,7 +1,7 @@
 {
   "name": "نظام الشحنات",
   "short_name": "الشحنات",
-  "start_url": "/shipment", 
+  "start_url": "/", 
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
