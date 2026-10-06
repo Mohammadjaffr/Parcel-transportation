@@ -16,6 +16,8 @@
     <script defer src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{ asset('assets/js/cdn.tailwindcss.js') }}"></script>
 
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -125,6 +127,13 @@
 
     @yield('script')
     @livewireScripts
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 
 </html>
