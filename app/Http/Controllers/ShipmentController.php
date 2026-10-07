@@ -82,7 +82,7 @@ class ShipmentController extends Controller
             // إذا أردت تجهيز رابط المستلم أيضاً (مفيد في صفحة الوارد)
             $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
             return $shipment;
-        });
+        }); 
 
         if ($request->isMobile) {
             // تمرير المتغيرات للصفحة
