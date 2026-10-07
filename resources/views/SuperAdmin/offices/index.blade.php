@@ -90,7 +90,7 @@
                                 <span class="material-symbols-outlined text-[16px]">visibility</span> التفاصيل
                             </a>
                             <button type="button"
-                                    @click="resetPassword({{ $app->id }}, '{{ addslashes($app->name ?? '') }}')"
+                                    @click="openResetPassword({{ $app->id }}, '{{ addslashes($app->name ?? '') }}')"
                                     class="inline-flex gap-1.5 items-center px-3 py-2 text-xs font-bold rounded-lg transition-colors bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white">
                                 <span class="material-symbols-outlined text-[16px]">lock_reset</span> الباسورد
                             </button>
@@ -110,6 +110,34 @@
         </div>
         <div class="px-6 py-4 border-t bg-slate-50/50 border-slate-100">{{ $apps->links() }}</div>
     </div>
+
+    {{-- Reset Password Modal --}}
+    <div x-cloak x-show="resetModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div x-show="resetModal" x-transition.opacity class="absolute inset-0 backdrop-blur-sm bg-slate-900/60" @click="resetModal = false"></div>
+        <div x-show="resetModal" x-transition class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6">
+            <div class="flex items-center gap-3 mb-4 text-amber-600">
+                <span class="material-symbols-outlined text-3xl">lock_reset</span>
+                <h3 class="text-xl font-bold font-headline">إعادة تعيين كلمة المرور</h3>
+            </div>
+            <p class="mb-4 text-sm text-slate-600">
+                جاري إعادة تعيين كلمة مرور المسؤول لمكتب <span class="font-bold text-slate-900" x-text="resetAppName"></span>.
+            </p>
+            <form @submit.prevent="submitResetPassword">
+                <div class="mb-5">
+                    <label class="block mb-2 text-sm font-bold text-slate-700">كلمة المرور الجديدة</label>
+                    <input type="text" x-model="resetPasswordVal" placeholder="اترك الحقل فارغاً لتوليد كلمة عشوائية"
+                           class="w-full px-4 py-3 text-sm font-bold transition rounded-xl border-0 ring-1 ring-inset bg-slate-50 text-slate-900 ring-slate-200 focus:bg-white focus:ring-2 focus:ring-primary" />
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" @click="resetModal = false" class="px-5 py-2.5 text-sm font-bold transition bg-white border rounded-xl text-slate-700 border-slate-200 hover:bg-slate-50">إلغاء</button>
+                    <button type="submit" :disabled="isProcessingReset" class="inline-flex gap-2 items-center justify-center px-5 py-2.5 min-w-[120px] text-sm font-bold text-white transition-all shadow-lg rounded-xl bg-primary shadow-primary/30 hover:bg-primary-hover disabled:opacity-70 disabled:cursor-not-allowed">
+                        <span x-show="isProcessingReset" class="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></span>
+                        <span x-show="!isProcessingReset">تأكيد</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -120,6 +148,7 @@ function tenantsManager() {
     return {
         search: '', statusFilter: 'all', toast: { show: false, message: '', type: 'success' },
         appStates: { @foreach($apps as $app) {{ $app->id }}: {{ $app->is_active ? 'true' : 'false' }}, @endforeach },
+        resetModal: false, resetAppId: null, resetAppName: '', resetPasswordVal: '', isProcessingReset: false,
         showToast(msg, type = 'success') { this.toast = { show: true, message: msg, type }; setTimeout(() => this.toast.show = false, 3000); },
         filterRow(name, isActive) {
             const matchSearch = !this.search || name.toLowerCase().includes(this.search.toLowerCase());
@@ -145,34 +174,41 @@ function tenantsManager() {
                 this.showToast('حدث خطأ في الاتصال', 'error');
             }
         },
-        async resetPassword(appId, appName) {
-            const password = prompt(`أدخل كلمة المرور الجديدة لمكتب "${appName}" (اترك الحقل فارغاً لتوليد كلمة مرور عشوائية تلقائياً):`);
-            if (password === null) return;
-
-            if (password.trim() !== '' && password.length < 6) {
+        openResetPassword(appId, appName) {
+            this.resetAppId = appId;
+            this.resetAppName = appName;
+            this.resetPasswordVal = '';
+            this.resetModal = true;
+        },
+        async submitResetPassword() {
+            if (this.resetPasswordVal.trim() !== '' && this.resetPasswordVal.length < 6) {
                 this.showToast('يجب أن تكون كلمة المرور 6 أحرف على الأقل', 'error');
                 return;
             }
-
+            this.isProcessingReset = true;
             try {
-                const res = await fetch(`/superadmin/offices/${appId}/reset-password`, {
+                const res = await fetch(`/superadmin/offices/${this.resetAppId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ password: password })
+                    body: JSON.stringify({ password: this.resetPasswordVal })
                 });
                 const data = await res.json();
                 if (res.ok && data.status === 'success') {
+                    // Show result nicely
                     alert(`${data.message}\nكلمة المرور الجديدة: ${data.password}`);
                     this.showToast('تم إعادة تعيين كلمة المرور بنجاح');
+                    this.resetModal = false;
                 } else {
                     this.showToast(data.message || 'حدث خطأ أثناء إعادة التعيين', 'error');
                 }
             } catch (e) {
                 this.showToast('حدث خطأ في الاتصال بالخادم', 'error');
+            } finally {
+                this.isProcessingReset = false;
             }
         }
     };

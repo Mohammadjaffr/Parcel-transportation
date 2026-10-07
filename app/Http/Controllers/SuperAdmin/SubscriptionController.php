@@ -49,7 +49,7 @@ class SubscriptionController extends Controller
         ));
     }
 
-  public function updateStatus(Request $request, Subscription $subscription)
+    public function updateStatus(Request $request, Subscription $subscription)
     {
         $validated = $request->validate([
             'status'      => 'required|in:active,pending,expired,cancelled',
@@ -67,14 +67,12 @@ class SubscriptionController extends Controller
 
             $package = $subscription->package;
 
-            // هنا الجزء الأهم الذي قمنا بتعديله بناءً على صورة قاعدة البيانات
             if (!empty($validated['package_id'])) {
                 $package = Package::findOrFail($validated['package_id']);
 
                 $data['package_id'] = $package->id;
                 $data['price_paid'] = $validated['price_paid'] ?? $package->price;
                 
-                // تحديث أعمدة الصلاحيات (الـ Snapshot) بالقيم الجديدة من الباقة
                 $data['allowed_branches']   = $package->max_branches;
                 $data['allowed_drivers']    = $package->max_drivers;
                 $data['allowed_shipments']  = $package->max_shipments;
@@ -87,12 +85,17 @@ class SubscriptionController extends Controller
             if ($validated['status'] === 'active') {
                 $duration = (int) ($validated['extend_days'] ?? $package?->duration_in_days ?? 30);
 
-                $baseDate = $subscription->ends_at && $subscription->ends_at->isFuture()
-                    ? $subscription->ends_at->copy()
-                    : now();
+                if ($subscription->status === 'pending') {
+                    $data['starts_at'] = now();
+                    $data['ends_at'] = now()->addDays($duration);
+                } else {
+                    $baseDate = $subscription->ends_at && $subscription->ends_at->isFuture()
+                        ? $subscription->ends_at->copy()
+                        : now();
 
-                $data['starts_at'] = $subscription->starts_at ?: now();
-                $data['ends_at'] = $baseDate->addDays($duration);
+                    $data['starts_at'] = $subscription->starts_at ?: now();
+                    $data['ends_at'] = $baseDate->addDays($duration);
+                }
 
                 Subscription::where('app_id', $subscription->app_id)
                     ->where('id', '!=', $subscription->id)
@@ -100,7 +103,6 @@ class SubscriptionController extends Controller
                     ->update(['status' => 'expired']);
             }
 
-            // تنفيذ التحديث في قاعدة البيانات
             $subscription->update($data);
 
             if ($subscription->app) {
@@ -118,10 +120,7 @@ class SubscriptionController extends Controller
                         ]);
                     }
                 }
-            }
-            
-            // مسح الكاش لضمان قراءة الصلاحيات الجديدة فوراً
-            if ($subscription->app_id) {
+                
                 Cache::forget('app_services_' . $subscription->app_id);
                 Cache::forget('app_limits_' . $subscription->app_id);
                 Cache::forget('app_subscription_' . $subscription->app_id);
@@ -131,7 +130,7 @@ class SubscriptionController extends Controller
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'تم تحديث الاشتراك والصلاحيات بنجاح.',
+            'message' => 'تم تحديث الاشتراك بنجاح.',
         ]);
     }
 }

@@ -162,22 +162,22 @@
                                 <td class="px-6 py-4 text-center">
                                     @if ($sub->status === 'active' && $sub->ends_at?->isFuture())
                                         <div class="inline-flex flex-col justify-center items-center">
-                                            <span
-                                                class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">
+                                            <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-100">
                                                 <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                                                 نشط
                                             </span>
-                                            <span class="text-[10px] font-bold text-slate-500 mt-1">متبقي
-                                                {{ intval(now()->diffInDays($sub->ends_at)) }} يوم</span>
+                                            <span class="text-[10px] font-bold text-slate-500 mt-1">متبقي {{ intval(now()->diffInDays($sub->ends_at)) }} يوم</span>
                                         </div>
+                                    @elseif($sub->status === 'pending')
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-amber-700 bg-amber-50 rounded-full border border-amber-100">
+                                            <span class="material-symbols-outlined text-[14px]">schedule</span> معلق
+                                        </span>
                                     @elseif($sub->status === 'cancelled')
-                                        <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold rounded-full border bg-slate-100 text-slate-600 border-slate-200">
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold rounded-full border bg-slate-100 text-slate-600 border-slate-200">
                                             <span class="material-symbols-outlined text-[14px]">block</span> ملغي
                                         </span>
                                     @else
-                                        <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-full border border-red-100">
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold text-red-700 bg-red-50 rounded-full border border-red-100">
                                             <span class="material-symbols-outlined text-[14px]">warning</span> منتهي
                                         </span>
                                     @endif

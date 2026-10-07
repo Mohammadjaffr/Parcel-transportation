@@ -19,9 +19,8 @@ class ReceiptController extends Controller
 
             // 2. إرجاع الـ Blade كعرض (HTML) للطباعة عبر المتصفح (Web Print)
             return view($template, $data);
-
         } catch (\Exception $e) {
-           return response("حدث خطأ: " . $e->getMessage(), 404);
+            return response("حدث خطأ: " . $e->getMessage(), 404);
         }
     }
 
@@ -55,7 +54,7 @@ class ReceiptController extends Controller
                 ->showBackground()
                 ->waitUntilNetworkIdle()
                 ->noSandbox();
-                
+
             if ($landscape) {
                 $browsershot->landscape();
             }
@@ -72,9 +71,8 @@ class ReceiptController extends Controller
             return response($pdf)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'inline; filename="' . $fileName . '"');
-
         } catch (\Exception $e) {
             return response("حدث خطأ: " . $e->getMessage(), 500);
         }
     }
-}
+}

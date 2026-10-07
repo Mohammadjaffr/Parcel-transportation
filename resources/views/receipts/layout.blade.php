@@ -115,7 +115,8 @@
     @stack('styles')
 </head>
 
-<body class="{{ !empty($is_pdf) ? 'block p-0 bg-white' : 'flex justify-center items-center p-4 sm:p-8' }} min-h-screen antialiased print:p-0 print:block">
+<body
+    class="{{ !empty($is_pdf) ? 'block p-0 bg-white' : 'flex justify-center items-center p-4 sm:p-8' }} min-h-screen antialiased print:p-0 print:block">
 
     <!-- تعريف متغيرات السند ديناميكياً لاستخدامها في اسم ملف الـ PDF المولد -->
     <script>
@@ -158,10 +159,11 @@
             try {
                 btn.disabled = true;
                 btn.classList.add('opacity-75', 'cursor-wait');
-                btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري التجهيز للطباعة...`;
+                btn.innerHTML =
+                    `<svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> جاري التجهيز للطباعة...`;
 
                 const pdfUrl = window.location.pathname.replace(/\/$/, '') + '/pdf' + window.location.search;
-                
+
                 printJS({
                     printable: pdfUrl,
                     type: 'pdf',
@@ -196,11 +198,11 @@
                         files: [preparedShareFile],
                     });
                     btnText.textContent = 'تمت المشاركة ✓';
-                    setTimeout(() => { 
-                        btnText.textContent = originalText; 
+                    setTimeout(() => {
+                        btnText.textContent = originalText;
                         btn.classList.replace('bg-emerald-600', 'bg-indigo-600');
                         btn.classList.replace('hover:bg-emerald-700', 'hover:bg-indigo-700');
-                        preparedShareFile = null; 
+                        preparedShareFile = null;
                     }, 3000);
                 } catch (e) {
                     console.log('Share cancelled', e);
@@ -214,9 +216,11 @@
                 btnText.textContent = 'جاري تجهيز الملف...';
 
                 const pdfUrl = window.location.pathname.replace(/\/$/, '') + '/pdf' + window.location.search;
-                const response = await fetch(pdfUrl, { cache: 'no-store' });
+                const response = await fetch(pdfUrl, {
+                    cache: 'no-store'
+                });
                 if (!response.ok) throw new Error('فشل التنزيل');
-                
+
                 const blob = await response.blob();
 
                 let rawTitle = window.receiptTitle || document.title || 'سند';
@@ -227,14 +231,20 @@
                 let englishTitle = 'Sanad';
                 if (rawTitle.includes('كشف')) englishTitle = 'Manifest';
                 else if (rawTitle.includes('طرد')) englishTitle = 'Receipt';
-                
+
                 const shareFileName = englishTitle + (rawNumber ? '_' + rawNumber.trim() : '') + '.pdf';
 
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], shareFileName, { type: 'application/pdf' })] })) {
+                if (navigator.share && navigator.canShare && navigator.canShare({
+                        files: [new File([blob], shareFileName, {
+                            type: 'application/pdf'
+                        })]
+                    })) {
                     // المتصفح يدعم المشاركة: نحفظ الملف ونطلب من المستخدم النقر مرة أخرى
-                    preparedShareFile = new File([blob], shareFileName, { type: 'application/pdf' });
+                    preparedShareFile = new File([blob], shareFileName, {
+                        type: 'application/pdf'
+                    });
                     preparedShareTitle = fileBaseName;
-                    
+
                     btn.classList.replace('bg-indigo-600', 'bg-emerald-600');
                     btn.classList.replace('hover:bg-indigo-700', 'hover:bg-emerald-700');
                     btnText.textContent = 'الملف جاهز! انقر للمشاركة';
@@ -249,12 +259,16 @@
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                     btnText.textContent = 'تم التنزيل ✓';
-                    setTimeout(() => { btnText.textContent = originalText; }, 3000);
+                    setTimeout(() => {
+                        btnText.textContent = originalText;
+                    }, 3000);
                 }
             } catch (error) {
                 console.error('Error:', error);
                 btnText.textContent = 'حدث خطأ!';
-                setTimeout(() => { btnText.textContent = originalText; }, 2000);
+                setTimeout(() => {
+                    btnText.textContent = originalText;
+                }, 2000);
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-wait');

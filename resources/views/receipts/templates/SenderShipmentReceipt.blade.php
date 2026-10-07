@@ -1,4 +1,4 @@
-@extends('receipts.layout')
+﻿@extends('receipts.layout')
 
 @section('title', 'سند إرسال طرد - ' . ($bond_number ?? ''))
 
@@ -329,7 +329,8 @@
                 <tr>
                     <td style="width: 37%; text-align: right; vertical-align: top;">
                         <div style="margin-bottom: 2px;">
-                            <h1 style="color: {{ $primary }}; font-size: 16pt; font-weight: 900; line-height: 1; margin: 0; padding: 0;">
+                            <h1
+                                style="color: {{ $primary }}; font-size: 16pt; font-weight: 900; line-height: 1; margin: 0; padding: 0;">
                                 {{ $company['name'] ?? 'شركة النقل' }}
                             </h1>
                         </div>
@@ -341,7 +342,8 @@
                                         {{ $company['main_branch']['title'] }}
                                     </div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827;" dir="ltr">{{ $company['main_branch']['phones'] }}</span>
+                                        هاتف: <span style="color: #111827;"
+                                            dir="ltr">{{ $company['main_branch']['phones'] }}</span>
                                     </div>
                                 </div>
                             @else
@@ -350,7 +352,8 @@
                                         الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
                                     </div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827;" dir="ltr">{{ $company['main_branch']['phones'] ?? '---' }}</span>
+                                        هاتف: <span style="color: #111827;"
+                                            dir="ltr">{{ $company['main_branch']['phones'] ?? '---' }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -361,7 +364,8 @@
                                         {{ $company['headquarters']['title'] }}
                                     </div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827;" dir="ltr">{{ $company['headquarters']['phones'] }}</span>
+                                        هاتف: <span style="color: #111827;"
+                                            dir="ltr">{{ $company['headquarters']['phones'] }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -369,7 +373,8 @@
                             @if (!empty($company['other_phones']))
                                 <div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #64748b;">فروع أخرى:</div>
-                                    <div style="font-size: 7.5pt; font-weight: bold; color: #475569; line-height: 1.2;" dir="rtl">
+                                    <div style="font-size: 7.5pt; font-weight: bold; color: #475569; line-height: 1.2;"
+                                        dir="rtl">
                                         <span dir="ltr">{{ $company['other_phones'] }}</span>
                                     </div>
                                 </div>
@@ -386,10 +391,12 @@
                         <table style="width: 100%;">
                             <tr>
                                 <td style="text-align: left; vertical-align: middle; padding-left: 4px;">
-                                    <div style="color: {{ $primary }}; font-size: 9pt; font-weight: bold; margin-bottom: 2px;">
+                                    <div
+                                        style="color: {{ $primary }}; font-size: 9pt; font-weight: bold; margin-bottom: 2px;">
                                         رقم السند: #{{ $bond_number ?? '---' }}
                                     </div>
-                                    <div style="font-size: 8pt; font-weight: bold; color: #111827; margin-bottom: 2px;" dir="ltr">
+                                    <div style="font-size: 8pt; font-weight: bold; color: #111827; margin-bottom: 2px;"
+                                        dir="ltr">
                                         التاريخ: {{ $date ?? '---' }}
                                     </div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #475569;">
@@ -521,7 +528,7 @@
             </div>
 
             <!-- 6. DRIVER & SIGNATURES -->
-         
+
 
             <!-- 7. TERMS -->
             <div class="terms-section">
