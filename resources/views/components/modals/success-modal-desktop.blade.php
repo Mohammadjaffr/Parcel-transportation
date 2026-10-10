@@ -1,5 +1,5 @@
 {{-- ======================== Global Success Modal ======================== --}}
-<div x-data="{ isSuccessModalOpen: @if (session('success')) true @else false @endif }">
+<div x-data="{ isSuccessModalOpen: @if (session('success') || session('success_message') || session('success_title')) true @else false @endif }">
     
     {{-- نستخدم x-teleport لضمان ظهور المودال فوق كل العناصر الأخرى --}}
     <template x-teleport="body">

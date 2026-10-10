@@ -25,7 +25,7 @@
                 </a>
             @endhasservice
             @hasservice('Users')
-            @if (Auth::user()->type != 'user')
+            @if (Auth::user()->type === 'admin' || Auth::user()->is_branch_admin)
                 <a href="{{ route('users.index') }}"
                     class="flex gap-5 items-center p-6 rounded-3xl border shadow-sm transition-all bg-surface-container-lowest border-slate-100 active:scale-95 group">
                     <div

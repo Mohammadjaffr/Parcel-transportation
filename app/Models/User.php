@@ -32,7 +32,8 @@ class User extends Authenticatable
         'app_id',
         'branch_id',
         'otp_code',           
-        'is_phone_verified'
+        'is_phone_verified',
+        'is_branch_admin'
     ];
 
 

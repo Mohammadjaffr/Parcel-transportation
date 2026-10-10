@@ -1,5 +1,5 @@
 
-<div x-data="{ isSuccessModalOpen: @if (session('success')) true @else false @endif }">
+<div x-data="{ isSuccessModalOpen: @if (session('success') || session('success_message') || session('success_title')) true @else false @endif }">
     <!-- الغلاف الخارجي (يعمل في كل الشاشات لتوسيط العنصر) -->
     <div x-show="isSuccessModalOpen" style="display: none;"
         class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6"

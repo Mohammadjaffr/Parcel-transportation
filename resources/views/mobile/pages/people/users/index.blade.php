@@ -206,10 +206,13 @@
                                 </h3>
                                 @if ($user->type == 'admin')
                                     <span
-                                        class="px-2 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded-md">مدير</span>
+                                        class="px-2 py-0.5 text-[9px] font-bold bg-amber-100 text-amber-700 rounded-md">مدير نظام</span>
+                                @elseif($user->is_branch_admin)
+                                    <span
+                                        class="px-2 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded-md">مدير فرع</span>
                                 @else
                                     <span
-                                        class="px-2 py-0.5 text-[9px] font-bold bg-blue-100 text-blue-700 rounded-md">موظف</span>
+                                        class="px-2 py-0.5 text-[9px] font-bold bg-gray-100 text-gray-700 rounded-md">مستخدم</span>
                                 @endif
                             </div>
                             <div class="flex gap-1.5 items-center text-slate-500 mt-1.5">

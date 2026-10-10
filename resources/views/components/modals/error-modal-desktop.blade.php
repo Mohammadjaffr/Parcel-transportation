@@ -1,5 +1,5 @@
 {{-- ======================== Global Error Modal ======================== --}}
-<div x-data="{ isErrorModalOpen: @if (session('error')) true @else false @endif }">
+<div x-data="{ isErrorModalOpen: @if (session('error') || session('error_message') || $errors->any()) true @else false @endif }">
     
     {{-- نستخدم x-teleport لضمان ظهور المودال فوق كل العناصر الأخرى --}}
     <template x-teleport="body">
@@ -50,7 +50,15 @@
                 </h4>
                 
                 <p class="px-4 mb-8 text-sm font-medium leading-relaxed text-gray-500 dark:text-gray-400">
-                    {{ session('error_message') ?? session('error') ?? 'حدث خطأ ما.' }}
+                    @if($errors->any())
+                        {{ $errors->first() }}
+                    @elseif(session('error_message'))
+                        {{ session('error_message') }}
+                    @elseif(is_string(session('error')))
+                        {{ session('error') }}
+                    @else
+                        حدث خطأ ما.
+                    @endif
                 </p>
 
                 {{-- زر الإغلاق --}}

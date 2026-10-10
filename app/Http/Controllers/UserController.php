@@ -22,7 +22,19 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $query = User::where('type', '!=', 'admin')->where('app_id', auth()->user()->app_id);
+        $currentUser = auth()->user();
+
+        // Check if authorized
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403, 'غير مصرح لك بالوصول لهذه الصفحة.');
+        }
+
+        $query = User::where('type', '!=', 'admin')->where('app_id', $currentUser->app_id);
+
+        // Branch admin can only see users of their branch
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
+        }
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -33,8 +45,14 @@ class UserController extends Controller
             });
         }
 
-$users = $query->with('branch')->latest()->paginate(10)->withQueryString();
-        $branches = Branch::where('app_id', auth()->user()->app_id)->get();
+        $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
+        
+        // For branches dropdown:
+        if ($currentUser->type === 'admin') {
+            $branches = Branch::where('app_id', $currentUser->app_id)->get();
+        } else {
+            $branches = Branch::where('id', $currentUser->branch_id)->get();
+        }
 
         if ($request->isMobile) {
             return view('mobile.pages.people.users.index', compact('users', 'branches'));
@@ -56,13 +74,26 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
      */
     public function store(Request $request)
     {
+        $currentUser = auth()->user();
+
+        // Check if authorized
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403, 'غير مصرح لك بالوصول لهذه الصفحة.');
+        }
+
+        // Branch admin can only create for their own branch
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $request->merge(['branch_id' => $currentUser->branch_id]);
+        }
+
         // 1. التحقق من البيانات
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:6'],
             'branch_id' => ['required', 'exists:branches,id'],
-            'is_active' => ['nullable', 'in:0,1']
+            'is_active' => ['nullable', 'in:0,1'],
+            'is_branch_admin' => ['nullable', 'boolean']
         ], [
             'phone.unique' => 'رقم الهاتف مسجل مسبقاً لمستخدم آخر.',
             'password.min' => 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.',
@@ -93,6 +124,7 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
                 'password'  => Hash::make($request->password),
                 'type'      => 'user',
                 'is_banned' => $request->input('is_active', 1) == 0,
+                'is_branch_admin' => $currentUser->type === 'admin' ? $request->boolean('is_branch_admin', false) : false,
             ]);
 
             DB::commit();
@@ -132,7 +164,16 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
     // معتمد
     public function show(Request $request, $id)
     {
-        $user = User::with('branch')->findOrFail($id);
+        $currentUser = auth()->user();
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403);
+        }
+
+        $query = User::with('branch');
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
+        }
+        $user = $query->findOrFail($id);
         $period = $request->query('period', 'all');
         $dateFilter = function ($query) use ($period) {
             if ($period === 'today') {
@@ -162,10 +203,19 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
      */
     public function edit(string $id)
     {
+        $currentUser = auth()->user();
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403);
+        }
+
         $query = User::query();
 
-        if (auth()->check() && auth()->user()->type !== 'super_admin') {
-            $query->where('app_id', auth()->user()->app_id);
+        if ($currentUser->type !== 'super_admin') {
+            $query->where('app_id', $currentUser->app_id);
+        }
+
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
         }
 
         // 2. جلب المستخدم مع تفاصيل علاقته بالفرع (إن وجدت)
@@ -179,9 +229,18 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
      */
     public function update(Request $request, string $id)
     {
+        $currentUser = auth()->user();
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403);
+        }
+
         $query = User::query();
-        if (auth()->user()->type !== 'super_admin') {
-            $query->where('app_id', auth()->user()->app_id);
+        if ($currentUser->type !== 'super_admin') {
+            $query->where('app_id', $currentUser->app_id);
+        }
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
+            $request->merge(['branch_id' => $currentUser->branch_id]);
         }
         $user = $query->findOrFail($id);
 
@@ -189,6 +248,7 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
             'name'      => 'required|string|max:255',
             'phone'     => 'required|string|unique:users,phone,' . $id,
             'branch_id' => 'required',
+            'is_branch_admin' => 'nullable|boolean',
         ], [
             'name.required'      => 'يرجى إدخال الاسم.',
             'phone.unique'       => 'رقم الهاتف مسجل مسبقاً.',
@@ -215,6 +275,12 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
                 'is_banned'       => $request->is_banned ?? 0,
                 'password'        => $request->filled('password') ? Hash::make($request->password) : $user->password,
             ]);
+
+            if ($currentUser->type === 'admin') {
+                $user->update([
+                    'is_branch_admin' => $request->boolean('is_branch_admin', false)
+                ]);
+            }
 
             // تهيئة رسائل النجاح (تظهر بعد عملية الـ Reload في الجافاسكريبت)
             session()->flash('success', true);
@@ -246,7 +312,17 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
      */
     public function destroy(Request $request, string $id)
     {
-        $user = User::findOrFail($id);
+        $currentUser = auth()->user();
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403);
+        }
+
+        $query = User::query();
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
+        }
+        
+        $user = $query->findOrFail($id);
 
         // حماية: منع المستخدم من حذف نفسه
         if (auth()->id() == $user->id) {
@@ -280,7 +356,17 @@ $users = $query->with('branch')->latest()->paginate(10)->withQueryString();
      */
     public function toggleStatus($id)
     {
-        $user = User::findOrFail($id);
+        $currentUser = auth()->user();
+        if ($currentUser->type !== 'admin' && !$currentUser->is_branch_admin) {
+            abort(403);
+        }
+
+        $query = User::query();
+        if ($currentUser->type !== 'admin' && $currentUser->is_branch_admin) {
+            $query->where('branch_id', $currentUser->branch_id);
+        }
+        
+        $user = $query->findOrFail($id);
 
         $user->is_banned = !$user->is_banned;
         $user->save();

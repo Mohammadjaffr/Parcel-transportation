@@ -81,7 +81,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
 
         // 1. إدارة المستخدمين محمية بـ Users
-        Route::resource('users', UserController::class)->middleware(['admin', 'check.service:Users']);
+        Route::resource('users', UserController::class)->middleware(['check.service:Users']);
 
         // Branch routes with super admin middleware for create and store
         Route::get('branch', [BranchController::class, 'index'])->name('branch.index');

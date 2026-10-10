@@ -178,7 +178,7 @@
                                     </li>
                                     @endhasservice
 
-                                    @if(Auth::user()->type != 'user')
+                                    @if(Auth::user()->type === 'admin' || Auth::user()->is_branch_admin)
                                     @hasservice('Users')
                                         <li>
                                             <a href="{{ route('users.index') }}"

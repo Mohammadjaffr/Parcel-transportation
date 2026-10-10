@@ -15,6 +15,14 @@
         deleteBranchAction: '',
         deleteBranchName: '',
     
+        init() {
+            this.$watch('editBranchForm.name', (val) => {
+                if (typeof window.generateBranchCode === 'function') {
+                    this.editBranchForm.code = window.generateBranchCode(val);
+                }
+            });
+        },
+    
         openEditBranchModal(branch) {
             this.editBranchForm = {
                 name: branch.name,
@@ -337,10 +345,17 @@
             fullPhone: '',
             openCountry: false,
             search: '',
+            branchName: '',
+            branchCode: '',
             init() {
                 this.selectedCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
                 this.$watch('localPhone', () => this.updatePhone());
                 this.$watch('selectedCountry', () => this.updatePhone());
+                this.$watch('branchName', (val) => {
+                    if (typeof window.generateBranchCode === 'function') {
+                        this.branchCode = window.generateBranchCode(val);
+                    }
+                });
             },
             updatePhone() {
                 let dCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
@@ -398,26 +413,24 @@
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">اسم الفرع <span
                                     class="text-rose-500">*</span></label>
-                            <input type="text" name="name" required placeholder="مثال: فرع الرياض الرئيسي"
+                            <input type="text" name="name" x-model="branchName" required
+                                placeholder="مثال: فرع الرياض الرئيسي"
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
 
-                        {{-- <div class="grid gap-3 grid1-cols-"> --}}
-                        {{-- <div>
-                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
-                                    (مميز)
-                                    
-                                </label>
-                                <input type="text" name="code" placeholder="مثال: RUH-01" dir="ltr"
-                                    class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div> --}}
+                        <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
+                                (مميز)
+                            </label>
+                            <input type="text" name="code" x-model="branchCode" dir="ltr" readonly
+                                class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all cursor-not-allowed outline-none ring-slate-100 bg-slate-100 text-slate-500 font-headline">
+                        </div>
                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
                                 <span class="text-rose-500">*</span></label>
                             <input type="text" name="city" required placeholder="مثال: الرياض"
                                 class="px-4 w-full h-12 text-sm rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
                         </div>
-                        {{-- </div> --}}
 
                         <div class="relative z-40">
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">رقم هاتف
@@ -803,14 +816,14 @@
                         </div>
 
                         {{-- <div class="grid grid-cols-2 gap-3"> --}}
-                        {{-- <div>
-                                <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
-                                    (مميز)
-                                </label>
-                                <input type="text" name="code" x-model="editBranchForm.code" dir="ltr"
-                                    class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
-                            </div> --}}
                         <div>
+                            <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">كود الفرع
+                                (مميز)
+                            </label>
+                            <input type="text" name="code" x-model="editBranchForm.code" dir="ltr" readonly
+                                class="px-4 w-full h-12 text-sm text-left uppercase rounded-xl border-none ring-1 transition-all cursor-not-allowed outline-none ring-slate-100 bg-slate-100 text-slate-500 font-headline">
+                        </div>
+                         <div>
                             <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">المدينة
                                 <span class="text-rose-500">*</span></label>
                             <input type="text" name="city" x-model="editBranchForm.city" required
@@ -931,23 +944,26 @@
                 x-transition:leave="transition ease-in duration-200"
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-8 scale-95"
-                class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 pointer-events-auto flex flex-col">
+                class="flex relative flex-col p-6 w-full max-w-md bg-white rounded-3xl shadow-2xl pointer-events-auto">
 
                 <button @click="showDeleteBranchModal = false"
                     class="absolute top-6 left-6 transition-colors text-slate-400 hover:text-slate-600">
                     <span class="material-symbols-outlined">close</span>
                 </button>
 
-                <div class="flex flex-col items-center mb-6 text-center shrink-0 pt-4">
-                    <div class="flex justify-center items-center w-16 h-16 text-rose-500 bg-rose-50 rounded-full shrink-0 mb-4">
+                <div class="flex flex-col items-center pt-4 mb-6 text-center shrink-0">
+                    <div
+                        class="flex justify-center items-center mb-4 w-16 h-16 text-rose-500 bg-rose-50 rounded-full shrink-0">
                         <span class="material-symbols-outlined text-[32px]">warning</span>
                     </div>
                     <div>
-                        <h3 class="text-xl font-black font-headline text-slate-800 mb-2">تأكيد حذف الفرع</h3>
-                        <p class="text-sm font-bold text-slate-500 leading-relaxed">
-                            هل أنت متأكد من رغبتك في حذف فرع <span class="text-slate-800 font-black" x-text="deleteBranchName"></span>؟
+                        <h3 class="mb-2 text-xl font-black font-headline text-slate-800">تأكيد حذف الفرع</h3>
+                        <p class="text-sm font-bold leading-relaxed text-slate-500">
+                            هل أنت متأكد من رغبتك في حذف فرع <span class="font-black text-slate-800"
+                                x-text="deleteBranchName"></span>؟
                             <br>
-                            <span class="text-rose-500">سيتم حذف هذا الفرع نهائياً مع كافة الشحنات والبيانات المرتبطة به.</span>
+                            <span class="text-rose-500">سيتم حذف هذا الفرع نهائياً مع كافة الشحنات والبيانات المرتبطة
+                                به.</span>
                         </p>
                     </div>
                 </div>
@@ -957,11 +973,11 @@
                     @method('DELETE')
 
                     <button type="button" @click="showDeleteBranchModal = false"
-                        class="flex-1 flex justify-center items-center h-12 font-bold text-slate-600 bg-slate-100 rounded-xl transition-all hover:bg-slate-200 active:scale-95">
+                        class="flex flex-1 justify-center items-center h-12 font-bold rounded-xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95">
                         إلغاء
                     </button>
                     <button type="submit"
-                        class="flex-1 flex justify-center items-center h-12 font-black text-white bg-rose-500 rounded-xl shadow-lg transition-all shadow-rose-500/30 hover:bg-rose-600 active:scale-95">
+                        class="flex flex-1 justify-center items-center h-12 font-black text-white bg-rose-500 rounded-xl shadow-lg transition-all shadow-rose-500/30 hover:bg-rose-600 active:scale-95">
                         نعم، احذف الفرع
                     </button>
                 </form>
@@ -969,4 +985,91 @@
         </div>
 
     </div>
+
+    <script>
+        window.generateBranchCode = function(name) {
+            if (!name) return '';
+            const nameMap = {
+                'عدن': 'ADN',
+                'صنعاء': 'SNA',
+                'تعز': 'TAI',
+                'حضرموت': 'HAD',
+                'المكلا': 'MUK',
+                'الحديدة': 'HUD',
+                'إب': 'IBB',
+                'لحج': 'LAJ',
+                'أبين': 'ABY',
+                'شبوة': 'SHA',
+                'مأرب': 'MAR',
+                'المهرة': 'MAH',
+                'البيضاء': 'BAY',
+                'حجة': 'HAJ',
+                'صعدة': 'SAD',
+                'الضالع': 'DAL',
+                'عمران': 'AMR',
+                'المحويت': 'MAW',
+                'الجوف': 'JAW',
+                'ذمار': 'DHA',
+                'ريمة': 'RAY',
+                'سقطرى': 'SOC',
+                'الرياض': 'RUH',
+                'جدة': 'JED',
+                'الدمام': 'DMM',
+                'مكة': 'MAK',
+                'المدينة': 'MED',
+                'الطائف': 'TIF'
+            };
+
+            let cleanName = name.replace(/فرع/g, '').trim();
+            for (const [key, value] of Object.entries(nameMap)) {
+                if (cleanName.includes(key)) return value;
+            }
+
+            const charMap = {
+                'ا': 'A',
+                'أ': 'A',
+                'إ': 'E',
+                'آ': 'A',
+                'ب': 'B',
+                'ت': 'T',
+                'ث': 'T',
+                'ج': 'J',
+                'ح': 'H',
+                'خ': 'K',
+                'د': 'D',
+                'ذ': 'D',
+                'ر': 'R',
+                'ز': 'Z',
+                'س': 'S',
+                'ش': 'S',
+                'ص': 'S',
+                'ض': 'D',
+                'ط': 'T',
+                'ظ': 'Z',
+                'ع': 'A',
+                'غ': 'G',
+                'ف': 'F',
+                'ق': 'Q',
+                'ك': 'K',
+                'ل': 'L',
+                'م': 'M',
+                'ن': 'N',
+                'ه': 'H',
+                'ة': 'H',
+                'و': 'W',
+                'ي': 'Y',
+                'ى': 'A',
+                'ء': 'A'
+            };
+
+            let code = '';
+            for (let i = 0; i < cleanName.length; i++) {
+                let char = cleanName[i];
+                if (char === ' ' || char === 'ال') continue;
+                if (charMap[char]) code += charMap[char];
+                else if (/[a-zA-Z]/.test(char)) code += char.toUpperCase();
+            }
+            return code.substring(0, 3) || Math.random().toString(36).substring(2, 5).toUpperCase();
+        };
+    </script>
 @endsection

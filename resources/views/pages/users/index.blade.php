@@ -181,9 +181,9 @@
                             <span
                                 :class="user.type === 'admin' ?
                                     'bg-primary-container text-primary dark:bg-primary/10' :
-                                    'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
+                                    (user.is_branch_admin ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300')"
                                 class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border border-transparent"
-                                x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
+                                x-text="user.type === 'admin' ? 'مدير نظام' : (user.is_branch_admin ? 'مدير فرع' : 'مستخدم')"></span>
 
                             <span
                                 :class="Number(user.is_banned) === 0 ?
@@ -297,9 +297,9 @@
                                     <span
                                         :class="user.type === 'admin' ?
                                             'bg-primary-container text-primary dark:bg-primary/10' :
-                                            'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300'"
+                                            (user.is_branch_admin ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-white border border-gray-100 shadow-sm text-gray-500 dark:bg-boxdark dark:border-boxdark-2 dark:text-gray-300')"
                                         class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase border border-transparent"
-                                        x-text="user.type === 'admin' ? 'مدير نظام' : 'مستخدم'"></span>
+                                        x-text="user.type === 'admin' ? 'مدير نظام' : (user.is_branch_admin ? 'مدير فرع' : 'مستخدم')"></span>
                                 </td>
 
                                 {{-- الحالة --}}

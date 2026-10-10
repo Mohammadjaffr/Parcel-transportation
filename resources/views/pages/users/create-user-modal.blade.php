@@ -253,10 +253,12 @@
                             </div>
                             <select name="branch_id" id="branch_id" required
                                 class="pr-11 pl-4 w-full h-12 text-sm bg-gray-50 rounded-xl border border-gray-200 transition-all appearance-none cursor-pointer outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:text-white">
-                                <option value="">اختر الفرع...</option>
+                                @if(count($branches) != 1)
+                                    <option value="">اختر الفرع...</option>
+                                @endif
                                 @foreach ($branches as $branch)
                                     <option value="{{ $branch->id }}"
-                                        {{ old('branch_id') == $branch->id ? 'selected' : '' }}>{{ $branch->name }}
+                                        {{ old('branch_id') == $branch->id || count($branches) == 1 ? 'selected' : '' }}>{{ $branch->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -269,6 +271,41 @@
                             <p class="mt-1 text-xs font-medium text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
+
+                    {{-- دور المستخدم (مدير فرع أو موظف عادي) - يظهر فقط لمدير الشركة --}}
+                    @if(auth()->user()->type === 'admin')
+                    <div class="sm:col-span-2 mt-2" x-data="{ isBranchAdmin: false }">
+                        <label class="block mb-2 text-sm font-bold text-gray-700 dark:text-gray-300">
+                            صلاحية المستخدم <span class="text-red-500">*</span>
+                        </label>
+                        <input type="hidden" name="is_branch_admin" :value="isBranchAdmin ? 1 : 0">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 dark:bg-gray-900 dark:border-gray-700 transition-colors duration-300">
+                            <div class="flex items-center gap-3">
+                                <div class="flex justify-center items-center w-10 h-10 rounded-xl shadow-inner transition-colors duration-300"
+                                    :class="isBranchAdmin ? 'bg-primary/10 text-primary dark:bg-primary/20' : 'bg-blue-500/10 text-blue-500 dark:bg-blue-500/20'">
+                                    <span class="material-symbols-outlined text-[22px]" x-text="isBranchAdmin ? 'admin_panel_settings' : 'person'"></span>
+                                </div>
+                                <div class="flex flex-col text-right">
+                                    <span class="text-sm font-bold transition-colors duration-300"
+                                        :class="isBranchAdmin ? 'text-primary dark:text-primary' : 'text-blue-600 dark:text-blue-500'"
+                                        x-text="isBranchAdmin ? 'مدير فرع' : 'موظف عادي'"></span>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5"
+                                        x-text="isBranchAdmin ? 'يمكنه إدارة مستخدمي الفرع الخاص به.' : 'مستخدم بصلاحيات محدودة للفرع.'"></span>
+                                </div>
+                            </div>
+                            
+                            <button type="button" @click="isBranchAdmin = !isBranchAdmin" 
+                                class="relative inline-flex items-center cursor-pointer select-none focus:outline-none" dir="ltr">
+                                <!-- Track -->
+                                <div class="w-14 h-8 rounded-full transition-colors duration-300"
+                                    :class="isBranchAdmin ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'"></div>
+                                <!-- Knob -->
+                                <div class="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform duration-300"
+                                    :class="isBranchAdmin ? 'translate-x-6' : 'translate-x-0'"></div>
+                            </button>
+                        </div>
+                    </div>
+                    @endif
 
                     {{-- حالة الحساب (نشط / محظور) --}}
                     <div class="sm:col-span-2 mt-2" x-data="{ isActive: true }">
