@@ -160,6 +160,8 @@
                                 العدد والعمولة</th>
                             <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">الوسيط
                             </th>
+                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">السائق
+                            </th>
                             <th
                                 class="px-6 py-4 text-sm font-black text-center text-gray-600 font-headline dark:text-gray-300">
                                 الإجراءات</th>
@@ -202,7 +204,7 @@
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group passenger-row"
-                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->driver->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
+                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->trip?->driver?->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
 
                                 {{-- التاريخ واليوم --}}
                                 <td class="px-6 py-4 align-top">
@@ -276,7 +278,7 @@
                                     </div>
                                 </td>
 
-                                {{-- الوسيط والسائق --}}
+                                {{-- الوسيط --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-3">
                                         <div class="flex gap-2 items-center">
@@ -287,20 +289,29 @@
                                             <span
                                                 class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">{{ $passenger->broker->name ?? 'بدون وسيط' }}</span>
                                         </div>
-                                        {{-- <div class="flex gap-2 items-center">
-                                            <span class="flex justify-center items-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
+                                    </div>
+                                </td>
+
+                                {{-- السائق --}}
+                                <td class="px-6 py-4 align-top">
+                                    @if ($passenger->trip && $passenger->trip->driver)
+                                        <div class="flex gap-2 items-center">
+                                            <span
+                                                class="flex justify-center items-center w-6 h-6 rounded bg-slate-100 dark:bg-boxdark text-slate-500 dark:text-slate-400">
                                                 <span class="material-symbols-outlined text-[14px]">local_taxi</span>
                                             </span>
                                             <div class="flex flex-col">
-                                                <span class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">{{ $passenger->driver->name ?? 'غير محدد' }}</span>
-                                                @if ($passenger->driver)
-                                                <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
-                                                    <x-phone-number :value="$passenger->driver->phone ?? ''" />
+                                                <span class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">
+                                                    {{ $passenger->trip->driver->name }}
                                                 </span>
+                                                @if (!empty($passenger->trip->driver->phone))
+                                                    <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
+                                                        <x-phone-number :value="$passenger->trip->driver->phone" />
+                                                    </span>
                                                 @endif
                                             </div>
-                                        </div> --}}
-                                    </div>
+                                        </div>
+                                    @endif
                                 </td>
 
                                 {{-- الإجراءات --}}
@@ -399,7 +410,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="py-24 text-center">
+                                <td colspan="7" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
                                             class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -419,7 +430,7 @@
                         @endforelse
 
                         <tr x-show="visibleCount === 0 && {{ $passengers->count() }} > 0" x-cloak>
-                            <td colspan="6" class="py-24 text-center">
+                            <td colspan="7" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
                                     <div
                                         class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">

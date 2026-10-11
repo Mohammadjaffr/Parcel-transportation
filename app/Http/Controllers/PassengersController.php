@@ -26,7 +26,7 @@ class PassengersController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Passengers::with(['driver', 'broker', 'branch'])->where('branch_id', $user->branch_id)
+        $query = Passengers::with(['driver', 'broker', 'branch', 'trip.driver'])->where('branch_id', $user->branch_id)
             ->latest();
 
         if ($request->filled('search')) {
@@ -38,6 +38,10 @@ class PassengersController extends Controller
                     ->orWhere('note', 'like', "%{$search}%")
                     ->orWhereHas('driver', function ($driverQuery) use ($search) {
                         $driverQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('trip.driver', function ($tripDriverQuery) use ($search) {
+                        $tripDriverQuery->where('name', 'like', "%{$search}%")
                             ->orWhere('phone', 'like', "%{$search}%");
                     })
                     // 🌟 التعديل الذهبي هنا: البحث في علاقة الوسيط (broker) وعمود الاسم (name) فقط 🌟
