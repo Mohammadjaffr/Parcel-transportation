@@ -27,6 +27,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
         // 2. جلب بيانات التطبيق (الشركة) - محمي
         $app = $shipment->senderBranch?->app ?? $shipment->creator?->app;
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App;
+        }
 
         // 3. تجهيز مسار الشعار الديناميكي - محمي بـ ?->
         $imagePath = $app?->logo
@@ -46,23 +49,21 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\/]+/', $senderBranch->phone ?? ''))))
             ];
         }
 
         $otherPhonesList = [];
+        $companyPhone = !empty($app?->phone) ? trim($app->phone) : null;
         $headquartersData = null;
 
-        // 🛡️ حماية كافية هنا: لا ندخل العمليات إلا إذا كان $app موجوداً
+        // 🛡️ حماية كافية هنا: إعداد بيانات الإدارة العامة مباشرة من هاتف الشركة في جدول apps
         if ($app) {
-            if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+            if ($companyPhone) {
+                $headquartersData = [
+                    'title' => 'الإدارة العامة',
+                    'phones' => $companyPhone
+                ];
             }
 
             // جلب الفروع الأخرى فقط إذا كان التطبيق موجوداً
@@ -71,7 +72,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 if ($senderBranch && $b->id === $senderBranch->id) {
                     continue;
                 }
-                $phonesArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $b->phone ?? '')));
+                $phonesArray = array_filter(array_map('trim', preg_split('/[\s,\/]+/', $b->phone ?? '')));
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
@@ -105,6 +106,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         return [
             'company' => [
                 'name'         => $app?->name ?? 'اسم الشركة غير محدد',
+                'phone'        => $companyPhone,
                 'logo'         => $logoBase64,
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,

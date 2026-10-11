@@ -727,7 +727,7 @@
 
             <!-- 6. FOOTER (الفوتر وشريط الاتصال) -->
             <div class="footer-bar">
-                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;" dir="ltr">{{ $company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '') }}</span>
+                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;" dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
             </div>
         </div>
     </div>
