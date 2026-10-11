@@ -43,6 +43,53 @@ use Illuminate\Support\Facades\Cache;
             'terms_and_conditions' => 'array',
         ];
 
+        public function hasSmsConfigured(): bool
+        {
+            return !empty($this->sms_api_key) && !empty($this->sms_from_phone);
+        }
+
+        public function getMaskedSmsApiKeyAttribute(): ?string
+        {
+            if (empty($this->sms_api_key)) {
+                return null;
+            }
+            $len = strlen($this->sms_api_key);
+            if ($len <= 8) {
+                return str_repeat('•', $len);
+            }
+            return substr($this->sms_api_key, 0, 4) . str_repeat('•', max(4, $len - 8)) . substr($this->sms_api_key, -4);
+        }
+
+        public function hasWhatsAppConfigured(): bool
+        {
+            return !empty($this->whatsapp_instance_id) && !empty($this->whatsapp_instance_token);
+        }
+
+        public function getMaskedWhatsAppTokenAttribute(): ?string
+        {
+            if (empty($this->whatsapp_instance_token)) {
+                return null;
+            }
+            $len = strlen($this->whatsapp_instance_token);
+            if ($len <= 8) {
+                return str_repeat('•', $len);
+            }
+            return substr($this->whatsapp_instance_token, 0, 4) . str_repeat('•', max(4, $len - 8)) . substr($this->whatsapp_instance_token, -4);
+        }
+
+        public function getEffectiveWhatsAppBaseUrlAttribute(): string
+        {
+            return !empty($this->whatsapp_base_url)
+                ? rtrim($this->whatsapp_base_url, '/')
+                : rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
+        }
+
+        public function getEffectiveWhatsAppTimeoutAttribute(): int
+        {
+            return !empty($this->whatsapp_timeout) ? (int)$this->whatsapp_timeout : (int)config('whatsapp.timeout', 30);
+        }
+
+
         public function users()
         {
             return $this->hasMany(User::class);

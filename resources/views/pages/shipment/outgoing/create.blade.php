@@ -44,7 +44,7 @@
                 <div class="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
 
                     {{-- 1. بيانات الفروع (الوجهة) --}}
-                    <div x-data='destinationLogic(@json($offices), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
+                    <div x-data='destinationLogic(@json($destinations), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
                         class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
@@ -59,47 +59,53 @@
                                 <div>
                                     <h3 class="text-lg font-black text-on-surface dark:text-white font-headline">وجهة الطرد
                                     </h3>
-                                    <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">اختر المكتب والفرع
-                                        المستلم</p>
+                                    <p class="mt-1 text-xs font-medium text-gray-500 dark:text-bodydark">
+                                        المكتب الحالي والوجهة المستلمة
+                                    </p>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
-                                {{-- اختيار المكتب --}}
+                                {{-- حقل المكتب (يعرض المكتب الحالي فقط - للقراءة فقط) --}}
                                 <div>
-
-                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">المكتب
-                                        <span class="text-error">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        المكتب الحالي <span class="text-error">*</span>
+                                    </label>
                                     <div class="relative">
-                                        <select name="office_id" x-model="selectedOfficeId"
-                                            @change="selectedBranchId = ''; updateBranches()" required
-                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark-2 focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
-                                            <option value="" disabled selected>اختر المكتب...</option>
-                                            <template x-for="office in offices" :key="office.id">
-                                                <option :value="office.id" x-text="office.name"></option>
-                                            </template>
-                                        </select>
-                                        <span
-                                            class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
-                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                                        <input type="text" readonly
+                                            value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all outline-none text-on-surface dark:text-white bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark-2 cursor-not-allowed select-none">
+                                        {{-- يتم تحديث office_id تلقائياً عند اختيار الوجهة لضمان التوافق التام مع الخادم --}}
+                                        <input type="hidden" name="office_id" x-model="selectedOfficeId">
+                                        <span class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
+                                            <span class="material-symbols-outlined text-[20px]">store</span>
                                         </span>
                                     </div>
                                 </div>
 
-                                {{-- اختيار الفرع --}}
-                                <div x-show="selectedOfficeId" x-transition:enter.duration.300ms x-cloak>
-                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">الفرع <span
-                                            class="text-error">*</span></label>
+                                {{-- حقل الفرع أو الوجهة (يعرض الفروع الداخلية والمكاتب الموثوقة والخارجية) --}}
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        الفرع أو الوجهة المستلمة <span class="text-error">*</span>
+                                    </label>
                                     <div class="relative">
-                                        <select name="receiver_branch_id" x-model="selectedBranchId" required
+                                        {{-- المعرف الرقمي الحقيقي للفرع المُرسل للخادم --}}
+                                        <input type="hidden" name="receiver_branch_id" x-model="selectedBranchId">
+
+                                        <select x-model="selectedDestinationKey" @change="onDestinationChange($event.target.value)" required
                                             class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
-                                            <option value="" disabled selected>اختر الفرع...</option>
-                                            <template x-for="branch in availableBranches" :key="branch.id">
-                                                <option :value="branch.id" x-text="branch.name"></option>
-                                            </template>
+                                            <option value="" disabled selected>اختر الفرع أو الوجهة المستلمة...</option>
+                                            @foreach($destinations->groupBy('group') as $groupName => $groupDestinations)
+                                                <optgroup label="{{ $groupName }}">
+                                                    @foreach($groupDestinations as $dest)
+                                                        <option value="{{ $dest['key'] }}">
+                                                            {{ $dest['name'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
                                         </select>
-                                        <span
-                                            class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
+                                        <span class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
                                             <span class="material-symbols-outlined text-[20px]">expand_more</span>
                                         </span>
                                     </div>
@@ -390,7 +396,7 @@
                         <div class="grid grid-cols-2 gap-4">
 
                             {{-- ================= 1. حقل نوع الشحنة ================= --}}
-                            <div class="flex flex-col gap-2 col-span-2" x-data="{
+                            <div class="flex flex-col col-span-2 gap-2" x-data="{
                                 isOpen: false,
                                 options: ['كرتون', 'كيس'],
                                 packageType: '{{ old('package_type', 'كرتون') }}'
@@ -425,7 +431,7 @@
 
                             {{-- ================= 2. حقل الوزن (مُعلق مؤقتاً) ================= --}}
                             {{-- 
-                            <div class="flex flex-col gap-2 col-span-1">
+                            <div class="flex flex-col col-span-1 gap-2">
                                 <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
                                 <div class="relative">
                                     <input type="number" step="0.1" name="weight" value="{{ old('weight') }}"
@@ -439,14 +445,14 @@
                             --}}
 
                             {{-- ================= 3. تسعيرة الطرد وعمولته ================= --}}
-                            <div class="flex flex-col gap-2 col-span-1 mt-2">
+                            <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
                                     min="0" dir="ltr" required
-                                    class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border transition-all outline-none border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                    class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                             </div>
 
-                            <div class="flex flex-col gap-2 col-span-1 mt-2">
+                            <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">نسبة العمولة (%)</label>
                                 <div class="relative">
                                     <input type="number" name="package_commission_rate"
@@ -507,7 +513,7 @@
                                             min="0" dir="ltr"
                                             class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-xl border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
                                     </div>
-                                    <div class="mt-2 relative">
+                                    <div class="relative mt-2">
                                         <label
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">نسبة
                                             العمولة (%)</label>
@@ -571,7 +577,7 @@
                                 {{-- 💡 حقل المبلغ الإجمالي: مقفل (Readonly) ويأخذ قيمته من x-bind:value --}}
                                 <input type="number" required name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
-                                    class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent transition-all outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary cursor-not-allowed shadow-inner"
+                                    class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"
                                     dir="ltr">
                                 <p class="mt-1.5 text-[10px] font-bold text-gray-400">يتم حسابه تلقائياً (أجرة الطرد + أجرة
                                     العسل)</p>
@@ -610,57 +616,51 @@
 @section('script')
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
-                offices: officesList || [],
+            Alpine.data('destinationLogic', (destinationsList, initialBranchId, initialOfficeId) => ({
+                destinations: destinationsList || [],
                 selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
                 selectedBranchId: initialBranchId ? String(initialBranchId) : '',
-                availableBranches: [],
+                selectedDestinationKey: '',
 
                 init() {
-                    // الحالة الأولى: إذا كان المكتب ممرراً مسبقاً (في حالة وجود خطأ في الفورم)
-                    if (this.selectedOfficeId) {
-                        this.populateBranches();
-                        return; // نخرج من الدالة لكي لا نغير التحديد
-                    }
-
-                    // الحالة الثانية: إذا كان الفرع ممرراً ولكن المكتب غير معروف
+                    // إذا تم تمرير فرع مسبقاً (سواء من old أو من البيانات الأولية)
                     if (this.selectedBranchId) {
-                        const foundOffice = this.offices.find(office => {
-                            return (office.branches || []).some(
-                                branch => String(branch.id) === String(this
-                                    .selectedBranchId)
-                            );
+                        const matched = this.destinations.find(d => {
+                            const matchBranch = String(d.branch_id) === String(this.selectedBranchId);
+                            if (this.selectedOfficeId) {
+                                return matchBranch && String(d.office_id) === String(this.selectedOfficeId);
+                            }
+                            return matchBranch;
                         });
 
-                        if (foundOffice) {
-                            this.selectedOfficeId = String(foundOffice.id);
-                            this.populateBranches();
+                        if (matched) {
+                            this.selectedDestinationKey = matched.key;
+                            this.selectedOfficeId = String(matched.office_id);
+                            this.selectedBranchId = String(matched.branch_id);
                             return;
                         }
                     }
 
-                    // الحالة الثالثة (الافتراضية لطرد جديد): تحديد "مكتبنا الحالي" تلقائياً
-                    const internalOffice = this.offices.find(
-                        o => String(o.id).startsWith('internal_')
-                    );
-
-                    if (internalOffice) {
-                        this.selectedOfficeId = String(internalOffice.id);
-                        this.populateBranches();
+                    // في حال لم يتم تحديد مكتب بعد، نعين مكتبنا الداخلي كافتراضي
+                    if (!this.selectedOfficeId && this.destinations.length > 0) {
+                        const internal = this.destinations.find(d => d.type === 'internal');
+                        if (internal) {
+                            this.selectedOfficeId = String(internal.office_id);
+                        }
                     }
                 },
 
-                // دالة مساعدة لتعبئة الفروع بناءً على المكتب المحدد
-                populateBranches() {
-                    const office = this.offices.find(
-                        o => String(o.id) === String(this.selectedOfficeId)
-                    );
-                    this.availableBranches = office ? (office.branches || []) : [];
-                },
-
-                // تُستدعى من الواجهة عند تغيير المكتب @change
-                updateBranches() {
-                    this.populateBranches();
+                onDestinationChange(key) {
+                    const dest = this.destinations.find(d => d.key === key);
+                    if (dest) {
+                        this.selectedDestinationKey = dest.key;
+                        this.selectedOfficeId = String(dest.office_id);
+                        this.selectedBranchId = String(dest.branch_id);
+                    } else {
+                        this.selectedDestinationKey = '';
+                        this.selectedOfficeId = '';
+                        this.selectedBranchId = '';
+                    }
                 }
             }));
 

@@ -37,6 +37,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WhatsAppController;
 use App\Http\Controllers\ShipmentScanController;
+use App\Http\Controllers\SmsSettingsController;
+use App\Http\Controllers\WhatsAppSettingsController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -271,6 +273,27 @@ Route::middleware('auth')->group(function () {
         Route::get('/app/settings', [AppController::class, 'settings'])->name('app.settings');
         Route::get('/app', [AppController::class, 'index'])->name('app.index');
         Route::PUT('/app/update', [AppController::class, 'update'])->name('app.update');
+
+        // SMS Gateway Settings
+        Route::middleware('admin')->group(function () {
+            Route::get('/app/sms-settings', [SmsSettingsController::class, 'index'])->name('app.sms.settings');
+            Route::put('/app/sms-settings', [SmsSettingsController::class, 'update'])->name('app.sms.settings.update');
+            Route::post('/app/sms-settings/test', [SmsSettingsController::class, 'sendTest'])->name('app.sms.settings.test');
+        });
+
+        // WhatsApp Integration Settings
+        Route::middleware('admin')->group(function () {
+            Route::get('/app/whatsapp-settings', [WhatsAppSettingsController::class, 'index'])->name('app.whatsapp.settings');
+            Route::put('/app/whatsapp-settings', [WhatsAppSettingsController::class, 'update'])->name('app.whatsapp.settings.update');
+            Route::get('/app/whatsapp-settings/status', [WhatsAppSettingsController::class, 'status'])->name('app.whatsapp.settings.status');
+            Route::post('/app/whatsapp-settings/connect', [WhatsAppSettingsController::class, 'connect'])->name('app.whatsapp.settings.connect');
+            Route::get('/app/whatsapp-settings/qr', [WhatsAppSettingsController::class, 'qrCode'])->name('app.whatsapp.settings.qr');
+            Route::post('/app/whatsapp-settings/pair', [WhatsAppSettingsController::class, 'pairingCode'])->name('app.whatsapp.settings.pair');
+            Route::post('/app/whatsapp-settings/reconnect', [WhatsAppSettingsController::class, 'reconnect'])->name('app.whatsapp.settings.reconnect');
+            Route::post('/app/whatsapp-settings/disconnect', [WhatsAppSettingsController::class, 'disconnect'])->name('app.whatsapp.settings.disconnect');
+            Route::post('/app/whatsapp-settings/logout', [WhatsAppSettingsController::class, 'logout'])->name('app.whatsapp.settings.logout');
+            Route::post('/app/whatsapp-settings/test', [WhatsAppSettingsController::class, 'sendTest'])->name('app.whatsapp.settings.test');
+        });
         Route::post('/connect/send/{receiverAppId}', [ConnectionController::class, 'sendRequest'])->name('offices.connect');
         Route::post('/connect/accept/{id}', [ConnectionController::class, 'accept'])->name('connections.accept');
         Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');

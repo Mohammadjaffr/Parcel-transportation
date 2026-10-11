@@ -9,6 +9,7 @@ use App\Models\Branch;
 use App\Models\CashRegisterClosing;
 use App\Models\Customer;
 use App\Models\Office;
+use App\Models\OfficeBranch;
 use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use App\Models\User;
@@ -123,63 +124,110 @@ class ShipmentController extends Controller
 
         return view('pages.shipment.outgoing.index', compact('shipments'));
     }
-    public function outgoingCreate(Request $request)
+    /**
+     * تجهيز سياق الوجهات والمكتب الحالي للمستخدم المصادق عليه
+     */
+    private function getDestinationContext($user)
     {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
         $currentApp = $user->app;
 
-        // --- 1. جلب المكاتب الموثوقة (Apps المتصلة) ---
+        $currentOffice = [
+            'id'   => 'internal_' . $currentApp->id,
+            'name' => '🏠 ' . ($currentApp->name ?? 'مكتبنا الحالي'),
+        ];
+
+        $destinations = collect();
+
+        // 1. الفروع الداخلية (فروع تطبيق المستخدم عدا فرع الإرسال الحالي)
+        $myBranches = Branch::where('app_id', $currentApp->id)
+            ->where('id', '!=', $user->branch_id)
+            ->get();
+
+        foreach ($myBranches as $branch) {
+            $destinations->push([
+                'key'       => 'internal_' . $branch->id,
+                'office_id' => 'internal_' . $currentApp->id,
+                'branch_id' => (int) $branch->id,
+                'name'      => $branch->name,
+                'group'     => 'فروعنا الداخلية',
+                'type'      => 'internal',
+            ]);
+        }
+
+        // 2. المكاتب الموثوقة (Apps المتصلة والمعتمدة)
         $connectedAppIds = collect();
         $sentAccepted = $currentApp->sentConnections()->where('status', 'accepted')->pluck('receiver_app_id');
         $receivedAccepted = $currentApp->receivedConnections()->where('status', 'accepted')->pluck('sender_app_id');
         $connectedAppIds = $connectedAppIds->merge($sentAccepted)->merge($receivedAccepted)->unique();
 
-        $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
-            $query->withoutGlobalScope('app_id');
-        }])->get();
+        if ($connectedAppIds->isNotEmpty()) {
+            $trustedApps = App::whereIn('id', $connectedAppIds)->with(['branches' => function ($query) {
+                $query->withoutGlobalScope('app_id');
+            }])->get();
 
-        // --- 2. جلب المكاتب الخارجية (غير الموثوقة - Model Office) ---
-        // هذه المكاتب تابعة لتطبيقك عبر BelongsToApp
+            foreach ($trustedApps as $tApp) {
+                foreach ($tApp->branches as $tBranch) {
+                    $destinations->push([
+                        'key'       => 'trusted_' . $tApp->id . '_' . $tBranch->id,
+                        'office_id' => 'trusted_' . $tApp->id,
+                        'branch_id' => (int) $tBranch->id,
+                        'name'      => $tApp->name . ' - ' . $tBranch->name . ' (مكتب موثوق)',
+                        'group'     => 'المكاتب الموثوقة (' . $tApp->name . ')',
+                        'type'      => 'trusted',
+                    ]);
+                }
+            }
+        }
+
+        // 3. المكاتب الخارجية (غير الموثوقة - Model Office)
         $untrustedOffices = Office::where('app_id', $currentApp->id)->with('branches')->get();
 
-        // --- 3. تجهيز مصفوفة الوجهات الشاملة ---
-        $officesData = collect();
-
-        // أ- إضافة فروعنا الداخلية
-        $myBranches = Branch::where('app_id', $currentApp->id)
-            ->where('id', '!=', $user->branch_id)
-            ->get();
-        if ($myBranches->isNotEmpty()) {
-            $officesData->push([
-                'id' => 'internal_' . $currentApp->id,
-                'name' => '🏠 مكتبنا الحالي',
-                'branches' => $myBranches
-            ]);
-        }
-        // ب- إضافة المكاتب الموثوقة (Apps)
-        foreach ($trustedApps as $tApp) {
-            if ($tApp->branches->isNotEmpty()) {
-                $officesData->push([
-                    'id' => 'trusted_' . $tApp->id,
-                    'name' => $tApp->name, // اسم نظيف
-                    'branches' => $tApp->branches
-                ]);
-            }
-        }
-
-        // ج- إضافة المكاتب غير الموثوقة (External Offices)
         foreach ($untrustedOffices as $uOffice) {
-            if ($uOffice->branches->isNotEmpty()) {
-                $officesData->push([
-                    'id' => 'untrusted_' . $uOffice->id,
-                    'name' => $uOffice->name, // اسم نظيف
-                    'branches' => $uOffice->branches
+            foreach ($uOffice->branches as $uBranch) {
+                $displayName = $uOffice->name;
+                if ($uBranch->name && $uBranch->name !== $uOffice->name) {
+                    $displayName .= ' - ' . $uBranch->name;
+                }
+                $displayName .= ' (مكتب خارجي)';
+
+                $destinations->push([
+                    'key'       => 'untrusted_' . $uOffice->id . '_' . $uBranch->id,
+                    'office_id' => 'untrusted_' . $uOffice->id,
+                    'branch_id' => (int) $uBranch->id,
+                    'name'      => $displayName,
+                    'group'     => 'المكاتب الخارجية (' . $uOffice->name . ')',
+                    'type'      => 'untrusted',
                 ]);
             }
         }
 
-        // --- 3. جلب العملاء كالمعتاد ---
+        // مصفوفة المكاتب للتوافق التام: تحتوي فقط على مكتبنا الحالي وبداخله كافة الوجهات
+        $officesData = collect([
+            [
+                'id'       => $currentOffice['id'],
+                'name'     => $currentOffice['name'],
+                'branches' => $destinations,
+            ]
+        ]);
+
+        return [
+            'currentOffice' => $currentOffice,
+            'destinations'  => $destinations,
+            'offices'       => $officesData,
+        ];
+    }
+
+    public function outgoingCreate(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $destinationContext = $this->getDestinationContext($user);
+        $currentOffice = $destinationContext['currentOffice'];
+        $destinations  = $destinationContext['destinations'];
+        $officesData   = $destinationContext['offices'];
+
+        // --- جلب العملاء ---
         $customers = Customer::get(['id', 'name', 'phone']);
 
         $customer = null;
@@ -189,24 +237,23 @@ class ShipmentController extends Controller
             $customer = Customer::findOrFail($request->customer_id);
         }
 
+        $viewData = [
+            'currentOffice' => $currentOffice,
+            'destinations'  => $destinations,
+            'offices'       => $officesData,
+            'customers'     => $customers,
+            'customer'      => $customer,
+            'role'          => $role,
+        ];
 
         // التوجيه إلى الواجهة وتمرير المتغيرات
         if ($request->isMobile) {
-            return view('mobile.pages.shipment.outgoing.create', [
-                'offices' => $officesData, // نمرر البيانات المهيأة
-                'customers' => $customers,
-                'customer' => $customer,
-                'role' => $role
-            ]);
+            return view('mobile.pages.shipment.outgoing.create', $viewData);
         }
 
-        return view('pages.shipment.outgoing.create', [
-            'offices' => $officesData,
-            'customers' => $customers,
-            'customer' => $customer,
-            'role' => $role
-        ]);
+        return view('pages.shipment.outgoing.create', $viewData);
     }
+
     public function outgoingStore(Request $request)
     {
         $rules = [
@@ -242,8 +289,10 @@ class ShipmentController extends Controller
 
         $validator = Validator::make($request->all(), $rules);
 
-        // تحقق إضافي للدفع الجزئي
+        // تحقق إضافي للدفع الجزئي والوجهة المحددة
         $validator->after(function ($validator) use ($request) {
+            $user = auth()->user();
+
             if ($request->payment_method === 'partial_payment') {
                 // نحسب الإجمالي مؤقتاً هنا للتحقق فقط
                 $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
@@ -251,6 +300,53 @@ class ShipmentController extends Controller
                 if ($partial >= $total) {
                     $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي (' . $total . ' ريال).');
                 }
+            }
+
+            // التحقق الأمني المتقدم من صحة الوجهة وصلاحياتها
+            $officeId = (string) $request->office_id;
+            $branchId = (int) $request->receiver_branch_id;
+            $officeParts = explode('_', $officeId);
+            $officeType = $officeParts[0] ?? '';
+            $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
+
+            if ($officeType === 'internal') {
+                if ($targetId !== (int) $user->app_id) {
+                    $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
+                }
+                if ($branchId === (int) $user->branch_id) {
+                    $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+                }
+                $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
+                if (!$branchExists) {
+                    $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
+                }
+            } elseif ($officeType === 'trusted') {
+                $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
+                    || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
+                if (!$isTrusted) {
+                    $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
+                }
+                $trustedBranchExists = Branch::withoutGlobalScope('app_id')
+                    ->where('app_id', $targetId)
+                    ->where('id', $branchId)
+                    ->exists();
+                if (!$trustedBranchExists) {
+                    $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
+                }
+            } elseif ($officeType === 'untrusted') {
+                $office = Office::where('app_id', $user->app_id)->find($targetId);
+                if (!$office) {
+                    $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
+                } else {
+                    $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                        ->where('id', $branchId)
+                        ->exists();
+                    if (!$officeBranchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                    }
+                }
+            } else {
+                $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
             }
         });
 
@@ -276,9 +372,9 @@ class ShipmentController extends Controller
             $finalReceiverOfficeBranchId = null;
 
             if ($officeType === 'untrusted') {
-                $finalReceiverOfficeBranchId = $data['receiver_branch_id'];
+                $finalReceiverOfficeBranchId = (int) $data['receiver_branch_id'];
             } else {
-                $finalReceiverBranchId = $data['receiver_branch_id'];
+                $finalReceiverBranchId = (int) $data['receiver_branch_id'];
             }
 
             // ========================================================
@@ -409,7 +505,8 @@ class ShipmentController extends Controller
         $shipment = Shipment::with([
             'senderCustomer',
             'receiverCustomer',
-            'receiverBranch'
+            'receiverBranch',
+            'receiverOfficeBranch.office',
         ])->findOrFail($id);
 
         if (auth()->user()->type !== 'admin' && $shipment->status !== 'pending') {
@@ -418,69 +515,15 @@ class ShipmentController extends Controller
 
         $user = auth()->user();
 
+        $destinationContext = $this->getDestinationContext($user);
+        $currentOffice = $destinationContext['currentOffice'];
+        $destinations  = $destinationContext['destinations'];
+        $offices       = $destinationContext['offices'];
+
         $customers = Customer::where('app_id', $user->app_id)
             ->get(['id', 'name', 'phone']);
 
         $branches = Branch::where('app_id', $user->app_id)->get();
-
-        $currentApp = $user->app;
-
-        $sentAccepted = $currentApp->sentConnections()
-            ->where('status', 'accepted')
-            ->pluck('receiver_app_id');
-
-        $receivedAccepted = $currentApp->receivedConnections()
-            ->where('status', 'accepted')
-            ->pluck('sender_app_id');
-
-        $connectedAppIds = collect()
-            ->merge($sentAccepted)
-            ->merge($receivedAccepted)
-            ->unique();
-
-        $trustedApps = App::whereIn('id', $connectedAppIds)
-            ->with(['branches' => function ($query) {
-                $query->withoutGlobalScope('app_id');
-            }])
-            ->get();
-
-        $untrustedOffices = Office::where('app_id', $currentApp->id)
-            ->with('branches')
-            ->get();
-
-        $offices = collect();
-
-        $myBranches = Branch::where('app_id', $currentApp->id)
-            ->where('id', '!=', $user->branch_id)
-            ->get();
-
-        if ($myBranches->isNotEmpty()) {
-            $offices->push([
-                'id'       => 'internal_' . $currentApp->id,
-                'name'     => '🏠 مكتبنا الحالي',
-                'branches' => $myBranches,
-            ]);
-        }
-
-        foreach ($trustedApps as $tApp) {
-            if ($tApp->branches->isNotEmpty()) {
-                $offices->push([
-                    'id'       => 'trusted_' . $tApp->id,
-                    'name'     => $tApp->name,
-                    'branches' => $tApp->branches,
-                ]);
-            }
-        }
-
-        foreach ($untrustedOffices as $uOffice) {
-            if ($uOffice->branches->isNotEmpty()) {
-                $offices->push([
-                    'id'       => 'untrusted_' . $uOffice->id,
-                    'name'     => $uOffice->name,
-                    'branches' => $uOffice->branches,
-                ]);
-            }
-        }
 
         // مهم: إذا الشحنة خارجية نعتمد receiver_office_branch_id أولاً
         $initialBranchId = old(
@@ -490,44 +533,36 @@ class ShipmentController extends Controller
 
         $initialOfficeId = old('office_id', '');
 
-        if (!$initialOfficeId && $initialBranchId) {
-            foreach ($offices as $office) {
-                $officeId = (string) $office['id'];
-
-                if ($shipment->receiver_office_branch_id && !str_starts_with($officeId, 'untrusted_')) {
-                    continue;
+        if (!$initialOfficeId) {
+            if ($shipment->receiver_office_branch_id && $shipment->receiverOfficeBranch) {
+                $initialOfficeId = 'untrusted_' . $shipment->receiverOfficeBranch->office_id;
+            } elseif ($shipment->receiver_branch_id && $shipment->receiverBranch) {
+                if ($shipment->receiverBranch->app_id == $user->app_id) {
+                    $initialOfficeId = 'internal_' . $user->app_id;
+                } else {
+                    $initialOfficeId = 'trusted_' . $shipment->receiverBranch->app_id;
                 }
-
-                if (!$shipment->receiver_office_branch_id && str_starts_with($officeId, 'untrusted_')) {
-                    continue;
-                }
-
-                foreach ($office['branches'] as $branch) {
-                    if ((int) $branch->id === (int) $initialBranchId) {
-                        $initialOfficeId = $office['id'];
-                        break 2;
-                    }
-                }
+            } else {
+                $initialOfficeId = 'internal_' . $user->app_id;
             }
         }
 
-        if ($request->isMobile) {
-            return view('mobile.pages.shipment.outgoing.edit', compact(
-                'shipment',
-                'customers',
-                'offices',
-                'branches',
-                'initialOfficeId'
-            ));
-        }
-
-        return view('pages.shipment.outgoing.edit', compact(
+        $viewData = compact(
             'shipment',
             'customers',
+            'currentOffice',
+            'destinations',
             'offices',
             'branches',
-            'initialOfficeId'
-        ));
+            'initialOfficeId',
+            'initialBranchId'
+        );
+
+        if ($request->isMobile) {
+            return view('mobile.pages.shipment.outgoing.edit', $viewData);
+        }
+
+        return view('pages.shipment.outgoing.edit', $viewData);
     }
     public function outgoingUpdate(Request $request, $id)
     {
@@ -539,7 +574,7 @@ class ShipmentController extends Controller
 
         $rules = [
             'office_id'             => 'required|string',
-            'receiver_branch_id'    => 'required|integer|exists:branches,id',
+            'receiver_branch_id'    => 'required|integer',
 
             'sender_customer_id'    => 'nullable|exists:customers,id',
             'sender_name'           => 'required_without:sender_customer_id|string|max:255',
@@ -571,6 +606,8 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         $validator->after(function ($validator) use ($request) {
+            $user = auth()->user();
+
             // 💡 تحديث حساب الإجمالي للتحقق من الدفع الجزئي
             if ($request->payment_method === 'partial_payment') {
                 $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
@@ -581,11 +618,51 @@ class ShipmentController extends Controller
                 }
             }
 
-            if (
-                !str_starts_with((string) $request->office_id, 'untrusted_') &&
-                (int) $request->receiver_branch_id === (int) auth()->user()->branch_id
-            ) {
-                $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+            // التحقق الأمني المتقدم من صحة الوجهة وصلاحياتها
+            $officeId = (string) $request->office_id;
+            $branchId = (int) $request->receiver_branch_id;
+            $officeParts = explode('_', $officeId);
+            $officeType = $officeParts[0] ?? '';
+            $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
+
+            if ($officeType === 'internal') {
+                if ($targetId !== (int) $user->app_id) {
+                    $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
+                }
+                if ($branchId === (int) $user->branch_id) {
+                    $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+                }
+                $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
+                if (!$branchExists) {
+                    $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
+                }
+            } elseif ($officeType === 'trusted') {
+                $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
+                    || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
+                if (!$isTrusted) {
+                    $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
+                }
+                $trustedBranchExists = Branch::withoutGlobalScope('app_id')
+                    ->where('app_id', $targetId)
+                    ->where('id', $branchId)
+                    ->exists();
+                if (!$trustedBranchExists) {
+                    $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
+                }
+            } elseif ($officeType === 'untrusted') {
+                $office = Office::where('app_id', $user->app_id)->find($targetId);
+                if (!$office) {
+                    $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
+                } else {
+                    $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                        ->where('id', $branchId)
+                        ->exists();
+                    if (!$officeBranchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                    }
+                }
+            } else {
+                $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
             }
         });
 
@@ -640,13 +717,22 @@ class ShipmentController extends Controller
                 $receiverCustomerId = $receiverCustomer->id;
             }
 
-            $officeId = (string) $request->office_id;
-            $isUntrusted = str_starts_with($officeId, 'untrusted_');
+            $officeIdParts = explode('_', (string) $data['office_id']);
+            $officeType = $officeIdParts[0] ?? '';
+
+            $finalReceiverBranchId = null;
+            $finalReceiverOfficeBranchId = null;
+
+            if ($officeType === 'untrusted') {
+                $finalReceiverOfficeBranchId = (int) $data['receiver_branch_id'];
+            } else {
+                $finalReceiverBranchId = (int) $data['receiver_branch_id'];
+            }
 
             // 💡 تحديث البيانات
             $shipment->update([
-                'receiver_branch_id'        => $isUntrusted ? null : $data['receiver_branch_id'],
-                'receiver_office_branch_id' => $isUntrusted ? $data['receiver_branch_id'] : null,
+                'receiver_branch_id'        => $finalReceiverBranchId,
+                'receiver_office_branch_id' => $finalReceiverOfficeBranchId,
 
                 'sender_customer_id'        => $senderCustomerId,
                 'receiver_customer_id'      => $receiverCustomerId,

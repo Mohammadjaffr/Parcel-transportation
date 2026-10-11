@@ -20,7 +20,7 @@
             @submit="if(!isSubmitting) { isSubmitting = true; $el.submit(); } else { $event.preventDefault(); }">
             @csrf
             {{-- بيانات الفروع --}}
-            <div x-data='destinationLogic(@json($offices), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
+            <div x-data='destinationLogic(@json($destinations), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
                 class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-900/5 group/card">
 
                 {{-- الرأس بشكل مبسط --}}
@@ -32,45 +32,47 @@
                     </div>
                     <div>
                         <h3 class="text-base font-black text-slate-900 font-headline">وجهة الطرد</h3>
-                        <p class="text-[10px] text-slate-500 font-medium">اختر المكتب والفرع المستلم</p>
+                        <p class="text-[10px] text-slate-500 font-medium">المكتب الحالي والوجهة المستلمة</p>
                     </div>
                 </div>
 
                 {{-- شبكة الحقول --}}
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                    {{-- اختيار المكتب --}}
+                    {{-- حقل المكتب (يعرض المكتب الحالي فقط - للقراءة فقط) --}}
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 pr-1">المكتب <span
+                        <label class="text-[10px] font-black text-slate-400 pr-1">المكتب الحالي <span
                                 class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select name="office_id" x-model="selectedOfficeId" @change="selectedBranchId = ''; updateBranches()" required
-                                class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all appearance-none outline-none text-slate-800 bg-slate-50 border-slate-200/70 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10">
-                                <option value="" disabled selected>المكتب...</option>
-                                <template x-for="office in offices" :key="office.id">
-                                    <option :value="office.id" x-text="office.name"></option>
-                                </template>
-                            </select>
+                            <input type="text" readonly
+                                value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
+                                class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all outline-none text-slate-800 bg-slate-100 border-slate-200/70 cursor-not-allowed select-none">
+                            <input type="hidden" name="office_id" x-model="selectedOfficeId">
                             <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                        d="M19 9l-7 7-7-7"></path>
-                                </svg>
+                                <span class="material-symbols-outlined text-[18px]">store</span>
                             </span>
                         </div>
                     </div>
 
-                    {{-- اختيار الفرع --}}
-                    <div class="space-y-1.5" x-show="selectedOfficeId" x-transition:enter.duration.300ms>
-                        <label class="text-[10px] font-black text-slate-400 pr-1">الفرع <span
+                    {{-- اختيار الفرع أو الوجهة المستلمة --}}
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 pr-1">الفرع أو الوجهة المستلمة <span
                                 class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select name="receiver_branch_id" x-model="selectedBranchId" required
+                            <input type="hidden" name="receiver_branch_id" x-model="selectedBranchId">
+
+                            <select x-model="selectedDestinationKey" @change="onDestinationChange($event.target.value)" required
                                 class="pr-3 pl-8 w-full h-12 text-xs font-bold bg-white rounded-xl border transition-all appearance-none outline-none text-slate-800 border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10">
-                                <option value="" disabled selected>الفرع...</option>
-                                <template x-for="branch in availableBranches" :key="branch.id">
-                                    <option :value="branch.id" x-text="branch.name"></option>
-                                </template>
+                                <option value="" disabled selected>اختر الفرع أو الوجهة...</option>
+                                @foreach($destinations->groupBy('group') as $groupName => $groupDestinations)
+                                    <optgroup label="{{ $groupName }}">
+                                        @foreach($groupDestinations as $dest)
+                                            <option value="{{ $dest['key'] }}">
+                                                {{ $dest['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
                             </select>
                             <span class="absolute left-2.5 top-1/2 text-emerald-500 -translate-y-1/2 pointer-events-none">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,56 +519,51 @@
             /* =========================================================
                1. منطق اختيار الوجهة (المكتب -> الفرع)
             ========================================================= */
-            Alpine.data('destinationLogic', (officesList, initialBranchId, initialOfficeId) => ({
-                offices: officesList || [],
+            Alpine.data('destinationLogic', (destinationsList, initialBranchId, initialOfficeId) => ({
+                destinations: destinationsList || [],
                 selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
                 selectedBranchId: initialBranchId ? String(initialBranchId) : '',
-                availableBranches: [],
+                selectedDestinationKey: '',
 
                 init() {
-                    // الحالة الأولى: إذا كان المكتب ممرراً مسبقاً (في حالة وجود خطأ في الفورم)
-                    if (this.selectedOfficeId) {
-                        this.populateBranches();
-                        return; // نخرج من الدالة لكي لا نغير التحديد
-                    }
-
-                    // الحالة الثانية: إذا كان الفرع ممرراً ولكن المكتب غير معروف
+                    // إذا تم تمرير فرع مسبقاً (سواء من old أو من البيانات الأولية)
                     if (this.selectedBranchId) {
-                        const foundOffice = this.offices.find(office => {
-                            return (office.branches || []).some(
-                                branch => String(branch.id) === String(this.selectedBranchId)
-                            );
+                        const matched = this.destinations.find(d => {
+                            const matchBranch = String(d.branch_id) === String(this.selectedBranchId);
+                            if (this.selectedOfficeId) {
+                                return matchBranch && String(d.office_id) === String(this.selectedOfficeId);
+                            }
+                            return matchBranch;
                         });
 
-                        if (foundOffice) {
-                            this.selectedOfficeId = String(foundOffice.id);
-                            this.populateBranches();
+                        if (matched) {
+                            this.selectedDestinationKey = matched.key;
+                            this.selectedOfficeId = String(matched.office_id);
+                            this.selectedBranchId = String(matched.branch_id);
                             return;
                         }
                     }
 
-                    // الحالة الثالثة (الافتراضية لطرد جديد): تحديد "مكتبنا الحالي" تلقائياً
-                    const internalOffice = this.offices.find(
-                        o => String(o.id).startsWith('internal_')
-                    );
-
-                    if (internalOffice) {
-                        this.selectedOfficeId = String(internalOffice.id);
-                        this.populateBranches();
+                    // في حال لم يتم تحديد مكتب بعد، نعين مكتبنا الداخلي كافتراضي
+                    if (!this.selectedOfficeId && this.destinations.length > 0) {
+                        const internal = this.destinations.find(d => d.type === 'internal');
+                        if (internal) {
+                            this.selectedOfficeId = String(internal.office_id);
+                        }
                     }
                 },
 
-                // دالة مساعدة لتعبئة الفروع بناءً على المكتب المحدد
-                populateBranches() {
-                    const office = this.offices.find(
-                        o => String(o.id) === String(this.selectedOfficeId)
-                    );
-                    this.availableBranches = office ? (office.branches || []) : [];
-                },
-
-                // تُستدعى من الواجهة عند تغيير المكتب @change
-                updateBranches() {
-                    this.populateBranches();
+                onDestinationChange(key) {
+                    const dest = this.destinations.find(d => d.key === key);
+                    if (dest) {
+                        this.selectedDestinationKey = dest.key;
+                        this.selectedOfficeId = String(dest.office_id);
+                        this.selectedBranchId = String(dest.branch_id);
+                    } else {
+                        this.selectedDestinationKey = '';
+                        this.selectedOfficeId = '';
+                        this.selectedBranchId = '';
+                    }
                 }
             }));
 

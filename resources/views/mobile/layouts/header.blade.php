@@ -71,6 +71,16 @@
                         <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">settings</span>
                         إعدادات الشركة
                     </a>
+                    <a href="{{ route('app.whatsapp.settings') }}"
+                        class="flex gap-3 items-center p-3 text-sm font-bold rounded-2xl transition-colors hover:bg-slate-50 text-slate-600 hover:text-emerald-600 font-headline active:scale-95">
+                        <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg text-emerald-600">chat</span>
+                        إعدادات الواتساب (WhatsApp)
+                    </a>
+                    <a href="{{ route('app.sms.settings') }}"
+                        class="flex gap-3 items-center p-3 text-sm font-bold rounded-2xl transition-colors hover:bg-slate-50 text-slate-600 hover:text-primary font-headline active:scale-95">
+                        <span class="material-symbols-outlined text-[20px] bg-slate-100 p-1.5 rounded-lg">sms</span>
+                        إعدادات الرسائل (SMS)
+                    </a>
                 @endif
 
                 <div class="mx-2 my-1 h-px bg-slate-100"></div>

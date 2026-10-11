@@ -57,10 +57,25 @@
 
                 <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-primary/20 to-primary/5"></div>
 
-                <button @click="showEditCompanyModal = true"
-                    class="flex absolute top-4 left-4 justify-center items-center w-8 h-8 rounded-full backdrop-blur-md transition-colors bg-white/50 text-slate-600 hover:text-primary">
-                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                </button>
+                <div class="absolute top-4 left-4 flex items-center gap-2">
+                    <a href="{{ route('app.whatsapp.settings') }}"
+                        title="إعدادات تكامل WhatsApp"
+                        class="flex justify-center items-center px-3 py-1.5 rounded-full backdrop-blur-md transition-all bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 hover:text-emerald-900 text-xs font-bold gap-1.5 shadow-sm border border-emerald-200/60 active:scale-95">
+                        <span class="material-symbols-outlined text-[16px]">chat</span>
+                        <span>إعدادات WhatsApp</span>
+                    </a>
+                    <a href="{{ route('app.sms.settings') }}"
+                        title="إعدادات الرسائل النصية SMS"
+                        class="flex justify-center items-center px-3 py-1.5 rounded-full backdrop-blur-md transition-all bg-white/80 hover:bg-white text-slate-700 hover:text-primary text-xs font-bold gap-1.5 shadow-sm border border-slate-100 active:scale-95">
+                        <span class="material-symbols-outlined text-[16px]">sms</span>
+                        <span>إعدادات SMS</span>
+                    </a>
+                    <button @click="showEditCompanyModal = true"
+                        title="تعديل بيانات الشركة"
+                        class="flex justify-center items-center w-8 h-8 rounded-full backdrop-blur-md transition-colors bg-white/50 text-slate-600 hover:text-primary">
+                        <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                    </button>
+                </div>
 
                 <div
                     class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white shadow-lg border-4 border-white p-1 z-10 -mt-16 mb-4">
