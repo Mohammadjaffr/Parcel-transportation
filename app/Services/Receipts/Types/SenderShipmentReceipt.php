@@ -95,10 +95,10 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             : null;
 
         // 6. الثيم والألوان - محمي
-        $theme = $app?->theme ?? [
-            'primary'   => '#ea580c',
+        $theme = [
+            'primary'   => '#059669',
             'secondary' => '#1e293b',
-            'bg_light'  => '#fffaf5',
+            'bg_light'  => '#ecfdf5',
         ];
 
         // 7. إرجاع البيانات المنظمة
@@ -162,9 +162,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 ? $app->terms_and_conditions
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
             'design' => [
-                'primary_color'   => $theme['primary'] ?? '#ea580c',
+                'primary_color'   => '#059669',
                 'secondary_color' => $theme['secondary'] ?? '#1e293b',
-                'bg_color'        => $theme['bg_light'] ?? '#fffaf5',
+                'bg_color'        => '#ecfdf5',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'A5 landscape',
             ]
