@@ -124,7 +124,7 @@ use Illuminate\Support\Facades\Cache;
         
         public function getThemeAttribute(): array
         {
-            $primary = $this->color ?: '#fb6514'; 
+            $primary = $this->color ?: '#059669'; 
             return [
                 'primary'   => $primary,
                 'secondary' => $this->adjustBrightness($primary, -30),

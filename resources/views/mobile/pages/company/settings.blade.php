@@ -531,7 +531,8 @@
 
         <div x-data="{
             isSubmittingCompany: false,
-            terms: {{ json_encode($company->terms_and_conditions ?? ['']) }}
+            terms: {{ json_encode($company->terms_and_conditions ?? ['']) }},
+            companyColor: '{{ $company->color ?? '#059669' }}'
         }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center pointer-events-none sm:p-4">
 
@@ -666,32 +667,32 @@
                             </div>
                         </div>
                     </div>
-                    {{-- <div>
+                    <div>
                         <label class="block px-1 mb-1.5 text-xs font-bold text-slate-600 font-headline">لون المكتب (التمييز
-                            البصري)</label> --}}
+                            البصري وسندات الطباعة)</label>
 
-                        {{-- <div
-                            class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20"> --}}
+                        <div
+                            class="flex overflow-hidden relative items-center px-2 h-12 rounded-xl ring-1 transition-all bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
 
                             {{-- حقل اختيار اللون --}}
-                            {{-- <input type="color" name="color" x-model="editBranchForm.color"
-                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm"> --}}
+                            <input type="color" name="color" x-model="companyColor"
+                                class="w-8 h-8 rounded-lg border-none cursor-pointer bg-transparent shrink-0 p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-md shadow-sm">
 
                             {{-- عرض كود اللون كنص لتجربة مستخدم أفضل --}}
-                            {{-- <div class="flex-1 px-3">
-                                <input type="text" x-model="editBranchForm.color" placeholder="#000000"
+                            <div class="flex-1 px-3">
+                                <input type="text" x-model="companyColor" placeholder="#059669"
                                     dir="ltr"
                                     class="w-full font-mono text-sm text-left uppercase bg-transparent border-none outline-none text-slate-600 focus:ring-0 placeholder:text-slate-400">
-                            </div> --}}
+                            </div>
 
                             {{-- أيقونة جمالية --}}
-                            {{-- <div class="pr-2 pointer-events-none text-slate-400">
+                            <div class="pr-2 pointer-events-none text-slate-400">
                                 <span class="text-lg material-symbols-outlined">palette</span>
                             </div>
-                        </div> --}}
+                        </div>
 
                         {{-- 💡 الرسالة التوضيحية الأنيقة --}}
-                        {{-- <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
+                        <div class="flex gap-1.5 items-start px-1 mt-2 text-slate-500">
                             <span class="material-symbols-outlined text-[14px] mt-0.5 text-blue-500">info</span>
                             <p class="text-[10px] leading-relaxed font-medium">
                                 سيتم اعتماد هذا اللون تلقائياً لتخصيص الهوية البصرية في <span
@@ -699,7 +700,7 @@
                                 المكتب.
                             </p>
                         </div>
-                    </div> --}}
+                    </div>
 
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <button type="submit" :disabled="isSubmittingCompany"

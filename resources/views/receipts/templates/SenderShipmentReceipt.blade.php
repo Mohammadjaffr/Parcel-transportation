@@ -11,10 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 
     @php
-        // 1. تحديد السمة اللونية الخضراء الزمردية الأنيقة (Emerald Green)
-        $primary = !empty($design['primary_color']) && !in_array(strtolower($design['primary_color']), ['#ea580c', '#f97316', '#fb6514', '#c2410c'])
-            ? $design['primary_color']
-            : '#059669';
+        // 1. تحديد السمة اللونية لهوية الشركة ديناميكياً
+        $primary = !empty($design['primary_color']) ? $design['primary_color'] : '#059669';
 
         $logo = $company['logo'] ?? null;
 

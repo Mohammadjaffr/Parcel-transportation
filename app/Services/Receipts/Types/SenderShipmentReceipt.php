@@ -94,8 +94,8 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
             : null;
 
-        // 6. الثيم والألوان - محمي
-        $theme = [
+        // 6. الثيم والألوان - جلب لون الشركة المختار ديناميكياً من إعدادات المكتب
+        $theme = $app?->theme ?? [
             'primary'   => '#059669',
             'secondary' => '#1e293b',
             'bg_light'  => '#ecfdf5',
@@ -162,9 +162,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 ? $app->terms_and_conditions
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'التأكد من بيانات السند قبل المغادرة.'],
             'design' => [
-                'primary_color'   => '#059669',
+                'primary_color'   => $theme['primary'] ?? '#059669',
                 'secondary_color' => $theme['secondary'] ?? '#1e293b',
-                'bg_color'        => '#ecfdf5',
+                'bg_color'        => $theme['bg_light'] ?? '#ecfdf5',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'A5 landscape',
             ]
