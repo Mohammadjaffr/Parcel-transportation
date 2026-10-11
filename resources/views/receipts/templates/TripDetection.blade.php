@@ -12,8 +12,9 @@
                 margin: 2mm;
             }
             body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color: #0f172a !important;
             }
             
             /* Aggressively compress vertical spacing to fit 20 rows */
@@ -23,23 +24,63 @@
             .mt-4, .mt-6 { margin-top: 4px !important; }
             .gap-4, .gap-3, .gap-2, .gap-1\.5 { gap: 2px !important; }
             
-            table th, table td {
-                padding-top: 1px !important;
-                padding-bottom: 1px !important;
-                font-size: 10px !important;
-                line-height: 1 !important;
+            /* Large, clear, and high-contrast table typography for print */
+            table th {
+                padding-top: 3px !important;
+                padding-bottom: 3px !important;
+                font-size: 15px !important;
+                font-weight: 800 !important;
+                color: #0f172a !important;
+                line-height: 1.25 !important;
                 border-width: 1px !important;
+                border-color: #cbd5e1 !important;
+                background-color: #f1f5f9 !important;
+            }
+
+            table td {
+                padding-top: 3px !important;
+                padding-bottom: 3px !important;
+                border-width: 1px !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            table td,
+            table td * {
+                font-size: 15px !important;
+                font-weight: 700 !important;
+                line-height: 1.25 !important;
+                color: #0f172a !important;
             }
             
             /* Shrink headers and logos */
-            .text-3xl { font-size: 16px !important; line-height: 1.2 !important; }
+            .text-3xl { font-size: 18px !important; line-height: 1.3 !important; }
             .w-28 { width: 50px !important; }
             .h-28 { height: 50px !important; }
             
-            /* Shrink text */
-            .text-xs { font-size: 9px !important; }
-            .text-sm { font-size: 10px !important; }
-            .text-xl { font-size: 14px !important; }
+            /* Print text sizes */
+            .text-xs { font-size: 13px !important; }
+            .text-sm { font-size: 15px !important; }
+            .text-base { font-size: 16px !important; }
+            .text-lg { font-size: 17px !important; }
+            .text-xl { font-size: 18px !important; }
+
+            /* High contrast for printing so light text becomes bold, dark, and crisp */
+            .text-slate-400,
+            .text-slate-500,
+            .text-slate-600 {
+                color: #1e293b !important;
+                font-weight: 700 !important;
+            }
+
+            /* Make micro-text legible in print */
+            [class*="text-[7px]"],
+            [class*="text-[8px]"],
+            [class*="text-[9px]"],
+            [class*="text-[10px]"] {
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                color: #1e293b !important;
+            }
         }
     </style>
 @endpush
@@ -93,19 +134,19 @@
                     <div class="flex flex-col gap-1 border-r-2 border-rose-500 pr-2 ">
                         @if (!empty($company['main_branch']))
                             <div>
-                                <p class="text-[10px] font-bold text-slate-800 truncate" title="{{ $company['main_branch']['title'] }}">
+                                <p class="text-[11px] font-bold text-slate-800 truncate" title="{{ $company['main_branch']['title'] }}">
                                     {{ $company['main_branch']['title'] }}
                                 </p>
-                                <p class="text-[9px] font-medium text-slate-600 truncate mt-0.5" dir="rtl">
+                                <p class="text-[10px] font-bold text-slate-700 truncate mt-0.5" dir="rtl">
                                     هاتف: <span class="font-sans font-black text-slate-900 ">{{ $company['main_branch']['phones'] }}</span>
                                 </p>
                             </div>
                         @else
                             <div>
-                                <p class="text-[10px] font-bold text-slate-800 truncate">
+                                <p class="text-[11px] font-bold text-slate-800 truncate">
                                     الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
                                 </p>
-                                <p class="text-[9px] font-medium text-slate-600 truncate mt-0.5" dir="rtl">
+                                <p class="text-[10px] font-bold text-slate-700 truncate mt-0.5" dir="rtl">
                                     هاتف: <span class="font-sans font-black text-slate-900 ">{{ $company['main_branch']['phones'] ?? '---' }}</span>
                                 </p>
                             </div>
@@ -113,19 +154,19 @@
 
                         @if (!empty($company['headquarters']) && ($company['main_branch']['title'] ?? '') !== $company['headquarters']['title'])
                             <div>
-                                <p class="text-[9px] font-bold text-slate-600 truncate" title="{{ $company['headquarters']['title'] }}">
+                                <p class="text-[10px] font-bold text-slate-700 truncate" title="{{ $company['headquarters']['title'] }}">
                                     {{ $company['headquarters']['title'] }}
                                 </p>
-                                <p class="text-[8px] font-medium text-slate-500 truncate mt-0.5" dir="rtl">
-                                    هاتف: <span class="font-sans font-bold text-slate-800 ">{{ $company['headquarters']['phones'] }}</span>
+                                <p class="text-[10px] font-bold text-slate-700 truncate mt-0.5" dir="rtl">
+                                    هاتف: <span class="font-sans font-bold text-slate-900 ">{{ $company['headquarters']['phones'] }}</span>
                                 </p>
                             </div>
                         @endif
 
                         @if (!empty($company['other_phones']))
                             <div>
-                                <p class="text-[8px] font-bold text-slate-400">فروع أخرى:</p>
-                                <p class="text-[7px] font-medium text-slate-500 line-clamp-2 leading-relaxed mt-0.5" dir="rtl">
+                                <p class="text-[9px] font-bold text-slate-500">فروع أخرى:</p>
+                                <p class="text-[9px] font-bold text-slate-600 line-clamp-2 leading-relaxed mt-0.5" dir="rtl">
                                     <span class="font-sans">{{ $company['other_phones'] }}</span>
                                 </p>
                             </div>
@@ -152,19 +193,19 @@
                     <div
                         class="p-3 w-4/5 bg-white rounded-xl border shadow-sm border-slate-200 print:w-full print:shadow-none print:bg-transparent print:p-0 print:border-none">
                         <div
-                            class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200">
-                            <span class="font-sans font-bold text-slate-800"
+                            class="flex justify-between items-center pb-1.5 mb-1.5 text-xs font-bold border-b border-dashed border-slate-200">
+                            <span class="font-sans font-black text-slate-900"
                                 dir="ltr">{{ $print_date ?? date('Y-m-d H:i') }}</span>
-                            <span class="font-semibold text-slate-500">تاريخ الطباعة</span>
+                            <span class="font-bold text-slate-700">تاريخ الطباعة</span>
                         </div>
                         <div
-                            class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200">
-                            <span class="font-bold text-slate-800">{{ $total_passengers ?? 0 }}</span>
-                            <span class="font-semibold text-slate-500">إجمالي الركاب</span>
+                            class="flex justify-between items-center pb-1.5 mb-1.5 text-xs font-bold border-b border-dashed border-slate-200">
+                            <span class="font-black text-slate-900">{{ $total_passengers ?? 0 }}</span>
+                            <span class="font-bold text-slate-700">إجمالي الركاب</span>
                         </div>
-                        <div class="flex justify-between items-center text-xs">
-                            <span class="font-bold text-slate-800">{{ count($drivers ?? []) }}</span>
-                            <span class="font-semibold text-slate-500">عدد الرحلات</span>
+                        <div class="flex justify-between items-center text-xs font-bold">
+                            <span class="font-black text-slate-900">{{ count($drivers ?? []) }}</span>
+                            <span class="font-bold text-slate-700">عدد الرحلات</span>
                         </div>
                     </div>
                 </div>
@@ -224,57 +265,51 @@
                             <div>
                                 <h3 class="text-base font-black text-slate-800">السائق: {{ $driver['driver_name'] }}</h3>
                                 <div class="flex gap-2 items-center mt-0.5">
-                                    <span class="text-xs font-bold text-slate-500"
+                                    <span class="text-xs font-bold text-slate-600"
                                         dir="ltr">{{ $driver['driver_phone'] }}</span>
 
                                 </div>
                             </div>
                         </div>
-                        <div class="flex gap-4 text-xs font-bold text-slate-600">
+                        <div class="flex gap-4 text-xs font-bold text-slate-700">
                             <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">الركاب:
-                                <strong>{{ $driver['total_passengers_count'] }}</strong></span>
+                                <strong class="text-slate-900">{{ $driver['total_passengers_count'] }}</strong></span>
                             <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">العدد الكلي:
-                                <strong>{{ $driver['total_count'] }}</strong></span>
+                                <strong class="text-slate-900">{{ $driver['total_count'] }}</strong></span>
 
                         </div>
                     </div>
 
                     {{-- Passengers Table --}}
                     <div class="overflow-x-auto rounded-b-2xl border border-slate-200">
-                        <table class="w-full text-sm text-right premium-table">
+                        <table class="w-full text-base text-right premium-table">
                             <thead>
                                 <tr>
-                                    <th class="w-10 text-center">#</th>
-                                    <th class="w-28">التاريخ</th>
+                                    <th class="w-10 text-center font-black text-slate-800">#</th>
+                                    <th class="w-28 font-black text-slate-800">التاريخ</th>
 
-                                    <th>رقم الراكب (الهاتف)</th>
+                                    <th class="font-black text-slate-800">رقم الراكب (الهاتف)</th>
 
-                                    @auth
-                                        <th>الوسيط</th>
-                                    @endauth
-                                    <th class="w-28 text-right">مكان الراكب</th>
-                                    <th class="w-28 text-right">الوجهة</th>
-                                    <th class="w-12 text-center">العدد</th>
+                                    <th class="w-32 text-right font-black text-slate-800">مكان الراكب</th>
+                                    <th class="w-32 text-right font-black text-slate-800">الوجهة</th>
+                                    <th class="w-14 text-center font-black text-slate-800">العدد</th>
 
-                                    <th class="w-32 text-right">الملاحظات</th>
+                                    <th class="w-36 text-right font-black text-slate-800">الملاحظات</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($chunk as $passenger)
                                     <tr class="transition-colors hover:bg-slate-50">
-                                        <td class="font-bold text-center text-slate-400">{{ $globalPassengerIndex++ }}</td>
-                                        <td class="font-bold text-slate-700" dir="ltr">{{ $passenger['date'] }}</td>
-                                        <td class="font-bold text-slate-700" dir="ltr">
+                                        <td class="font-bold text-center text-slate-800">{{ $globalPassengerIndex++ }}</td>
+                                        <td class="font-bold text-slate-900" dir="ltr">{{ $passenger['date'] }}</td>
+                                        <td class="font-black text-slate-900" dir="ltr">
                                             {{ $passenger['passenger_number'] }}</td>
-                                        @auth
-                                            <td>{{ $passenger['broker_name'] }}</td>
-                                        @endauth
-                                        <td class="text-xs font-bold text-slate-600">{{ $passenger['pickup_location'] }}
+                                        <td class="font-bold text-slate-900">{{ $passenger['pickup_location'] }}
                                         </td>
-                                        <td class="text-xs font-bold text-slate-600">{{ $passenger['destination'] }}</td>
-                                        <td class="font-black text-center text-slate-800">{{ $passenger['count'] }}</td>
+                                        <td class="font-bold text-slate-900">{{ $passenger['destination'] }}</td>
+                                        <td class="font-black text-center text-slate-900">{{ $passenger['count'] }}</td>
 
-                                        <td class="max-w-xs text-xs font-medium truncate text-slate-500">
+                                        <td class="max-w-xs font-bold text-slate-800">
                                             {{ $passenger['note'] ?? '---' }}</td>
                                     </tr>
                                 @endforeach
@@ -289,16 +324,16 @@
                     <div
                         class="grid grid-cols-3 gap-4 p-4 text-center divide-x divide-x-reverse bg-slate-50 sm:grid-cols-3 divide-slate-200">
                         <div>
-                            <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي الركاب </p>
-                            <p class="text-lg font-black text-slate-800">{{ $total_passengers ?? 0 }}</p>
+                            <p class="mb-1 text-sm font-bold uppercase text-slate-600">إجمالي الركاب </p>
+                            <p class="text-xl font-black text-slate-900">{{ $total_passengers ?? 0 }}</p>
                         </div>
                         <div>
-                            <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي الركاب الكلي</p>
-                            <p class="text-lg font-black text-slate-800">{{ number_format($total_count ?? 0, 0) }}</p>
+                            <p class="mb-1 text-sm font-bold uppercase text-slate-600">إجمالي الركاب الكلي</p>
+                            <p class="text-xl font-black text-slate-900">{{ number_format($total_count ?? 0, 0) }}</p>
                         </div>
                         <div>
-                            <p class="mb-1 text-xs font-bold uppercase text-slate-400">إجمالي العمولات</p>
-                            <p class="text-lg font-black text-slate-800">
+                            <p class="mb-1 text-sm font-bold uppercase text-slate-600">إجمالي العمولات</p>
+                            <p class="text-xl font-black text-slate-900">
                                 {{ number_format($totalOfficeCommissionAll ?? 0, 0) }} ر.ي</p>
                         </div>
 
