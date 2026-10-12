@@ -311,12 +311,12 @@
                                 class="material-symbols-outlined text-[20px] bg-slate-100 dark:bg-gray-900 p-1.5 rounded-lg text-emerald-600">chat</span>
                             إعدادات الواتساب (WhatsApp)
                         </a>
-                        <a href="{{ route('app.sms.settings') }}"
+                        {{-- <a href="{{ route('app.sms.settings') }}"
                             class="flex gap-3 items-center p-3 mt-1 text-sm font-bold rounded-xl transition-colors hover:bg-slate-50 text-slate-600 hover:text-primary active:scale-95 dark:hover:bg-gray-800 dark:text-gray-300">
                             <span
                                 class="material-symbols-outlined text-[20px] bg-slate-100 dark:bg-gray-900 p-1.5 rounded-lg">sms</span>
                             إعدادات الرسائل (SMS)
-                        </a>
+                        </a> --}}
                     @endif
 
                     <div class="p-1 mt-1">

@@ -157,7 +157,7 @@
                     this.sessionFeedbackType = 'success';
                     this.sessionFeedbackMessage = data.message || `تم تنفيذ عملية ${actionName} بنجاح.`;
                     await this.checkStatus();
-                    if (actionName === 'connect') {
+                    if (actionName === 'connect' && this.connectionState !== 'connected') {
                         this.fetchQrCode();
                     }
                 } else {
@@ -296,7 +296,7 @@
                 <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-teal-500/5"></div>
 
                 {{-- أزرار التنقل السريعة --}}
-                <div class="absolute top-4 left-4 flex items-center gap-2">
+                {{-- <div class="absolute top-4 left-4 flex items-center gap-2">
                     <a href="{{ route('app.sms.settings') }}"
                         title="إعدادات الرسائل النصية SMS"
                         class="hidden sm:flex justify-center items-center px-3.5 py-1.5 rounded-full backdrop-blur-md transition-all bg-white/80 hover:bg-white dark:bg-boxdark/80 dark:hover:bg-boxdark text-slate-700 dark:text-gray-200 hover:text-primary text-xs font-bold gap-1.5 shadow-sm border border-slate-100 dark:border-gray-700 active:scale-95">
@@ -309,7 +309,7 @@
                         <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
                         <span>إعدادات الشركة</span>
                     </a>
-                </div>
+                </div> --}}
 
                 {{-- أيقونة الهيدر المركزية للواتساب --}}
                 <div class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white dark:bg-boxdark shadow-lg border-4 border-white dark:border-boxdark p-1 z-10 -mt-16 mb-4">
@@ -334,40 +334,7 @@
                     إدارة بوابة وخدمة WhatsApp الخاصة بـ <span class="font-bold text-slate-700 dark:text-gray-200">{{ $company->name }}</span>، وربط الجلسة ورمز الاقتران واختبار الإرسال المباشر للمكتب بصورة مستقلة.
                 </p>
 
-                {{-- شارات الحالة والإحصائيات السريعة --}}
-                <div class="flex flex-wrap justify-center items-center gap-3 pt-5 border-t border-slate-100 dark:border-gray-800">
-                    {{-- حالة التكوين --}}
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold font-headline"
-                        :class="isConfigured ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800' : 'bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-100 dark:border-amber-800'">
-                        <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;"
-                            x-text="isConfigured ? 'verified' : 'pending'"></span>
-                        <span x-text="isConfigured ? 'بيانات الـ Instance مهيأة' : 'بانتظار تهيئة معرف الـ Instance ورمز المرور'"></span>
-                    </div>
-
-                    {{-- اسم المكتب --}}
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold font-headline bg-slate-50 text-slate-600 dark:bg-gray-800 dark:text-gray-300 border border-slate-100 dark:border-gray-700">
-                        <span class="material-symbols-outlined text-[18px]">business</span>
-                        <span>المكتب: {{ $company->name }}</span>
-                    </div>
-
-                    {{-- البوابة المزودة --}}
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold font-headline bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">
-                        <span class="material-symbols-outlined text-[18px]">cell_tower</span>
-                        <span>مزود الخدمة: Evolution WhatsApp Gateway</span>
-                    </div>
-
-                    {{-- حالة الجلسة المباشرة --}}
-                    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold font-headline border"
-                        :class="{
-                            'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300': connectionState === 'connected',
-                            'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300': connectionState === 'connecting',
-                            'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300': connectionState === 'error',
-                            'bg-slate-100 text-slate-700 border-slate-200 dark:bg-gray-800 dark:text-gray-300': connectionState === 'disconnected' || connectionState === 'not_configured' || connectionState === 'unknown'
-                        }">
-                        <span class="material-symbols-outlined text-[18px]" x-text="connectionState === 'connected' ? 'wifi' : 'wifi_off'"></span>
-                        <span x-text="connectionText"></span>
-                    </div>
-                </div>
+                
             </div>
         </div>
 
@@ -389,8 +356,7 @@
             {{-- ================= العمود الأول (اليمين في RTL: الإعدادات وربط الحساب) ================= --}}
             <div class="lg:col-span-7 space-y-6">
 
-                {{-- 1. بطاقة إعدادات API للبوابة --}}
-                <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-6 sm:p-8 relative overflow-hidden">
+                {{-- <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-6 sm:p-8 relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-[5rem] pointer-events-none"></div>
 
                     <div class="flex items-center gap-3 mb-6 relative">
@@ -403,7 +369,7 @@
                         </div>
                     </div>
 
-                    {{-- رسالة نجاح أو خطأ حفظ الإعدادات عبر ألبين --}}
+                    
                     <div x-cloak x-show="saveFeedbackMessage" x-transition.opacity.duration.300ms class="mb-4">
                         <div class="p-3.5 rounded-2xl flex items-center gap-2.5 text-xs font-bold"
                             :class="saveFeedbackType === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'">
@@ -416,7 +382,7 @@
                         @csrf
                         @method('PUT')
 
-                        {{-- 1. عنوان API الأساسي --}}
+                    
                         <div>
                             <div class="flex justify-between items-center px-1 mb-1.5">
                                 <label for="whatsapp_base_url" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">عنوان API الأساسي (Base URL)</label>
@@ -439,7 +405,7 @@
                             </p>
                         </div>
 
-                        {{-- 2. معرّف الـ Instance --}}
+                        
                         <div>
                             <div class="flex justify-between items-center px-1 mb-1.5">
                                 <label for="whatsapp_instance_id" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">
@@ -468,7 +434,7 @@
                             </p>
                         </div>
 
-                        {{-- 3. رمز الوصول والتوكن الخاص بالـ Instance --}}
+                        
                         <div>
                             <div class="flex justify-between items-center px-1 mb-1.5">
                                 <label for="whatsapp_instance_token" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">
@@ -509,7 +475,7 @@
                             </p>
                         </div>
 
-                        {{-- 4. إعدادات متقدمة: رابط Webhook والمهلة --}}
+                       
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                             <div>
                                 <label for="whatsapp_webhook_url" class="block text-xs font-bold text-slate-600 dark:text-gray-300 font-headline mb-1.5 px-1">
@@ -550,7 +516,7 @@
                             </div>
                         </div>
 
-                        {{-- زر حفظ الإعدادات --}}
+                       
                         <div class="pt-3">
                             <button type="submit"
                                 :disabled="isSaving"
@@ -570,143 +536,178 @@
                             </button>
                         </div>
                     </form>
-                </div>
+                </div> --}}
 
                 {{-- 2. بطاقة ربط الحساب (QR Code أو كود الاقتران عبر الهاتف) --}}
                 <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-6 sm:p-8 relative overflow-hidden">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="flex justify-center items-center w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 shrink-0 shadow-sm">
-                                <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+
+                    {{-- ===== حالة الاتصال الناجح: عرض رسالة التأكيد بدلاً من QR ===== --}}
+                    <div x-show="connectionState === 'connected'" x-transition.opacity.duration.400ms x-cloak>
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="flex justify-center items-center w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 shrink-0 shadow-sm">
+                                <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">verified</span>
                             </div>
                             <div>
-                                <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">ربط حساب WhatsApp</h2>
-                                <p class="text-xs font-bold text-slate-400 dark:text-gray-400">اقتران رقم هاتف المكتب عبر QR Code أو كود الاقتران الرقمي</p>
+                                <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">حساب WhatsApp مرتبط ✅</h2>
+                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400">الجلسة نشطة ومتصلة بنجاح — لا حاجة لمسح QR</p>
                             </div>
                         </div>
 
-                        {{-- تبديل التبويبات --}}
-                        <div class="flex items-center p-1 bg-slate-100 dark:bg-gray-800 rounded-xl">
-                            <button type="button"
-                                @click="activeLinkTab = 'qr'"
-                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                                :class="activeLinkTab === 'qr' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
-                                رمز QR
-                            </button>
-                            <button type="button"
-                                @click="activeLinkTab = 'pairing'"
-                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                                :class="activeLinkTab === 'pairing' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
-                                كود الاقتران
-                            </button>
-                        </div>
-                    </div>
-
-                    {{-- تبويب مسح QR Code --}}
-                    <div x-show="activeLinkTab === 'qr'" x-transition.opacity class="space-y-4 text-center">
-                        <div class="max-w-xs mx-auto p-4 rounded-2xl bg-slate-50 dark:bg-gray-800/50 border border-slate-200/80 dark:border-gray-700 flex flex-col items-center justify-center min-h-[220px]">
-                            <template x-if="qrImage">
-                                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
-                                    <img :src="qrImage.startsWith('data:') || qrImage.startsWith('http') ? qrImage : 'data:image/png;base64,' + qrImage"
-                                        alt="WhatsApp QR Code"
-                                        class="w-48 h-48 object-contain">
-                                </div>
-                            </template>
-
-                            <template x-if="!qrImage && !isFetchingQr">
-                                <div class="text-center py-6">
-                                    <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-gray-600 mb-2">qr_code_2</span>
-                                    <p class="text-xs text-slate-500 dark:text-gray-400 font-medium">
-                                        انقر على الزر أدناه لتوليد رمز الاستجابة السريعة (QR Code) الجديد
-                                    </p>
-                                </div>
-                            </template>
-
-                            <template x-if="isFetchingQr">
-                                <div class="py-8 text-center space-y-2">
-                                    <div class="w-8 h-8 border-3 border-emerald-500 rounded-full animate-spin border-t-transparent mx-auto"></div>
-                                    <p class="text-xs font-bold text-slate-500">جاري طلب رمز QR من السيرفر...</p>
-                                </div>
-                            </template>
-
-                            <template x-if="qrError">
-                                <div class="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 font-medium">
-                                    <span x-text="qrError"></span>
-                                </div>
-                            </template>
-                        </div>
-
-                        <div class="flex justify-center gap-3">
-                            <button type="button"
-                                @click="fetchQrCode()"
-                                :disabled="isFetchingQr || !isConfigured"
-                                class="px-5 h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50">
-                                <span class="material-symbols-outlined text-[18px]">refresh</span>
-                                <span>تحديث وجلب QR Code</span>
-                            </button>
-                        </div>
-
-                        <p class="text-[11px] text-slate-400">
-                            افتح تطبيق WhatsApp على هاتفك > الأجهزة المرتبطة > ربط جهاز > وجّه الكاميرا نحو الرمز أعلاه.
-                        </p>
-                    </div>
-
-                    {{-- تبويب كود الاقتران الرقمي برقم الهاتف --}}
-                    <div x-show="activeLinkTab === 'pairing'" x-transition.opacity class="space-y-4">
-                        <p class="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
-                            يمكنك ربط الحساب بدون كاميرا عبر إدخال رقم الهاتف المسجل في واتساب وتوليد كود مكون من 8 خانات لإدخاله في هاتفك:
-                        </p>
-
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <div class="relative flex-1">
-                                <input type="tel"
-                                    x-model="pairingPhone"
-                                    dir="ltr"
-                                    placeholder="مثال: 771234567 أو 967771234567"
-                                    class="w-full h-12 px-4 pr-11 text-xs sm:text-sm font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                <div class="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
-                                    <span class="material-symbols-outlined text-[20px]">phone</span>
+                        <div class="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200/60 dark:border-emerald-800/60 text-center space-y-3">
+                            <div class="flex justify-center">
+                                <div class="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shadow-inner">
+                                    <span class="material-symbols-outlined text-4xl text-emerald-600 dark:text-emerald-400" style="font-variation-settings: 'FILL' 1;">link</span>
                                 </div>
                             </div>
-
-                            <button type="button"
-                                @click="requestPairingCode()"
-                                :disabled="isRequestingPairing || !isConfigured"
-                                class="h-12 px-5 flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50 shrink-0 font-headline">
-                                <template x-if="!isRequestingPairing">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="material-symbols-outlined text-[18px]">pin</span>
-                                        <span>طلب كود الاقتران</span>
-                                    </span>
-                                </template>
-                                <template x-if="isRequestingPairing">
-                                    <span class="flex items-center gap-1.5">
-                                        <span class="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent"></span>
-                                        <span>جاري الطلب...</span>
-                                    </span>
-                                </template>
-                            </button>
+                            <h3 class="text-sm font-black font-headline text-emerald-800 dark:text-emerald-300">الاتصال فعّال وجاهز</h3>
+                            <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed max-w-sm mx-auto">
+                                حساب WhatsApp مرتبط ومتصل بالسيرفر بنجاح. يمكنك إرسال الرسائل والإشعارات مباشرة.
+                                <br>لإعادة ربط رقم جديد، قم بتسجيل الخروج أولاً من قسم "إدارة الجلسة".
+                            </p>
+                            <div class="flex justify-center items-center gap-2 pt-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
+                                <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400" x-text="connectionText"></span>
+                            </div>
                         </div>
+                    </div>
 
-                        {{-- عرض كود الاقتران الناتج --}}
-                        <template x-if="pairingCode">
-                            <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+                    {{-- ===== حالة عدم الاتصال: عرض QR Code و كود الاقتران ===== --}}
+                    <div x-show="connectionState !== 'connected'" x-transition.opacity.duration.400ms>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="flex justify-center items-center w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 shrink-0 shadow-sm">
+                                    <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+                                </div>
                                 <div>
-                                    <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 block mb-0.5">كود الاقتران الخاص بك:</span>
-                                    <span class="text-2xl font-black font-mono tracking-widest text-emerald-700 dark:text-emerald-400" x-text="pairingCode"></span>
+                                    <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">ربط حساب WhatsApp</h2>
+                                    <p class="text-xs font-bold text-slate-400 dark:text-gray-400">اقتران رقم هاتف المكتب عبر QR Code أو كود الاقتران الرقمي</p>
                                 </div>
-                                <button type="button" @click="copyPairingCode()"
-                                    class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-boxdark text-emerald-700 dark:text-emerald-300 shadow-sm border border-emerald-200 dark:border-emerald-700 flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined text-[16px]" x-text="copiedPairing ? 'check' : 'content_copy'"></span>
-                                    <span x-text="copiedPairing ? 'تم النسخ!' : 'نسخ الكود'"></span>
+                            </div>
+
+                            {{-- تبديل التبويبات --}}
+                            <div class="flex items-center p-1 bg-slate-100 dark:bg-gray-800 rounded-xl">
+                                <button type="button"
+                                    @click="activeLinkTab = 'qr'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                                    :class="activeLinkTab === 'qr' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
+                                    رمز QR
+                                </button>
+                                <button type="button"
+                                    @click="activeLinkTab = 'pairing'"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                                    :class="activeLinkTab === 'pairing' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">
+                                    كود الاقتران
                                 </button>
                             </div>
-                        </template>
+                        </div>
 
-                        <template x-if="pairingError">
-                            <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold" x-text="pairingError"></div>
-                        </template>
+                        {{-- تبويب مسح QR Code --}}
+                        <div x-show="activeLinkTab === 'qr'" x-transition.opacity class="space-y-4 text-center">
+                            <div class="max-w-xs mx-auto p-4 rounded-2xl bg-slate-50 dark:bg-gray-800/50 border border-slate-200/80 dark:border-gray-700 flex flex-col items-center justify-center min-h-[220px]">
+                                <template x-if="qrImage">
+                                    <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                                        <img :src="qrImage.startsWith('data:') || qrImage.startsWith('http') ? qrImage : 'data:image/png;base64,' + qrImage"
+                                            alt="WhatsApp QR Code"
+                                            class="w-48 h-48 object-contain">
+                                    </div>
+                                </template>
+
+                                <template x-if="!qrImage && !isFetchingQr">
+                                    <div class="text-center py-6">
+                                        <span class="material-symbols-outlined text-5xl text-slate-300 dark:text-gray-600 mb-2">qr_code_2</span>
+                                        <p class="text-xs text-slate-500 dark:text-gray-400 font-medium">
+                                            انقر على الزر أدناه لتوليد رمز الاستجابة السريعة (QR Code) الجديد
+                                        </p>
+                                    </div>
+                                </template>
+
+                                <template x-if="isFetchingQr">
+                                    <div class="py-8 text-center space-y-2">
+                                        <div class="w-8 h-8 border-3 border-emerald-500 rounded-full animate-spin border-t-transparent mx-auto"></div>
+                                        <p class="text-xs font-bold text-slate-500">جاري طلب رمز QR من السيرفر...</p>
+                                    </div>
+                                </template>
+
+                                <template x-if="qrError">
+                                    <div class="mt-3 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs text-amber-800 dark:text-amber-300 font-medium">
+                                        <span x-text="qrError"></span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="flex justify-center gap-3">
+                                <button type="button"
+                                    @click="fetchQrCode()"
+                                    :disabled="isFetchingQr || !isConfigured"
+                                    class="px-5 h-11 flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50">
+                                    <span class="material-symbols-outlined text-[18px]">refresh</span>
+                                    <span>تحديث وجلب QR Code</span>
+                                </button>
+                            </div>
+
+                            <p class="text-[11px] text-slate-400">
+                                افتح تطبيق WhatsApp على هاتفك > الأجهزة المرتبطة > ربط جهاز > وجّه الكاميرا نحو الرمز أعلاه.
+                            </p>
+                        </div>
+
+                        {{-- تبويب كود الاقتران الرقمي برقم الهاتف --}}
+                        <div x-show="activeLinkTab === 'pairing'" x-transition.opacity class="space-y-4">
+                            <p class="text-xs text-slate-500 dark:text-gray-400 leading-relaxed">
+                                يمكنك ربط الحساب بدون كاميرا عبر إدخال رقم الهاتف المسجل في واتساب وتوليد كود مكون من 8 خانات لإدخاله في هاتفك:
+                            </p>
+
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <div class="relative flex-1">
+                                    <input type="tel"
+                                        x-model="pairingPhone"
+                                        dir="ltr"
+                                        placeholder="مثال: 771234567 أو 967771234567"
+                                        class="w-full h-12 px-4 pr-11 text-xs sm:text-sm font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20">
+                                    <div class="absolute right-3.5 top-3.5 pointer-events-none text-slate-400">
+                                        <span class="material-symbols-outlined text-[20px]">phone</span>
+                                    </div>
+                                </div>
+
+                                <button type="button"
+                                    @click="requestPairingCode()"
+                                    :disabled="isRequestingPairing || !isConfigured"
+                                    class="h-12 px-5 flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50 shrink-0 font-headline">
+                                    <template x-if="!isRequestingPairing">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[18px]">pin</span>
+                                            <span>طلب كود الاقتران</span>
+                                        </span>
+                                    </template>
+                                    <template x-if="isRequestingPairing">
+                                        <span class="flex items-center gap-1.5">
+                                            <span class="w-4 h-4 border-2 border-white rounded-full animate-spin border-t-transparent"></span>
+                                            <span>جاري الطلب...</span>
+                                        </span>
+                                    </template>
+                                </button>
+                            </div>
+
+                            {{-- عرض كود الاقتران الناتج --}}
+                            <template x-if="pairingCode">
+                                <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 block mb-0.5">كود الاقتران الخاص بك:</span>
+                                        <span class="text-2xl font-black font-mono tracking-widest text-emerald-700 dark:text-emerald-400" x-text="pairingCode"></span>
+                                    </div>
+                                    <button type="button" @click="copyPairingCode()"
+                                        class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white dark:bg-boxdark text-emerald-700 dark:text-emerald-300 shadow-sm border border-emerald-200 dark:border-emerald-700 flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[16px]" x-text="copiedPairing ? 'check' : 'content_copy'"></span>
+                                        <span x-text="copiedPairing ? 'تم النسخ!' : 'نسخ الكود'"></span>
+                                    </button>
+                                </div>
+                            </template>
+
+                            <template x-if="pairingError">
+                                <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold" x-text="pairingError"></div>
+                            </template>
+                        </div>
                     </div>
+
                 </div>
 
             </div>

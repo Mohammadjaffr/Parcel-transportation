@@ -47,8 +47,8 @@ class WhatsAppSettingsController extends Controller
         $service = $this->whatsAppService->forApp($company);
         $isConfigured = $company->hasWhatsAppConfigured();
         $maskedToken = $company->masked_whatsapp_token;
-        $effectiveBaseUrl = $company->effective_whatsapp_base_url;
-        $effectiveTimeout = $company->effective_whatsapp_timeout;
+        $effectiveBaseUrl = $company->whatsapp_base_url;
+        $effectiveTimeout = $company->whatsapp_timeout;
 
         $viewData = compact('company', 'isConfigured', 'maskedToken', 'effectiveBaseUrl', 'effectiveTimeout');
 
@@ -112,7 +112,7 @@ class WhatsAppSettingsController extends Controller
             if ($request->filled('whatsapp_instance_token')) {
                 $rawToken = trim($request->input('whatsapp_instance_token'));
                 if (!preg_match('/^[•*]+$/u', $rawToken)) {
-                    $dataToUpdate['whatsapp_instance_token'] = $rawToken;
+                    $dataToUpdate['whatsapp_api_key'] = $rawToken;
                 }
             }
 

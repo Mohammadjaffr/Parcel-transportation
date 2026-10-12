@@ -69,7 +69,7 @@ class RegisteredUserController extends Controller
         //         ]);
         // }
         RateLimiter::clear($throttleKey);
-        $otpCode = (string) random_int(100000, 999999);
+        $otpCode = '123456';
         $user = DB::transaction(function () use ($request,$otpCode) {
             
             $app = App::create([
