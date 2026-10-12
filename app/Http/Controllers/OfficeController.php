@@ -185,4 +185,39 @@ class OfficeController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
+
+    public function toggleBan($id)
+    {
+        try {
+            $office = Office::findOrFail($id);
+            $office->is_banned = !$office->is_banned;
+            $office->save();
+
+            $message = $office->is_banned ? 'تم حظر المكتب بنجاح.' : 'تم إلغاء حظر المكتب بنجاح.';
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success'   => true,
+                    'is_banned' => (bool) $office->is_banned,
+                    'message'   => $message,
+                ]);
+            }
+
+            return WebResponseClass::sendResponse(
+                'تمت العملية بنجاح!',
+                $message,
+                'حسناً',
+                'offices.unverified.index'
+            );
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
 }
+

@@ -14,6 +14,11 @@ class Office extends Model
         'app_id',
         'created_by',
         'name',
+        'is_banned',
+    ];
+
+    protected $casts = [
+        'is_banned' => 'boolean',
     ];
 
     public function creator()

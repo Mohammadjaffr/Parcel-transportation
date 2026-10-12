@@ -6,9 +6,11 @@
 
     <div x-data="{
                     showDeleteModal: false,
+                    showBanModal: false,
                     searchQuery: '{{ addslashes(request('search', '')) }}',
                     isSubmitting: false,
                     deleteOfficeData: { id: '', name: '', url: '' },
+                    banOfficeData: { id: '', name: '', is_banned: false, url: '' },
 
                     openDeleteModal(office) {
                         this.deleteOfficeData = {
@@ -19,8 +21,19 @@
                         this.showDeleteModal = true;
                     },
 
+                    openBanModal(office) {
+                        this.banOfficeData = {
+                            id: office.id,
+                            name: office.name,
+                            is_banned: Boolean(office.is_banned),
+                            url: '/offices/' + office.id + '/toggle-ban'
+                        };
+                        this.showBanModal = true;
+                    },
+
                     closeModals() {
                         this.showDeleteModal = false;
+                        this.showBanModal = false;
                     }
                 }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
@@ -49,7 +62,12 @@
         <div class="px-2 space-y-4">
             @forelse($offices as $office)
                 @php
-                    $searchData = collect([$office->name, $office->address, $office->phone]);
+                    $searchData = collect([
+                        $office->name,
+                        $office->address,
+                        $office->phone,
+                        $office->is_banned ? 'محظور' : 'غير محظور نشط'
+                    ]);
                     foreach($office->branches as $branch) {
                         $searchData->push($branch->name);
                         $searchData->push($branch->phone);
@@ -65,12 +83,12 @@
 
                         <div class="flex gap-4 items-center mt-2">
                             <div
-                                class="flex justify-center items-center w-14 h-14 text-amber-500 bg-amber-50 rounded-2xl border shadow-inner border-amber-100/50 shrink-0">
+                                class="flex justify-center items-center w-14 h-14 rounded-2xl border shadow-inner shrink-0 {{ $office->is_banned ? 'text-rose-500 bg-rose-50 border-rose-100/50' : 'text-amber-500 bg-amber-50 border-amber-100/50' }}">
                                 <span class="text-2xl material-symbols-outlined">storefront</span>
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <div class="flex gap-2 items-center mb-1">
+                                <div class="flex gap-2 items-center mb-1 flex-wrap">
                                     <h3 class="text-base font-bold truncate text-slate-800 font-headline">{{ $office->name }}
                                     </h3>
                                     <span
@@ -78,6 +96,17 @@
                                         :class="expanded ? 'scale-110' : ''">
                                         {{ $office->branches->count() }} فرع
                                     </span>
+                                    @if ($office->is_banned)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            محظور
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            غير محظور
+                                        </span>
+                                    @endif
                                 </div>
 
                                 <p class="flex gap-1 items-center mt-1 text-xs text-slate-500">
@@ -128,7 +157,8 @@
                         <div class="flex gap-2 pt-2 mt-4 border-t border-slate-100">
 
                             <a href="{{ route('offices.edit', $office->id) }}"
-                                class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl transition-all active:scale-95">
+                                class="flex justify-center items-center w-10 h-10 text-blue-500 bg-blue-50 rounded-xl transition-all active:scale-95"
+                                title="تعديل البيانات">
                                 <span class="text-xl material-symbols-outlined">edit_square</span>
                             </a>
 
@@ -138,10 +168,11 @@
                                 تفاصيل المكتب
                             </a>
 
-                            {{-- <button @click.stop="openDeleteModal({{ $office }})"
-                                class="flex justify-center items-center w-10 h-10 text-red-400 bg-red-50 rounded-xl transition-all active:scale-95">
-                                <span class="text-xl material-symbols-outlined">delete_outline</span>
-                            </button> --}}
+                            <button type="button" @click.stop="openBanModal({{ $office }})"
+                                class="flex justify-center items-center w-10 h-10 rounded-xl transition-all active:scale-95 {{ $office->is_banned ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100' : 'text-rose-500 bg-rose-50 hover:bg-rose-100' }}"
+                                title="{{ $office->is_banned ? 'إلغاء الحظر' : 'حظر المكتب' }}">
+                                <span class="text-xl material-symbols-outlined">{{ $office->is_banned ? 'lock_open' : 'block' }}</span>
+                            </button>
 
                         </div>
                     </div>
@@ -196,6 +227,51 @@
                     <button type="submit" :disabled="isSubmitting"
                         class="flex flex-1 gap-2 justify-center items-center py-4 text-sm font-bold text-white bg-red-500 rounded-2xl shadow-lg transition-all hover:bg-red-600 active:scale-95 font-headline disabled:opacity-70">
                         <span x-show="!isSubmitting">نعم، احذف</span>
+                        <span x-show="isSubmitting"
+                            class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Mobile Ban Modal --}}
+        <div x-show="showBanModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-full"
+            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()"></div>
+
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
+                <div @click="closeModals()"
+                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
+                </div>
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 rounded-[1.5rem]"
+                    :class="banOfficeData.is_banned ? 'bg-emerald-50 text-emerald-500' : 'bg-rose-50 text-rose-500'">
+                    <span class="text-4xl material-symbols-outlined"
+                        x-text="banOfficeData.is_banned ? 'lock_open' : 'block'"></span>
+                </div>
+                <h3 class="mb-3 text-2xl font-black font-headline text-slate-800"
+                    x-text="banOfficeData.is_banned ? 'تأكيد إلغاء الحظر' : 'تأكيد حظر المكتب'"></h3>
+                <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
+                    <span x-text="banOfficeData.is_banned ? 'هل أنت متأكد من إلغاء حظر المكتب ' : 'هل أنت متأكد من حظر المكتب '"></span><br>
+                    <span class="text-base font-bold text-slate-800 font-headline"
+                        x-text="banOfficeData.name"></span>؟<br>
+                    <span :class="banOfficeData.is_banned ? 'text-emerald-500' : 'text-rose-500/80'"
+                        x-text="banOfficeData.is_banned ? 'سيتمكن النظام من إرسال شحنات إلى هذا المكتب وفروعه.' : 'لن يتمكن المستخدمون من إرسال شحنات جديدة إلى هذا المكتب وفروعه.'"></span>
+                </p>
+                <form :action="banOfficeData.url" method="POST" @submit="isSubmitting = true" class="flex gap-3 px-2">
+                    @csrf
+                    <button type="button" @click="closeModals()"
+                        class="flex-1 py-4 text-sm font-bold rounded-2xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 font-headline">تراجع</button>
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex flex-1 gap-2 justify-center items-center py-4 text-sm font-bold text-white rounded-2xl shadow-lg transition-all active:scale-95 font-headline disabled:opacity-70"
+                        :class="banOfficeData.is_banned ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'">
+                        <span x-show="!isSubmitting"
+                            x-text="banOfficeData.is_banned ? 'نعم، فك الحظر' : 'نعم، احظر المكتب'"></span>
                         <span x-show="isSubmitting"
                             class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
                     </button>

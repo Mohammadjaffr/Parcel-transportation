@@ -128,6 +128,7 @@ Route::middleware('auth')->group(function () {
 
         // لازم يكون قبل resource offices
         Route::get('/offices/unverified', [OfficeController::class, 'unverifiedIndex'])->name('offices.unverified.index');
+        Route::post('/offices/{office}/toggle-ban', [OfficeController::class, 'toggleBan'])->name('offices.toggle-ban');
         Route::resource('offices', OfficeController::class);
         Route::resource('trips', PassengerTripController::class)->names('trips');
 

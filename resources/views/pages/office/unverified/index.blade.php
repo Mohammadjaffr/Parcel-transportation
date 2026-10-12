@@ -161,7 +161,8 @@
                             $branchesNames . ' ' .
                             $phones . ' ' .
                             $addresses . ' ' .
-                            ($office->creator->name ?? '');
+                            ($office->creator->name ?? '') . ' ' .
+                            ($office->is_banned ? 'محظور' : 'غير محظور نشط');
                     @endphp
 
                     <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all office-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
@@ -175,10 +176,24 @@
                                 </div>
 
                                 <div class="flex flex-col gap-1 min-w-0">
-                                    <span
-                                        class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
-                                        {{ $office->name }}
-                                    </span>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span
+                                            class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
+                                            {{ $office->name }}
+                                        </span>
+
+                                        @if ($office->is_banned)
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                محظور
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                غير محظور
+                                            </span>
+                                        @endif
+                                    </div>
 
                                     <div
                                         class="flex gap-1.5 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
@@ -210,17 +225,24 @@
                                         تعديل البيانات
                                     </a>
 
-                                    {{-- <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div> --}}
+                                    <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                    {{-- <button type="button"
+                                    <button type="button"
                                         @click="
                                             menuOpen = false;
-                                            openDeleteModal({ id: {{ $office->id }}, name: @js($office->name) });
+                                            openBanModal({
+                                                id: {{ $office->id }},
+                                                name: @js($office->name),
+                                                is_banned: {{ $office->is_banned ? 'true' : 'false' }},
+                                                url: '{{ route('offices.toggle-ban', $office->id) }}'
+                                            });
                                         "
-                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors text-error hover:bg-error/10 dark:hover:bg-error/10">
-                                        <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        حذف المكتب
-                                    </button> --}}
+                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors {{ $office->is_banned ? 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-boxdark' : 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-boxdark' }}">
+                                        <span class="material-symbols-outlined text-[18px]">
+                                            {{ $office->is_banned ? 'lock_open' : 'block' }}
+                                        </span>
+                                        <span>{{ $office->is_banned ? 'إلغاء الحظر' : 'حظر المكتب' }}</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -316,6 +338,7 @@
                             <th class="px-6 py-4">المكتب الرئيسي</th>
                             <th class="px-6 py-4">النطاق الجغرافي</th>
                             <th class="px-6 py-4 text-center">الفروع</th>
+                            <th class="px-6 py-4 text-center">هل محظور؟</th>
                             <th class="px-6 py-4 text-center">أُضيف بواسطة</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
@@ -335,7 +358,8 @@
                                     $branchesNames . ' ' .
                                     $phones . ' ' .
                                     $addresses . ' ' .
-                                    ($office->creator->name ?? '');
+                                    ($office->creator->name ?? '') . ' ' .
+                                    ($office->is_banned ? 'محظور' : 'غير محظور نشط');
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group office-row"
@@ -399,6 +423,23 @@
                                     </div>
                                 </td>
 
+                                {{-- هل محظور؟ --}}
+                                <td class="px-6 py-4 text-center">
+                                    @if ($office->is_banned)
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 shadow-sm">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            <span>محظور</span>
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 shadow-sm">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            <span>غير محظور</span>
+                                        </span>
+                                    @endif
+                                </td>
+
                                 {{-- أُضيف بواسطة --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col gap-1 items-center">
@@ -439,18 +480,25 @@
                                                     <span class="material-symbols-outlined text-[18px]">edit_square</span>
                                                     تعديل البيانات
                                                 </a>
-{{-- 
-                                                <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+
+                                                <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark-2"></div>
 
                                                 <button type="button"
                                                     @click="
                                                         open = false;
-                                                        openDeleteModal({ id: {{ $office->id }}, name: @js($office->name) });
+                                                        openBanModal({
+                                                            id: {{ $office->id }},
+                                                            name: @js($office->name),
+                                                            is_banned: {{ $office->is_banned ? 'true' : 'false' }},
+                                                            url: '{{ route('offices.toggle-ban', $office->id) }}'
+                                                        });
                                                     "
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors text-error hover:bg-error/10 dark:hover:bg-error/10">
-                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                                                    حذف المكتب
-                                                </button> --}}
+                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors {{ $office->is_banned ? 'text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-boxdark-2' : 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-boxdark-2' }}">
+                                                    <span class="material-symbols-outlined text-[18px]">
+                                                        {{ $office->is_banned ? 'lock_open' : 'block' }}
+                                                    </span>
+                                                    <span>{{ $office->is_banned ? 'إلغاء الحظر' : 'حظر المكتب' }}</span>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -458,7 +506,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="py-24 text-center">
+                                <td colspan="6" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
                                             class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -480,7 +528,7 @@
                         @endforelse
 
                         <tr x-show="visibleCount === 0 && {{ $offices->count() }} > 0" x-cloak>
-                            <td colspan="5" class="py-24 text-center">
+                            <td colspan="6" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
                                     <div
                                         class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -563,6 +611,63 @@
                 </form>
             </div>
         </div>
+
+        {{-- ====================== Ban Modal ====================== --}}
+        <div x-show="showBanModal" x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95"
+            x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-none">
+
+            <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
+                @click="closeModals()"></div>
+
+            <div
+                class="relative w-full max-w-md p-7 text-center bg-white border border-gray-100 shadow-2xl pointer-events-auto dark:bg-boxdark rounded-[2rem] dark:border-boxdark-2">
+                <div
+                    class="flex items-center justify-center w-20 h-20 mx-auto mb-5 rounded-[1.5rem]"
+                    :class="banOfficeData.is_banned ? 'bg-emerald-50 text-emerald-500 dark:bg-emerald-500/10' : 'bg-rose-50 text-rose-500 dark:bg-rose-500/10'">
+                    <span class="text-4xl material-symbols-outlined"
+                        x-text="banOfficeData.is_banned ? 'lock_open' : 'block'"></span>
+                </div>
+
+                <h3 class="mb-2 text-2xl font-black font-headline text-on-surface dark:text-white"
+                    x-text="banOfficeData.is_banned ? 'تأكيد إلغاء الحظر' : 'تأكيد حظر المكتب'">
+                </h3>
+
+                <p class="mb-7 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                    <span x-text="banOfficeData.is_banned ? 'هل أنت متأكد من إلغاء حظر المكتب ' : 'هل أنت متأكد من حظر المكتب '"></span>
+                    <span class="block mt-1 text-base font-black text-on-surface dark:text-white"
+                        x-text="banOfficeData.name"></span>
+                    <span class="block mt-2 text-xs"
+                        :class="banOfficeData.is_banned ? 'text-emerald-500' : 'text-rose-500'"
+                        x-text="banOfficeData.is_banned ? 'سيتمكن النظام من إرسال الشحنات إلى هذا المكتب وفروعه مجدداً.' : 'لن يتمكن المستخدمون من اختيار هذا المكتب أو فروعه عند إنشاء شحنات جديدة.'">
+                    </span>
+                </p>
+
+                <form :action="banOfficeData.url" method="POST" @submit="isSubmitting = true"
+                    class="grid grid-cols-2 gap-3">
+                    @csrf
+
+                    <button type="button" @click="closeModals()"
+                        class="h-12 text-sm font-black text-gray-600 rounded-xl transition-all bg-surface dark:bg-boxdark-2 dark:text-gray-300 active:scale-95">
+                        تراجع
+                    </button>
+
+                    <button type="submit" :disabled="isSubmitting"
+                        class="flex gap-2 justify-center items-center h-12 text-sm font-black text-white rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-70"
+                        :class="banOfficeData.is_banned ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/20' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20'">
+                        <span x-show="!isSubmitting"
+                            x-text="banOfficeData.is_banned ? 'نعم، فك الحظر' : 'نعم، احظر المكتب'"></span>
+                        <span x-show="isSubmitting"
+                            class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 
 @endsection
@@ -572,12 +677,19 @@
         function officesRegistry() {
             return {
                 showDeleteModal: false,
+                showBanModal: false,
                 searchQuery: @js(request('search', '')),
                 visibleCount: {{ $offices->count() }},
                 isSubmitting: false,
                 deleteOfficeData: {
                     id: '',
                     name: '',
+                    url: ''
+                },
+                banOfficeData: {
+                    id: '',
+                    name: '',
+                    is_banned: false,
                     url: ''
                 },
 
@@ -591,8 +703,14 @@
                     this.showDeleteModal = true;
                 },
 
+                openBanModal(data) {
+                    this.banOfficeData = data;
+                    this.showBanModal = true;
+                },
+
                 closeModals() {
                     this.showDeleteModal = false;
+                    this.showBanModal = false;
                 },
 
                 showRow(searchText) {
