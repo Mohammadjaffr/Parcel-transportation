@@ -28,35 +28,44 @@ class CheckWhatsAppStatus extends Command
             $cacheKey = 'whatsapp_status_' . $app->id;
 
             try {
-                // استخدام السيرفيس المعزولة الخاصة بالتطبيق مع تقليل الـ timeout لـ 4 ثوان للفحص
+                // استخدام السيرفيس المعزولة الخاصة بالتطبيق مع timeout سريع للفحص
                 $service = $whatsAppService->forApp($app)->withConfig(['timeout' => 4]);
 
                 $result = $service->getStatus();
 
-                // التحقق من الاستجابة وحالة الاتصال
-                $isOnline = false;
-
-                if (!isset($result['error']) || !$result['error']) {
-                    // التحقق من الحالات المختلفة الشائعة في Evolution API
-                    $state = data_get($result, 'instance.state') 
-                        ?? data_get($result, 'state') 
-                        ?? data_get($result, 'status');
-
-                    if (in_array(strtolower((string) $state), ['open', 'connected', 'connecting'])) {
-                        $isOnline = true;
-                    } elseif (isset($result['status']) && $result['status'] === 200) {
-                        $isOnline = true;
-                    }
+                // 1. إذا كان الرد يحمل خطأ صريحاً
+                if (isset($result['error']) && $result['error'] === true) {
+                    Cache::put($cacheKey, 'offline', now()->addMinutes(15));
+                    $errorMsg = $result['message'] ?? 'Connection error';
+                    $this->warn("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ ({$errorMsg})");
+                    continue;
                 }
 
+                // 2. استخراج حالة الاتصال من كافة الحقول المحتملة
+                $state = data_get($result, 'instance.state') 
+                    ?? data_get($result, 'state') 
+                    ?? data_get($result, 'connection') 
+                    ?? data_get($result, 'status') 
+                    ?? data_get($result, 'message') 
+                    ?? '';
+
+                $stateLower = strtolower(trim((string) $state));
+
+                // 3. الحالات المعتمدة التي تؤكد أن الخدمة متصلة وتعمل
+                $onlineStates = ['open', 'connected', 'connecting', 'success', 'online', '200'];
+
+                $isOnline = in_array($stateLower, $onlineStates, true) 
+                    || data_get($result, 'status') === 200;
+
+                // 4. حفظ النتيجة في الكاش
                 if ($isOnline) {
                     Cache::put($cacheKey, 'online', now()->addMinutes(15));
-                    $this->info("App [{$app->name} - ID: {$app->id}]: WhatsApp is ONLINE ✅");
+                    $this->info("App [{$app->name} - ID: {$app->id}]: WhatsApp is ONLINE ✅ (State: {$state})");
                 } else {
                     Cache::put($cacheKey, 'offline', now()->addMinutes(15));
-                    $errorMsg = $result['message'] ?? 'Not connected';
-                    $this->warn("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ ({$errorMsg})");
+                    $this->warn("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ (State: {$state})");
                 }
+
             } catch (\Exception $e) {
                 Cache::put($cacheKey, 'offline', now()->addMinutes(15));
                 $this->error("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ ({$e->getMessage()})");
