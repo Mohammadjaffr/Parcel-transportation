@@ -252,7 +252,7 @@
 
                                         @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
                                             <button type="button"
-                                                onclick="sendSenderDirect({{ $shipment->id }}, this)"
+                                                onclick="sendSenderDirect({{ $shipment->id }}, this, '{{ $shipment->sender_whatsapp_link }}')"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">send</span>
                                                 <span>إرسال للمرسل</span>
@@ -571,7 +571,7 @@
 
                                                     @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
                                                         <button type="button"
-                                                            onclick="sendSenderDirect({{ $shipment->id }}, this)"
+                                                            onclick="sendSenderDirect({{ $shipment->id }}, this, '{{ $shipment->sender_whatsapp_link }}')"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
                                                             <span>إشعار المرسل</span>
@@ -680,7 +680,7 @@
             }
         }
 
-        async function sendSenderDirect(shipmentId, btn) {
+        async function sendSenderDirect(shipmentId, btn, fallbackLink = '') {
             if (!shipmentId || btn.disabled) return;
 
             const originalHtml = btn.innerHTML;
@@ -712,20 +712,35 @@
                         <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
                     `;
                     showNotificationToast(data.message || 'تم إرسال إشعار المرسل بنجاح ✅', 'success');
-                } else {
+                } else if (data.fallback && data.whatsapp_link) {
                     btn.innerHTML = `
-                        <span class="material-symbols-outlined text-[18px] text-red-500">error</span>
-                        <span class="text-red-500">فشل الإرسال</span>
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
                     `;
-                    showNotificationToast(data.message || 'فشل إرسال الرسالة عبر واتساب', 'error');
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
                 }
             } catch (error) {
                 console.error('WhatsApp direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
                 btn.innerHTML = `
-                    <span class="material-symbols-outlined text-[18px] text-red-500">error</span>
-                    <span class="text-red-500">حدث خطأ</span>
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
                 `;
-                showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
             } finally {
                 setTimeout(() => {
                     btn.disabled = false;
@@ -741,12 +756,21 @@
 
             const toast = document.createElement('div');
             toast.id = 'direct-whatsapp-toast';
-            toast.className = `fixed bottom-6 left-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-sm transition-all duration-300 transform translate-y-0 ${
-                type === 'success' ? 'bg-emerald-600 shadow-emerald-600/25' : 'bg-red-600 shadow-red-600/25'
-            }`;
+            let bgClass = 'bg-emerald-600 shadow-emerald-600/25';
+            let icon = 'check_circle';
+
+            if (type === 'error') {
+                bgClass = 'bg-red-600 shadow-red-600/25';
+                icon = 'error';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-600 shadow-amber-600/25';
+                icon = 'open_in_new';
+            }
+
+            toast.className = `fixed bottom-6 left-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-sm transition-all duration-300 transform translate-y-0 ${bgClass}`;
 
             toast.innerHTML = `
-                <span class="material-symbols-outlined text-[20px]">${type === 'success' ? 'check_circle' : 'error'}</span>
+                <span class="material-symbols-outlined text-[20px]">${icon}</span>
                 <span>${message}</span>
             `;
 

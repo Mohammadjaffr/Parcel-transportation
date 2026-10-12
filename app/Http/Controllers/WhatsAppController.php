@@ -20,13 +20,17 @@ class WhatsAppController extends Controller
     }
 
     /**
-     * إرسال إشعار المرسل (رسالة نصية + رابط PDF) مباشرة عبر واتساب API
-     * باستخدام sendText بدون فتح المتصفح
+     * إرسال إشعار المرسل (رسالة مع رابط السند):
+     * - في حال كان إيفولوشن واتساب مشبوك وحالته تمام: يتم الإرسال من خلاله تلقائياً بدون فتح المتصفح.
+     * - في حال كان غير متصل أو فشل الإرسال: يتم إرجاع رابط الواتساب (wa.me) ليتم تحويل المستخدم للإرسال كرسالة مباشرة.
      */
     public function sendSenderPdf($id)
     {
         try {
-            $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
+            $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch.app', 'receiverBranch.app', 'receiverOfficeBranch.office'])->findOrFail($id);
+
+            // تجهيز رابط الواتساب البديل (wa.me)
+            $fallbackLink = WhatsAppLinkService::generate($shipment, 'sender');
 
             // تحميل إعدادات الواتساب الخاصة بالتطبيق أو الفرع
             if ($shipment->app) {
@@ -49,39 +53,56 @@ class WhatsAppController extends Controller
                 ], 422);
             }
 
-            // 1. توليد رابط السند (PDF)
+            // التحقق من تهيئة خدمة الواتساب
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success' => false,
+                    'fallback' => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message' => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            // 1. توليد رابط السند وتجهيز نص الرسالة
             $receiptUrl = route('receipt.generate', [
                 'type' => 'sender',
                 'id'   => $shipment->uuid ?? $shipment->id,
             ]);
 
-            // 2. تجهيز نص الرسالة (نفس محتوى SenderMessage)
             $senderMessage = new \App\Services\WhatsApp\Messages\SenderMessage();
             $message = $senderMessage->getMessageBody($shipment, $receiptUrl);
 
-            // 3. إرسال الرسالة النصية عبر واتساب API باستخدام sendText
+            // 2. إرسال الرسالة النصية المباشرة عبر واتساب API
             $result = $this->whatsAppService->sendText($phone, $message);
 
-            // 4. التحقق من نتيجة الإرسال
+            // 3. التحقق من نتيجة الإرسال - إذا فشل يتم التحويل للواتساب اليدوي
             if (isset($result['error']) && $result['error']) {
+                \Illuminate\Support\Facades\Log::warning("WhatsApp sendText failed for shipment #{$id}, falling back to wa.me: " . ($result['message'] ?? ''));
+
                 return response()->json([
                     'success' => false,
-                    'message' => 'فشل إرسال الرسالة عبر واتساب: ' . ($result['message'] ?? 'خطأ غير معروف'),
-                ], 500);
+                    'fallback' => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message' => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                ]);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'تم إرسال إشعار المرسل بنجاح ✅',
+                'message' => 'تم إرسال إشعار المرسل بنجاح عبر الواتساب ✅',
             ]);
 
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error("sendSenderPdf Error for shipment #{$id}: " . $e->getMessage());
 
+            $fallbackLink = isset($shipment) ? WhatsAppLinkService::generate($shipment, 'sender') : null;
+
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء الإرسال: ' . $e->getMessage(),
-            ], 500);
+                'fallback' => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message' => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
         }
     }
 
