@@ -26,15 +26,32 @@ class PassengersController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Passengers::with(['driver', 'broker', 'branch', 'trip.driver'])->where('branch_id', $user->branch_id)
+        $query = Passengers::with(['driver', 'broker', 'branch', 'trip.driver'])
+            ->where('branch_id', $user->branch_id)
             ->latest();
+
+        // فلترة التاريخ (تحديد اليوم)
+        if ($request->filled('date')) {
+            $date = match ($request->date) {
+                'today' => \Carbon\Carbon::today()->toDateString(),
+                'yesterday' => \Carbon\Carbon::yesterday()->toDateString(),
+                default => $request->date,
+            };
+            $query->whereDate('date', $date);
+        }
+
+        // فلترة الحالة
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
         if ($request->filled('search')) {
             $search = trim($request->search);
 
             $query->where(function ($q) use ($search) {
                 $q->where('passenger_number', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhere('pickup_location', 'like', "%{$search}%")
+                    ->orWhere('destination', 'like', "%{$search}%")
                     ->orWhere('note', 'like', "%{$search}%")
                     ->orWhereHas('driver', function ($driverQuery) use ($search) {
                         $driverQuery->where('name', 'like', "%{$search}%")
@@ -199,28 +216,31 @@ class PassengersController extends Controller
         $passenger = Passengers::findOrFail($id);
         $oldStatus = $passenger->status;
 
-        // منع تعديل البيانات إذا كانت الرحلة مكتملة مسبقاً لحماية الحسابات والعمولات
-        if ($oldStatus == 'completed') {
+        // منع تعديل البيانات إذا كانت الرحلة مكتملة مسبقاً لحماية الحسابات والعمولات (إلا إذا تم تمرير allow_completed_edit للتعديل من شاشة الرحلة)
+        if ($oldStatus == 'completed' && !$request->boolean('allow_completed_edit', false)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+            }
             return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
         }
 
         $validator = Validator::make($request->all(), [
-            'date'             => ['required', 'date'],
-            'passenger_number' => ['required', 'string', 'max:255'],
-            'destination'             => ['required', 'string', 'max:255'],      // 🔥 الحقل الجديد للوجهة
+            'date'                    => ['required', 'date'],
+            'passenger_number'        => ['required', 'string', 'max:255'],
+            'destination'             => ['nullable', 'string', 'max:255'],      // الوجهة
             'pickup_location'         => ['required', 'string', 'max:255'],
-
-            // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع مودال التعديل
-            'broker_id'        => ['nullable', 'exists:brokers,id'],
-            'broker_name'      => ['required', 'string', 'max:255'], // حقل الاسم مطلوب دائماً لاستخدامه في البحث أو الإنشاء
-
-            'count'            => ['required', 'integer', 'min:1'],
+            'broker_id'               => ['nullable', 'exists:brokers,id'],
+            'broker_name'             => ['nullable', 'string', 'max:255'],
+            'count'                   => ['required', 'integer', 'min:1'],
             'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
-            'note'             => ['nullable', 'string'],
+            'note'                    => ['nullable', 'string'],
         ]);
 
         if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+            }
             return WebResponseClass::sendValidationError($validator);
         }
 
@@ -263,9 +283,22 @@ class PassengersController extends Controller
             }
 
             DB::commit();
+
+            if ($request->ajax() || $request->wantsJson()) {
+                $passenger->load('broker');
+                return response()->json([
+                    'success'   => true,
+                    'message'   => 'تم تعديل بيانات الراكب بنجاح.',
+                    'passenger' => $passenger
+                ]);
+            }
+
             return WebResponseClass::sendResponse('تم التحديث!', 'تم تعديل بيانات الراكب وتسجيل العمولة للوسيط.', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             DB::rollBack(); // التراجع عن العمليات في حال حدوث أي فشل تقني
+            if ($request->ajax() || $request->wantsJson()) {
+                return WebResponseClass::sendExceptionError($e);
+            }
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -273,7 +306,9 @@ class PassengersController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+            'status'        => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+            'note'          => ['nullable', 'string', 'max:1000'],
+            'cancel_reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
         try {
@@ -287,11 +322,23 @@ class PassengersController extends Controller
                 return back()->with('error', 'لا يمكنك تحديث حالة الراكب المكتمل رحلته.');
             }
 
-            if ($oldStatus === $newStatus) {
+            $updateData = ['status' => $newStatus];
+
+            if ($newStatus === 'cancel') {
+                if ($request->has('cancel_reason')) {
+                    $updateData['cancel_reason'] = $request->cancel_reason;
+                }
+            } else {
+                if ($request->has('note')) {
+                    $updateData['note'] = $request->note;
+                }
+            }
+
+            if ($oldStatus === $newStatus && !isset($updateData['cancel_reason']) && !isset($updateData['note'])) {
                 return back();
             }
 
-            $passenger->update(['status' => $newStatus]);
+            $passenger->update($updateData);
             $passenger->refresh(); // تحديث الموديل لضمان وجود بيانات الفرع
 
             if ($newStatus === 'completed' && $oldStatus !== 'completed') {

@@ -1,22 +1,26 @@
-@props(['value'])
+@props(['value' => null])
 
 @php
-    $countries = config('countries');
+    $countries = config('countries', []);
     $detectedCode = 'YE'; // Default
-    $clean = $value;
+    $clean = $value ?: '---';
 
-    foreach ($countries as $code => $country) {
-        $rawCode = ltrim($country['dial_code'], '+');
-        if (preg_match('/^(\+|00)?' . $rawCode . '/', $value)) {
-            $detectedCode = $code;
-            $clean = preg_replace('/^(\+|00)?' . $rawCode . '/', '', $value);
-            break;
+    if (!empty($value) && $value !== '---') {
+        foreach ($countries as $code => $country) {
+            $rawCode = ltrim($country['dial_code'] ?? '', '+');
+            if ($rawCode && preg_match('/^(\+|00)?' . $rawCode . '/', (string) $value)) {
+                $detectedCode = $code;
+                $clean = preg_replace('/^(\+|00)?' . $rawCode . '/', '', (string) $value);
+                break;
+            }
         }
     }
 @endphp
 
 <div {{ $attributes->merge(['class' => 'flex items-center gap-2 justify-end']) }} dir="ltr">
-    <x-country-flag :code="$detectedCode" class="w-5 h-auto rounded-sm" />
+    @if(!empty($value) && $value !== '---')
+        <x-country-flag :code="$detectedCode" class="w-5 h-auto rounded-sm" />
+    @endif
 
     <span class="font-mono">
         {{ $clean }}

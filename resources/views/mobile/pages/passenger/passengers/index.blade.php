@@ -44,6 +44,32 @@
             </div>
         </div>
 
+        <div class="px-4 -mt-2">
+            <form method="GET" action="{{ route('passengers.index') }}" class="flex gap-2 items-center">
+                <input type="hidden" name="isMobile" value="1">
+                @if(request('search'))
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                @endif
+                <div class="relative flex-1">
+                    <span class="absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg pointer-events-none">calendar_today</span>
+                    <input type="date" name="date" value="{{ request('date') }}" onchange="this.form.submit()"
+                        onclick="try { this.showPicker(); } catch(e) {}"
+                        class="w-full h-11 pr-10 pl-3 rounded-2xl border-none bg-white shadow-sm ring-1 ring-slate-200/60 font-headline text-xs text-slate-700 outline-none cursor-pointer">
+                </div>
+                <button type="button" onclick="const f=this.form; f.date.value='{{ now()->format('Y-m-d') }}'; f.submit();"
+                    class="h-11 px-3.5 text-xs font-bold rounded-2xl whitespace-nowrap transition-all {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' ? 'bg-primary text-white shadow-sm' : 'bg-white text-slate-600 ring-1 ring-slate-200/60' }}">
+                    اليوم
+                </button>
+                @if(request('date'))
+                    <a href="{{ route('passengers.index', array_filter(request()->except('date', 'page'))) }}"
+                        class="h-11 px-3 flex items-center justify-center text-xs font-bold rounded-2xl bg-white text-rose-500 ring-1 ring-rose-200 hover:bg-rose-50 transition-all"
+                        title="إلغاء فلتر التاريخ">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </a>
+                @endif
+            </form>
+        </div>
+
         <div class="pr-4 pl-4 -mt-2">
             <div class="flex overflow-x-auto gap-2 pb-2 custom-scrollbar"
                 style="scrollbar-width: none; -ms-overflow-style: none;">
@@ -110,10 +136,17 @@
                         </div>
 
                         <div class="flex gap-2 items-center" @click.stop>
-                            <span
-                                class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
-                                {{ $statusLabel }}
-                            </span>
+                            <div class="flex flex-col items-end">
+                                <span
+                                    class="px-3 py-1.5 text-[10px] font-bold rounded-xl border shadow-sm font-headline {{ $statusClass }}">
+                                    {{ $statusLabel }}
+                                </span>
+                                @if ($statusKey == 'cancel' && !empty($passenger->cancel_reason))
+                                    <span class="text-[10px] text-rose-500 font-bold mt-1 max-w-[120px] truncate" title="سبب الإلغاء: {{ $passenger->cancel_reason }}">
+                                        السبب: {{ $passenger->cancel_reason }}
+                                    </span>
+                                @endif
+                            </div>
 
                             <div x-data="{ open: false }" class="relative">
                                 <button @click="open = !open" type="button"
@@ -157,7 +190,9 @@
                                             @click="openStatusModal({
                                                 id: {{ $passenger->id }},
                                                 passenger_number: @js($passenger->passenger_number),
-                                                status: 'cancel'
+                                                status: 'cancel',
+                                                cancel_reason: @js($passenger->cancel_reason ?? ''),
+                                                note: @js($passenger->note)
                                             }); open = false"
                                             class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-600 font-headline">
                                             <span class="material-symbols-outlined text-[16px]">block</span> إلغاء الراكب
@@ -197,6 +232,11 @@
                             <span class="px-2.5 py-1 font-mono text-xs font-black rounded-lg text-primary dir-ltr bg-primary/5">
                                 <x-phone-number :value="$passenger->passenger_number" class="text-primary" />
                             </span>
+                            @if ($passenger->note)
+                                <span class="text-[10px] text-slate-500 block mt-0.5 truncate max-w-[120px]" title="{{ $passenger->note }}">
+                                    {{ $passenger->note }}
+                                </span>
+                            @endif
                         </div>
                     </div>
 
@@ -282,17 +322,27 @@
                     <span class="inline-block mt-2 text-amber-500/80">سيتم تغيير حالة الراكب إلى ملغي.</span>
                 </p>
 
-                <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true" class="flex gap-3 w-full">
+                <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true" class="space-y-4 w-full">
                     @csrf
                     <input type="hidden" name="status" value="cancel">
-                    <button type="button" @click="closeModals()"
-                        class="flex-1 h-14 text-sm font-bold text-slate-600 rounded-[1rem] transition-all bg-slate-50 hover:bg-slate-100 active:scale-95 font-headline">تراجع</button>
-                    <button type="submit" :disabled="isSubmitting"
-                        class="flex flex-1 gap-2 justify-center items-center h-14 text-sm font-bold text-white rounded-[1rem] shadow-lg transition-all bg-amber-500 hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
-                        <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
-                        <span x-show="isSubmitting"
-                            class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                    </button>
+                    <div class="text-right">
+                        <label class="block mb-1.5 text-xs font-bold text-slate-700">
+                            سبب الإلغاء <span class="text-slate-400 font-normal">(اختياري)</span>
+                        </label>
+                        <textarea name="cancel_reason" x-model="statusPassengerData.cancel_reason" rows="3"
+                            placeholder="اكتب سبب إلغاء الحجز هنا..."
+                            class="w-full p-3 text-xs font-bold text-slate-700 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500/20"></textarea>
+                    </div>
+                    <div class="flex gap-3 w-full">
+                        <button type="button" @click="closeModals()"
+                            class="flex-1 h-14 text-sm font-bold text-slate-600 rounded-[1rem] transition-all bg-slate-50 hover:bg-slate-100 active:scale-95 font-headline">تراجع</button>
+                        <button type="submit" :disabled="isSubmitting"
+                            class="flex flex-1 gap-2 justify-center items-center h-14 text-sm font-bold text-white rounded-[1rem] shadow-lg transition-all bg-amber-500 hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                            <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
+                            <span x-show="isSubmitting"
+                                class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -385,11 +435,17 @@
                     driver_id: null,
                     driver_name: '',
                     driver_phone: '',
+                    cancel_reason: '',
                     note: '',
                     url: ''
                 },
                 getPrintUrl() {
                     let parts = [];
+                    @if(request('date'))
+                        const d = '{{ request('date') === 'today' ? now()->format('Y-m-d') : request('date') }}';
+                        parts.push('from:' + d);
+                        parts.push('to:' + d);
+                    @endif
                     if (this.selectedStatus) parts.push('status:' + this.selectedStatus);
                     parts.push('branch_id:{{ auth()->user()->branch_id }}');
                     return parts.join('|');
@@ -439,6 +495,8 @@
                 openStatusModal(passenger) {
                     this.statusPassengerData = {
                         ...passenger,
+                        cancel_reason: passenger.cancel_reason || '',
+                        note: passenger.note || '',
                         url: '{{ url('passengers') }}/' + passenger.id + '/status'
                     };
                     this.showStatusModal = true;

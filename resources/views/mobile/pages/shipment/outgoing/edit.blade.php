@@ -153,7 +153,7 @@
 
                             <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                 @focus="showCustomerDropdown = true" @click.away="showCustomerDropdown = false"
-                                placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                placeholder="7XXXXXXXX (اختياري)" inputmode="numeric" autocomplete="off"
                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                 class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
                                 :class="selectedCustomerId ? 'font-bold text-primary' : ''">
@@ -184,8 +184,8 @@
                             </div>
                         </div>
 
-                        <input type="text" name="sender_name" x-model="nameInput"
-                            :readonly="selectedCustomerId !== null" placeholder="اسم المرسل (اختياري)..."
+                        <input type="text" name="sender_name" required x-model="nameInput"
+                            :readonly="selectedCustomerId !== null" placeholder="اسم المرسل *..."
                             class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
                             :class="selectedCustomerId ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
                     </div>
@@ -241,7 +241,7 @@
 
                             <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                 @focus="showCustomerDropdown = true" @click.away="showCustomerDropdown = false"
-                                placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                placeholder="7XXXXXXXX (اختياري)" inputmode="numeric" autocomplete="off"
                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                 class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
                                 :class="selectedCustomerId ? 'font-bold text-emerald-700' : ''">
@@ -317,17 +317,17 @@
             <div class="flex flex-col gap-2 col-span-2" x-data="{
                     isOpen: false,
                     options: ['كرتون', 'كيس', 'مغلف'],
-                    packageType: '{{ old('package_type', $shipment->package_type ?? 'كرتون') }}'
+                    packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
                 }">
                 <label class="text-[11px] font-bold text-slate-400">النوع <span class="text-rose-500">*</span></label>
 
-                <div class="relative z-[40]">
-                    <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true"
-                        @click.outside="isOpen = false" placeholder="اختر أو اكتب..." autocomplete="off" required
+                <div class="relative z-[40]" @click.outside="isOpen = false">
+                    <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true" @click="isOpen = true"
+                        placeholder="اختر أو اكتب..." autocomplete="off" required
                         class="px-4 w-full h-12 text-sm font-bold rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
 
                     <button type="button" @click="isOpen = !isOpen" tabindex="-1"
-                        class="flex absolute inset-y-0 right-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
+                        class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
                         <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
                             :class="isOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
                     </button>

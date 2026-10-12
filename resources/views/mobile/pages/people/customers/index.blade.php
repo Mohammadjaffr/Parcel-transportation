@@ -61,7 +61,8 @@
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-HTTP-Method-Override': (data && data._method) ? data._method : method
                     },
                     body: JSON.stringify(data)
                 });
@@ -370,6 +371,14 @@
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
                                     inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    @input="
+                                        let val = (localPhoneNumber || '').replace(/[^0-9]/g, '');
+                                        let code = String(selectedCountry?.dial_code || '967').replace('+', '');
+                                        if (val.startsWith(code) && val.length > code.length) {
+                                            val = val.substring(code.length);
+                                        }
+                                        localPhoneNumber = val;
+                                    "
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
@@ -490,12 +499,20 @@
                                 this.localPhoneNumber = '';
                                 return;
                             }
-                            let matched = this.countries.find(c => phoneString.startsWith(c.dial_code.replace('+', '')));
+                            let phone = String(phoneString).trim().replace(/^(\+|00)/, '');
+                            let sorted = [...(this.countries || [])].sort((a, b) => {
+                                const codeA = String(a.dial_code || '').replace('+', '');
+                                const codeB = String(b.dial_code || '').replace('+', '');
+                                return codeB.length - codeA.length;
+                            });
+                            let matched = sorted.find(c => phone.startsWith(String(c.dial_code || '').replace('+', '')));
                             if (matched) {
                                 this.selectedCountry = matched;
-                                this.localPhoneNumber = phoneString.substring(matched.dial_code.replace('+', '').length);
+                                const dialCode = String(matched.dial_code || '').replace('+', '');
+                                this.localPhoneNumber = phone.substring(dialCode.length);
                             } else {
-                                this.localPhoneNumber = phoneString;
+                                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                                this.localPhoneNumber = phone;
                             }
                             this.updateFullPhone();
                         },
@@ -513,6 +530,14 @@
 
                                 <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX" required
                                     inputmode="numeric" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    @input="
+                                        let val = (localPhoneNumber || '').replace(/[^0-9]/g, '');
+                                        let code = String(selectedCountry?.dial_code || '967').replace('+', '');
+                                        if (val.startsWith(code) && val.length > code.length) {
+                                            val = val.substring(code.length);
+                                        }
+                                        localPhoneNumber = val;
+                                    "
                                     class="flex-1 pr-12 pl-4 w-full h-14 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline dir-ltr">
 
                                 <div
