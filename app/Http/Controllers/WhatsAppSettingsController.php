@@ -6,6 +6,7 @@ use App\Classes\WebResponseClass;
 use App\Models\App;
 use App\Services\WhatsAppService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -148,92 +149,128 @@ class WhatsAppSettingsController extends Controller
      * فحص حالة اتصال WhatsApp بالـ Instance الخاص بالمكتب
      */
     public function status(Request $request): JsonResponse
-    {
-        $company = $this->getCompany();
+{
+    $company = $this->getCompany();
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
-        }
+    if (!$company) {
+        return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+    }
 
-        if (!$company->hasWhatsAppConfigured()) {
-            return response()->json([
-                'success'       => false,
-                'is_configured' => false,
-                'message'       => 'إعدادات WhatsApp غير مكتملة للمكتب.',
-                'state'         => 'disconnected',
-            ]);
-        }
+    $cacheKey = 'whatsapp_status_' . $company->id;
 
-        $service = $this->whatsAppService->forApp($company);
-        $result = $service->getStatus();
-
-        if (!empty($result['error'])) {
-            return response()->json([
-                'success' => false,
-                'error'   => $result['message'] ?? 'فشل الاتصال بخدمة WhatsApp',
-                'state'   => 'error',
-                'raw'     => $result,
-            ], 400);
-        }
-
-        // استخلاص حالة الاتصال الشائعة من Evolution API ومختلف بوابات WhatsApp
-        $isLoggedIn = data_get($result, 'data.LoggedIn') ?? data_get($result, 'LoggedIn');
-        $isConnected = data_get($result, 'data.Connected') ?? data_get($result, 'Connected');
-        $accountName = data_get($result, 'data.Name') ?? data_get($result, 'Name');
-
-        if ($isLoggedIn === true) {
-            $state = 'connected';
-        } elseif ($isLoggedIn === false && $isConnected === true) {
-            $state = 'disconnected'; // متصل بالسوكت ولكن لم يسجل الدخول (بانتظار مسح QR)
-        } else {
-            $state = data_get($result, 'instance.state')
-                ?? data_get($result, 'state')
-                ?? data_get($result, 'status')
-                ?? 'disconnected';
-        }
+    // 1. التحقق من اكتمال الإعدادات
+    if (!$company->hasWhatsAppConfigured()) {
+        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
 
         return response()->json([
-            'success'      => true,
-            'state'        => $state,
-            'is_logged_in' => (bool)$isLoggedIn,
-            'account_name' => $accountName,
-            'data'         => $result,
+            'success'       => false,
+            'is_configured' => false,
+            'message'       => 'إعدادات WhatsApp غير مكتملة للمكتب.',
+            'state'         => 'disconnected',
         ]);
     }
+
+    // 2. طلب حالة الاتصال من السيرفيس
+    $service = $this->whatsAppService->forApp($company);
+    $result = $service->getStatus();
+
+    // 3. في حال وجود خطأ في الاتصال
+    if (!empty($result['error'])) {
+        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+        return response()->json([
+            'success' => false,
+            'error'   => $result['message'] ?? 'فشل الاتصال بخدمة WhatsApp',
+            'state'   => 'error',
+            'raw'     => $result,
+        ], 400);
+    }
+
+    // 4. استخلاص حالة الاتصال الشائعة من Evolution API وبوابات WhatsApp المختلفة
+    $isLoggedIn  = data_get($result, 'data.LoggedIn') ?? data_get($result, 'LoggedIn');
+    $isConnected = data_get($result, 'data.Connected') ?? data_get($result, 'Connected');
+    $accountName = data_get($result, 'data.Name') ?? data_get($result, 'Name');
+
+    if ($isLoggedIn === true) {
+        $state = 'connected';
+    } elseif ($isLoggedIn === false && $isConnected === true) {
+        $state = 'disconnected'; // متصل بالسوكت ولكن لم يسجل الدخول (بانتظار مسح QR)
+    } else {
+        $state = data_get($result, 'instance.state')
+            ?? data_get($result, 'state')
+            ?? data_get($result, 'status')
+            ?? data_get($result, 'message')
+            ?? 'disconnected';
+    }
+
+    // -------------------------------------------------------------
+    // ⚡ تحديث الكاش ديناميكياً بناءً على الحالة المسترجعة
+    // -------------------------------------------------------------
+    $stateLower = strtolower(trim((string) $state));
+    $onlineStates = ['connected', 'open', 'success', 'online', 'connecting'];
+
+    // يُعتبر متصلاً إذا كان isLoggedIn صحيحاً أو كانت الحالة ضمن الحالات الناجحة
+    if ($isLoggedIn === true || in_array($stateLower, $onlineStates, true) || data_get($result, 'status') === 200) {
+        Cache::put($cacheKey, 'online', now()->addMinutes(10));
+    } else {
+        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+    }
+
+    return response()->json([
+        'success'      => true,
+        'state'        => $state,
+        'is_logged_in' => (bool) $isLoggedIn,
+        'account_name' => $accountName,
+        'data'         => $result,
+    ]);
+}
 
     /**
      * بدء الاتصال بالإنستانس
      */
-    public function connect(Request $request): JsonResponse
-    {
-        $company = $this->getCompany();
+public function connect(Request $request): JsonResponse
+{
+    $company = $this->getCompany();
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
-        }
-
-        if (!$company->hasWhatsAppConfigured()) {
-            return response()->json(['success' => false, 'error' => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.'], 422);
-        }
-
-        $service = $this->whatsAppService->forApp($company);
-        $webhook = $request->input('webhook_url') ?: $company->whatsapp_webhook_url;
-        $result = $service->connect($webhook);
-
-        if (!empty($result['error'])) {
-            return response()->json([
-                'success' => false,
-                'error'   => $result['message'] ?? 'فشل بدء الاتصال',
-            ], 400);
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم إرسال طلب بدء الاتصال بنجاح.',
-            'data'    => $result,
-        ]);
+    if (!$company) {
+        return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
     }
 
+    $cacheKey = 'whatsapp_status_' . $company->id;
+
+    // 1. التحقق من اكتمال الإعدادات
+    if (!$company->hasWhatsAppConfigured()) {
+        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+        return response()->json([
+            'success' => false,
+            'error'   => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.',
+        ], 422);
+    }
+
+    $service = $this->whatsAppService->forApp($company);
+    $webhook = $request->input('webhook_url') ?: $company->whatsapp_webhook_url;
+    $result  = $service->connect($webhook);
+
+    // 2. في حال حدوث خطأ أثناء بدء الاتصال
+    if (!empty($result['error'])) {
+        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+        return response()->json([
+            'success' => false,
+            'error'   => $result['message'] ?? 'فشل بدء الاتصال',
+        ], 400);
+    }
+
+    // 3. نجاح إرسال أمر الاتصال بنجاح
+    Cache::put($cacheKey, 'online', now()->addMinutes(10));
+
+    return response()->json([
+        'success' => true,
+        'message' => 'تم إرسال طلب بدء الاتصال بنجاح.',
+        'data'    => $result,
+    ]);
+}
     /**
      * جلب رمز QR Code لربط الحساب
      */
