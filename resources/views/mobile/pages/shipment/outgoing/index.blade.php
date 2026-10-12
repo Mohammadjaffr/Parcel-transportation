@@ -30,7 +30,7 @@
 
         <div class="space-y-5">
             @forelse($shipments as $shipment)
-                <div x-show="searchQuery === '' || '{{ $shipment->id }}'.includes(searchQuery) || '{{ $shipment->receiverCustomer?->phone }}'.includes(searchQuery)"
+                <div x-show="searchQuery === '' || '{{ $shipment->bond_number }}'.includes(searchQuery) || '{{ $shipment->receiverCustomer?->phone }}'.includes(searchQuery)"
                     class="bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group">
 
                     {{-- شريط لوني علوي خفيف يعطي طابعاً مميزاً --}}
@@ -48,7 +48,7 @@
                             </div>
                             <div class="flex flex-col">
                                 <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
-                                    {{ $shipment->id }}
+                                    {{ $shipment->bond_number }}
                                 </h3>
                                 <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1">
                                     <span class="material-symbols-outlined text-[12px]">schedule</span>
