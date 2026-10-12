@@ -25,7 +25,7 @@
         <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2">
 
             <form action="{{ route('trips.store') }}" method="POST" 
-                x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []))">
+                x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []), @js($brokers ?? []))">
                 @csrf
 
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -213,16 +213,32 @@
                                                          x-html="getPassengerPhoneDetails(passenger.passenger_number).flag"></div>
                                                 </div>
                                                 
-                                                <div class="flex gap-1.5 items-center px-2.5 py-1 w-max rounded-md bg-slate-50 dark:bg-boxdark-2">
-                                                    <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
-                                                    <span class="text-xs font-bold truncate text-slate-600 dark:text-gray-300" x-text="passenger.destination"></span>
+                                                <div class="flex flex-wrap gap-2 items-center">
+                                                    <div class="flex gap-1.5 items-center px-2.5 py-1 w-max rounded-md bg-slate-50 dark:bg-boxdark-2">
+                                                        <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
+                                                        <span class="text-xs font-bold truncate text-slate-600 dark:text-gray-300" x-text="passenger.destination || 'غير محدد'"></span>
+                                                    </div>
+                                                    <template x-if="passenger.pickup_location">
+                                                        <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-slate-100/70 dark:bg-boxdark-2/60 text-[11px] font-bold text-slate-500 dark:text-gray-400">
+                                                            <span class="material-symbols-outlined text-[12px] text-slate-400">pin_drop</span>
+                                                            <span class="truncate max-w-[120px]" x-text="passenger.pickup_location"></span>
+                                                        </div>
+                                                    </template>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {{-- علامة الصح --}}
-                                        <div class="flex justify-center items-center w-7 h-7 rounded-full border-2 transition-all border-slate-300 dark:border-boxdark-2 peer-checked:bg-primary peer-checked:border-primary shrink-0 peer-checked:shadow-sm">
-                                            <span class="material-symbols-outlined text-white text-[18px] hidden peer-checked:block">check</span>
+                                        {{-- علامة الصح وزر التعديل --}}
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <button type="button" @click.stop.prevent="openEditPassenger(passenger)"
+                                                title="تعديل بيانات الراكب"
+                                                class="flex justify-center items-center w-8 h-8 rounded-full border border-slate-200 dark:border-boxdark-2 text-slate-400 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors shadow-sm">
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+
+                                            <div class="flex justify-center items-center w-7 h-7 rounded-full border-2 transition-all border-slate-300 dark:border-boxdark-2 peer-checked:bg-primary peer-checked:border-primary shrink-0 peer-checked:shadow-sm">
+                                                <span class="material-symbols-outlined text-white text-[18px] hidden peer-checked:block">check</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </label>
@@ -243,6 +259,186 @@
                     </div>
 
                 </div>
+
+                {{-- ================= مودال تعديل بيانات الراكب ================= --}}
+                <div x-show="showEditPassengerModal" x-cloak
+                    class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+                    @keydown.escape.window="showEditPassengerModal = false">
+                    
+                    <div class="bg-white dark:bg-boxdark rounded-[2rem] w-full max-w-2xl shadow-2xl border border-slate-100 dark:border-boxdark-2 overflow-hidden flex flex-col max-h-[90vh]"
+                        @click.away="showEditPassengerModal = false">
+                        
+                        {{-- Header --}}
+                        <div class="flex justify-between items-center px-6 py-5 border-b border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50">
+                            <div class="flex items-center gap-3">
+                                <div class="flex justify-center items-center w-10 h-10 rounded-xl bg-primary/10 text-primary">
+                                    <span class="material-symbols-outlined text-[22px]">edit_note</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black text-slate-800 dark:text-white font-headline">تعديل بيانات الراكب</h3>
+                                    <p class="text-xs text-gray-500 font-bold">تعديل بيانات الراكب وحفظها فوراً بالرحلة</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="showEditPassengerModal = false"
+                                class="flex justify-center items-center w-9 h-9 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-boxdark-2 transition-colors">
+                                <span class="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </div>
+
+                        {{-- Form Body --}}
+                        <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar text-right">
+                            {{-- Error banner --}}
+                            <div x-show="editPassengerError" x-cloak
+                                class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">error</span>
+                                <span x-html="editPassengerError"></span>
+                            </div>
+
+                            {{-- Phone number input with country selector --}}
+                            <div>
+                                <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
+                                <div class="flex overflow-visible relative items-center h-12 bg-white rounded-xl ring-1 ring-slate-200 dark:bg-boxdark-2 dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/50" style="direction: ltr;">
+                                    <div class="relative h-full shrink-0" @click.away="editPassengerData.openCountryDropdown = false">
+                                        <button type="button" @click="editPassengerData.openCountryDropdown = !editPassengerData.openCountryDropdown"
+                                            class="flex gap-2 items-center px-3 h-full rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark dark:border-boxdark-2 text-slate-600 dark:text-gray-300">
+                                            <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden" x-html="editPassengerData.selectedCountry?.svg"></div>
+                                            <span class="text-xs font-bold" x-text="editPassengerData.selectedCountry?.dial_code"></span>
+                                        </button>
+
+                                        <div x-show="editPassengerData.openCountryDropdown" x-cloak x-transition
+                                            class="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl z-[70] overflow-hidden">
+                                            <div class="p-2.5 border-b border-slate-50 dark:border-boxdark-2">
+                                                <input type="text" x-model="editPassengerData.searchCountryQuery" placeholder="بحث عن دولة..."
+                                                    class="px-3 w-full h-9 text-xs rounded-xl outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white focus:ring-1 focus:ring-primary/30" dir="rtl">
+                                            </div>
+                                            <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                                <template x-for="country in editPassengerFilteredCountries" :key="country.code">
+                                                    <button type="button" @click="editPassengerData.selectedCountry = country; editPassengerData.openCountryDropdown = false"
+                                                        class="flex gap-3 items-center px-3 py-2.5 w-full text-left border-b transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200 border-slate-50 dark:border-boxdark-2 last:border-0">
+                                                        <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden shadow-sm" x-html="country.svg"></div>
+                                                        <span class="flex-1 text-xs font-bold" x-text="country.name"></span>
+                                                        <span class="font-mono text-[11px] text-slate-400" x-text="country.dial_code"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                        :maxlength="editPassengerData.selectedCountry?.code === 'YE' ? 9 : 15"
+                                        class="flex-1 px-4 w-full h-full text-sm tracking-wider text-left bg-transparent border-0 outline-none focus:ring-0 text-slate-800 dark:text-white">
+                                </div>
+                            </div>
+
+                            {{-- Grid: مكان الصعود والوجهة --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
+                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مثلاً: جولة السفينة" required
+                                        class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">وجهة الراكب</label>
+                                    <input type="text" x-model="editPassengerData.destination" placeholder="مثلاً: صنعاء"
+                                        class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                            </div>
+
+                            {{-- Grid: عدد الركاب والعمولات --}}
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
+                                    <input type="number" min="1" x-model="editPassengerData.count" required
+                                        class="px-4 w-full h-12 text-sm font-black rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عمولة المكتب</label>
+                                    <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0.00"
+                                        class="px-4 w-full h-12 text-sm font-bold text-emerald-600 rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عمولة مكاتب أخرى</label>
+                                    <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0.00"
+                                        class="px-4 w-full h-12 text-sm font-bold text-amber-600 rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                            </div>
+
+                            {{-- Grid: التاريخ والوسيط --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">تاريخ الحجز <span class="text-rose-500">*</span></label>
+                                    <input type="date" x-model="editPassengerData.date" required
+                                        class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                </div>
+                                <div class="relative">
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">الوسيط / المكتب</label>
+                                    <div class="relative">
+                                        <input type="text" x-model="editPassengerData.brokerSearchQuery"
+                                            @input="onBrokerInput()"
+                                            @focus="editPassengerData.showBrokerDropdown = true"
+                                            @click.away="editPassengerData.showBrokerDropdown = false"
+                                            placeholder="اكتب اسم الوسيط..."
+                                            class="px-4 pr-10 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">handshake</span>
+                                        <button type="button" x-show="editPassengerData.brokerSearchQuery" @click="resetEditBroker()"
+                                            class="absolute left-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-rose-500">
+                                            <span class="material-symbols-outlined text-[16px]">close</span>
+                                        </button>
+                                    </div>
+                                    <div x-show="editPassengerData.showBrokerDropdown && editPassengerFilteredBrokers.length > 0" x-cloak x-transition
+                                        class="absolute top-full right-0 mt-1 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[70] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                        <template x-for="b in editPassengerFilteredBrokers" :key="b.id">
+                                            <button type="button" @click="selectEditBroker(b)"
+                                                class="flex justify-between items-center px-4 py-2.5 w-full text-right border-b border-slate-50 dark:border-boxdark-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200">
+                                                <span x-text="b.name"></span>
+                                                <span class="material-symbols-outlined text-[16px] text-emerald-500">done</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Notes --}}
+                            <div>
+                                <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">ملاحظات إضافية</label>
+                                <textarea x-model="editPassengerData.note" rows="2" placeholder="أي ملاحظات..."
+                                    class="px-4 py-3 w-full text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-1 focus:ring-primary"></textarea>
+                            </div>
+                        </div>
+
+                        {{-- Footer Buttons --}}
+                        <div class="px-6 py-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 flex justify-end gap-3">
+                            <button type="button" @click="showEditPassengerModal = false"
+                                class="px-5 h-12 text-sm font-bold text-slate-600 dark:text-gray-300 bg-white dark:bg-boxdark rounded-xl border border-slate-200 dark:border-boxdark-2 hover:bg-slate-100 transition-colors">
+                                إلغاء
+                            </button>
+                            <button type="button" @click="savePassengerEdit()" :disabled="isUpdatingPassenger"
+                                class="flex items-center gap-2 px-6 h-12 text-sm font-black text-white bg-primary hover:bg-primary-hover rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed">
+                                <template x-if="isUpdatingPassenger">
+                                    <span class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                        <span>جاري الحفظ...</span>
+                                    </span>
+                                </template>
+                                <template x-if="!isUpdatingPassenger">
+                                    <span class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[20px]">save</span>
+                                        <span>حفظ التعديلات</span>
+                                    </span>
+                                </template>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- Toast notification --}}
+                <div x-show="editSuccessToast" x-cloak x-transition
+                    class="fixed bottom-6 left-6 z-[10000] bg-emerald-600 text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3">
+                    <span class="material-symbols-outlined text-[22px]">check_circle</span>
+                    <span class="text-sm font-bold" x-text="editSuccessMessage"></span>
+                </div>
+
             </form>
         </div>
     </div>
@@ -252,10 +448,11 @@
 
 @section('script')
     <script>
-        function createTripForm(driversList, countriesList, initialPassengers) {
+        function createTripForm(driversList, countriesList, initialPassengers, brokersList) {
             return {
                 drivers: driversList || [],
                 countries: countriesList || [],
+                brokers: brokersList || [],
                 localPhoneNumber: '',
                 selectedCountry: null,
                 openCountryDropdown: false,
@@ -266,13 +463,46 @@
 
                 passengers: (initialPassengers || []).map(p => ({
                     id: p.id,
-                    passenger_number: p.passenger_number,
+                    date: p.date ? (typeof p.date === 'string' ? p.date.substring(0, 10) : p.date) : new Date().toISOString().slice(0, 10),
+                    passenger_number: p.passenger_number || '',
                     count: p.count || 1,
-                    destination: p.destination || 'غير محدد'
+                    destination: p.destination || '',
+                    pickup_location: p.pickup_location || '',
+                    broker_id: p.broker_id || '',
+                    broker_name: p.broker ? p.broker.name : (p.broker_name || ''),
+                    office_commission: p.office_commission || 0,
+                    other_office_commission: p.other_office_commission || 0,
+                    note: p.note || ''
                 })),
                 searchQuery: '',
                 selectedBranch: '',
                 selectedPassengers: [],
+
+                // مودال تعديل بيانات الراكب
+                showEditPassengerModal: false,
+                isUpdatingPassenger: false,
+                editPassengerError: '',
+                editSuccessToast: false,
+                editSuccessMessage: '',
+
+                editPassengerData: {
+                    id: null,
+                    date: '',
+                    localPhone: '',
+                    selectedCountry: null,
+                    openCountryDropdown: false,
+                    searchCountryQuery: '',
+                    pickup_location: '',
+                    destination: '',
+                    count: 1,
+                    office_commission: 0,
+                    other_office_commission: 0,
+                    broker_id: '',
+                    broker_name: '',
+                    brokerSearchQuery: '',
+                    showBrokerDropdown: false,
+                    note: ''
+                },
 
                 init() {
                     this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
@@ -323,9 +553,12 @@
                 },
 
                 filteredPassengers() {
+                    const query = (this.searchQuery || '').toLowerCase().trim();
                     return this.passengers.filter(p => {
-                        const matchSearch = this.searchQuery === '' || 
-                            String(p.passenger_number).includes(this.searchQuery);
+                        const matchSearch = query === '' || 
+                            String(p.passenger_number || '').includes(query) ||
+                            String(p.destination || '').toLowerCase().includes(query) ||
+                            String(p.pickup_location || '').toLowerCase().includes(query);
                         
                         const matchBranch = this.selectedBranch === '' || 
                             p.branch_name === this.selectedBranch;
@@ -345,7 +578,7 @@
                     this.selectedPassengers = [...new Set([...this.selectedPassengers, ...visibleIds])];
                 },
                 getPassengerPhoneDetails(number) {
-                    if (!number) return { flag: '', localNumber: '' };
+                    if (!number) return { flag: '', localNumber: '', country: null };
                     const cleanNumber = String(number).replace(/[^\d]/g, '');
                     const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
                     for (const country of sorted) {
@@ -354,15 +587,156 @@
                             const local = cleanNumber.substring(dial.length);
                             return {
                                 flag: country.svg,
-                                localNumber: local
+                                localNumber: local,
+                                country: country
                             };
                         }
                     }
                     const defaultCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
                     return {
                         flag: defaultCountry ? defaultCountry.svg : '',
-                        localNumber: number
+                        localNumber: number,
+                        country: defaultCountry
                     };
+                },
+
+                // دوال تعديل بيانات الراكب
+                get editPassengerFilteredCountries() {
+                    const query = (this.editPassengerData.searchCountryQuery || '').toLowerCase().trim();
+                    if (!query) return this.countries;
+                    return this.countries.filter(c => String(c.name || '').toLowerCase().includes(query) || String(c.dial_code || '').includes(query));
+                },
+                get editPassengerFullPhone() {
+                    const dial = String(this.editPassengerData.selectedCountry?.dial_code || '').replace('+', '');
+                    const local = String(this.editPassengerData.localPhone || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    return local ? dial + local : '';
+                },
+                get editPassengerFilteredBrokers() {
+                    const query = (this.editPassengerData.brokerSearchQuery || '').toLowerCase().trim();
+                    if (!query) return [];
+                    return this.brokers.filter(b => String(b.name || '').toLowerCase().includes(query));
+                },
+                openEditPassenger(passenger) {
+                    const phoneDetails = this.getPassengerPhoneDetails(passenger.passenger_number);
+                    this.editPassengerData = {
+                        id: passenger.id,
+                        date: passenger.date ? (typeof passenger.date === 'string' ? passenger.date.substring(0, 10) : passenger.date) : new Date().toISOString().slice(0, 10),
+                        localPhone: phoneDetails.localNumber || '',
+                        selectedCountry: phoneDetails.country || this.countries.find(c => c.code === 'YE') || this.countries[0],
+                        openCountryDropdown: false,
+                        searchCountryQuery: '',
+                        pickup_location: passenger.pickup_location || '',
+                        destination: passenger.destination || '',
+                        count: passenger.count || 1,
+                        office_commission: passenger.office_commission || 0,
+                        other_office_commission: passenger.other_office_commission || 0,
+                        broker_id: passenger.broker_id || '',
+                        broker_name: passenger.broker_name || '',
+                        brokerSearchQuery: passenger.broker_name || '',
+                        showBrokerDropdown: false,
+                        note: passenger.note || ''
+                    };
+                    this.editPassengerError = '';
+                    this.showEditPassengerModal = true;
+                },
+                selectEditBroker(broker) {
+                    this.editPassengerData.broker_id = broker.id;
+                    this.editPassengerData.broker_name = broker.name;
+                    this.editPassengerData.brokerSearchQuery = broker.name;
+                    this.editPassengerData.showBrokerDropdown = false;
+                },
+                onBrokerInput() {
+                    this.editPassengerData.broker_id = '';
+                    this.editPassengerData.broker_name = this.editPassengerData.brokerSearchQuery;
+                    this.editPassengerData.showBrokerDropdown = true;
+                },
+                resetEditBroker() {
+                    this.editPassengerData.broker_id = '';
+                    this.editPassengerData.broker_name = '';
+                    this.editPassengerData.brokerSearchQuery = '';
+                    this.editPassengerData.showBrokerDropdown = false;
+                },
+                async savePassengerEdit() {
+                    const fullPhone = this.editPassengerFullPhone;
+                    if (!fullPhone) {
+                        this.editPassengerError = 'يرجى إدخال رقم جوال الراكب.';
+                        return;
+                    }
+                    if (!this.editPassengerData.pickup_location) {
+                        this.editPassengerError = 'يرجى إدخال مكان الصعود.';
+                        return;
+                    }
+                    if (!this.editPassengerData.count || this.editPassengerData.count < 1) {
+                        this.editPassengerError = 'يرجى تحديد عدد الركاب (1 على الأقل).';
+                        return;
+                    }
+
+                    this.isUpdatingPassenger = true;
+                    this.editPassengerError = '';
+
+                    try {
+                        const payload = {
+                            date: this.editPassengerData.date,
+                            passenger_number: fullPhone,
+                            pickup_location: this.editPassengerData.pickup_location,
+                            destination: this.editPassengerData.destination,
+                            count: parseInt(this.editPassengerData.count) || 1,
+                            broker_id: this.editPassengerData.broker_id || null,
+                            broker_name: this.editPassengerData.broker_name || 'مباشر',
+                            office_commission: parseFloat(this.editPassengerData.office_commission) || 0,
+                            other_office_commission: parseFloat(this.editPassengerData.other_office_commission) || 0,
+                            note: this.editPassengerData.note || '',
+                            allow_completed_edit: true
+                        };
+
+                        const response = await fetch(`/passengers/${this.editPassengerData.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-HTTP-Method-Override': 'PUT'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && (data.success !== false)) {
+                            // تحديث بيانات الراكب في المصفوفة فوراً
+                            const index = this.passengers.findIndex(p => p.id == this.editPassengerData.id);
+                            if (index !== -1) {
+                                this.passengers[index].passenger_number = fullPhone;
+                                this.passengers[index].date = this.editPassengerData.date;
+                                this.passengers[index].pickup_location = this.editPassengerData.pickup_location;
+                                this.passengers[index].destination = this.editPassengerData.destination || '';
+                                this.passengers[index].count = parseInt(this.editPassengerData.count) || 1;
+                                this.passengers[index].broker_id = this.editPassengerData.broker_id;
+                                this.passengers[index].broker_name = this.editPassengerData.broker_name;
+                                this.passengers[index].office_commission = this.editPassengerData.office_commission;
+                                this.passengers[index].other_office_commission = this.editPassengerData.other_office_commission;
+                                this.passengers[index].note = this.editPassengerData.note;
+                            }
+
+                            this.showEditPassengerModal = false;
+                            this.showToast('تم تعديل بيانات الراكب بنجاح');
+                        } else {
+                            this.editPassengerError = data.message || (data.errors ? Object.values(data.errors).flat().join('<br>') : 'حدث خطأ أثناء حفظ التعديلات.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.editPassengerError = 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً.';
+                    } finally {
+                        this.isUpdatingPassenger = false;
+                    }
+                },
+                showToast(msg) {
+                    this.editSuccessMessage = msg;
+                    this.editSuccessToast = true;
+                    setTimeout(() => {
+                        this.editSuccessToast = false;
+                    }, 4000);
                 }
             }
         }

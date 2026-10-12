@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Driver;
 use App\Models\Passengers;
 use App\Models\PassengerTrip;
+use App\Models\Broker;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,15 +41,17 @@ class PassengerTripController extends Controller
     public function create(Request $request)
     {
         $drivers = Driver::all();
-        $pendingPassengers = Passengers::where('status', 'pending')
+        $pendingPassengers = Passengers::with(['broker', 'driver'])
+            ->where('status', 'pending')
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->get();
+        $brokers = Broker::select('id', 'name')->orderBy('name')->get();
         if ($request->isMobile) {
-            return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
+            return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers', 'brokers'));
         }
         // ضبظ حق الدسك توب 
-        return view('pages.passenger.trips.create', compact('drivers', 'pendingPassengers'));
+        return view('pages.passenger.trips.create', compact('drivers', 'pendingPassengers', 'brokers'));
     }
 
     public function store(Request $request)
@@ -151,18 +154,20 @@ class PassengerTripController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $trip = PassengerTrip::with(['driver', 'passengers'])->findOrFail($id);
+        $trip = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.driver'])->findOrFail($id);
         $drivers = Driver::all();
-        $pendingPassengers = Passengers::where('status', 'pending')
+        $pendingPassengers = Passengers::with(['broker', 'driver'])
+            ->where('status', 'pending')
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->get();
+        $brokers = Broker::select('id', 'name')->orderBy('name')->get();
 
         if ($request->isMobile) {
-            return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+            return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers', 'brokers'));
         }
 
-        return view('pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers'));
+        return view('pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers', 'brokers'));
     }
 
     public function update(Request $request, $id)

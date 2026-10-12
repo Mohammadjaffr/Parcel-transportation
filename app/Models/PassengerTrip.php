@@ -46,4 +46,21 @@ class PassengerTrip extends Model
     {
         return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'tripDriver');
     }
+
+    public function getOfficeCommissionAttribute()
+    {
+        return $this->passengers->sum('office_commission');
+    }
+
+    public function getOtherOfficeCommissionAttribute()
+    {
+        return $this->passengers->sum('other_office_commission');
+    }
+
+    public function getTotalCommissionAttribute()
+    {
+        return $this->passengers->sum(function ($passenger) {
+            return ($passenger->office_commission ?? 0) + ($passenger->other_office_commission ?? 0);
+        });
+    }
 }

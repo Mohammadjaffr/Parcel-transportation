@@ -42,7 +42,7 @@
                     <div
                         class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-slate-50 dark:bg-boxdark-2">
                         <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
-                            placeholder="ابحث برقم أو اسم السائق..."
+                            placeholder="ابحث برقم الرحلة، السائق أو اليوم..."
                             class="flex-1 px-3 w-full h-12 text-sm text-left text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
                         <div
                             class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
@@ -81,6 +81,9 @@
                                 إجمالي الركاب</th>
                             <th
                                 class="px-6 py-4 text-[11px] font-black text-gray-400 uppercase tracking-wider font-headline text-center">
+                                عمولة الركاب</th>
+                            <th
+                                class="px-6 py-4 text-[11px] font-black text-gray-400 uppercase tracking-wider font-headline text-center">
                                 الإجراءات</th>
                         </tr>
                     </thead>
@@ -93,17 +96,23 @@
                                 if (empty($avatarLetters)) {
                                     $avatarLetters = 'س';
                                 }
+                                $dayName = $trip->created_at->locale('ar')->translatedFormat('l');
+                                $tripOfficeComm = $trip->passengers->sum('office_commission');
+                                $tripOtherComm = $trip->passengers->sum('other_office_commission');
                             @endphp
                             <tr class="transition-colors hover:bg-slate-50/80 dark:hover:bg-boxdark-2/50 group trip-row"
-                                x-show="showRow(@js($driverName), @js($driverPhone))">
+                                x-show="showRow(@js($driverName), @js($driverPhone), @js((string)$trip->id), @js($dayName))">
 
                                 {{-- Date & ID --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-1">
                                         <span class="text-sm font-bold text-gray-800 font-body dark:text-white">رحلة
                                             #{{ $trip->id }}</span>
-                                        <span
-                                            class="text-xs text-gray-500 font-body dark:text-gray-400">{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
+                                        <div class="flex items-center gap-1.5 text-xs text-gray-500 font-body dark:text-gray-400">
+                                            <span class="font-bold text-primary">{{ $dayName }}</span>
+                                            <span class="text-gray-300 dark:text-gray-600">|</span>
+                                            <span class="font-medium">{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
+                                        </div>
                                     </div>
                                 </td>
 
@@ -140,6 +149,23 @@
                                         <span class="material-symbols-outlined text-[18px] text-gray-400">groups</span>
                                         {{ $trip->passengers->sum('count') }}
                                     </span>
+                                </td>
+
+                                {{-- Passengers Commission --}}
+                                <td class="px-6 py-4 text-center align-middle">
+                                    <div class="inline-flex flex-col items-center justify-center gap-0.5">
+                                        <span
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-sm font-black rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                                            <span class="material-symbols-outlined text-[18px]">payments</span>
+                                            <span class="font-sans font-black">{{ number_format($tripOfficeComm, 0) }}</span>
+                                            <span class="text-[10px] font-bold">ر.ي</span>
+                                        </span>
+                                        @if ($tripOtherComm > 0)
+                                            <span class="text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                                                أخرى: {{ number_format($tripOtherComm, 0) }} ر.ي
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 {{-- Actions --}}
@@ -192,7 +218,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="py-24 text-center">
+                                <td colspan="5" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
                                             class="flex justify-center items-center w-16 h-16 text-gray-400 rounded-full border border-gray-100 bg-slate-50 dark:bg-boxdark-2 dark:border-boxdark">
@@ -215,7 +241,7 @@
                         @endforelse
 
                         <tr x-show="visibleCount === 0 && {{ $trips->count() }} > 0" x-cloak>
-                            <td colspan="4" class="py-24 text-center">
+                            <td colspan="5" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
                                     <div
                                         class="flex justify-center items-center w-16 h-16 text-gray-400 rounded-full border border-gray-100 bg-slate-50 dark:bg-boxdark-2 dark:border-boxdark">
@@ -259,7 +285,7 @@
                     return 'branch_id:{{ auth()->user()->branch_id }}';
                 },
 
-                showRow(driverName, driverPhone) {
+                showRow(driverName, driverPhone, tripId = '', dayName = '') {
                     const query = this.searchQuery.toLowerCase().trim();
                     if (!query) return true;
 
@@ -270,7 +296,7 @@
                         return cleanStr.includes(query) || (cleanQuery !== '' && cleanStr.includes(cleanQuery));
                     };
 
-                    return check(driverName) || check(driverPhone);
+                    return check(driverName) || check(driverPhone) || check(tripId) || check(dayName);
                 },
 
                 updateVisibility() {

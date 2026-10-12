@@ -30,9 +30,29 @@
 
 
             @forelse($trips as $trip)
+                @php
+                    $tripOfficeComm = $trip->passengers->sum('office_commission');
+                    $tripOtherComm = $trip->passengers->sum('other_office_commission');
+                @endphp
                 {{-- بطاقة كرت الرحلة الواحدة مع تهيئة النطاق المستقل للقائمة المنسدلة --}}
                 <div x-data="{ openMenu: false }"
                     class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2 relative transition-all hover:shadow-md">
+
+                    {{-- خانة الرحلة والتاريخ واليوم --}}
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-boxdark-2">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 text-xs font-black rounded-xl bg-primary/10 text-primary font-headline">
+                                رحلة #{{ $trip->id }}
+                            </span>
+                            <span class="text-xs font-black text-slate-700 dark:text-gray-200">
+                                {{ $trip->created_at->locale('ar')->translatedFormat('l') }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1 text-[11px] font-bold text-gray-400 font-mono">
+                            <span class="material-symbols-outlined text-[14px]">schedule</span>
+                            <span>{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
+                        </div>
+                    </div>
 
                     <div class="flex justify-between items-start mb-4">
                         {{-- معلومات السائق كعنوان رئيسي للكرت --}}
@@ -109,9 +129,24 @@
                         <div
                             class="p-3 rounded-2xl bg-slate-50 dark:bg-boxdark-2/60 border border-slate-100/50 dark:border-boxdark-2 flex flex-col items-center justify-center">
                             <span class="text-xs text-gray-400 font-bold mb-1">إجمالي الركاب</span>
-                            <span class="text-base font-black text-slate-700 dark:text-gray-300">
-                                {{ $trip->passengers->sum('count') }}
+                            <span class="text-base font-black text-slate-700 dark:text-gray-300 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[18px] text-gray-400">groups</span>
+                                <span>{{ $trip->passengers->sum('count') }}</span>
                             </span>
+                        </div>
+
+                        <div
+                            class="p-3 rounded-2xl bg-slate-50 dark:bg-boxdark-2/60 border border-slate-100/50 dark:border-boxdark-2 flex flex-col items-center justify-center">
+                            <span class="text-xs text-gray-400 font-bold mb-1">عمولة الركاب</span>
+                            <span class="text-base font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                <span class="font-sans font-black">{{ number_format($tripOfficeComm, 0) }}</span>
+                                <span class="text-[10px] font-bold">ر.ي</span>
+                            </span>
+                            @if ($tripOtherComm > 0)
+                                <span class="text-[9px] font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                                    أخرى: {{ number_format($tripOtherComm, 0) }} ر.ي
+                                </span>
+                            @endif
                         </div>
                     </div>
 
