@@ -7,6 +7,9 @@ use App\Models\ShipmentPackage;
 use App\Services\WhatsAppService;
 use App\Services\SendPDFService;
 use App\Classes\WebResponseClass;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Models\Customer;
 use App\Services\WhatsApp\WhatsAppLinkService;
 
@@ -25,86 +28,118 @@ class WhatsAppController extends Controller
      * - في حال كان غير متصل أو فشل الإرسال: يتم إرجاع رابط الواتساب (wa.me) ليتم تحويل المستخدم للإرسال كرسالة مباشرة.
      */
     public function sendSenderPdf($id)
-    {
-        try {
-            $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch.app', 'receiverBranch.app', 'receiverOfficeBranch.office'])->findOrFail($id);
+{
+    try {
+        // 1. جلب الشحنة مع جميع العلاقات المطلوبة وبدون Global Scopes للعملاء
+        $shipment = Shipment::with([
+            'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
+            'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
+            'senderBranch.app',
+            'receiverBranch.app',
+            'receiverOfficeBranch.office'
+        ])->findOrFail($id);
 
-            // تجهيز رابط الواتساب البديل (wa.me)
-            $fallbackLink = WhatsAppLinkService::generate($shipment, 'sender');
+        // تجهيز رابط الواتساب اليدوي البديل (wa.me) مسبقاً
+        $fallbackLink = WhatsAppLinkService::generate($shipment, 'sender');
 
-            // تحميل إعدادات الواتساب الخاصة بالتطبيق أو الفرع
-            if ($shipment->app) {
-                $this->whatsAppService->loadAppConfig($shipment->app);
-            } elseif (auth()->user()?->app) {
-                $this->whatsAppService->loadAppConfig(auth()->user()->app);
-            } else {
-                $configuredApp = \App\Models\App::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
-                if ($configuredApp) {
-                    $this->whatsAppService->loadAppConfig($configuredApp);
-                }
-            }
+        // 2. تحديد التطبيق (App) المرتبط بالشحنة لتحميل إعداداته وفحص الكاش الخاص به
+        $app = $shipment->senderBranch?->app 
+            ?? $shipment->receiverBranch?->app 
+            ?? auth()->user()?->app;
 
-            // التحقق من وجود رقم هاتف المرسل
-            $phone = $shipment->senderCustomer->phone ?? null;
-            if (!$phone) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'رقم هاتف المرسل غير متوفر.',
-                ], 422);
-            }
+        if (!$app) {
+            $app = \App\Models\App::whereNotNull('whatsapp_api_key')
+                ->where('whatsapp_api_key', '!=', '')
+                ->first();
+        }
 
-            // التحقق من تهيئة خدمة الواتساب
-            if (!$this->whatsAppService->isConfigured()) {
-                return response()->json([
-                    'success' => false,
-                    'fallback' => true,
-                    'whatsapp_link' => $fallbackLink,
-                    'message' => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
-                ]);
-            }
+        if ($app) {
+            $this->whatsAppService->loadAppConfig($app);
+        }
 
-            // 1. توليد رابط السند وتجهيز نص الرسالة
-            $receiptUrl = route('receipt.generate', [
-                'type' => 'sender',
-                'id'   => $shipment->uuid ?? $shipment->id,
-            ]);
-
-            $senderMessage = new \App\Services\WhatsApp\Messages\SenderMessage();
-            $message = $senderMessage->getMessageBody($shipment, $receiptUrl);
-
-            // 2. إرسال الرسالة النصية المباشرة عبر واتساب API
-            $result = $this->whatsAppService->sendText($phone, $message);
-
-            // 3. التحقق من نتيجة الإرسال - إذا فشل يتم التحويل للواتساب اليدوي
-            if (isset($result['error']) && $result['error']) {
-                \Illuminate\Support\Facades\Log::warning("WhatsApp sendText failed for shipment #{$id}, falling back to wa.me: " . ($result['message'] ?? ''));
-
-                return response()->json([
-                    'success' => false,
-                    'fallback' => true,
-                    'whatsapp_link' => $fallbackLink,
-                    'message' => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
-                ]);
-            }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم إرسال إشعار المرسل بنجاح عبر الواتساب ✅',
-            ]);
-
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("sendSenderPdf Error for shipment #{$id}: " . $e->getMessage());
-
-            $fallbackLink = isset($shipment) ? WhatsAppLinkService::generate($shipment, 'sender') : null;
-
+        // 3. التحقق من وجود رقم هاتف المرسل
+        $phone = $shipment->senderCustomer?->phone ?? null;
+        if (!$phone) {
             return response()->json([
                 'success' => false,
-                'fallback' => !empty($fallbackLink),
+                'message' => 'رقم هاتف المرسل غير متوفر.',
+            ], 422);
+        }
+
+        // 4. التحقق من تهيئة بيانات الـ API الخاصة بالواتساب
+        if (!$this->whatsAppService->isConfigured()) {
+            return response()->json([
+                'success'       => false,
+                'fallback'      => true,
                 'whatsapp_link' => $fallbackLink,
-                'message' => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+                'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
             ]);
         }
+
+        // ---------------------------------------------------------------------
+        // ⚡ 5. فحص حالة الاتصال من الكاش (الذي يتم تحديثه عبر الـ Cron Job كل 10 دقائق)
+        // ---------------------------------------------------------------------
+        $cacheKey = 'whatsapp_status_' . ($app?->id ?? 'default');
+        $serviceStatus = Cache::get($cacheKey, 'online'); // القيمة الافتراضية online في حال لم يتم الفحص بعد
+
+        if ($serviceStatus === 'offline') {
+            // تحويل فوري ومباشر إلى wa.me خلال أجزاء من الثانية دون أي تعليق أو انتظار
+            return response()->json([
+                'success'       => false,
+                'fallback'      => true,
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+            ]);
+        }
+
+        // 6. تجهيز رابط السند ونص الرسالة
+        $receiptUrl = route('receipt.generate', [
+            'type' => 'sender',
+            'id'   => $shipment->uuid ?? $shipment->id,
+        ]);
+
+        $senderMessage = new SenderMessage();
+        $message = $senderMessage->getMessageBody($shipment, $receiptUrl);
+
+        // 7. إرسال الرسالة عبر WhatsApp API
+        $result = $this->whatsAppService->sendText($phone, $message);
+
+        // 8. التحقق من نتيجة الإرسال
+        if (isset($result['error']) && $result['error']) {
+            // في حال فشل الإرسال أو انقطاع مفاجئ، نحدث الكاش فوراً إلى offline لمدة 10 دقائق حتى لا يتأخر بقية الموظفين
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+            Log::warning("WhatsApp sendText failed for shipment #{$id}, marked cache as offline: " . ($result['message'] ?? ''));
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => true,
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+            ]);
+        }
+
+        // في حال نجاح الإرسال نتأكد من بقاء الكاش online
+        Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إرسال إشعار المرسل بنجاح عبر الواتساب ✅',
+        ]);
+
+    } catch (\Exception $e) {
+        Log::error("sendSenderPdf Error for shipment #{$id}: " . $e->getMessage());
+
+        $fallbackLink = isset($shipment) ? WhatsAppLinkService::generate($shipment, 'sender') : null;
+
+        return response()->json([
+            'success'       => false,
+            'fallback'      => !empty($fallbackLink),
+            'whatsapp_link' => $fallbackLink,
+            'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+        ]);
     }
+}
 
     public function openForSender($id)
     {
