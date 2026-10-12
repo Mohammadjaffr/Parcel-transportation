@@ -31,7 +31,7 @@
         <div class="mb-6">
             {{-- إجمالي السائقين --}}
             <div
-                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border-primary ring-2 ring-primary/20 shadow-sm dark:bg-boxdark max-w-sm">
+                class="flex relative flex-col justify-between items-start p-5 max-w-sm bg-white rounded-2xl ring-2 shadow-sm border-primary ring-primary/20 dark:bg-boxdark">
                 <div
                     class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
                     <span class="material-symbols-outlined text-[24px]">group</span>
@@ -377,12 +377,8 @@
             </div>
 
             {{-- Pagination --}}
-            @if ($drivers->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                    {{ $drivers->links('vendor.pagination.tailwind') }}
-                </div>
-            @endif
+            {{ $drivers->links('vendor.pagination.custom-minimal') }}
+
         </div>
 
         {{-- ======================== Modals ======================== --}}

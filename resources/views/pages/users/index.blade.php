@@ -385,12 +385,8 @@
             </div>
 
             {{-- Pagination --}}
-            @if ($users->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                    {{ $users->links() }}
-                </div>
-            @endif
+            {{ $users->links('vendor.pagination.custom-minimal') }}
+
         </div>
     </div>
 

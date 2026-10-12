@@ -176,7 +176,7 @@
                                 </div>
 
                                 <div class="flex flex-col gap-1 min-w-0">
-                                    <div class="flex items-center gap-2 flex-wrap">
+                                    <div class="flex flex-wrap gap-2 items-center">
                                         <span
                                             class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
                                             {{ $office->name }}
@@ -184,12 +184,12 @@
 
                                         @if ($office->is_banned)
                                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                <span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                                                 محظور
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                                                 غير محظور
                                             </span>
                                         @endif
@@ -428,13 +428,13 @@
                                     @if ($office->is_banned)
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 shadow-sm">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                            <span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
                                             <span>محظور</span>
                                         </span>
                                     @else
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 shadow-sm">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                                             <span>غير محظور</span>
                                         </span>
                                     @endif
@@ -551,12 +551,8 @@
             </div>
 
             {{-- Pagination --}}
-            @if ($offices->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                    {{ $offices->links() }}
-                </div>
-            @endif
+            {{ $offices->links('vendor.pagination.custom-minimal') }}
+
         </div>
 
         {{-- ====================== Delete Modal ====================== --}}

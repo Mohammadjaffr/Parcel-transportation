@@ -9,8 +9,7 @@
     <!-- Google Fonts: Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 
     @php
         // 1. تحديد السمة اللونية لهوية الشركة ديناميكياً
@@ -18,12 +17,13 @@
 
         $logo = $company['logo'] ?? null;
 
-        // 2. فلترة شروط وأحكام السند
+        // 2. شروط وأحكام السند (عرض جميع الشروط كاملة)
         $filteredTerms = [];
         if (!empty($terms_and_conditions) && is_array($terms_and_conditions)) {
             foreach ($terms_and_conditions as $term) {
-                if (strpos($term, 'إثبات استلام') === false && strpos($term, 'البطاقة الشخصية') === false) {
-                    $filteredTerms[] = trim($term);
+                $trimmed = trim($term);
+                if ($trimmed !== '') {
+                    $filteredTerms[] = $trimmed;
                 }
             }
         }
@@ -110,8 +110,7 @@
 
         .btn-print {
             background-color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
             color: #ffffff;
         }
 
@@ -216,20 +215,17 @@
         /* الألوان التنسيقية */
         .text-primary {
             color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
         }
 
         .bg-primary {
             background-color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
         }
 
         .border-primary {
             border-color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
         }
 
         .text-gray {
@@ -238,25 +234,16 @@
 
         /* 1. الترويسة */
         .header-table {
-            height: 24mm;
-            margin-bottom: 2mm;
+            height: 25.5mm;
+            margin-bottom: 1.5mm;
         }
 
-        /* 2. شريط العنوان */
-        .title-bar {
-            height: 7.5mm;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #ffffff;
-            font-size: 11.5pt;
-            font-weight: bold;
-            background:
-                {{ $primary }}
-            ;
+        /* خط فاصل أخضر ديكوري أسفل الترويسة */
+        .header-divider {
+            height: 1.5px;
+            background-color: {{ $primary }};
             margin-bottom: 2.2mm;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
+            width: 100%;
         }
 
         /* 3. بيانات المرسل والمستلم */
@@ -278,8 +265,7 @@
         .box-header {
             background: #f8fafc;
             color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
             font-size: 9pt;
             font-weight: 800;
             padding: 1mm 2.5mm;
@@ -363,9 +349,7 @@
 
         .finance-box {
             width: 35%;
-            border: 1.5px solid
-                {{ $primary }}
-            ;
+            border: 1.5px solid {{ $primary }};
             border-radius: 4px;
             overflow: hidden;
             background: #ffffff;
@@ -376,8 +360,7 @@
 
         .finance-header {
             background:
-                {{ $primary }}
-            ;
+                {{ $primary }};
             color: #ffffff;
             font-size: 9pt;
             font-weight: bold;
@@ -413,9 +396,7 @@
         .finance-payment-method {
             margin-top: auto;
             background: #ecfdf5;
-            border-top: 1px dashed
-                {{ $primary }}
-            ;
+            border-top: 1px dashed {{ $primary }};
             height: 6.2mm;
             min-height: 6.2mm;
             max-height: 6.2mm;
@@ -426,40 +407,42 @@
             font-size: 8.5pt;
             font-weight: bold;
             color:
-                {{ $primary }}
-            ;
+                {{ $primary }};
             padding: 0 2mm;
             box-sizing: border-box;
         }
 
         /* 5. الشروط والأحكام */
+        /* 5. الشروط والأحكام */
         .terms-section {
-            height: 19mm;
-            overflow: hidden;
+            height: auto;
+            overflow: visible;
             margin-bottom: 1.5mm;
         }
 
         .terms-table {
             width: 100%;
-            font-size: 7.5pt;
-            line-height: 1.25;
+            font-size: 7pt;
+            /* حجم خط مثالي ليتسع حتى 12 شرطاً بأريحية */
+            line-height: 1.3;
             color: #334155;
             font-weight: 600;
+            table-layout: fixed;
+            direction: rtl;
         }
 
         .terms-table td {
             width: 50%;
-            padding-bottom: 1px;
-            padding-left: 2mm;
+            padding: 0.5mm 1.5mm;
             vertical-align: top;
+            text-align: right;
         }
 
         /* 6. الفوتر */
         .footer-bar {
             height: 5.5mm;
             background:
-                {{ $primary }}
-            ;
+                {{ $primary }};
             color: #ffffff;
             text-align: center;
             display: flex;
@@ -488,7 +471,8 @@
             <span>طباعة السند</span>
         </button>
 
-        <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.close(); }"
+        <button type="button"
+            onclick="if(window.history.length > 1){ window.history.back(); } else { window.close(); }"
             class="btn-action btn-close" title="إغلاق الصفحة">
             <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg">
@@ -506,101 +490,142 @@
 
         <div class="content-wrapper">
             <!-- 1. HEADER (الترويسة الرئيسية) -->
-            <table class="header-table">
+            <!-- 1. HEADER (الترويسة الرئيسية بتصميم متناسق وموزع بدقة) -->
+            <table class="header-table" style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                 <tr>
-                    {{-- يمين: بيانات الشركة والفروع --}}
+                    {{-- يمين: بيانات الشركة والخدمة والفرع مع خط عمودي أنيق --}}
                     <td style="width: 38%; text-align: right; vertical-align: top;">
-                        <div style="margin-bottom: 2px;">
+                        <div style="margin-bottom: 1px;">
                             <h1
-                                style="color: {{ $primary }}; font-size: 16pt; font-weight: 900; line-height: 1.1; margin: 0; padding: 0;">
+                                style="color: {{ $primary }}; font-size: 15pt; font-weight: 900; line-height: 1.15; margin: 0; padding: 0;">
                                 {{ $company['name'] ?? 'شركة النقل' }}
                             </h1>
                         </div>
+                        <div
+                            style="font-size: 8pt; font-weight: 700; color: #475569; margin-top: 1px; margin-bottom: 2.5px; line-height: 1.2;">
+                            لخدمات النقل البري وشحن الطرود والبضائع
+                        </div>
 
-                        <div style="border-right: 2.5px solid {{ $primary }}; padding-right: 6px; margin-top: 3px;">
-                            @if (!empty($company['main_branch']))
-                                <div style="margin-bottom: 2px;">
-                                    <div style="font-size: 9.5pt; font-weight: bold; color: #111827;">
-                                        {{ $company['main_branch']['title'] }}
-                                    </div>
-                                    <div style="font-size: 9pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
-                                            dir="ltr">{{ $company['main_branch']['phones'] }}</span>
-                                    </div>
+                        <div
+                            style="border-right: 2.5px solid {{ $primary }}; padding-right: 6px; margin-top: 2px;">
+                            @if (!empty($company['headquarters']))
+                                <div
+                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                    {{ $company['headquarters']['title'] }}
+                                    @if (!empty($company['headquarters']['phones']))
+                                        <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
+                                        <span dir="ltr"
+                                            style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['headquarters']['phones'] }}</span>
+                                    @endif
+                                </div>
+                            @elseif (!empty($company['main_branch']))
+                                <div
+                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                    {{ $company['main_branch']['title'] }}
+                                    @if (!empty($company['main_branch']['phones']))
+                                        <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
+                                        <span dir="ltr"
+                                            style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['main_branch']['phones'] }}</span>
+                                    @endif
                                 </div>
                             @else
-                                <div style="margin-bottom: 2px;">
-                                    <div style="font-size: 9.5pt; font-weight: bold; color: #111827;">
-                                        الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
-                                    </div>
-                                    <div style="font-size: 9pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
-                                            dir="ltr">{{ $company['main_branch']['phones'] ?? '---' }}</span>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if (!empty($company['headquarters']) && ($company['main_branch']['title'] ?? '') !== $company['headquarters']['title'])
-                                <div style="margin-bottom: 2px;">
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #111827;">
-                                        {{ $company['headquarters']['title'] }}
-                                    </div>
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
-                                            dir="ltr">{{ $company['headquarters']['phones'] }}</span>
-                                    </div>
+                                <div
+                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                    {{ $user_branch ?? 'المركز الرئيسي' }}
                                 </div>
                             @endif
 
                             @if (!empty($company['other_phones']))
-                                <div>
-                                    <div style="font-size: 8pt; font-weight: bold; color: #64748b;">فروع أخرى:</div>
-                                    <div style="font-size: 7.5pt; font-weight: bold; color: #475569; line-height: 1.2;"
-                                        dir="rtl">
-                                        <span style="font-family: sans-serif;"
-                                            dir="ltr">{{ $company['other_phones'] }}</span>
-                                    </div>
+                                <div
+                                    style="font-size: 7.5pt; font-weight: bold; color: #64748b; line-height: 1.2; margin-bottom: 1.5px;">
+                                    فروع أخرى: <span dir="ltr"
+                                        style="font-family: sans-serif; color: #334155; font-weight: 700;">{{ $company['other_phones'] }}</span>
                                 </div>
                             @endif
+
+                            {{-- شارة الفرع المتميزة والواضحة --}}
+                            <div style="margin-top: 2.5px;">
+                                <span
+                                    style="display: inline-block; background-color: rgba(5, 150, 105, 0.08); color: {{ $primary }}; border: 1px solid {{ $primary }}; padding: 1.5px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: 800; line-height: 1.2;">
+                                    الفرع: {{ $sender_branch ?? ($company['main_branch']['title'] ?? ($user_branch ?? 'المركز الرئيسي')) }}
+                                </span>
+                            </div>
                         </div>
                     </td>
 
-                    {{-- وسط: الشعار --}}
-                    <td style="width: 22%; text-align: center; vertical-align: middle;">
+                    {{-- وسط: الشعار متناسق وعنوان السند في بانر أخضر دائري بارز ومحكم --}}
+                    <td style="width: 24%; text-align: center; vertical-align: middle;">
                         @if ($logo)
-                            <img src="{{ $logo }}"
-                                style="max-width: 36mm; max-height: 18mm; object-fit: contain; margin: 0 auto;" alt="Logo">
+                            <div style="margin-bottom: 1.5mm; text-align: center;">
+                                <img src="{{ $logo }}"
+                                    style="max-width: 32mm; max-height: 15mm; object-fit: contain; margin: 0 auto; display: block;"
+                                    alt="Logo">
+                            </div>
+                        @else
+                            <div style="height: 10mm;"></div>
                         @endif
+                        <div style="text-align: center;">
+                            <span
+                                style="display: inline-block; background-color: {{ $primary }}; color: #ffffff; padding: 2.5px 12px; border-radius: 20px; font-size: 10.5pt; font-weight: 900; letter-spacing: 0.5px; box-shadow: 0 1px 3px rgba(0,0,0,0.12); white-space: nowrap;">
+                                {{ $title ?? 'سند إرسال طرد' }}
+                            </span>
+                        </div>
                     </td>
 
-                    {{-- يسار: بيانات السند + رمز الـ QR Code في أقصى الزاوية اليسرى تماماً --}}
-                    <td style="width: 40%; vertical-align: top; text-align: left;">
+                    {{-- يسار: بيانات السند والفرع + رمز الـ QR Code في أقصى الزاوية العلوية (بدون باركود سفلي تماماً) --}}
+                    <td style="width: 38%; vertical-align: top; text-align: left;">
                         <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
                             <tr>
-                                {{-- بيانات السند على اليمين (باتجاه الشعار في المنتصف) --}}
-                                <td style="text-align: right; vertical-align: middle; padding-left: 6px;">
+                                {{-- بيانات السند والفرع على اليمين باتجاه الشعار --}}
+                                <td style="text-align: right; vertical-align: top; padding-left: 6px;">
                                     <div
                                         style="color: {{ $primary }}; font-size: 10.5pt; font-weight: 900; margin-bottom: 2px; white-space: nowrap;">
                                         رقم السند: #{{ $bond_number ?? '---' }}
                                     </div>
-                                    <div style="font-size: 9pt; font-weight: bold; color: #111827; margin-bottom: 2px;">
+                                    <div
+                                        style="font-size: 8.5pt; font-weight: 800; color: #1e293b; margin-bottom: 2px;">
                                         التاريخ: <span dir="ltr"
                                             style="font-family: sans-serif;">{{ $date ?? '---' }}</span>
                                     </div>
-                                    <div style="font-size: 8.5pt; font-weight: bold; color: #475569;">
-                                        الدفع: {{ $payment_method ?? '---' }}
-                                    </div>
+
+                                    @if (!empty($hijri_date))
+                                        <div
+                                            style="font-size: 8pt; font-weight: bold; color: #64748b; margin-bottom: 2px;">
+                                            الموافق: <span dir="ltr"
+                                                style="font-family: sans-serif;">{{ $hijri_date }}</span>
+                                        </div>
+                                    @endif
+
+                                    @if (!empty($sender_branch_phone))
+                                        <div
+                                            style="font-size: 8pt; font-weight: bold; color: #475569; margin-top: 2px;">
+                                            هاتف الفرع: <span dir="ltr"
+                                                style="color: #0f172a; font-family: sans-serif; font-weight: 800;">{{ $sender_branch_phone }}</span>
+                                        </div>
+                                    @elseif (!empty($company['main_branch']['phones']))
+                                        <div
+                                            style="font-size: 8pt; font-weight: bold; color: #475569; margin-top: 2px;">
+                                            هاتف الفرع: <span dir="ltr"
+                                                style="color: #0f172a; font-family: sans-serif; font-weight: 800;">{{ $company['main_branch']['phones'] }}</span>
+                                        </div>
+                                    @endif
                                 </td>
 
-                                {{-- رمز الـ QR Code في أقصى طرف وزاوية الهيدر يساراً بمحاذاة الحافة تماماً --}}
-                                <td style="width: 24mm; text-align: left; vertical-align: middle; padding: 0;">
+                                {{-- رمز الـ QR Code في أقصى الزاوية العلوية اليسرى بمحاذاة الحافة تماماً --}}
+                                <td style="width: 23mm; text-align: left; vertical-align: top; padding: 0;">
                                     @if (!empty($bond_number))
                                         @php
                                             $qrCodeSvg = null;
                                             try {
                                                 if (class_exists(\Milon\Barcode\Facades\DNS2DFacade::class)) {
-                                                    // زيادة حجم الـ QR Code لـ 2.1 لسهولة وسرعة المسح الضوئي
-                                                    $qrCodeSvg = \Milon\Barcode\Facades\DNS2DFacade::getBarcodeSVG((string) $bond_number, 'QRCODE', 2.1, 2.1, 'black', false);
+                                                    $qrCodeSvg = \Milon\Barcode\Facades\DNS2DFacade::getBarcodeSVG(
+                                                        (string) ($tracking_code ?? $bond_number),
+                                                        'QRCODE',
+                                                        2.0,
+                                                        2.0,
+                                                        'black',
+                                                        false,
+                                                    );
                                                 }
                                             } catch (\Throwable $e) {
                                                 $qrCodeSvg = null;
@@ -620,10 +645,8 @@
                 </tr>
             </table>
 
-            <!-- 2. TITLE BAR (شريط عنوان السند) -->
-            <div class="title-bar">
-                {{ $title ?? 'سند إرسال طرد' }}
-            </div>
+            <!-- خط فاصل أخضر أفقي متصل وأنيق أسفل الترويسة -->
+            <div class="header-divider"></div>
 
             <!-- 3. SENDER & RECEIVER (بيانات المرسل والمستلم) -->
             <div class="split-section">
@@ -657,7 +680,8 @@
                         </div>
                         <div class="box-row">
                             <div class="box-label">الجوال:</div>
-                            <div class="box-value" dir="ltr" style="text-align: right; font-family: sans-serif;">
+                            <div class="box-value" dir="ltr"
+                                style="text-align: right; font-family: sans-serif;">
                                 {{ $receiver_phone ?? '---' }}</div>
                         </div>
                         <div class="box-row">
@@ -673,39 +697,48 @@
                 {{-- تفاصيل الشحنة --}}
                 <div class="details-box">
                     <div class="box-header">تفاصيل الشحنة</div>
-                    <table class="details-grid-table">
-                        <tr>
-                            <td style="width: 50%;">
-                                <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">نوع الطرد:</span>
-                                <span
-                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $package_type ?? '---' }}</span>
-                            </td>
-                            <td style="width: 50%;">
-                                <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">الوزن/العدد:</span>
-                                <span
-                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $weight ?? '---' }}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">الرمز:</span>
-                                <span
-                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $tracking_code ?? '---' }}</span>
-                            </td>
-                            <td>
-                                <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">تفاصيل إضافية:</span>
-                                <span
-                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $honey_details ?? '---' }}</span>
-                            </td>
-                        </tr>
-                    </table>
+                    @php
+                        $shipmentFields = [];
+                        if (!empty($package_type) && $package_type !== '---') {
+                            $shipmentFields[] = ['label' => 'نوع الطرد:', 'value' => $package_type];
+                        }
+                        if (!empty($weight) && $weight !== '---') {
+                            $shipmentFields[] = ['label' => 'الوزن/العدد:', 'value' => $weight];
+                        }
+                        if (!empty($honey_details) && $honey_details !== '---') {
+                            $shipmentFields[] = ['label' => 'تفاصيل إضافية:', 'value' => $honey_details];
+                        }
+                    @endphp
+
+                    @if (!empty($shipmentFields))
+                        <table class="details-grid-table">
+                            @foreach (array_chunk($shipmentFields, 2) as $row)
+                                <tr>
+                                    @foreach ($row as $field)
+                                        <td style="width: 50%;">
+                                            <span
+                                                style="font-size: 8.5pt; color: #475569; font-weight: bold;">{{ $field['label'] }}</span>
+                                            <span
+                                                style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $field['value'] }}</span>
+                                        </td>
+                                    @endforeach
+                                    @if (count($row) === 1)
+                                        <td style="width: 50%;"></td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                        </table>
+                    @endif
 
                     {{-- خانة الملاحظات المعزولة في سطر مستقل أنيق --}}
-                    <div class="details-notes-container">
+                    <div class="details-notes-container"
+                        style="display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2mm; height: auto;">
                         <span
-                            style="font-size: 8.5pt; color: #475569; font-weight: bold; white-space: nowrap; flex-shrink: 0;">الملاحظات:</span>
+                            style="font-size: 8.5pt; color: #475569; font-weight: bold; white-space: nowrap; flex-shrink: 0;">
+                            الملاحظات:
+                        </span>
                         <div
-                            style="font-size: 8.5pt; font-weight: 600; color: #1e293b; line-height: 1.25; max-height: 5.5mm; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">
+                            style="font-size: 8.5pt; font-weight: 600; color: #1e293b; line-height: 1.4; word-break: break-word; flex-grow: 1;">
                             {{ $notes ?? 'لا توجد ملاحظات إضافية' }}
                         </div>
                     </div>
@@ -724,7 +757,8 @@
                         </tr>
                         <tr>
                             <td style="color: #475569;">المسدد</td>
-                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 9.5pt;" dir="ltr">
+                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 9.5pt;"
+                                dir="ltr">
                                 {{ $partial_amount ?? '0' }}
                             </td>
                         </tr>
@@ -754,7 +788,16 @@
                         @foreach (array_chunk(array_values($filteredTerms), 2) as $row)
                             <tr>
                                 @foreach ($row as $term)
-                                    <td>{{ $termCounter++ }}- {{ $term }}</td>
+                                    <td>
+                                        <!-- رقم الشرط معزول في اتجاهه ومميز بلون الهوية -->
+                                        <span
+                                            style="display: inline-block; font-weight: 800; color: {{ $primary }}; margin-left: 3px; unicode-bidi: isolate;">
+                                            {{ $termCounter++ }}-
+                                        </span>
+                                        <!-- النص يحدد اتجاهه تلقائياً دون عكس الترقيم -->
+                                        <span dir="auto"
+                                            style="word-break: break-word;">{{ $term }}</span>
+                                    </td>
                                 @endforeach
                                 @if (count($row) === 1)
                                     <td></td>
@@ -763,21 +806,20 @@
                         @endforeach
                     @else
                         <tr>
-                            <td>1- أي سند لا يحمل ختم المكتب غير مقبول.</td>
-                            <td>2- المكتب غير مسؤول عن الطرد بعد شهر من استلامه.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">1-</span> أي سند لا يحمل ختم المكتب غير مقبول.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">2-</span> المكتب غير مسؤول عن الطرد بعد شهر من استلامه.</td>
                         </tr>
                         <tr>
-                            <td>3- المكتب غير مسؤول عن الإجراءات الأمنية والجمركية.</td>
-                            <td>4- نحن غير مسؤولين عن الحريق وحوادث السير.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">3-</span> المكتب غير مسؤول عن الإجراءات الأمنية والجمركية.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">4-</span> نحن غير مسؤولين عن الحريق وحوادث السير.</td>
                         </tr>
                         <tr>
-                            <td>5- الرجاء التأكد من بيانات السند قبل المغادرة.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">5-</span> الرجاء التأكد من بيانات السند قبل المغادرة.</td>
                             <td></td>
                         </tr>
                     @endif
                 </table>
             </div>
-
             <!-- 6. FOOTER (الفوتر وشريط الاتصال) -->
             <div class="footer-bar">
                 أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;"
@@ -789,7 +831,7 @@
     <!-- سكريبت الطباعة الفورية الصرفة بدون أي اتصال بالسيرفر -->
     <script>
         // تفعيل مفتاح الاختصار للطباعة Ctrl + P مباشرة
-        document.addEventListener('keydown', function (event) {
+        document.addEventListener('keydown', function(event) {
             if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
                 event.preventDefault();
                 window.print();

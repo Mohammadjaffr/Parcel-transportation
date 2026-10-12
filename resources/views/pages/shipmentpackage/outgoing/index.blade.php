@@ -603,10 +603,8 @@
 
             {{-- Pagination --}}
             @if (method_exists($packages, 'hasPages') && $packages->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                    {{ $packages->links() }}
-                </div>
+                {{ $packages->links('vendor.pagination.custom-minimal') }}
+            
             @endif
         </div>
     </div>

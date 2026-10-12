@@ -101,14 +101,15 @@
                                 $tripOtherComm = $trip->passengers->sum('other_office_commission');
                             @endphp
                             <tr class="transition-colors hover:bg-slate-50/80 dark:hover:bg-boxdark-2/50 group trip-row"
-                                x-show="showRow(@js($driverName), @js($driverPhone), @js((string)$trip->id), @js($dayName))">
+                                x-show="showRow(@js($driverName), @js($driverPhone), @js((string) $trip->id), @js($dayName))">
 
                                 {{-- Date & ID --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex flex-col gap-1">
                                         <span class="text-sm font-bold text-gray-800 font-body dark:text-white">رحلة
                                             #{{ $trip->id }}</span>
-                                        <div class="flex items-center gap-1.5 text-xs text-gray-500 font-body dark:text-gray-400">
+                                        <div
+                                            class="flex gap-1.5 items-center text-xs text-gray-500 font-body dark:text-gray-400">
                                             <span class="font-bold text-primary">{{ $dayName }}</span>
                                             <span class="text-gray-300 dark:text-gray-600">|</span>
                                             <span class="font-medium">{{ $trip->created_at->format('Y-m-d h:i A') }}</span>
@@ -153,11 +154,12 @@
 
                                 {{-- Passengers Commission --}}
                                 <td class="px-6 py-4 text-center align-middle">
-                                    <div class="inline-flex flex-col items-center justify-center gap-0.5">
+                                    <div class="inline-flex flex-col gap-0.5 justify-center items-center">
                                         <span
-                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-sm font-black rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                                            class="inline-flex gap-1.5 items-center px-3 py-1.5 text-sm font-black text-emerald-600 bg-emerald-50 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-400">
                                             <span class="material-symbols-outlined text-[18px]">payments</span>
-                                            <span class="font-sans font-black">{{ number_format($tripOfficeComm, 0) }}</span>
+                                            <span
+                                                class="font-sans font-black">{{ number_format($tripOfficeComm, 0) }}</span>
                                             <span class="text-[10px] font-bold">ر.ي</span>
                                         </span>
                                         @if ($tripOtherComm > 0)
@@ -259,13 +261,9 @@
                     </tbody>
                 </table>
             </div>
+            {{-- pagination --}}
+            {{ $trips->links('vendor.pagination.custom-minimal') }}
 
-            @if ($trips->hasPages())
-                <div
-                    class="px-6 py-5 rounded-b-2xl border-t border-gray-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 custom-pagination">
-                    {{ $trips->links('vendor.pagination.tailwind') }}
-                </div>
-            @endif
         </div>
     </div>
 @endsection

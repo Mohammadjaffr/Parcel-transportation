@@ -586,10 +586,7 @@
             </div>
 
             @if ($passengers->hasPages())
-                <div
-                    class="px-6 py-5 rounded-b-2xl border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50">
-                    {{ $passengers->links('vendor.pagination.tailwind') }}
-                </div>
+                {{ $passengers->links('vendor.pagination.custom-minimal') }}
             @endif
         </div>
 

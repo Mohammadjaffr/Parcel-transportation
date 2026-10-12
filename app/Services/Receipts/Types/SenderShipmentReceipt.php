@@ -135,7 +135,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 : now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i'),
 
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
-            'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
+            'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'sender_branch_phone' => $this->formatPhoneNumber($shipment->senderBranch?->phone),
             'sender_office'     => $app?->name ?? 'الفرع الرئيسي',
@@ -148,7 +148,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                                 ?? $app?->name 
                                 ?? 'الفرع الرئيسي',
 
-            'package_type'      => $shipment->package_type ?? 'طرد عادي',
+            'package_type'      => $shipment->package_type ?? ($honeyDetails ? null : 'طرد عادي'),
             'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
             'honey_details'     => $honeyDetails,
             'notes'             => $shipment->notes ?? 'لا توجد ملاحظات إضافية',

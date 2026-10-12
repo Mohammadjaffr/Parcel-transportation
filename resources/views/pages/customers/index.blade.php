@@ -492,12 +492,8 @@
             </div>
 
             {{-- Pagination --}}
-            @if ($customers->hasPages())
-                <div
-                    class="px-6 py-5 border-t border-gray-100 dark:border-boxdark-2 bg-gray-50/50 dark:bg-boxdark-2/50 rounded-b-[2rem]">
-                    {{ $customers->links() }}
-                </div>
-            @endif
+            {{ $customers->links('vendor.pagination.custom-minimal') }}
+
         </div>
     </div>
 
@@ -639,11 +635,11 @@
 
                 parsePhoneNumber(fullNumber) {
                     const defaultCountry = (this.countries && this.countries.find(c => c.code === 'YE')) ||
-                                           (this.countries && this.countries[0]) || {
-                                               name: 'اليمن',
-                                               code: 'YE',
-                                               dial_code: '+967'
-                                           };
+                        (this.countries && this.countries[0]) || {
+                            name: 'اليمن',
+                            code: 'YE',
+                            dial_code: '+967'
+                        };
 
                     if (!fullNumber) {
                         return {
