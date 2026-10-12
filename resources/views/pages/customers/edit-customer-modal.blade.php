@@ -70,7 +70,8 @@
                         </label>
 
                         {{-- الحقل المخفي الذي يذهب للسيرفر --}}
-                        <input type="hidden" name="phone">
+                        <input type="hidden" name="phone"
+                            :value="editCustomer.phone_local ? (editCustomer.phone_country?.dial_code || '967').replace('+', '') + editCustomer.phone_local : ''">
 
                         <div
                             class="flex overflow-hidden items-center w-full h-12 bg-gray-50 rounded-xl border border-gray-200 transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 dark:bg-gray-900 dark:border-gray-700 dark:focus-within:border-primary">
@@ -90,6 +91,16 @@
                             </button>
                             <input type="tel" x-ref="edit_customer_phone" x-model="editCustomer.phone_local"
                                 placeholder="771234567" autocomplete="off" required
+                                inputmode="numeric"
+                                :maxlength="editCustomer.phone_country?.code === 'YE' ? 9 : 15"
+                                @input="
+                                    let val = (editCustomer.phone_local || '').replace(/[^0-9]/g, '');
+                                    let code = String(editCustomer.phone_country?.dial_code || '967').replace('+', '');
+                                    if (val.startsWith(code) && val.length > code.length) {
+                                        val = val.substring(code.length);
+                                    }
+                                    editCustomer.phone_local = val;
+                                "
                                 class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0"
                                 dir="ltr">
                         </div>

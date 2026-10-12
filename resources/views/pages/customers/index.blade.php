@@ -638,30 +638,44 @@
                 },
 
                 parsePhoneNumber(fullNumber) {
+                    const defaultCountry = (this.countries && this.countries.find(c => c.code === 'YE')) ||
+                                           (this.countries && this.countries[0]) || {
+                                               name: 'اليمن',
+                                               code: 'YE',
+                                               dial_code: '+967'
+                                           };
+
                     if (!fullNumber) {
                         return {
-                            country: this.countries.find(c => c.code === 'YE') || this.countries[0],
+                            country: defaultCountry,
                             local: ''
                         };
                     }
 
-                    let phone = String(fullNumber).replace('+', '');
-                    const sortedCountries = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                    // تنظيف الرقم من المسافات وعلامات البداية (+ أو 00)
+                    let phone = String(fullNumber).trim().replace(/^(\+|00)/, '');
+
+                    // ترتيب الدول تنازلياً حسب طول كود الاتصال بدون علامة +
+                    const sortedCountries = [...(this.countries || [])].sort((a, b) => {
+                        const codeA = String(a.dial_code || '').replace('+', '');
+                        const codeB = String(b.dial_code || '').replace('+', '');
+                        return codeB.length - codeA.length;
+                    });
 
                     for (let country of sortedCountries) {
-                        const regex = new RegExp(`^(00)?${country.dial_code}`);
-
-                        if (regex.test(phone)) {
+                        const dialCode = String(country.dial_code || '').replace('+', '').trim();
+                        if (dialCode && phone.startsWith(dialCode)) {
                             return {
                                 country: country,
-                                local: phone.replace(regex, '')
+                                local: phone.substring(dialCode.length)
                             };
                         }
                     }
 
+                    // إذا لم يتطابق مع أي كود، يُعتبر رقماً محلياً للدولة الافتراضية
                     return {
-                        country: this.countries.find(c => c.code === 'YE') || this.countries[0],
-                        local: fullNumber
+                        country: defaultCountry,
+                        local: phone
                     };
                 },
 
@@ -676,18 +690,7 @@
                             return;
                         }
 
-                        let parsedPhone;
-
-                        try {
-                            parsedPhone = this.parsePhoneNumber(customer.phone);
-                        } catch (e) {
-                            console.error('Phone parsing error:', e);
-
-                            parsedPhone = {
-                                country: this.countries.find(c => c.code === 'YE') || this.countries[0],
-                                local: customer.phone || ''
-                            };
-                        }
+                        const parsedPhone = this.parsePhoneNumber(customer.phone);
 
                         this.editCustomer.id = customer.id;
                         this.editCustomer.name = customer.name;
@@ -697,6 +700,7 @@
 
                         this.editModalOpen = true;
                     } catch (error) {
+                        console.error('Phone parsing error:', error);
                         alert('حدث خطأ غير متوقع: ' + error.message);
                     }
                 }

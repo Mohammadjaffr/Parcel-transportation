@@ -117,7 +117,14 @@
                                     inputmode="numeric" placeholder="771234567" autocomplete="off" required
                                     class="px-4 w-full h-full text-sm tracking-wider placeholder-gray-400 text-left bg-transparent border-none outline-none dark:text-white focus:ring-0"
                                     dir="ltr" :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                    @input="localPhoneNumber = localPhoneNumber.replace(/[^0-9]/g, '')">
+                                    @input="
+                                        let val = (localPhoneNumber || '').replace(/[^0-9]/g, '');
+                                        let code = String(selectedCountry?.dial_code || '967').replace('+', '');
+                                        if (val.startsWith(code) && val.length > code.length) {
+                                            val = val.substring(code.length);
+                                        }
+                                        localPhoneNumber = val;
+                                    ">
                             </div>
 
                             {{-- Dropdown الدول --}}

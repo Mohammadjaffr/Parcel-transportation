@@ -94,6 +94,12 @@ class CustomerController extends Controller
         $branchId = $user->branch_id;
         $userId = $user->id;
 
+        if ($request->filled('phone')) {
+            $request->merge([
+                'phone' => trim(str_replace(' ', '', $request->phone))
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:20|unique:customers,phone,NULL,id,branch_id,' . $branchId,
@@ -245,8 +251,7 @@ class CustomerController extends Controller
         $user = auth()->user();
 
         try {
-            // استخدم branch_id ليتوافق مع بقية الكود الخاص بك
-            $customer = Customer::where('branch_id', $user->branch_id)
+            $customer = Customer::where('app_id', $user->app_id)
                 ->findOrFail($id);
 
             if (request()->ajax() || request()->wantsJson()) {
@@ -268,11 +273,19 @@ class CustomerController extends Controller
         $user = auth()->user();
         $branchId = $user->branch_id;
 
-        $customer = Customer::where('branch_id', $branchId)->findOrFail($id);
+        $customer = Customer::where('app_id', $user->app_id)->findOrFail($id);
+
+        if ($request->filled('phone')) {
+            $request->merge([
+                'phone' => trim(str_replace(' ', '', $request->phone))
+            ]);
+        }
+
+        $targetBranchId = $customer->branch_id ?? $branchId;
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:20|unique:customers,phone,' . $customer->id . ',id,branch_id,' . $branchId,
+            'phone' => 'required|string|max:20|unique:customers,phone,' . $customer->id . ',id,branch_id,' . $targetBranchId,
         ], [
             'name.required' => 'اسم العميل مطلوب',
             'name.max' => 'يجب أن يكون اسم العميل أقل من 255 حرفًا',
@@ -316,7 +329,7 @@ class CustomerController extends Controller
 
         $user = auth()->user();
 
-        $customer = Customer::where('branch_id', $user->branch_id)->findOrFail($id);
+        $customer = Customer::where('app_id', $user->app_id)->findOrFail($id);
 
         if ($customer->transactions()->exists()) {
             if ($request->wantsJson()) {
