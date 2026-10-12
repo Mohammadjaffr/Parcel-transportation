@@ -178,6 +178,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/whatsapp/receiver/{id}', [WhatsAppController::class, 'openForReceiver'])->name('whatsapp.receiver');
         Route::get('/whatsapp/branch-manifest/{id}/{branchCode?}', [WhatsAppController::class, 'sendBranchManifest'])->name('whatsapp.branchManifest');
         Route::get('/whatsapp/driver-manifest/{id}', [WhatsAppController::class, 'sendDriverManifest'])->name('whatsapp.driverManifest');
+        Route::post('/whatsapp/sender-pdf/{id}', [WhatsAppController::class, 'sendSenderPdf'])->name('whatsapp.senderPdf');
 
         Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])->name('shipment.adminlog');
 

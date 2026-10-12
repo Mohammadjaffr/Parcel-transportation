@@ -76,13 +76,12 @@
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
         }
-
     </style>
     @livewireStyles
 </head>
 
 <body class="min-h-screen bg-gray-50 bg-surface text-on-surface">
-    
+
     @include('mobile.layouts.header')
 
     <main class="px-6 pt-24 pb-32">
@@ -112,7 +111,7 @@
             btn.classList.toggle('text-primary');
         }
 
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('notif-dropdown');
             const wrapper = document.getElementById('header-actions');
 

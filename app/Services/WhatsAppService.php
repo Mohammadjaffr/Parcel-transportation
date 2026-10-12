@@ -32,7 +32,12 @@ class WhatsAppService
         } elseif (Auth::check() && Auth::user()?->app) {
             $this->loadAppConfig(Auth::user()->app);
         } else {
-            $this->loadDefaultConfig();
+            $configuredApp = App::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
+            if ($configuredApp) {
+                $this->loadAppConfig($configuredApp);
+            } else {
+                $this->loadDefaultConfig();
+            }
         }
     }
 

@@ -250,12 +250,13 @@
 
                                         <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                        @if ($shipment->senderCustomer && $shipment->senderCustomer->phone && $shipment->sender_whatsapp_link)
-                                            <a href="{{ $shipment->sender_whatsapp_link }}" target="_blank"
+                                        @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
+                                            <button type="button"
+                                                onclick="sendSenderDirect({{ $shipment->id }}, this)"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">send</span>
-                                                إرسال للمرسل
-                                            </a>
+                                                <span>إرسال للمرسل</span>
+                                            </button>
                                         @endif
                                         
 
@@ -568,12 +569,13 @@
 
                                                     <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                                    @if ($shipment->senderCustomer && $shipment->senderCustomer->phone && $shipment->sender_whatsapp_link)
-                                                        <a href="{{ $shipment->sender_whatsapp_link }}" target="_blank"
+                                                    @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
+                                                        <button type="button"
+                                                            onclick="sendSenderDirect({{ $shipment->id }}, this)"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
-                                                            إشعار المرسل
-                                                        </a>
+                                                            <span>إشعار المرسل</span>
+                                                        </button>
                                                     @endif
 
                                                     {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
@@ -676,6 +678,84 @@
                     });
                 }
             }
+        }
+
+        async function sendSenderDirect(shipmentId, btn) {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.senderPdf', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار المرسل بنجاح ✅', 'success');
+                } else {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-red-500">error</span>
+                        <span class="text-red-500">فشل الإرسال</span>
+                    `;
+                    showNotificationToast(data.message || 'فشل إرسال الرسالة عبر واتساب', 'error');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct send error:', error);
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-red-500">error</span>
+                    <span class="text-red-500">حدث خطأ</span>
+                `;
+                showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        function showNotificationToast(message, type = 'success') {
+            const existingToast = document.getElementById('direct-whatsapp-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'direct-whatsapp-toast';
+            toast.className = `fixed bottom-6 left-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-sm transition-all duration-300 transform translate-y-0 ${
+                type === 'success' ? 'bg-emerald-600 shadow-emerald-600/25' : 'bg-red-600 shadow-red-600/25'
+            }`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">${type === 'success' ? 'check_circle' : 'error'}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
         }
     </script>
 @endsection

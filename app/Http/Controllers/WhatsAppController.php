@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\ShipmentPackage;
 use App\Services\WhatsAppService;
+use App\Services\SendPDFService;
 use App\Classes\WebResponseClass;
 use App\Models\Customer;
 use App\Services\WhatsApp\WhatsAppLinkService;
@@ -16,6 +17,72 @@ class WhatsAppController extends Controller
     public function __construct(WhatsAppService $whatsAppService)
     {
         $this->whatsAppService = $whatsAppService;
+    }
+
+    /**
+     * إرسال إشعار المرسل (رسالة نصية + رابط PDF) مباشرة عبر واتساب API
+     * باستخدام sendText بدون فتح المتصفح
+     */
+    public function sendSenderPdf($id)
+    {
+        try {
+            $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])->findOrFail($id);
+
+            // تحميل إعدادات الواتساب الخاصة بالتطبيق أو الفرع
+            if ($shipment->app) {
+                $this->whatsAppService->loadAppConfig($shipment->app);
+            } elseif (auth()->user()?->app) {
+                $this->whatsAppService->loadAppConfig(auth()->user()->app);
+            } else {
+                $configuredApp = \App\Models\App::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
+                if ($configuredApp) {
+                    $this->whatsAppService->loadAppConfig($configuredApp);
+                }
+            }
+
+            // التحقق من وجود رقم هاتف المرسل
+            $phone = $shipment->senderCustomer->phone ?? null;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف المرسل غير متوفر.',
+                ], 422);
+            }
+
+            // 1. توليد رابط السند (PDF)
+            $receiptUrl = route('receipt.generate', [
+                'type' => 'sender',
+                'id'   => $shipment->uuid ?? $shipment->id,
+            ]);
+
+            // 2. تجهيز نص الرسالة (نفس محتوى SenderMessage)
+            $senderMessage = new \App\Services\WhatsApp\Messages\SenderMessage();
+            $message = $senderMessage->getMessageBody($shipment, $receiptUrl);
+
+            // 3. إرسال الرسالة النصية عبر واتساب API باستخدام sendText
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            // 4. التحقق من نتيجة الإرسال
+            if (isset($result['error']) && $result['error']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل إرسال الرسالة عبر واتساب: ' . ($result['message'] ?? 'خطأ غير معروف'),
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار المرسل بنجاح ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("sendSenderPdf Error for shipment #{$id}: " . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء الإرسال: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function openForSender($id)

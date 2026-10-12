@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,8 @@
     <!-- Google Fonts: Tajawal -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
+        rel="stylesheet">
 
     @php
         // 1. تحديد السمة اللونية لهوية الشركة ديناميكياً
@@ -107,7 +109,9 @@
         }
 
         .btn-print {
-            background-color: {{ $primary }};
+            background-color:
+                {{ $primary }}
+            ;
             color: #ffffff;
         }
 
@@ -135,6 +139,7 @@
 
         /* وضع الطباعة والتصدير كـ PDF (Direct Browser Print) */
         @media print {
+
             .no-print,
             .floating-actions-bar,
             .loading-overlay {
@@ -210,15 +215,21 @@
 
         /* الألوان التنسيقية */
         .text-primary {
-            color: {{ $primary }};
+            color:
+                {{ $primary }}
+            ;
         }
 
         .bg-primary {
-            background-color: {{ $primary }};
+            background-color:
+                {{ $primary }}
+            ;
         }
 
         .border-primary {
-            border-color: {{ $primary }};
+            border-color:
+                {{ $primary }}
+            ;
         }
 
         .text-gray {
@@ -240,7 +251,9 @@
             color: #ffffff;
             font-size: 11.5pt;
             font-weight: bold;
-            background: {{ $primary }};
+            background:
+                {{ $primary }}
+            ;
             margin-bottom: 2.2mm;
             border-radius: 4px;
             letter-spacing: 0.5px;
@@ -264,7 +277,9 @@
 
         .box-header {
             background: #f8fafc;
-            color: {{ $primary }};
+            color:
+                {{ $primary }}
+            ;
             font-size: 9pt;
             font-weight: 800;
             padding: 1mm 2.5mm;
@@ -348,7 +363,9 @@
 
         .finance-box {
             width: 35%;
-            border: 1.5px solid {{ $primary }};
+            border: 1.5px solid
+                {{ $primary }}
+            ;
             border-radius: 4px;
             overflow: hidden;
             background: #ffffff;
@@ -358,7 +375,9 @@
         }
 
         .finance-header {
-            background: {{ $primary }};
+            background:
+                {{ $primary }}
+            ;
             color: #ffffff;
             font-size: 9pt;
             font-weight: bold;
@@ -394,7 +413,9 @@
         .finance-payment-method {
             margin-top: auto;
             background: #ecfdf5;
-            border-top: 1px dashed {{ $primary }};
+            border-top: 1px dashed
+                {{ $primary }}
+            ;
             height: 6.2mm;
             min-height: 6.2mm;
             max-height: 6.2mm;
@@ -404,7 +425,9 @@
             gap: 4px;
             font-size: 8.5pt;
             font-weight: bold;
-            color: {{ $primary }};
+            color:
+                {{ $primary }}
+            ;
             padding: 0 2mm;
             box-sizing: border-box;
         }
@@ -434,7 +457,9 @@
         /* 6. الفوتر */
         .footer-bar {
             height: 5.5mm;
-            background: {{ $primary }};
+            background:
+                {{ $primary }}
+            ;
             color: #ffffff;
             text-align: center;
             display: flex;
@@ -447,19 +472,26 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- شريط أزرار الطباعة والتحكم (يختفي تلقائياً عند الطباعة) -->
     <div class="floating-actions-bar no-print">
-        <button type="button" onclick="window.print()" class="btn-action btn-print" title="طباعة السند فورياً عبر المتصفح">
-            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+        <button type="button" onclick="window.print()" class="btn-action btn-print"
+            title="طباعة السند فورياً عبر المتصفح">
+            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                </path>
             </svg>
             <span>طباعة السند</span>
         </button>
 
-        <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.close(); }" class="btn-action btn-close" title="إغلاق الصفحة">
-            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.close(); }"
+            class="btn-action btn-close" title="إغلاق الصفحة">
+            <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
             <span>إغلاق</span>
@@ -479,7 +511,8 @@
                     {{-- يمين: بيانات الشركة والفروع --}}
                     <td style="width: 38%; text-align: right; vertical-align: top;">
                         <div style="margin-bottom: 2px;">
-                            <h1 style="color: {{ $primary }}; font-size: 16pt; font-weight: 900; line-height: 1.1; margin: 0; padding: 0;">
+                            <h1
+                                style="color: {{ $primary }}; font-size: 16pt; font-weight: 900; line-height: 1.1; margin: 0; padding: 0;">
                                 {{ $company['name'] ?? 'شركة النقل' }}
                             </h1>
                         </div>
@@ -491,7 +524,8 @@
                                         {{ $company['main_branch']['title'] }}
                                     </div>
                                     <div style="font-size: 9pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;" dir="ltr">{{ $company['main_branch']['phones'] }}</span>
+                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
+                                            dir="ltr">{{ $company['main_branch']['phones'] }}</span>
                                     </div>
                                 </div>
                             @else
@@ -500,7 +534,8 @@
                                         الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
                                     </div>
                                     <div style="font-size: 9pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;" dir="ltr">{{ $company['main_branch']['phones'] ?? '---' }}</span>
+                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
+                                            dir="ltr">{{ $company['main_branch']['phones'] ?? '---' }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -511,7 +546,8 @@
                                         {{ $company['headquarters']['title'] }}
                                     </div>
                                     <div style="font-size: 8.5pt; font-weight: bold; color: #475569;" dir="rtl">
-                                        هاتف: <span style="color: #111827; font-family: sans-serif;" dir="ltr">{{ $company['headquarters']['phones'] }}</span>
+                                        هاتف: <span style="color: #111827; font-family: sans-serif;"
+                                            dir="ltr">{{ $company['headquarters']['phones'] }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -519,8 +555,10 @@
                             @if (!empty($company['other_phones']))
                                 <div>
                                     <div style="font-size: 8pt; font-weight: bold; color: #64748b;">فروع أخرى:</div>
-                                    <div style="font-size: 7.5pt; font-weight: bold; color: #475569; line-height: 1.2;" dir="rtl">
-                                        <span style="font-family: sans-serif;" dir="ltr">{{ $company['other_phones'] }}</span>
+                                    <div style="font-size: 7.5pt; font-weight: bold; color: #475569; line-height: 1.2;"
+                                        dir="rtl">
+                                        <span style="font-family: sans-serif;"
+                                            dir="ltr">{{ $company['other_phones'] }}</span>
                                     </div>
                                 </div>
                             @endif
@@ -530,7 +568,8 @@
                     {{-- وسط: الشعار --}}
                     <td style="width: 22%; text-align: center; vertical-align: middle;">
                         @if ($logo)
-                            <img src="{{ $logo }}" style="max-width: 36mm; max-height: 18mm; object-fit: contain; margin: 0 auto;" alt="Logo">
+                            <img src="{{ $logo }}"
+                                style="max-width: 36mm; max-height: 18mm; object-fit: contain; margin: 0 auto;" alt="Logo">
                         @endif
                     </td>
 
@@ -540,11 +579,13 @@
                             <tr>
                                 {{-- بيانات السند على اليمين (باتجاه الشعار في المنتصف) --}}
                                 <td style="text-align: right; vertical-align: middle; padding-left: 6px;">
-                                    <div style="color: {{ $primary }}; font-size: 10.5pt; font-weight: 900; margin-bottom: 2px; white-space: nowrap;">
+                                    <div
+                                        style="color: {{ $primary }}; font-size: 10.5pt; font-weight: 900; margin-bottom: 2px; white-space: nowrap;">
                                         رقم السند: #{{ $bond_number ?? '---' }}
                                     </div>
                                     <div style="font-size: 9pt; font-weight: bold; color: #111827; margin-bottom: 2px;">
-                                        التاريخ: <span dir="ltr" style="font-family: sans-serif;">{{ $date ?? '---' }}</span>
+                                        التاريخ: <span dir="ltr"
+                                            style="font-family: sans-serif;">{{ $date ?? '---' }}</span>
                                     </div>
                                     <div style="font-size: 8.5pt; font-weight: bold; color: #475569;">
                                         الدفع: {{ $payment_method ?? '---' }}
@@ -566,7 +607,8 @@
                                             }
                                         @endphp
                                         @if (!empty($qrCodeSvg))
-                                            <div style="display: inline-block; padding: 2px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); line-height: 0;">
+                                            <div
+                                                style="display: inline-block; padding: 2px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); line-height: 0;">
                                                 {!! $qrCodeSvg !!}
                                             </div>
                                         @endif
@@ -595,7 +637,8 @@
                         </div>
                         <div class="box-row">
                             <div class="box-label">الجوال:</div>
-                            <div class="box-value" dir="ltr" style="text-align: right; font-family: sans-serif;">{{ $sender_phone ?? '---' }}</div>
+                            <div class="box-value" dir="ltr" style="text-align: right; font-family: sans-serif;">
+                                {{ $sender_phone ?? '---' }}</div>
                         </div>
                         <div class="box-row">
                             <div class="box-label">فرع الإرسال:</div>
@@ -614,7 +657,8 @@
                         </div>
                         <div class="box-row">
                             <div class="box-label">الجوال:</div>
-                            <div class="box-value" dir="ltr" style="text-align: right; font-family: sans-serif;">{{ $receiver_phone ?? '---' }}</div>
+                            <div class="box-value" dir="ltr" style="text-align: right; font-family: sans-serif;">
+                                {{ $receiver_phone ?? '---' }}</div>
                         </div>
                         <div class="box-row">
                             <div class="box-label">الوجهة:</div>
@@ -633,29 +677,35 @@
                         <tr>
                             <td style="width: 50%;">
                                 <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">نوع الطرد:</span>
-                                <span style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $package_type ?? '---' }}</span>
+                                <span
+                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $package_type ?? '---' }}</span>
                             </td>
                             <td style="width: 50%;">
                                 <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">الوزن/العدد:</span>
-                                <span style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $weight ?? '---' }}</span>
+                                <span
+                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $weight ?? '---' }}</span>
                             </td>
                         </tr>
                         <tr>
                             <td>
                                 <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">الرمز:</span>
-                                <span style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $tracking_code ?? '---' }}</span>
+                                <span
+                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $tracking_code ?? '---' }}</span>
                             </td>
                             <td>
                                 <span style="font-size: 8.5pt; color: #475569; font-weight: bold;">تفاصيل إضافية:</span>
-                                <span style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $honey_details ?? '---' }}</span>
+                                <span
+                                    style="font-size: 9.5pt; font-weight: 800; color: #0f172a; margin-right: 2px;">{{ $honey_details ?? '---' }}</span>
                             </td>
                         </tr>
                     </table>
 
                     {{-- خانة الملاحظات المعزولة في سطر مستقل أنيق --}}
                     <div class="details-notes-container">
-                        <span style="font-size: 8.5pt; color: #475569; font-weight: bold; white-space: nowrap; flex-shrink: 0;">الملاحظات:</span>
-                        <div style="font-size: 8.5pt; font-weight: 600; color: #1e293b; line-height: 1.25; max-height: 5.5mm; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">
+                        <span
+                            style="font-size: 8.5pt; color: #475569; font-weight: bold; white-space: nowrap; flex-shrink: 0;">الملاحظات:</span>
+                        <div
+                            style="font-size: 8.5pt; font-weight: 600; color: #1e293b; line-height: 1.25; max-height: 5.5mm; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word;">
                             {{ $notes ?? 'لا توجد ملاحظات إضافية' }}
                         </div>
                     </div>
@@ -667,7 +717,8 @@
                     <table class="finance-table">
                         <tr>
                             <td style="color: #475569; width: 45%;">الإجمالي</td>
-                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10pt;" dir="ltr">
+                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10pt;"
+                                dir="ltr">
                                 {{ $total_amount ?? '0' }}
                             </td>
                         </tr>
@@ -679,7 +730,8 @@
                         </tr>
                         <tr>
                             <td style="color: {{ $primary }};">المتبقي</td>
-                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10.5pt;" dir="ltr">
+                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10.5pt;"
+                                dir="ltr">
                                 {{ $remaining_amount ?? '0' }}
                             </td>
                         </tr>
@@ -688,7 +740,8 @@
                     {{-- شريط طريقة الدفع في الأسفل بشكل متناسق ومريح --}}
                     <div class="finance-payment-method">
                         <span style="color: #475569; font-size: 8pt;">طريقة الدفع:</span>
-                        <span style="color: {{ $primary }}; font-weight: 900; font-size: 9pt;">{{ $payment_method ?? '---' }}</span>
+                        <span
+                            style="color: {{ $primary }}; font-weight: 900; font-size: 9pt;">{{ $payment_method ?? '---' }}</span>
                     </div>
                 </div>
             </div>
@@ -727,7 +780,8 @@
 
             <!-- 6. FOOTER (الفوتر وشريط الاتصال) -->
             <div class="footer-bar">
-                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;" dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
+                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;"
+                    dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
             </div>
         </div>
     </div>
@@ -735,7 +789,7 @@
     <!-- سكريبت الطباعة الفورية الصرفة بدون أي اتصال بالسيرفر -->
     <script>
         // تفعيل مفتاح الاختصار للطباعة Ctrl + P مباشرة
-        document.addEventListener('keydown', function(event) {
+        document.addEventListener('keydown', function (event) {
             if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
                 event.preventDefault();
                 window.print();
@@ -743,4 +797,5 @@
         });
     </script>
 </body>
+
 </html>
