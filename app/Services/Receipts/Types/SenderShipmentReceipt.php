@@ -137,11 +137,11 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
-            'sender_branch_phone' => $shipment->senderBranch?->phone ?? '---',
+            'sender_branch_phone' => $this->formatPhoneNumber($shipment->senderBranch?->phone),
             'sender_office'     => $app?->name ?? 'الفرع الرئيسي',
 
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-            'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
+            'receiver_phone'    => $this->formatPhoneNumber($shipment->receiverCustomer?->phone),
             'receiver_branch'   => $receiverDestination,
             'receiver_office'   => $shipment->receiverBranch?->app?->name 
                                 ?? $shipment->receiverOfficeBranch?->office?->name 
@@ -184,5 +184,40 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
     public function getFileName(array $data): string
     {
         return 'Sender_Receipt_' . $data['bond_number'] . '.pdf';
+    }
+       private function formatPhoneNumber(?string $phone): string
+    {
+        if (empty($phone) || trim($phone) === '' || trim($phone) === '---') {
+            return '---';
+        }
+
+        $parts = preg_split('/[\s,\/]+/', trim($phone));
+        $formattedParts = [];
+
+        $countries = config('countries', []);
+        $dialCodes = [];
+        foreach ($countries as $country) {
+            $rawCode = ltrim($country['dial_code'] ?? '', '+');
+            if ($rawCode) {
+                $dialCodes[] = $rawCode;
+            }
+        }
+        $dialCodes = array_unique(array_merge($dialCodes, ['967', '966', '968', '971']));
+        usort($dialCodes, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($parts as $part) {
+            $cleaned = trim($part);
+            if ($cleaned === '') continue;
+
+            foreach ($dialCodes as $rawCode) {
+                if (preg_match('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', $cleaned)) {
+                    $cleaned = preg_replace('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', '', $cleaned);
+                    break;
+                }
+            }
+            $formattedParts[] = $cleaned;
+        }
+
+        return !empty($formattedParts) ? implode(' - ', $formattedParts) : '---';
     }
 }
