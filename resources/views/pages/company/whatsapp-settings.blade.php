@@ -901,7 +901,7 @@
                 </div>
 
                 {{-- 5. بطاقة الإرشادات والمعلومات --}}
-                <div class="bg-gradient-to-br from-slate-50 to-white dark:from-boxdark dark:to-boxdark/80 rounded-[2rem] border border-slate-200/80 dark:border-gray-800 p-6 space-y-4">
+                {{-- <div class="bg-gradient-to-br from-slate-50 to-white dark:from-boxdark dark:to-boxdark/80 rounded-[2rem] border border-slate-200/80 dark:border-gray-800 p-6 space-y-4">
                     <div class="flex items-center gap-2.5 text-slate-800 dark:text-white font-headline">
                         <span class="material-symbols-outlined text-emerald-600 text-xl">help</span>
                         <h3 class="text-sm font-black">إرشادات معمارية هامة</h3>
@@ -921,7 +921,7 @@
                             <span>تأكد من عدم تسجيل خروج الجهاز من تطبيق WhatsApp على الهاتف لضمان استمرار وصول الإشعارات للعملاء.</span>
                         </li>
                     </ul>
-                </div>
+                </div> --}}
 
             </div>
 
