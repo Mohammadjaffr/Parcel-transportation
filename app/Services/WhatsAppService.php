@@ -42,11 +42,11 @@ class WhatsAppService
     public function loadAppConfig(App $app): self
     {
         $this->currentApp = $app;
-        $this->baseUrl    = $app->effective_whatsapp_base_url;
+        $this->baseUrl    = $app->whatsapp_base_url ?: rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
         $this->instanceId = $app->whatsapp_instance_id ?: config('whatsapp.instance_id');
-        $this->token      = $app->whatsapp_instance_token ?: config('whatsapp.instance_token');
+        $this->token      = $app->whatsapp_api_key ?: config('whatsapp.global_api_key');
         $this->webhookUrl = $app->whatsapp_webhook_url ?: config('whatsapp.webhook_url');
-        $this->timeout    = $app->effective_whatsapp_timeout;
+        $this->timeout    = $app->whatsapp_timeout ?: (int) config('whatsapp.timeout', 30);
 
         return $this;
     }
@@ -59,7 +59,7 @@ class WhatsAppService
         $this->currentApp = null;
         $this->baseUrl    = rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
         $this->instanceId = config('whatsapp.instance_id');
-        $this->token      = config('whatsapp.instance_token');
+        $this->token      = config('whatsapp.global_api_key');
         $this->webhookUrl = config('whatsapp.webhook_url');
         $this->timeout    = (int) config('whatsapp.timeout', 30);
 

@@ -62,19 +62,24 @@ use Illuminate\Support\Facades\Cache;
 
         public function hasWhatsAppConfigured(): bool
         {
-            return !empty($this->whatsapp_instance_id) && !empty($this->whatsapp_instance_token);
+            $hasKey = !empty($this->whatsapp_api_key) || !empty(config('whatsapp.global_api_key'));
+            return !empty($this->whatsapp_instance_id) && $hasKey;
         }
 
         public function getMaskedWhatsAppTokenAttribute(): ?string
         {
-            if (empty($this->whatsapp_instance_token)) {
+            $token = $this->whatsapp_api_key;
+            if (empty($token)) {
+                $token = config('whatsapp.global_api_key');
+            }
+            if (empty($token)) {
                 return null;
             }
-            $len = strlen($this->whatsapp_instance_token);
+            $len = strlen($token);
             if ($len <= 8) {
                 return str_repeat('•', $len);
             }
-            return substr($this->whatsapp_instance_token, 0, 4) . str_repeat('•', max(4, $len - 8)) . substr($this->whatsapp_instance_token, -4);
+            return substr($token, 0, 4) . str_repeat('•', max(4, $len - 8)) . substr($token, -4);
         }
 
         public function getEffectiveWhatsAppBaseUrlAttribute(): string
