@@ -180,7 +180,10 @@ class ShipmentController extends Controller
         }
 
         // 3. المكاتب الخارجية (غير الموثوقة - Model Office)
-        $untrustedOffices = Office::where('app_id', $currentApp->id)->with('branches')->get();
+        $untrustedOffices = Office::where('app_id', $currentApp->id)
+            ->where('is_banned', false)
+            ->with('branches')
+            ->get();
 
         foreach ($untrustedOffices as $uOffice) {
             foreach ($uOffice->branches as $uBranch) {
@@ -262,13 +265,13 @@ class ShipmentController extends Controller
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
             'sender_name'          => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone'         => 'required_without:sender_customer_id|string|max:50',
+            'sender_phone'         => 'nullable|string|max:20',
 
             'receiver_customer_id' => 'nullable|exists:customers,id',
             'receiver_name'        => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone'       => 'required_without:receiver_customer_id|string|max:50',
+            'receiver_phone'       => 'nullable|string|max:20',
 
-            'package_type'         => 'required|string',
+            'package_type'         => 'nullable|string',
             'weight'               => 'nullable|numeric|min:0',
             
             // --- حقول العسل ---
@@ -383,32 +386,62 @@ class ShipmentController extends Controller
 
             // 1. المرسل
             $senderCustomerId = $data['sender_customer_id'] ?? null;
-            if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
-                $senderCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['sender_phone']],
-                    [
-                        'name' => $data['sender_name'],
-                        'app_id' => $user->app_id,
-                        'branch_id' => $senderBranchId,
-                        'created_by' => $user->id
-                    ]
-                );
-                $senderCustomerId = $senderCustomer->id;
+            if (empty($senderCustomerId)) {
+                if (!empty($data['sender_phone'])) {
+                    $senderCustomer = Customer::firstOrCreate(
+                        ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
+                        [
+                            'name'       => $data['sender_name'],
+                            'branch_id'  => $senderBranchId,
+                            'created_by' => $user->id,
+                        ]
+                    );
+
+                    if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                        $senderCustomer->update(['name' => $data['sender_name']]);
+                    }
+
+                    $senderCustomerId = $senderCustomer->id;
+                } elseif (!empty($data['sender_name'])) {
+                    $senderCustomer = Customer::create([
+                        'name'       => $data['sender_name'],
+                        'phone'      => null,
+                        'app_id'     => $user->app_id,
+                        'branch_id'  => $senderBranchId,
+                        'created_by' => $user->id,
+                    ]);
+                    $senderCustomerId = $senderCustomer->id;
+                }
             }
 
             // 2. المستلم
             $receiverCustomerId = $data['receiver_customer_id'] ?? null;
-            if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
-                $receiverCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['receiver_phone']],
-                    [
-                        'name' => $data['receiver_name'],
-                        'app_id' => $user->app_id,
-                        'branch_id' => $senderBranchId,
-                        'created_by' => $user->id
-                    ]
-                );
-                $receiverCustomerId = $receiverCustomer->id;
+            if (empty($receiverCustomerId)) {
+                if (!empty($data['receiver_phone'])) {
+                    $receiverCustomer = Customer::firstOrCreate(
+                        ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
+                        [
+                            'name'       => $data['receiver_name'],
+                            'branch_id'  => $senderBranchId,
+                            'created_by' => $user->id,
+                        ]
+                    );
+
+                    if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    }
+
+                    $receiverCustomerId = $receiverCustomer->id;
+                } elseif (!empty($data['receiver_name'])) {
+                    $receiverCustomer = Customer::create([
+                        'name'       => $data['receiver_name'],
+                        'phone'      => null,
+                        'app_id'     => $user->app_id,
+                        'branch_id'  => $senderBranchId,
+                        'created_by' => $user->id,
+                    ]);
+                    $receiverCustomerId = $receiverCustomer->id;
+                }
             }
 
             // ========================================================
@@ -424,7 +457,7 @@ class ShipmentController extends Controller
                 'receiver_customer_id'      => $receiverCustomerId,
 
                 // الطرد العادي
-                'package_type'              => $data['package_type'],   
+                'package_type'              => $data['package_type'] ?? null,   
                 'weight'                    => $data['weight'] ?? null,
                 'package_fee'               => $data['package_fee'],
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
@@ -578,13 +611,13 @@ class ShipmentController extends Controller
 
             'sender_customer_id'    => 'nullable|exists:customers,id',
             'sender_name'           => 'required_without:sender_customer_id|string|max:255',
-            'sender_phone'          => 'required_without:sender_customer_id|string|max:50',
+            'sender_phone'          => 'nullable|string|max:20',
 
             'receiver_customer_id'  => 'nullable|exists:customers,id',
             'receiver_name'         => 'required_without:receiver_customer_id|string|max:255',
-            'receiver_phone'        => 'required_without:receiver_customer_id|string|max:50',
+            'receiver_phone'        => 'nullable|string|max:20',
 
-            'package_type'          => 'required|string',
+            'package_type'          => 'nullable|string',
             'weight'                => 'nullable|numeric|min:0',
             
             // --- حقول العسل ---
@@ -681,40 +714,86 @@ class ShipmentController extends Controller
 
             $senderCustomerId = $data['sender_customer_id'] ?? null;
 
-            if (empty($senderCustomerId) && !empty($data['sender_phone'])) {
-                $senderCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
-                    [
-                        'name'       => $data['sender_name'],
-                        'branch_id'  => $user->branch_id,
-                        'created_by' => $user->id,
-                    ]
-                );
+            if (empty($senderCustomerId)) {
+                if (!empty($data['sender_phone'])) {
+                    $senderCustomer = Customer::firstOrCreate(
+                        ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
+                        [
+                            'name'       => $data['sender_name'],
+                            'branch_id'  => $user->branch_id,
+                            'created_by' => $user->id,
+                        ]
+                    );
 
-                if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
-                    $senderCustomer->update(['name' => $data['sender_name']]);
+                    if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                        $senderCustomer->update(['name' => $data['sender_name']]);
+                    }
+
+                    $senderCustomerId = $senderCustomer->id;
+                } elseif (!empty($data['sender_name'])) {
+                    if ($shipment->senderCustomer && empty($shipment->senderCustomer->phone)) {
+                        $shipment->senderCustomer->update(['name' => $data['sender_name']]);
+                        $senderCustomerId = $shipment->senderCustomer->id;
+                    } else {
+                        $senderCustomer = Customer::create([
+                            'name'       => $data['sender_name'],
+                            'phone'      => null,
+                            'app_id'     => $user->app_id,
+                            'branch_id'  => $user->branch_id,
+                            'created_by' => $user->id,
+                        ]);
+                        $senderCustomerId = $senderCustomer->id;
+                    }
                 }
-
-                $senderCustomerId = $senderCustomer->id;
+            } else {
+                if (!empty($data['sender_name'])) {
+                    $senderCustomer = Customer::find($senderCustomerId);
+                    if ($senderCustomer && $senderCustomer->name !== $data['sender_name']) {
+                        $senderCustomer->update(['name' => $data['sender_name']]);
+                    }
+                }
             }
 
             $receiverCustomerId = $data['receiver_customer_id'] ?? null;
 
-            if (empty($receiverCustomerId) && !empty($data['receiver_phone'])) {
-                $receiverCustomer = Customer::firstOrCreate(
-                    ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
-                    [
-                        'name'       => $data['receiver_name'],
-                        'branch_id'  => $user->branch_id,
-                        'created_by' => $user->id,
-                    ]
-                );
+            if (empty($receiverCustomerId)) {
+                if (!empty($data['receiver_phone'])) {
+                    $receiverCustomer = Customer::firstOrCreate(
+                        ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
+                        [
+                            'name'       => $data['receiver_name'],
+                            'branch_id'  => $user->branch_id,
+                            'created_by' => $user->id,
+                        ]
+                    );
 
-                if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
-                    $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    }
+
+                    $receiverCustomerId = $receiverCustomer->id;
+                } elseif (!empty($data['receiver_name'])) {
+                    if ($shipment->receiverCustomer && empty($shipment->receiverCustomer->phone)) {
+                        $shipment->receiverCustomer->update(['name' => $data['receiver_name']]);
+                        $receiverCustomerId = $shipment->receiverCustomer->id;
+                    } else {
+                        $receiverCustomer = Customer::create([
+                            'name'       => $data['receiver_name'],
+                            'phone'      => null,
+                            'app_id'     => $user->app_id,
+                            'branch_id'  => $user->branch_id,
+                            'created_by' => $user->id,
+                        ]);
+                        $receiverCustomerId = $receiverCustomer->id;
+                    }
                 }
-
-                $receiverCustomerId = $receiverCustomer->id;
+            } else {
+                if (!empty($data['receiver_name'])) {
+                    $receiverCustomer = Customer::find($receiverCustomerId);
+                    if ($receiverCustomer && $receiverCustomer->name !== $data['receiver_name']) {
+                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    }
+                }
             }
 
             $officeIdParts = explode('_', (string) $data['office_id']);
@@ -880,9 +959,9 @@ class ShipmentController extends Controller
                 'sender_customer_id'   => 'nullable|exists:customers,id',
                 'receiver_customer_id' => 'nullable|exists:customers,id',
                 'sender_name'          => 'required_without:sender_customer_id|string|max:255',
-                'sender_phone'         => 'required_without:sender_customer_id|string|max:50',
+                'sender_phone'         => 'nullable|string|max:50',
                 'receiver_name'        => 'required_without:receiver_customer_id|string|max:255',
-                'receiver_phone'       => 'required_without:receiver_customer_id|string|max:50',
+                'receiver_phone'       => 'nullable|string|max:50',
                 'no_honey_jars'        => 'nullable|numeric|min:0',
                 'no_gallons_honey'     => 'nullable|numeric|min:0',
             ];
@@ -915,44 +994,88 @@ class ShipmentController extends Controller
             $user = auth()->user();
             // إنشاء / تحديث العميل المرسل
             if (empty($data['sender_customer_id'])) {
-                $senderCustomer = Customer::where('phone', $data['sender_phone'])->first();
+                if (!empty($data['sender_phone'])) {
+                    $senderCustomer = Customer::where('phone', $data['sender_phone'])->where('app_id', $user->app_id)->first();
 
-                if ($senderCustomer) {
-                    $senderCustomer->update([
-                        'name' => $data['sender_name'],
-                    ]);
-                } else {
-                    $senderCustomer = Customer::create([
-                        'phone'      => $data['sender_phone'],
-                        'name'       => $data['sender_name'],
-                        'branch_id'  => $user->branch_id,
-                        'app_id'     => $user->app_id,
-                        'created_by' => $user->id,
-                    ]);
+                    if ($senderCustomer) {
+                        $senderCustomer->update([
+                            'name' => $data['sender_name'],
+                        ]);
+                    } else {
+                        $senderCustomer = Customer::create([
+                            'phone'      => $data['sender_phone'],
+                            'name'       => $data['sender_name'],
+                            'branch_id'  => $user->branch_id,
+                            'app_id'     => $user->app_id,
+                            'created_by' => $user->id,
+                        ]);
+                    }
+                    $data['sender_customer_id'] = $senderCustomer->id;
+                } elseif (!empty($data['sender_name'])) {
+                    if ($shipment->senderCustomer && empty($shipment->senderCustomer->phone)) {
+                        $shipment->senderCustomer->update(['name' => $data['sender_name']]);
+                        $data['sender_customer_id'] = $shipment->senderCustomer->id;
+                    } else {
+                        $senderCustomer = Customer::create([
+                            'phone'      => null,
+                            'name'       => $data['sender_name'],
+                            'branch_id'  => $user->branch_id,
+                            'app_id'     => $user->app_id,
+                            'created_by' => $user->id,
+                        ]);
+                        $data['sender_customer_id'] = $senderCustomer->id;
+                    }
                 }
-
-                $data['sender_customer_id'] = $senderCustomer->id;
+            } else {
+                if (!empty($data['sender_name'])) {
+                    $senderCustomer = Customer::find($data['sender_customer_id']);
+                    if ($senderCustomer && $senderCustomer->name !== $data['sender_name']) {
+                        $senderCustomer->update(['name' => $data['sender_name']]);
+                    }
+                }
             }
 
             // إنشاء / تحديث العميل المستلم
             if (empty($data['receiver_customer_id'])) {
-                $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->first();
+                if (!empty($data['receiver_phone'])) {
+                    $receiverCustomer = Customer::where('phone', $data['receiver_phone'])->where('app_id', $user->app_id)->first();
 
-                if ($receiverCustomer) {
-                    $receiverCustomer->update([
-                        'name' => $data['receiver_name'],
-                    ]);
-                } else {
-                    $receiverCustomer = Customer::create([
-                        'phone'      => $data['receiver_phone'],
-                        'name'       => $data['receiver_name'],
-                        'branch_id'  => $data['receiver_branch_id'],
-                        'app_id'     => $user->app_id,
-                        'created_by' => $user->id,
-                    ]);
+                    if ($receiverCustomer) {
+                        $receiverCustomer->update([
+                            'name' => $data['receiver_name'],
+                        ]);
+                    } else {
+                        $receiverCustomer = Customer::create([
+                            'phone'      => $data['receiver_phone'],
+                            'name'       => $data['receiver_name'],
+                            'branch_id'  => $data['receiver_branch_id'],
+                            'app_id'     => $user->app_id,
+                            'created_by' => $user->id,
+                        ]);
+                    }
+                    $data['receiver_customer_id'] = $receiverCustomer->id;
+                } elseif (!empty($data['receiver_name'])) {
+                    if ($shipment->receiverCustomer && empty($shipment->receiverCustomer->phone)) {
+                        $shipment->receiverCustomer->update(['name' => $data['receiver_name']]);
+                        $data['receiver_customer_id'] = $shipment->receiverCustomer->id;
+                    } else {
+                        $receiverCustomer = Customer::create([
+                            'phone'      => null,
+                            'name'       => $data['receiver_name'],
+                            'branch_id'  => $data['receiver_branch_id'],
+                            'app_id'     => $user->app_id,
+                            'created_by' => $user->id,
+                        ]);
+                        $data['receiver_customer_id'] = $receiverCustomer->id;
+                    }
                 }
-
-                $data['receiver_customer_id'] = $receiverCustomer->id;
+            } else {
+                if (!empty($data['receiver_name'])) {
+                    $receiverCustomer = Customer::find($data['receiver_customer_id']);
+                    if ($receiverCustomer && $receiverCustomer->name !== $data['receiver_name']) {
+                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                    }
+                }
             }
 
             $data['sender_branch_id'] = auth()->user()->branch_id;

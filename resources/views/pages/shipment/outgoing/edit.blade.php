@@ -89,7 +89,7 @@
                                     <div class="relative">
                                         <input type="text" readonly
                                             value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
-                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all outline-none text-on-surface dark:text-white bg-gray-50 dark:bg-boxdark-2 dark:border-boxdark-2 cursor-not-allowed select-none">
+                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-gray-50 rounded-xl border border-gray-200 transition-all cursor-not-allowed outline-none select-none text-on-surface dark:text-white dark:bg-boxdark-2 dark:border-boxdark-2">
                                         <input type="hidden" name="office_id" x-model="selectedOfficeId">
                                         <span class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none">
                                             <span class="material-symbols-outlined text-[20px]">store</span>
@@ -157,10 +157,10 @@
                                     {{-- رقم الهاتف --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
-                                            الهاتف <span class="text-error">*</span></label>
+                                            الهاتف <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(اختياري)</span></label>
                                         <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary"
                                             :class="selectedCustomerId ?
-                                                'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
+                                                 'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
                                             style="direction: ltr;">
 
                                             <div class="relative h-full" @click.away="openCountryDropdown = false">
@@ -206,7 +206,7 @@
                                             <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                                 @focus="showCustomerDropdown = true"
                                                 @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
-                                                required inputmode="numeric" autocomplete="off"
+                                                inputmode="numeric" autocomplete="off"
                                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                                 class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
                                                 :class="selectedCustomerId ? 'font-bold text-primary' : ''">
@@ -246,8 +246,8 @@
                                     {{-- الاسم --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
-                                            المرسل (اختياري)</label>
-                                        <input type="text" name="sender_name" x-model="nameInput"
+                                            المرسل <span class="text-error">*</span></label>
+                                        <input type="text" name="sender_name" required x-model="nameInput"
                                             :readonly="selectedCustomerId !== null" placeholder="الاسم..."
                                             class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
                                             :class="selectedCustomerId ?
@@ -274,7 +274,7 @@
                                     {{-- رقم الهاتف --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
-                                            الهاتف <span class="text-error">*</span></label>
+                                            الهاتف <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(اختياري)</span></label>
                                         <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-green-500/40 focus-within:border-green-500"
                                             :class="selectedCustomerId ?
                                                 'bg-green-50/30 dark:bg-green-500/10 ring-green-400 dark:ring-green-500/50' :
@@ -324,7 +324,7 @@
                                             <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
                                                 @focus="showCustomerDropdown = true"
                                                 @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
-                                                required inputmode="numeric" autocomplete="off"
+                                                inputmode="numeric" autocomplete="off"
                                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                                 class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
                                                 :class="selectedCustomerId ? 'font-bold text-green-600 dark:text-green-400' : ''">
@@ -417,18 +417,18 @@
                         <div class="grid grid-cols-2 gap-4">
 
                             {{-- ================= 1. حقل نوع الشحنة ================= --}}
-                            <div class="flex flex-col gap-2 col-span-2" x-data="{
+                            <div class="flex flex-col col-span-2 gap-2" x-data="{
                                 isOpen: false,
                                 options: ['كرتون', 'كيس'],
-                                packageType: '{{ old('package_type', $shipment->package_type ?? 'كرتون') }}'
+                                packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
                             }">
                                 <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
                                         class="text-rose-500">*</span></label>
 
-                                <div class="relative z-[40]">
+                                <div class="relative z-[40]" @click.outside="isOpen = false">
                                     <input type="text" name="package_type" x-model="packageType"
-                                        @focus="isOpen = true" @click.outside="isOpen = false"
-                                        placeholder="اختر أو اكتب النوع..." autocomplete="off" required
+                                        @focus="isOpen = true" @click="isOpen = true"
+                                        placeholder="اختر أو اكتب النوع..." autocomplete="off" 
                                         class="px-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
 
                                     <button type="button" @click="isOpen = !isOpen" tabindex="-1"
@@ -453,15 +453,15 @@
                             </div>
 
                             {{-- ================= 3. تسعيرة الطرد وعمولته ================= --}}
-                            <div class="flex flex-col gap-2 col-span-1 mt-2">
+                            <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span
                                         class="text-rose-500">*</span></label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
                                     min="0" dir="ltr" required
-                                    class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border transition-all outline-none border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                                    class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                             </div>
 
-                            <div class="flex flex-col gap-2 col-span-1 mt-2">
+                            <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">نسبة العمولة (%)</label>
                                 <div class="relative">
                                     <input type="number" name="package_commission_rate"
@@ -524,7 +524,7 @@
                                             min="0" dir="ltr"
                                             class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-xl border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
                                     </div>
-                                    <div class="mt-2 relative">
+                                    <div class="relative mt-2">
                                         <label
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">نسبة
                                             العمولة (%)</label>
@@ -586,7 +586,7 @@
                                     الإجمالي (ريال) <span class="text-error">*</span></label>
                                 <input type="number" required name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
-                                    class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent transition-all outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary cursor-not-allowed shadow-inner"
+                                    class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"
                                     dir="ltr">
                                 <p class="mt-1.5 text-[10px] font-bold text-gray-400">يتم حسابه تلقائياً (أجرة الطرد + أجرة
                                     العسل)</p>

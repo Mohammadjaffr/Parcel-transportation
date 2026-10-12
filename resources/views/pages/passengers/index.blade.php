@@ -14,9 +14,20 @@
                     <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
                         إدارة الركاب
                     </h1>
-                    <p class="mt-1 text-sm font-bold text-gray-500 dark:text-bodydark">
-                        إجمالي {{ $passengers->total() }} راكب مسجل
-                    </p>
+                    <div class="flex flex-wrap gap-2 items-center mt-1">
+                        <p class="text-sm font-bold text-gray-500 dark:text-bodydark">
+                            إجمالي {{ $passengers->total() }} راكب مسجل
+                        </p>
+                        @if (request('date'))
+                            <span class="inline-flex gap-1.5 items-center px-2.5 py-0.5 text-xs font-black rounded-lg border bg-primary/10 text-primary border-primary/20">
+                                <span class="material-symbols-outlined text-[15px]">calendar_today</span>
+                                <span>
+                                    تصفية ليوم: 
+                                    {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' ? 'اليوم (' . now()->format('Y-m-d') . ')' : request('date') }}
+                                </span>
+                            </span>
+                        @endif
+                    </div>
                 </div>
 
                 <div class="flex gap-2 items-center shrink-0">
@@ -94,53 +105,169 @@
         <div
             class="overflow-visible mx-auto my-4 max-w-7xl bg-white rounded-2xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark dark:border-boxdark-2">
 
-            {{-- Search --}}
+            {{-- Search & Filters Toolbar --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
-                <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
-                    <div class="flex flex-col gap-3 w-full md:flex-row md:items-center">
+                <form method="GET" action="{{ route('passengers.index') }}" id="passengerFilterForm"
+                    class="flex flex-col gap-4 justify-between items-stretch lg:flex-row lg:items-center">
+                    
+                    <div class="flex flex-wrap flex-1 gap-3 items-center">
+                        {{-- البحث النصي --}}
                         <div
-                            class="relative flex flex-row items-center px-3 w-full gap-3 rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
-                            <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
-                                placeholder="ابحث برقم الراكب، المكان، السائق، الوسيط..."
-                                class="flex-1 px-3 w-full h-12 text-sm text-left text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
+                            class="relative flex flex-row items-center px-3 w-full sm:w-[260px] lg:w-[280px] gap-3 rounded-2xl border border-gray-200 transition-all dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                            <input type="text" name="search" value="{{ request('search') }}" x-model="searchQuery"
+                                @input.debounce.300ms="updateVisibility()"
+                                placeholder="ابحث برقم الراكب، المكان، السائق..."
+                                class="flex-1 px-3 w-full h-12 text-sm text-right text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
                             <div
-                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
+                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors pointer-events-none group-focus-within:text-primary">
                                 <span class="material-symbols-outlined text-[22px]">search</span>
                             </div>
                             <button type="button" x-show="searchQuery.length > 0"
-                                @click="searchQuery = ''; updateVisibility()" x-cloak
+                                @click="searchQuery = ''; if('{{ request('search') }}') { $nextTick(() => $el.closest('form').submit()); } else { updateVisibility(); }"
+                                x-cloak
                                 class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
                                 <span class="text-[18px] material-symbols-outlined">close</span>
                             </button>
                         </div>
 
+                        {{-- قائمة اختيار التاريخ واليوم --}}
+                        <div class="relative w-full sm:w-60" x-data="{ openDateMenu: false }" @click.away="openDateMenu = false">
+                            {{-- الزر الرئيسي لعرض القائمة --}}
+                            <button type="button" @click="openDateMenu = !openDateMenu"
+                                class="flex justify-between items-center px-3.5 w-full h-12 text-sm font-bold text-gray-700 rounded-2xl border border-gray-200 transition-all dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-gray-200">
+                                <div class="flex gap-2 items-center min-w-0">
+                                    <span class="material-symbols-outlined text-[20px] text-primary shrink-0">calendar_today</span>
+                                    <span class="truncate">
+                                        @if (request('date') === now()->format('Y-m-d') || request('date') === 'today')
+                                            اليوم ({{ now()->translatedFormat('l') }})
+                                        @elseif (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
+                                            أمس ({{ now()->subDay()->translatedFormat('l') }})
+                                        @elseif (request('date'))
+                                            {{ request('date') }}
+                                        @else
+                                            كل الأيام
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="flex gap-1 items-center shrink-0">
+                                    @if (request('date'))
+                                        <a href="{{ route('passengers.index', array_filter(request()->except('date', 'page'))) }}"
+                                            @click.stop
+                                            title="إلغاء فلتر التاريخ"
+                                            class="flex justify-center items-center w-5 h-5 text-gray-400 rounded-full transition-colors hover:text-error hover:bg-gray-100 dark:hover:bg-boxdark-2">
+                                            <span class="material-symbols-outlined text-[15px]">close</span>
+                                        </a>
+                                    @endif
+                                    <span class="material-symbols-outlined text-[20px] text-gray-400 transition-transform duration-200"
+                                        :class="openDateMenu ? 'rotate-180 text-primary' : ''">expand_more</span>
+                                </div>
+                            </button>
+
+                            {{-- القائمة المنسدلة --}}
+                            <div x-show="openDateMenu" x-cloak x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-gray-100 dark:border-boxdark-2 z-[80] p-2 space-y-1">
+                                
+                                {{-- خيار كل الأيام --}}
+                                <button type="button"
+                                    @click="dateFilter = ''; const f = document.getElementById('filter_date'); if(f) f.value = ''; openDateMenu = false; $nextTick(() => document.getElementById('passengerFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ !request('date') ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">calendar_view_day</span>
+                                        <span>كل الأيام</span>
+                                    </div>
+                                    @if (!request('date'))
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                {{-- خيار اليوم --}}
+                                <button type="button"
+                                    @click="dateFilter = '{{ now()->format('Y-m-d') }}'; const f = document.getElementById('filter_date'); if(f) f.value = '{{ now()->format('Y-m-d') }}'; openDateMenu = false; $nextTick(() => document.getElementById('passengerFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">today</span>
+                                        <span>اليوم ({{ now()->translatedFormat('l - Y/m/d') }})</span>
+                                    </div>
+                                    @if (request('date') === now()->format('Y-m-d') || request('date') === 'today')
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                {{-- خيار أمس --}}
+                                <button type="button"
+                                    @click="dateFilter = '{{ now()->subDay()->format('Y-m-d') }}'; const f = document.getElementById('filter_date'); if(f) f.value = '{{ now()->subDay()->format('Y-m-d') }}'; openDateMenu = false; $nextTick(() => document.getElementById('passengerFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">history</span>
+                                        <span>أمس ({{ now()->subDay()->translatedFormat('l - Y/m/d') }})</span>
+                                    </div>
+                                    @if (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                <div class="my-1.5 border-t border-gray-100 dark:border-boxdark-2"></div>
+
+                                {{-- تحديد يوم مخصص بالتقويم --}}
+                                <div class="p-2.5 rounded-xl border border-gray-100 bg-gray-50/80 dark:bg-boxdark-2/70 dark:border-boxdark-2">
+                                    <label class="block text-[11px] font-black text-gray-600 dark:text-gray-300 mb-1.5">
+                                        تحديد يوم مخصص بالتقويم:
+                                    </label>
+                                    <div class="relative">
+                                        <input type="date" name="date" id="filter_date"
+                                            value="{{ request('date') }}"
+                                            x-model="dateFilter"
+                                            @change="openDateMenu = false; $nextTick(() => document.getElementById('passengerFilterForm').submit())"
+                                            onclick="try { this.showPicker(); } catch(e) {}"
+                                            class="px-3 w-full h-10 text-xs font-bold text-gray-700 bg-white rounded-xl border border-gray-200 cursor-pointer outline-none dark:bg-boxdark dark:border-boxdark focus:ring-2 focus:ring-primary/30 dark:text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- فلتر الحالة --}}
                         <div
-                            class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-56 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-                            <select x-model="statusFilter" @change="updateVisibility()"
-                                class="pr-11 pl-9 w-full h-12 text-sm font-bold text-gray-600 bg-transparent rounded-2xl border-none appearance-none outline-none focus:ring-0 dark:text-gray-300 font-body">
+                            class="relative w-full rounded-2xl border border-gray-200 transition-all sm:w-44 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                            <select name="status" x-model="statusFilter" @change="updateVisibility()"
+                                class="pr-10 pl-9 w-full h-12 text-sm font-bold text-gray-600 bg-transparent rounded-2xl border-none appearance-none cursor-pointer outline-none focus:ring-0 dark:text-gray-300 font-body">
                                 <option value="">كل الحالات</option>
-                                <option value="pending">قيد الانتظار</option>
-                                <option value="completed">مكتمل</option>
-                                <option value="cancel">ملغي</option>
+                                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>قيد الانتظار</option>
+                                <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>مكتمل</option>
+                                <option value="cancel" {{ request('status') === 'cancel' ? 'selected' : '' }}>ملغي</option>
                             </select>
                             <div
-                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 pointer-events-none">
+                                class="flex absolute inset-y-0 right-0 items-center pr-3.5 text-gray-400 pointer-events-none">
                                 <span class="material-symbols-outlined text-[20px]">tune</span>
                             </div>
                             <div class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
                                 <span class="material-symbols-outlined text-[20px]">expand_more</span>
                             </div>
                         </div>
+
+                        {{-- زر إعادة التعيين إذا وجد أي فلتر نشط --}}
+                        @if (request('date') || request('search') || request('status'))
+                            <a href="{{ route('passengers.index') }}"
+                                class="inline-flex gap-1 items-center px-3 h-12 text-xs font-bold text-gray-500 rounded-2xl border border-gray-300 border-dashed transition-all hover:text-error dark:border-gray-700 hover:border-error"
+                                title="إعادة تعيين كافة الفلاتر">
+                                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                                <span>إعادة تعيين</span>
+                            </a>
+                        @endif
                     </div>
 
-                    <div class="flex gap-2 items-center text-xs font-bold text-gray-500 dark:text-bodydark font-body">
+                    <div class="flex gap-2 items-center text-xs font-bold text-gray-500 dark:text-bodydark font-body shrink-0">
                         <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
                             <span class="material-symbols-outlined text-[18px]">filter_alt</span>
                         </span>
                         <span>النتائج المعروضة: <span class="font-bold text-primary" x-text="visibleCount"></span> من
                             <span>{{ $passengers->count() }}</span></span>
                     </div>
-                </div>
+                </form>
             </div>
 
             {{-- Desktop View Table --}}
@@ -204,7 +331,7 @@
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group passenger-row"
-                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->trip?->driver?->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey))">
+                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->trip?->driver?->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey), @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''))">
 
                                 {{-- التاريخ واليوم --}}
                                 <td class="px-6 py-4 align-top">
@@ -218,6 +345,11 @@
                                             <span class="material-symbols-outlined text-[14px]">{{ $statusIcon }}</span>
                                             {{ $statusLabel }}
                                         </span>
+                                        @if ($statusKey == 'cancel' && !empty($passenger->cancel_reason))
+                                            <span class="text-[11px] text-rose-500 font-body block mt-0.5 max-w-[150px] truncate" title="سبب الإلغاء: {{ $passenger->cancel_reason }}">
+                                                <span class="font-bold">السبب:</span> {{ $passenger->cancel_reason }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </td>
 
@@ -302,15 +434,18 @@
                                             </span>
                                             <div class="flex flex-col">
                                                 <span class="text-xs font-bold text-gray-700 font-body dark:text-gray-300">
-                                                    {{ $passenger->trip->driver->name }}
+                                                    {{ $passenger->trip->driver->name ?? '' }}
                                                 </span>
                                                 @if (!empty($passenger->trip->driver->phone))
                                                     <span class="font-body text-[10px] text-gray-500 dark:text-gray-400 dir-ltr text-right">
                                                         <x-phone-number :value="$passenger->trip->driver->phone" />
                                                     </span>
+                                                    
                                                 @endif
                                             </div>
                                         </div>
+                                       
+                                       
                                     @endif
                                 </td>
 
@@ -385,6 +520,7 @@
                                                     broker_name: @js($passenger->broker->name ?? ''),
                                                     driver_phone: @js($passenger->driver->phone ?? ''),
                                                     driver_name: @js($passenger->driver->name ?? ''),
+                                                    cancel_reason: @js($passenger->cancel_reason ?? ''),
                                                     note: @js($passenger->note)
                                                 }); openOptions = false"
                                                     class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-rose-50 hover:text-rose-500 dark:text-gray-300 dark:hover:bg-rose-500/10">
@@ -715,14 +851,14 @@
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكتب
                                     <span class="text-error">*</span></label>
-                                <input type="number" name="office_commission" value="0" min="0"
+                                <input type="number" name="office_commission"  min="0" required
                                     step="0.01" placeholder="0.00"
                                     class="px-4 w-full h-12 font-black text-emerald-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عمولة المكاتب
                                     الأخرى <span class="text-error">*</span></label>
-                                <input type="number" name="other_office_commission" value="0" min="0"
+                                <input type="number" name="other_office_commission"  min="0" required
                                     step="0.01" placeholder="0.00"
                                     class="px-4 w-full h-12 font-black text-amber-600 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
                             </div>
@@ -1116,21 +1252,34 @@
 
                     {{-- فورم الإرسال --}}
                     <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true"
-                        class="flex gap-3">
+                        class="space-y-4">
                         @csrf
                         <input type="hidden" name="status" value="cancel">
 
-                        <button type="button" @click="showStatusModal = false"
-                            class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
-                            تراجع
-                        </button>
+                        {{-- حقل سبب الإلغاء --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>سبب الإلغاء</span>
+                                <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                            </label>
+                            <textarea name="cancel_reason" x-model="statusPassengerData.cancel_reason" rows="3"
+                                placeholder="اكتب سبب إلغاء الحجز..."
+                                class="p-3.5 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400"></textarea>
+                        </div>
 
-                        <button type="submit" :disabled="isSubmitting"
-                            class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
-                            <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
-                            <span x-show="isSubmitting"
-                                class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" @click="showStatusModal = false"
+                                class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                تراجع
+                            </button>
+
+                            <button type="submit" :disabled="isSubmitting"
+                                class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
+                                <span x-show="isSubmitting"
+                                    class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -1208,12 +1357,18 @@
                 showStatusModal: false,
                 isSubmitting: false,
 
-                searchQuery: '',
-                statusFilter: '',
+                searchQuery: '{{ request('search', '') }}',
+                statusFilter: '{{ request('status', '') }}',
+                dateFilter: '{{ request('date', '') }}',
                 visibleCount: {{ $passengers->count() }},
 
                 getPrintUrl() {
                     let parts = [];
+                    if (this.dateFilter) {
+                        const d = this.dateFilter === 'today' ? '{{ now()->format('Y-m-d') }}' : this.dateFilter;
+                        parts.push('from:' + d);
+                        parts.push('to:' + d);
+                    }
                     if (this.statusFilter) parts.push('status:' + this.statusFilter);
                     parts.push('branch_id:{{ auth()->user()->branch_id }}');
                     return parts.join('|');
@@ -1256,6 +1411,7 @@
                     broker_name: '',
                     driver_phone: '',
                     driver_name: '',
+                    cancel_reason: '',
                     note: ''
                 },
 
@@ -1290,6 +1446,8 @@
                     // نمرر كل البيانات كمدخلات مخفية حتى ينجح الـ Validation في الكنترولر بدون 404
                     this.statusPassengerData = {
                         ...passenger,
+                        cancel_reason: passenger.cancel_reason || '',
+                        note: passenger.note || '',
                         broker_name: passenger.broker_name || '',
                         url: '{{ route('passengers.index') }}/' + passenger.id + '/status'
                     };
@@ -1303,7 +1461,7 @@
                     this.showStatusModal = false;
                 },
 
-                showRow(passengerNumber, location, driverName, brokerName, statusKey) {
+                showRow(passengerNumber, location, driverName, brokerName, statusKey, passengerDate) {
                     const query = this.searchQuery.toLowerCase().trim();
                     const cleanQuery = query.replace(/^(\+967|967|00967|0)/, '');
 
@@ -1323,8 +1481,9 @@
                     const matchesSearch = !query || check(passengerNumber) || check(location) || check(driverName) || check(
                         brokerName) || check(arabicStatus);
                     const matchesStatus = !this.statusFilter || String(statusKey || '') === this.statusFilter;
+                    const matchesDate = !this.dateFilter || String(passengerDate || '') === this.dateFilter || (this.dateFilter === 'today' && passengerDate === '{{ now()->format('Y-m-d') }}');
 
-                    return matchesSearch && matchesStatus;
+                    return matchesSearch && matchesStatus && matchesDate;
                 },
 
                 updateVisibility() {
