@@ -399,6 +399,35 @@
                         @endif
                     </div>
                 </div>
+
+                @if ($passenger->status === 'cancel' && !empty($passenger->cancel_reason))
+                    {{-- سبب الإلغاء --}}
+                    <div
+                        class="overflow-hidden bg-white rounded-[2rem] border border-rose-100 shadow-sm dark:bg-boxdark dark:border-rose-900/30">
+                        <div
+                            class="flex items-center px-6 py-5 border-b border-rose-100 dark:border-rose-900/30 bg-rose-50/50 dark:bg-rose-500/10">
+                            <div
+                                class="flex justify-center items-center ml-3 w-10 h-10 text-rose-500 bg-white rounded-xl shadow-sm dark:bg-boxdark shrink-0">
+                                <span class="material-symbols-outlined text-[20px]">block</span>
+                            </div>
+
+                            <div>
+                                <h2 class="text-lg font-black text-rose-600 dark:text-rose-400">
+                                    سبب الإلغاء
+                                </h2>
+                                <p class="mt-0.5 text-xs font-bold text-gray-500 dark:text-bodydark">
+                                    السبب المسجل عند إلغاء هذا الحجز
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <p class="text-sm font-semibold leading-7 text-gray-700 dark:text-gray-300">
+                                {{ $passenger->cancel_reason }}
+                            </p>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             {{-- ================= Left / Side Info ================= --}}
@@ -617,21 +646,33 @@
 
                     {{-- فورم الإرسال --}}
                     <form action="{{ route('passengers.updateStatus', $passenger->id) }}" method="POST" @submit="isSubmitting = true"
-                        class="flex gap-3">
+                        class="space-y-4">
                         @csrf
                         <input type="hidden" name="status" value="cancel">
 
-                        <button type="button" @click="showStatusModal = false"
-                            class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
-                            تراجع
-                        </button>
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>سبب الإلغاء</span>
+                                <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                            </label>
+                            <textarea name="cancel_reason" rows="3"
+                                placeholder="اكتب سبب إلغاء الحجز..."
+                                class="p-3.5 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400"></textarea>
+                        </div>
 
-                        <button type="submit" :disabled="isSubmitting"
-                            class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
-                            <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
-                            <span x-show="isSubmitting"
-                                class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" @click="showStatusModal = false"
+                                class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                تراجع
+                            </button>
+
+                            <button type="submit" :disabled="isSubmitting"
+                                class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
+                                <span x-show="isSubmitting"
+                                    class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

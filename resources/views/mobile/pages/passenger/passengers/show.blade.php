@@ -322,6 +322,19 @@
                     </div>
                 @endif
 
+                @if ($passenger->status === 'cancel' && !empty($passenger->cancel_reason))
+                    <div
+                        class="col-span-2 p-5 bg-rose-50/40 rounded-[2rem] border border-rose-100/60 shadow-sm dark:bg-rose-500/5 dark:border-rose-500/10">
+                        <h3 class="flex items-center gap-1.5 text-xs font-black text-rose-600 mb-2.5">
+                            <span class="material-symbols-outlined text-[18px]">block</span>
+                            سبب الإلغاء
+                        </h3>
+                        <p class="text-xs font-medium leading-relaxed text-slate-700 dark:text-gray-300 pr-1">
+                            {{ $passenger->cancel_reason }}
+                        </p>
+                    </div>
+                @endif
+
             </div>
         </div>
 
@@ -365,21 +378,33 @@
 
                     {{-- فورم الإرسال --}}
                     <form action="{{ route('passengers.updateStatus', $passenger->id) }}" method="POST" @submit="isSubmitting = true"
-                        class="flex gap-3">
+                        class="space-y-4">
                         @csrf
                         <input type="hidden" name="status" value="cancel">
 
-                        <button type="button" @click="showStatusModal = false"
-                            class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
-                            تراجع
-                        </button>
+                        <div class="text-right">
+                            <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>سبب الإلغاء</span>
+                                <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                            </label>
+                            <textarea name="cancel_reason" rows="3"
+                                placeholder="اكتب سبب إلغاء الحجز..."
+                                class="p-3 w-full text-xs font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400"></textarea>
+                        </div>
 
-                        <button type="submit" :disabled="isSubmitting"
-                            class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
-                            <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
-                            <span x-show="isSubmitting"
-                                class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-                        </button>
+                        <div class="flex gap-3">
+                            <button type="button" @click="showStatusModal = false"
+                                class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                تراجع
+                            </button>
+
+                            <button type="submit" :disabled="isSubmitting"
+                                class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                <span x-show="!isSubmitting">نعم، إلغاء الراكب</span>
+                                <span x-show="isSubmitting"
+                                    class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

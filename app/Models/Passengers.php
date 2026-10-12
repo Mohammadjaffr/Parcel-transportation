@@ -23,6 +23,7 @@ class Passengers extends Model
         'branch_id',
         'driver_id',
         'note',
+        'cancel_reason',
         'status',
         'trip_id'
     ];
