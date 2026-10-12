@@ -96,7 +96,7 @@ class Shipment extends Model
             }
 
             // استخدام اسم الفرع كبادئة
-            $bondPrefix = $branchName . '-';
+            $bondPrefix = '';
 
             $existingBonds = \Illuminate\Support\Facades\DB::table('shipments')
                 ->select('bond_number')
