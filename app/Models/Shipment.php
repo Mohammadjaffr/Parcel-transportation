@@ -178,12 +178,12 @@ class Shipment extends Model
 
     public function senderCustomer()
     {
-        return $this->belongsTo(Customer::class, 'sender_customer_id');
+        return $this->belongsTo(Customer::class, 'sender_customer_id')->withoutGlobalScopes();
     }
 
     public function receiverCustomer()
     {
-        return $this->belongsTo(Customer::class, 'receiver_customer_id');
+        return $this->belongsTo(Customer::class, 'receiver_customer_id')->withoutGlobalScopes();
     }
 
     public function payments()

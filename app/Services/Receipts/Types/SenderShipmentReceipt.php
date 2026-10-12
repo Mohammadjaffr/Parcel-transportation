@@ -14,24 +14,27 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
     }
     public function fetchData(string $referenceId): array
     {
-        // 1. جلب الشحنة مع العلاقات
+        // 1. جلب الشحنة مع العلاقات مع تعطيل Global Scopes للعملاء لضمان ظهورهم للزائر غير المسجل
         $shipment = Shipment::with([
-            'senderCustomer',
-            'receiverCustomer',
+            'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
+            'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
             'senderBranch.app',
-            'receiverBranch',
-            'receiverOfficeBranch',
+            'receiverBranch.app',
+            'receiverOfficeBranch.office',
             'creator.app',
             'creator.branch'
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) - محمي
-        $app = $shipment->senderBranch?->app ?? $shipment->creator?->app;
+        // 2. جلب بيانات الشركة (التطبيق) - يدعم الزائر غير المسجل
+        $app = $shipment->senderBranch?->app 
+            ?? $shipment->creator?->app 
+            ?? $shipment->receiverBranch?->app;
+
         if (!$app && auth()->check()) {
-            $app = auth()->user()->App;
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
 
-        // 3. تجهيز مسار الشعار الديناميكي - محمي بـ ?->
+        // 3. تجهيز مسار الشعار
         $imagePath = $app?->logo
             ? public_path('storage/' . $app->logo)
             : public_path('assets/image/icon_without_bg.png');
@@ -43,12 +46,12 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
         }
 
-        // 4. إعداد فرع السند وأرقام الفروع
+        // 4. إعداد فرع السند وأرقام الهواتف
         $senderBranch = $shipment->senderBranch;
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
-                'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
+                'title'  => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
                 'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\/]+/', $senderBranch->phone ?? ''))))
             ];
         }
@@ -57,16 +60,15 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         $companyPhone = !empty($app?->phone) ? trim($app->phone) : null;
         $headquartersData = null;
 
-        // 🛡️ حماية كافية هنا: إعداد بيانات الإدارة العامة مباشرة من هاتف الشركة في جدول apps
         if ($app) {
             if ($companyPhone) {
                 $headquartersData = [
-                    'title' => 'الإدارة العامة',
+                    'title'  => 'الإدارة العامة',
                     'phones' => $companyPhone
                 ];
             }
 
-            // جلب الفروع الأخرى فقط إذا كان التطبيق موجوداً
+            // جلب الفروع الأخرى التابعة للتطبيق
             $allBranches = $app->branches()->get();
             foreach ($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
@@ -79,7 +81,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
-        // 5. القواميس
+        // 5. القواميس والوجهات
         $paymentMethods = [
             'prepaid'         => 'مدفوع مقدماً',
             'cod'             => 'الدفع عند الاستلام',
@@ -95,14 +97,25 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
             : null;
 
-        // 6. الثيم والألوان - جلب لون الشركة المختار ديناميكياً من إعدادات المكتب
+        // 6. الثيم والألوان
         $theme = $app?->theme ?? [
             'primary'   => '#059669',
             'secondary' => '#1e293b',
             'bg_light'  => '#ecfdf5',
         ];
 
-        // 7. إرجاع البيانات المنظمة
+        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع
+        $totalAmount = (float) ($shipment->total_amount ?? 0);
+        $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
+
+        $paidAmount = match ($shipment->payment_method) {
+            'prepaid'         => $totalAmount,
+            'partial_payment' => (float) ($shipment->partial_amount ?? 0),
+            'cod'             => 0,
+            default           => 0,
+        };
+
+        // 8. إرجاع البيانات المنظمة
         return [
             'company' => [
                 'name'         => $app?->name ?? 'اسم الشركة غير محدد',
@@ -114,32 +127,26 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             'title'             => 'سند ارسال طرد',
-
-            // رقم السند الحقيقي الموجود في قاعدة البيانات
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
-
-            // قيمة الباركود ستكون نفس رقم السند
             'tracking_code'     => $shipment->bond_number ?? 'غير متوفر',
 
-            // الأفضل عرض تاريخ إنشاء السند وليس وقت إعادة طباعته
             'date'              => $shipment->created_at
-                ? $shipment->created_at
-                ->timezone('Asia/Aden')
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i')
-                : now()->timezone('Asia/Aden')
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i'),
+                ? $shipment->created_at->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i')
+                : now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i'),
 
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
-            'sender_branch_phone'     => $shipment->senderBranch?->phone ?? '---',
-            'sender_office'     => $app?->name ?? 'الفرع الرئيسي', // 👈 استخدمنا ?-> هنا
+            'sender_branch_phone' => $shipment->senderBranch?->phone ?? '---',
+            'sender_office'     => $app?->name ?? 'الفرع الرئيسي',
+
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
             'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
             'receiver_branch'   => $receiverDestination,
-            'receiver_office'   => $shipment->receiverBranch?->app?->name ?? $shipment->receiverOfficeBranch?->office?->name ?? $app?->name ?? 'الفرع الرئيسي',
+            'receiver_office'   => $shipment->receiverBranch?->app?->name 
+                                ?? $shipment->receiverOfficeBranch?->office?->name 
+                                ?? $app?->name 
+                                ?? 'الفرع الرئيسي',
 
             'package_type'      => $shipment->package_type ?? 'طرد عادي',
             'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
@@ -148,14 +155,11 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
             'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
-            'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount' => number_format(
-                (float) ($shipment->total_amount ?? 0)
-                    - (float) ($shipment->amount_to_collect_from_receiver ?? 0),
-                0
-            ),
-
-            'remaining_amount'  => number_format($shipment->amount_to_collect_from_receiver ?? 0, 0),
+            
+            // المبالغ المالية
+            'total_amount'      => number_format($totalAmount, 0),
+            'partial_amount'    => number_format($paidAmount, 0),       // المبلغ المسدد
+            'remaining_amount'  => number_format($remainingAmount, 0),  // المبلغ المتبقي
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
