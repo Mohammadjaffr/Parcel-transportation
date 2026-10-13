@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إعدادات الواتساب (WhatsApp)')
+@section('title', 'إعدادات الواتساب (WhatsApp) - ' . $branch->name)
 @section('Breadcrumb', 'إعدادات الواتساب (WhatsApp)')
 
 @section('content')
@@ -12,6 +12,9 @@
         isOperatingSession: false,
         isFetchingQr: false,
         isRequestingPairing: false,
+
+        // الفرع المحدد حالياً
+        selectedBranchId: {{ $branch->id }},
 
         // حالة التهيئة والاتصال
         isConfigured: {{ $isConfigured ? 'true' : 'false' }},
@@ -39,14 +42,19 @@
         sessionFeedbackType: 'success',
 
         // مدخلات نموذج الإعدادات التفاعلي
-        baseUrlInput: '{{ $company->whatsapp_base_url }}',
-        instanceIdInput: '{{ $company->whatsapp_instance_id }}',
+        baseUrlInput: '{{ $branch->whatsapp_base_url }}',
+        instanceIdInput: '{{ $branch->whatsapp_instance_id }}',
         instanceTokenInput: '',
-        webhookUrlInput: '{{ $company->whatsapp_webhook_url }}',
-        timeoutInput: {{ $company->whatsapp_timeout ?? 30 }},
+        webhookUrlInput: '{{ $branch->whatsapp_webhook_url }}',
+        timeoutInput: {{ $branch->whatsapp_timeout ?? 30 }},
         maskedTokenDisplay: '{{ $maskedToken }}',
         saveFeedbackMessage: '',
         saveFeedbackType: 'success',
+
+        // تبديل الفرع
+        switchBranch(branchId) {
+            window.location.href = '{{ route('app.whatsapp.settings') }}?branch_id=' + branchId;
+        },
 
         async saveSettings() {
             this.isSaving = true;
@@ -61,6 +69,7 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
+                        branch_id: this.selectedBranchId,
                         whatsapp_base_url: this.baseUrlInput,
                         whatsapp_instance_id: this.instanceIdInput,
                         whatsapp_instance_token: this.instanceTokenInput,
@@ -101,10 +110,14 @@
             }
         },
 
+        buildUrl(base) {
+            return base + (base.includes('?') ? '&' : '?') + 'branch_id=' + this.selectedBranchId;
+        },
+
         async checkStatus() {
             this.isCheckingStatus = true;
             try {
-                const res = await fetch('{{ route('app.whatsapp.settings.status') }}', {
+                const res = await fetch(this.buildUrl('{{ route('app.whatsapp.settings.status') }}'), {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -144,12 +157,14 @@
             this.sessionFeedbackMessage = '';
 
             try {
-                const res = await fetch(routeUrl, {
+                const res = await fetch(this.buildUrl(routeUrl), {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({ branch_id: this.selectedBranchId })
                 });
                 const data = await res.json();
 
@@ -176,7 +191,7 @@
             this.isFetchingQr = true;
             this.qrError = '';
             try {
-                const res = await fetch('{{ route('app.whatsapp.settings.qr') }}', {
+                const res = await fetch(this.buildUrl('{{ route('app.whatsapp.settings.qr') }}'), {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -216,7 +231,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ phone: this.pairingPhone })
+                    body: JSON.stringify({ phone: this.pairingPhone, branch_id: this.selectedBranchId })
                 });
                 const data = await res.json();
 
@@ -266,7 +281,8 @@
                     },
                     body: JSON.stringify({
                         recipient: this.testRecipient,
-                        message: this.testMessage
+                        message: this.testMessage,
+                        branch_id: this.selectedBranchId
                     })
                 });
 
@@ -295,22 +311,6 @@
                 {{-- الشريط اللوني العلوي الزمردي المتناسق --}}
                 <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-teal-500/5"></div>
 
-                {{-- أزرار التنقل السريعة --}}
-                {{-- <div class="absolute top-4 left-4 flex items-center gap-2">
-                    <a href="{{ route('app.sms.settings') }}"
-                        title="إعدادات الرسائل النصية SMS"
-                        class="hidden sm:flex justify-center items-center px-3.5 py-1.5 rounded-full backdrop-blur-md transition-all bg-white/80 hover:bg-white dark:bg-boxdark/80 dark:hover:bg-boxdark text-slate-700 dark:text-gray-200 hover:text-primary text-xs font-bold gap-1.5 shadow-sm border border-slate-100 dark:border-gray-700 active:scale-95">
-                        <span class="material-symbols-outlined text-[16px]">sms</span>
-                        <span>إعدادات SMS</span>
-                    </a>
-                    <a href="{{ route('app.settings') }}"
-                        title="العودة لإعدادات الشركة"
-                        class="flex justify-center items-center px-3.5 py-1.5 rounded-full backdrop-blur-md transition-all bg-white/80 hover:bg-white dark:bg-boxdark/80 dark:hover:bg-boxdark text-slate-700 dark:text-gray-200 hover:text-primary text-xs font-bold gap-1.5 shadow-sm border border-slate-100 dark:border-gray-700 active:scale-95">
-                        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-                        <span>إعدادات الشركة</span>
-                    </a>
-                </div> --}}
-
                 {{-- أيقونة الهيدر المركزية للواتساب --}}
                 <div class="relative mx-auto w-24 h-24 rounded-[1.5rem] bg-white dark:bg-boxdark shadow-lg border-4 border-white dark:border-boxdark p-1 z-10 -mt-16 mb-4">
                     <div class="flex overflow-hidden justify-center items-center w-full h-full rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
@@ -330,11 +330,32 @@
                         }"></span>
                 </h1>
 
-                <p class="max-w-2xl mx-auto text-xs sm:text-sm font-medium text-slate-500 dark:text-gray-400 mb-6 leading-relaxed">
-                    إدارة بوابة وخدمة WhatsApp الخاصة بـ <span class="font-bold text-slate-700 dark:text-gray-200">{{ $company->name }}</span>، وربط الجلسة ورمز الاقتران واختبار الإرسال المباشر للمكتب بصورة مستقلة.
+                <p class="max-w-2xl mx-auto text-xs sm:text-sm font-medium text-slate-500 dark:text-gray-400 mb-4 leading-relaxed">
+                    إدارة بوابة وخدمة WhatsApp الخاصة بفرع <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ $branch->name }}</span>
+                    التابع لـ <span class="font-bold text-slate-700 dark:text-gray-200">{{ $company->name }}</span>، وربط الجلسة ورمز الاقتران واختبار الإرسال المباشر بصورة مستقلة لكل فرع.
                 </p>
 
-                
+                {{-- ============= اختيار الفرع ============= --}}
+                @if($branches->count() > 1)
+                <div class="flex justify-center mb-2">
+                    <div class="relative inline-flex items-center gap-2 bg-slate-50 dark:bg-gray-800/60 rounded-xl px-4 py-2 border border-slate-200/80 dark:border-gray-700">
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">apartment</span>
+                        <label class="text-xs font-bold text-slate-600 dark:text-gray-300">الفرع:</label>
+                        <select x-model="selectedBranchId"
+                            @change="switchBranch(selectedBranchId)"
+                            class="appearance-none bg-transparent text-xs sm:text-sm font-bold text-slate-800 dark:text-white outline-none cursor-pointer pr-6 border-none focus:ring-0">
+                            @foreach($branches as $b)
+                                <option value="{{ $b->id }}" {{ $b->id == $branch->id ? 'selected' : '' }}>
+                                    {{ $b->name }} ({{ $b->city }})
+                                    @if($b->hasWhatsAppConfigured()) ✅ @endif
+                                </option>
+                            @endforeach
+                        </select>
+                        <span class="material-symbols-outlined text-[16px] text-slate-400 pointer-events-none absolute left-3">expand_more</span>
+                    </div>
+                </div>
+                @endif
+
             </div>
         </div>
 
@@ -356,188 +377,6 @@
             {{-- ================= العمود الأول (اليمين في RTL: الإعدادات وربط الحساب) ================= --}}
             <div class="lg:col-span-7 space-y-6">
 
-                {{-- <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-6 sm:p-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-[5rem] pointer-events-none"></div>
-
-                    <div class="flex items-center gap-3 mb-6 relative">
-                        <div class="flex justify-center items-center w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 shrink-0 shadow-sm">
-                            <span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">tune</span>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">إعدادات بوابة WhatsApp</h2>
-                            <p class="text-xs font-bold text-slate-400 dark:text-gray-400">ضبط معرّف الـ Instance ومفتاح الوصول وعنوان الخادم الخاص بمكتبك</p>
-                        </div>
-                    </div>
-
-                    
-                    <div x-cloak x-show="saveFeedbackMessage" x-transition.opacity.duration.300ms class="mb-4">
-                        <div class="p-3.5 rounded-2xl flex items-center gap-2.5 text-xs font-bold"
-                            :class="saveFeedbackType === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800' : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'">
-                            <span class="material-symbols-outlined text-lg shrink-0" x-text="saveFeedbackType === 'success' ? 'check_circle' : 'error'"></span>
-                            <span class="flex-1 leading-relaxed" x-text="saveFeedbackMessage"></span>
-                        </div>
-                    </div>
-
-                    <form action="{{ route('app.whatsapp.settings.update') }}" method="POST" @submit.prevent="saveSettings()" class="space-y-5">
-                        @csrf
-                        @method('PUT')
-
-                    
-                        <div>
-                            <div class="flex justify-between items-center px-1 mb-1.5">
-                                <label for="whatsapp_base_url" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">عنوان API الأساسي (Base URL)</label>
-                                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">اتركه فارغاً للاعتماد على سيرفر النظام الافتراضي</span>
-                            </div>
-                            <div class="relative flex items-center">
-                                <input type="url"
-                                    id="whatsapp_base_url"
-                                    name="whatsapp_base_url"
-                                    x-model="baseUrlInput"
-                                    dir="ltr"
-                                    placeholder="{{ $effectiveBaseUrl }}"
-                                    class="w-full h-12 px-4 pr-11 text-xs sm:text-sm font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none transition-all focus:bg-white dark:focus:bg-boxdark focus:ring-2 focus:ring-emerald-500/20">
-                                <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                                    <span class="material-symbols-outlined text-[20px]">dns</span>
-                                </div>
-                            </div>
-                            <p class="text-[11px] text-slate-400 dark:text-gray-500 mt-1 px-1">
-                                السيرفر النشط الحالي: <code class="font-mono text-emerald-600 dark:text-emerald-400 font-bold" dir="ltr">{{ $effectiveBaseUrl }}</code>
-                            </p>
-                        </div>
-
-                        
-                        <div>
-                            <div class="flex justify-between items-center px-1 mb-1.5">
-                                <label for="whatsapp_instance_id" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">
-                                    معرّف الـ Instance (Instance ID / Name)
-                                    <span class="text-rose-500">*</span>
-                                </label>
-                                <template x-if="instanceIdInput">
-                                    <span class="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md"
-                                        x-text="'الحالي: ' + instanceIdInput"></span>
-                                </template>
-                            </div>
-                            <div class="relative flex items-center">
-                                <input type="text"
-                                    id="whatsapp_instance_id"
-                                    name="whatsapp_instance_id"
-                                    x-model="instanceIdInput"
-                                    dir="ltr"
-                                    placeholder="مثال: company_{{ $company->id }}_instance"
-                                    class="w-full h-12 px-4 pr-11 text-xs sm:text-sm font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none transition-all focus:bg-white dark:focus:bg-boxdark focus:ring-2 focus:ring-emerald-500/20">
-                                <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                                    <span class="material-symbols-outlined text-[20px]">badge</span>
-                                </div>
-                            </div>
-                            <p class="text-[11px] text-slate-400 dark:text-gray-500 mt-1 px-1">
-                                اسم أو معرّف الجلسة المستقلة الخاصة بمكتبك في سيرفر Evolution API.
-                            </p>
-                        </div>
-
-                        
-                        <div>
-                            <div class="flex justify-between items-center px-1 mb-1.5">
-                                <label for="whatsapp_instance_token" class="text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">
-                                    رمز الوصول السري (Instance Token / Apikey)
-                                    <template x-if="!maskedTokenDisplay">
-                                        <span class="text-rose-500">*</span>
-                                    </template>
-                                </label>
-                                <template x-if="maskedTokenDisplay">
-                                    <span class="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-100 dark:border-emerald-800"
-                                        x-text="'المحفوظ: ' + maskedTokenDisplay"></span>
-                                </template>
-                            </div>
-
-                            <div class="relative flex items-center">
-                                <input :type="showToken ? 'text' : 'password'"
-                                    id="whatsapp_instance_token"
-                                    name="whatsapp_instance_token"
-                                    x-model="instanceTokenInput"
-                                    dir="ltr"
-                                    autocomplete="new-password"
-                                    placeholder="•••••••••••••••• (محفوظ مسبقاً، اتركه فارغاً للإبقاء عليه)"
-                                    class="w-full h-12 px-4 pl-12 pr-11 text-xs sm:text-sm rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none transition-all focus:bg-white dark:focus:bg-boxdark focus:ring-2 focus:ring-emerald-500/20 font-mono">
-
-                                <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                                    <span class="material-symbols-outlined text-[20px]">key</span>
-                                </div>
-
-                                <button type="button" @click="showToken = !showToken"
-                                    class="absolute left-3 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-gray-200 transition-colors">
-                                    <span class="material-symbols-outlined text-[20px]" x-text="showToken ? 'visibility_off' : 'visibility'"></span>
-                                </button>
-                            </div>
-
-                            <p class="text-[11px] text-slate-400 dark:text-gray-500 mt-1.5 px-1 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px] text-slate-400">lock</span>
-                                <span>يتم إرساله في ترويسة <code class="font-mono text-emerald-600 font-bold">Apikey</code>. الرمز مشفر ولن يتم استبداله إذا ترك الحقل فارغاً.</span>
-                            </p>
-                        </div>
-
-                       
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                            <div>
-                                <label for="whatsapp_webhook_url" class="block text-xs font-bold text-slate-600 dark:text-gray-300 font-headline mb-1.5 px-1">
-                                    رابط الويب هوك (Webhook URL)
-                                    <span class="text-[10px] text-slate-400 font-normal">(اختياري)</span>
-                                </label>
-                                <div class="relative flex items-center">
-                                    <input type="url"
-                                        id="whatsapp_webhook_url"
-                                        name="whatsapp_webhook_url"
-                                        x-model="webhookUrlInput"
-                                        dir="ltr"
-                                        placeholder="https://example.com/api/webhook"
-                                        class="w-full h-12 px-4 pr-11 text-xs font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                                        <span class="material-symbols-outlined text-[20px]">webhook</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label for="whatsapp_timeout" class="block text-xs font-bold text-slate-600 dark:text-gray-300 font-headline mb-1.5 px-1">
-                                    المهلة الزمنية بالثواني (Timeout)
-                                </label>
-                                <div class="relative flex items-center">
-                                    <input type="number"
-                                        id="whatsapp_timeout"
-                                        name="whatsapp_timeout"
-                                        x-model="timeoutInput"
-                                        dir="ltr"
-                                        min="5"
-                                        max="120"
-                                        class="w-full h-12 px-4 pr-11 text-xs font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500/20">
-                                    <div class="absolute right-3.5 pointer-events-none text-slate-400">
-                                        <span class="material-symbols-outlined text-[20px]">timer</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                       
-                        <div class="pt-3">
-                            <button type="submit"
-                                :disabled="isSaving"
-                                class="w-full h-12 flex justify-center items-center gap-2 text-sm font-bold text-white rounded-xl shadow-lg shadow-emerald-600/20 bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none font-headline">
-                                <template x-if="!isSaving">
-                                    <span class="flex items-center gap-2">
-                                        <span class="material-symbols-outlined text-[20px]">save</span>
-                                        <span>حفظ إعدادات WhatsApp</span>
-                                    </span>
-                                </template>
-                                <template x-if="isSaving">
-                                    <span class="flex items-center gap-2">
-                                        <span class="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></span>
-                                        <span>جاري الحفظ...</span>
-                                    </span>
-                                </template>
-                            </button>
-                        </div>
-                    </form>
-                </div> --}}
-
                 {{-- 2. بطاقة ربط الحساب (QR Code أو كود الاقتران عبر الهاتف) --}}
                 <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-6 sm:p-8 relative overflow-hidden">
 
@@ -549,7 +388,7 @@
                             </div>
                             <div>
                                 <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">حساب WhatsApp مرتبط ✅</h2>
-                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400">الجلسة نشطة ومتصلة بنجاح — لا حاجة لمسح QR</p>
+                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400">الجلسة نشطة ومتصلة بنجاح لفرع {{ $branch->name }} — لا حاجة لمسح QR</p>
                             </div>
                         </div>
 
@@ -561,7 +400,7 @@
                             </div>
                             <h3 class="text-sm font-black font-headline text-emerald-800 dark:text-emerald-300">الاتصال فعّال وجاهز</h3>
                             <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium leading-relaxed max-w-sm mx-auto">
-                                حساب WhatsApp مرتبط ومتصل بالسيرفر بنجاح. يمكنك إرسال الرسائل والإشعارات مباشرة.
+                                حساب WhatsApp مرتبط ومتصل بالسيرفر بنجاح لفرع <strong>{{ $branch->name }}</strong>. يمكنك إرسال الرسائل والإشعارات مباشرة.
                                 <br>لإعادة ربط رقم جديد، قم بتسجيل الخروج أولاً من قسم "إدارة الجلسة".
                             </p>
                             <div class="flex justify-center items-center gap-2 pt-1">
@@ -580,7 +419,7 @@
                                 </div>
                                 <div>
                                     <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">ربط حساب WhatsApp</h2>
-                                    <p class="text-xs font-bold text-slate-400 dark:text-gray-400">اقتران رقم هاتف المكتب عبر QR Code أو كود الاقتران الرقمي</p>
+                                    <p class="text-xs font-bold text-slate-400 dark:text-gray-400">اقتران رقم هاتف فرع <strong class="text-emerald-600">{{ $branch->name }}</strong> عبر QR Code أو كود الاقتران الرقمي</p>
                                 </div>
                             </div>
 
@@ -724,7 +563,7 @@
                             </div>
                             <div>
                                 <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">إدارة الجلسة</h2>
-                                <p class="text-xs font-bold text-slate-400 dark:text-gray-400">أوامر التحكم بجلسة WhatsApp</p>
+                                <p class="text-xs font-bold text-slate-400 dark:text-gray-400">أوامر التحكم بجلسة WhatsApp لفرع {{ $branch->name }}</p>
                             </div>
                         </div>
 
@@ -807,7 +646,7 @@
                         </div>
                         <div>
                             <h2 class="text-lg font-black font-headline text-slate-800 dark:text-white">اختبار إرسال WhatsApp</h2>
-                            <p class="text-xs font-bold text-slate-400 dark:text-gray-400">إرسال رسالة تجريبية فورية للتحقق من الجلسة</p>
+                            <p class="text-xs font-bold text-slate-400 dark:text-gray-400">إرسال رسالة تجريبية فورية للتحقق من جلسة فرع {{ $branch->name }}</p>
                         </div>
                     </div>
 
@@ -817,7 +656,7 @@
                             <span class="material-symbols-outlined text-amber-500 text-xl shrink-0 mt-0.5">warning</span>
                             <div class="text-xs text-amber-800 dark:text-amber-300 font-medium leading-relaxed">
                                 <span class="font-bold block mb-0.5">الإعدادات غير مكتملة:</span>
-                                يرجى حفظ معرّف الـ Instance والرمز أولاً لتتمكن من إجراء اختبار الإرسال.
+                                يرجى حفظ معرّف الـ Instance والرمز أولاً لفرع {{ $branch->name }} لتتمكن من إجراء اختبار الإرسال.
                             </div>
                         </div>
                     @endif
@@ -899,29 +738,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- 5. بطاقة الإرشادات والمعلومات --}}
-                {{-- <div class="bg-gradient-to-br from-slate-50 to-white dark:from-boxdark dark:to-boxdark/80 rounded-[2rem] border border-slate-200/80 dark:border-gray-800 p-6 space-y-4">
-                    <div class="flex items-center gap-2.5 text-slate-800 dark:text-white font-headline">
-                        <span class="material-symbols-outlined text-emerald-600 text-xl">help</span>
-                        <h3 class="text-sm font-black">إرشادات معمارية هامة</h3>
-                    </div>
-
-                    <ul class="space-y-2.5 text-xs text-slate-500 dark:text-gray-400 leading-relaxed font-medium">
-                        <li class="flex items-start gap-2">
-                            <span class="material-symbols-outlined text-[16px] text-emerald-600 shrink-0 mt-0.5">check_small</span>
-                            <span>كل مكتب يمتلك <strong class="text-slate-700 dark:text-gray-200">Instance مستقل</strong> بالكامل لضمان عدم تداخل الأرقام والرسائل بين المكاتب.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="material-symbols-outlined text-[16px] text-emerald-600 shrink-0 mt-0.5">check_small</span>
-                            <span>بمجرد مسح رمز QR بنجاح، تظل الجلسة نشطة ومستقرة، ولا يلزم إعادة المسح إلا عند تسجيل الخروج يدوياً.</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <span class="material-symbols-outlined text-[16px] text-emerald-600 shrink-0 mt-0.5">check_small</span>
-                            <span>تأكد من عدم تسجيل خروج الجهاز من تطبيق WhatsApp على الهاتف لضمان استمرار وصول الإشعارات للعملاء.</span>
-                        </li>
-                    </ul>
-                </div> --}}
 
             </div>
 

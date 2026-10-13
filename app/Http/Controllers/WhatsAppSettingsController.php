@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Classes\WebResponseClass;
 use App\Models\App;
+use App\Models\Branch;
 use App\Services\WhatsAppService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -34,7 +35,36 @@ class WhatsAppSettingsController extends Controller
     }
 
     /**
-     * عرض صفحة إعدادات WhatsApp للمكتب / الشركة الحالية
+     * جلب الفرع الحالي للمستخدم (أو فرع محدد من الـ Request)
+     */
+    protected function getBranch(?Request $request = null): ?Branch
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (!$user) {
+            return null;
+        }
+
+        // إذا كان المستخدم مدير فرع فقط وليس مدير شركة، فإنه مقيّد بفرعه فقط
+        if (!in_array($user->type, ['admin', 'super_admin']) && $user->is_branch_admin) {
+            return $user->branch;
+        }
+
+        // إذا تم تمرير branch_id في الطلب، نتحقق أنه تابع لنفس الشركة
+        if ($request && $request->filled('branch_id')) {
+            return Branch::where('id', $request->input('branch_id'))
+                ->where('app_id', $user->app_id)
+                ->first();
+        }
+
+        return $user->branch
+            ?? Branch::where('app_id', $user->app_id)->where('is_main', true)->first()
+            ?? Branch::where('app_id', $user->app_id)->first();
+    }
+
+    /**
+     * عرض صفحة إعدادات WhatsApp للفرع الحالي
      */
     public function index(Request $request): View|RedirectResponse
     {
@@ -45,13 +75,30 @@ class WhatsAppSettingsController extends Controller
                 ->with('error', 'تعذر العثور على بيانات المكتب أو الشركة التابعة لحسابك.');
         }
 
-        $service = $this->whatsAppService->forApp($company);
-        $isConfigured = $company->hasWhatsAppConfigured();
-        $maskedToken = $company->masked_whatsapp_token;
-        $effectiveBaseUrl = $company->whatsapp_base_url;
-        $effectiveTimeout = $company->whatsapp_timeout;
+        // جلب الفرع الحالي أو فرع محدد
+        $branch = $this->getBranch($request);
 
-        $viewData = compact('company', 'isConfigured', 'maskedToken', 'effectiveBaseUrl', 'effectiveTimeout');
+        if (!$branch) {
+            return redirect()->route('dashboard.index')
+                ->with('error', 'تعذر تحديد الفرع التابع لحسابك. يرجى التأكد من ربط حسابك بفرع.');
+        }
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // جلب الفروع لعرضها في القائمة المنسدلة: إذا كان مدير فرع يرى فرعه فقط
+        if (!in_array($user->type, ['admin', 'super_admin']) && $user->is_branch_admin) {
+            $branches = collect([$branch]);
+        } else {
+            $branches = Branch::where('app_id', $company->id)->orderBy('name')->get();
+        }
+
+        $isConfigured = $branch->hasWhatsAppConfigured();
+        $maskedToken = $branch->masked_whatsapp_token;
+        $effectiveBaseUrl = $branch->whatsapp_base_url;
+        $effectiveTimeout = $branch->whatsapp_timeout;
+
+        $viewData = compact('company', 'branch', 'branches', 'isConfigured', 'maskedToken', 'effectiveBaseUrl', 'effectiveTimeout');
 
         if ($request->isMobile) {
             return view('mobile.pages.company.whatsapp-settings', $viewData);
@@ -61,7 +108,7 @@ class WhatsAppSettingsController extends Controller
     }
 
     /**
-     * حفظ وتحديث إعدادات ربط WhatsApp للشركة الحالية
+     * حفظ وتحديث إعدادات ربط WhatsApp للفرع
      */
     public function update(Request $request): RedirectResponse|JsonResponse
     {
@@ -72,6 +119,15 @@ class WhatsAppSettingsController extends Controller
                 return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
             }
             return WebResponseClass::sendError('تعذر تحديد الشركة الحالية.');
+        }
+
+        $branch = $this->getBranch($request);
+
+        if (!$branch) {
+            if ($request->wantsJson()) {
+                return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع.'], 403);
+            }
+            return WebResponseClass::sendError('تعذر تحديد الفرع.');
         }
 
         $validator = Validator::make($request->all(), [
@@ -117,26 +173,26 @@ class WhatsAppSettingsController extends Controller
                 }
             }
 
-            $company->update($dataToUpdate);
-            $company->refresh();
+            $branch->update($dataToUpdate);
+            $branch->refresh();
 
             if ($request->wantsJson()) {
                 return response()->json([
                     'success'       => true,
-                    'message'       => 'تم حفظ إعدادات تكامل WhatsApp بنجاح.',
-                    'is_configured' => $company->hasWhatsAppConfigured(),
-                    'masked_token'  => $company->masked_whatsapp_token,
+                    'message'       => "تم حفظ إعدادات تكامل WhatsApp بنجاح لفرع {$branch->name}.",
+                    'is_configured' => $branch->hasWhatsAppConfigured(),
+                    'masked_token'  => $branch->masked_whatsapp_token,
                 ]);
             }
 
             return WebResponseClass::sendResponse(
                 'تم الحفظ بنجاح!',
-                'تم حفظ إعدادات WhatsApp للمكتب بنجاح.',
+                "تم حفظ إعدادات WhatsApp لفرع {$branch->name} بنجاح.",
                 'حسناً',
                 'app.whatsapp.settings'
             );
         } catch (\Throwable $e) {
-            Log::error("Failed to update WhatsApp settings for Company ID {$company->id}: " . $e->getMessage());
+            Log::error("Failed to update WhatsApp settings for Branch ID {$branch->id}: " . $e->getMessage());
 
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'error' => 'حدث خطأ أثناء حفظ الإعدادات.'], 500);
@@ -146,147 +202,148 @@ class WhatsAppSettingsController extends Controller
     }
 
     /**
-     * فحص حالة اتصال WhatsApp بالـ Instance الخاص بالمكتب
+     * فحص حالة اتصال WhatsApp بالـ Instance الخاص بالفرع
      */
     public function status(Request $request): JsonResponse
-{
-    $company = $this->getCompany();
+    {
+        $branch = $this->getBranch($request);
 
-    if (!$company) {
-        return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
-    }
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
+        }
 
-    $cacheKey = 'whatsapp_status_' . $company->id;
+        $cacheKey = 'whatsapp_status_branch_' . $branch->id;
 
-    // 1. التحقق من اكتمال الإعدادات
-    if (!$company->hasWhatsAppConfigured()) {
-        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+        // 1. التحقق من اكتمال الإعدادات
+        if (!$branch->hasWhatsAppConfigured()) {
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+            return response()->json([
+                'success'       => false,
+                'is_configured' => false,
+                'message'       => 'إعدادات WhatsApp غير مكتملة للفرع.',
+                'state'         => 'disconnected',
+            ]);
+        }
+
+        // 2. طلب حالة الاتصال من السيرفيس
+        $service = $this->whatsAppService->forBranch($branch);
+        $result = $service->getStatus();
+
+        // 3. في حال وجود خطأ في الاتصال
+        if (!empty($result['error'])) {
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+            return response()->json([
+                'success' => false,
+                'error'   => $result['message'] ?? 'فشل الاتصال بخدمة WhatsApp',
+                'state'   => 'error',
+                'raw'     => $result,
+            ], 400);
+        }
+
+        // 4. استخلاص حالة الاتصال الشائعة من Evolution API وبوابات WhatsApp المختلفة
+        $isLoggedIn  = data_get($result, 'data.LoggedIn') ?? data_get($result, 'LoggedIn');
+        $isConnected = data_get($result, 'data.Connected') ?? data_get($result, 'Connected');
+        $accountName = data_get($result, 'data.Name') ?? data_get($result, 'Name');
+
+        if ($isLoggedIn === true) {
+            $state = 'connected';
+        } elseif ($isLoggedIn === false && $isConnected === true) {
+            $state = 'disconnected'; // متصل بالسوكت ولكن لم يسجل الدخول (بانتظار مسح QR)
+        } else {
+            $state = data_get($result, 'instance.state')
+                ?? data_get($result, 'state')
+                ?? data_get($result, 'status')
+                ?? data_get($result, 'message')
+                ?? 'disconnected';
+        }
+
+        // -------------------------------------------------------------
+        // ⚡ تحديث الكاش ديناميكياً بناءً على الحالة المسترجعة
+        // -------------------------------------------------------------
+        $stateLower = strtolower(trim((string) $state));
+        $onlineStates = ['connected', 'open', 'success', 'online', 'connecting'];
+
+        // يُعتبر متصلاً إذا كان isLoggedIn صحيحاً أو كانت الحالة ضمن الحالات الناجحة
+        if ($isLoggedIn === true || in_array($stateLower, $onlineStates, true) || data_get($result, 'status') === 200) {
+            Cache::put($cacheKey, 'online', now()->addMinutes(10));
+        } else {
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+        }
 
         return response()->json([
-            'success'       => false,
-            'is_configured' => false,
-            'message'       => 'إعدادات WhatsApp غير مكتملة للمكتب.',
-            'state'         => 'disconnected',
+            'success'      => true,
+            'state'        => $state,
+            'is_logged_in' => (bool) $isLoggedIn,
+            'account_name' => $accountName,
+            'data'         => $result,
         ]);
     }
-
-    // 2. طلب حالة الاتصال من السيرفيس
-    $service = $this->whatsAppService->forApp($company);
-    $result = $service->getStatus();
-
-    // 3. في حال وجود خطأ في الاتصال
-    if (!empty($result['error'])) {
-        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
-
-        return response()->json([
-            'success' => false,
-            'error'   => $result['message'] ?? 'فشل الاتصال بخدمة WhatsApp',
-            'state'   => 'error',
-            'raw'     => $result,
-        ], 400);
-    }
-
-    // 4. استخلاص حالة الاتصال الشائعة من Evolution API وبوابات WhatsApp المختلفة
-    $isLoggedIn  = data_get($result, 'data.LoggedIn') ?? data_get($result, 'LoggedIn');
-    $isConnected = data_get($result, 'data.Connected') ?? data_get($result, 'Connected');
-    $accountName = data_get($result, 'data.Name') ?? data_get($result, 'Name');
-
-    if ($isLoggedIn === true) {
-        $state = 'connected';
-    } elseif ($isLoggedIn === false && $isConnected === true) {
-        $state = 'disconnected'; // متصل بالسوكت ولكن لم يسجل الدخول (بانتظار مسح QR)
-    } else {
-        $state = data_get($result, 'instance.state')
-            ?? data_get($result, 'state')
-            ?? data_get($result, 'status')
-            ?? data_get($result, 'message')
-            ?? 'disconnected';
-    }
-
-    // -------------------------------------------------------------
-    // ⚡ تحديث الكاش ديناميكياً بناءً على الحالة المسترجعة
-    // -------------------------------------------------------------
-    $stateLower = strtolower(trim((string) $state));
-    $onlineStates = ['connected', 'open', 'success', 'online', 'connecting'];
-
-    // يُعتبر متصلاً إذا كان isLoggedIn صحيحاً أو كانت الحالة ضمن الحالات الناجحة
-    if ($isLoggedIn === true || in_array($stateLower, $onlineStates, true) || data_get($result, 'status') === 200) {
-        Cache::put($cacheKey, 'online', now()->addMinutes(10));
-    } else {
-        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
-    }
-
-    return response()->json([
-        'success'      => true,
-        'state'        => $state,
-        'is_logged_in' => (bool) $isLoggedIn,
-        'account_name' => $accountName,
-        'data'         => $result,
-    ]);
-}
 
     /**
      * بدء الاتصال بالإنستانس
      */
-public function connect(Request $request): JsonResponse
-{
-    $company = $this->getCompany();
+    public function connect(Request $request): JsonResponse
+    {
+        $branch = $this->getBranch($request);
 
-    if (!$company) {
-        return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
-    }
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
+        }
 
-    $cacheKey = 'whatsapp_status_' . $company->id;
+        $cacheKey = 'whatsapp_status_branch_' . $branch->id;
 
-    // 1. التحقق من اكتمال الإعدادات
-    if (!$company->hasWhatsAppConfigured()) {
-        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+        // 1. التحقق من اكتمال الإعدادات
+        if (!$branch->hasWhatsAppConfigured()) {
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+            return response()->json([
+                'success' => false,
+                'error'   => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.',
+            ], 422);
+        }
+
+        $service = $this->whatsAppService->forBranch($branch);
+        $webhook = $request->input('webhook_url') ?: $branch->whatsapp_webhook_url;
+        $result  = $service->connect($webhook);
+
+        // 2. في حال حدوث خطأ أثناء بدء الاتصال
+        if (!empty($result['error'])) {
+            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+
+            return response()->json([
+                'success' => false,
+                'error'   => $result['message'] ?? 'فشل بدء الاتصال',
+            ], 400);
+        }
+
+        // 3. نجاح إرسال أمر الاتصال بنجاح
+        Cache::put($cacheKey, 'online', now()->addMinutes(10));
 
         return response()->json([
-            'success' => false,
-            'error'   => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.',
-        ], 422);
+            'success' => true,
+            'message' => 'تم إرسال طلب بدء الاتصال بنجاح.',
+            'data'    => $result,
+        ]);
     }
 
-    $service = $this->whatsAppService->forApp($company);
-    $webhook = $request->input('webhook_url') ?: $company->whatsapp_webhook_url;
-    $result  = $service->connect($webhook);
-
-    // 2. في حال حدوث خطأ أثناء بدء الاتصال
-    if (!empty($result['error'])) {
-        Cache::put($cacheKey, 'offline', now()->addMinutes(10));
-
-        return response()->json([
-            'success' => false,
-            'error'   => $result['message'] ?? 'فشل بدء الاتصال',
-        ], 400);
-    }
-
-    // 3. نجاح إرسال أمر الاتصال بنجاح
-    Cache::put($cacheKey, 'online', now()->addMinutes(10));
-
-    return response()->json([
-        'success' => true,
-        'message' => 'تم إرسال طلب بدء الاتصال بنجاح.',
-        'data'    => $result,
-    ]);
-}
     /**
      * جلب رمز QR Code لربط الحساب
      */
     public function qrCode(Request $request): JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
         }
 
-        if (!$company->hasWhatsAppConfigured()) {
+        if (!$branch->hasWhatsAppConfigured()) {
             return response()->json(['success' => false, 'error' => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.'], 422);
         }
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $result = $service->getQrCode();
 
         if (!empty($result['error'])) {
@@ -341,10 +398,10 @@ public function connect(Request $request): JsonResponse
      */
     public function pairingCode(Request $request): JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -358,11 +415,11 @@ public function connect(Request $request): JsonResponse
             return response()->json(['success' => false, 'error' => $validator->errors()->first()], 422);
         }
 
-        if (!$company->hasWhatsAppConfigured()) {
+        if (!$branch->hasWhatsAppConfigured()) {
             return response()->json(['success' => false, 'error' => 'يرجى حفظ إعدادات الـ Instance ومفتاح الوصول أولاً.'], 422);
         }
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $phone = trim($request->input('phone'));
         $result = $service->getPairingCode($phone);
 
@@ -402,13 +459,13 @@ public function connect(Request $request): JsonResponse
      */
     public function reconnect(Request $request): JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
         }
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $result = $service->reconnect();
 
         if (!empty($result['error'])) {
@@ -423,13 +480,13 @@ public function connect(Request $request): JsonResponse
      */
     public function disconnect(Request $request): JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
         }
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $result = $service->disconnect();
 
         if (!empty($result['error'])) {
@@ -444,13 +501,13 @@ public function connect(Request $request): JsonResponse
      */
     public function logout(Request $request): JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
-            return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+        if (!$branch) {
+            return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
         }
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $result = $service->logout();
 
         if (!empty($result['error'])) {
@@ -465,13 +522,13 @@ public function connect(Request $request): JsonResponse
      */
     public function sendTest(Request $request): RedirectResponse|JsonResponse
     {
-        $company = $this->getCompany();
+        $branch = $this->getBranch($request);
 
-        if (!$company) {
+        if (!$branch) {
             if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'error' => 'تعذر تحديد الشركة الحالية.'], 403);
+                return response()->json(['success' => false, 'error' => 'تعذر تحديد الفرع الحالي.'], 403);
             }
-            return WebResponseClass::sendError('تعذر تحديد الشركة الحالية.');
+            return WebResponseClass::sendError('تعذر تحديد الفرع الحالي.');
         }
 
         $validator = Validator::make($request->all(), [
@@ -498,7 +555,7 @@ public function connect(Request $request): JsonResponse
             return WebResponseClass::sendValidationError($validator);
         }
 
-        if (!$company->hasWhatsAppConfigured()) {
+        if (!$branch->hasWhatsAppConfigured()) {
             $msg = 'يرجى ضبط وحفظ عنوان API ومفتاح الـ Instance أولاً قبل إجراء اختبار الإرسال.';
             if ($request->wantsJson()) {
                 return response()->json(['success' => false, 'error' => $msg], 422);
@@ -509,7 +566,7 @@ public function connect(Request $request): JsonResponse
         $recipient = trim($request->input('recipient'));
         $content   = trim($request->input('message'));
 
-        $service = $this->whatsAppService->forApp($company);
+        $service = $this->whatsAppService->forBranch($branch);
         $result = $service->sendText($recipient, $content);
 
         // التحقق من نجاح العملية حسب استجابة المزود
@@ -517,7 +574,7 @@ public function connect(Request $request): JsonResponse
 
         if ($isSuccess) {
             $formattedNumber = $service->formatNumber($recipient);
-            $successMsg = "تم إرسال الرسالة التجريبية بنجاح إلى الرقم {$formattedNumber} عبر خادم WhatsApp.";
+            $successMsg = "تم إرسال الرسالة التجريبية بنجاح إلى الرقم {$formattedNumber} عبر خادم WhatsApp (فرع: {$branch->name}).";
 
             if ($request->wantsJson()) {
                 return response()->json([
@@ -537,7 +594,7 @@ public function connect(Request $request): JsonResponse
 
         // تسجيل الخطأ بأمان دون إظهار المفاتيح
         $rawError = $result['message'] ?? 'فشل الاتصال بمزود الخدمة';
-        Log::error("WhatsApp Gateway Test Failed for Company ID {$company->id}: {$rawError}");
+        Log::error("WhatsApp Gateway Test Failed for Branch ID {$branch->id}: {$rawError}");
 
         $userFriendlyMsg = 'فشل إرسال الرسالة التجريبية. يرجى التأكد من حالة اتصال الـ Instance وصحة الرمز والإنترنت.';
 

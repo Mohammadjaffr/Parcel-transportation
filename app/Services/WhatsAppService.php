@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\App;
+use App\Models\Branch;
 use App\Models\Shipment;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ use Exception;
 
 class WhatsAppService
 {
-    protected ?App $currentApp = null;
+    protected ?Branch $currentBranch = null;
     protected string $baseUrl;
     protected ?string $instanceId = null;
     protected ?string $token = null;
@@ -21,20 +22,21 @@ class WhatsAppService
     protected ?SendPDFService $sendPDFService = null;
 
     /**
-     * التهيئة الديناميكية مع دعم تعدد المكاتب والـ Multi-Tenancy
+     * التهيئة الديناميكية مع دعم تعدد الفروع والـ Multi-Tenancy
+     * كل فرع لديه إعدادات واتساب مستقلة خاصة به
      */
-    public function __construct(?App $app = null, ?SendPDFService $sendPDFService = null)
+    public function __construct(?Branch $branch = null, ?SendPDFService $sendPDFService = null)
     {
         $this->sendPDFService = $sendPDFService;
 
-        if ($app) {
-            $this->loadAppConfig($app);
-        } elseif (Auth::check() && Auth::user()?->app) {
-            $this->loadAppConfig(Auth::user()->app);
+        if ($branch) {
+            $this->loadBranchConfig($branch);
+        } elseif (Auth::check() && Auth::user()?->branch) {
+            $this->loadBranchConfig(Auth::user()->branch);
         } else {
-            $configuredApp = App::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
-            if ($configuredApp) {
-                $this->loadAppConfig($configuredApp);
+            $configuredBranch = Branch::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
+            if ($configuredBranch) {
+                $this->loadBranchConfig($configuredBranch);
             } else {
                 $this->loadDefaultConfig();
             }
@@ -42,18 +44,34 @@ class WhatsAppService
     }
 
     /**
-     * تحميل إعدادات مكتب / شركة محددة
+     * تحميل إعدادات فرع محدد
+     */
+    public function loadBranchConfig(Branch $branch): self
+    {
+        $this->currentBranch = $branch;
+        $this->baseUrl    = $branch->whatsapp_base_url ?: rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
+        $this->instanceId = $branch->whatsapp_instance_id ?: config('whatsapp.instance_id');
+        $this->token      = $branch->whatsapp_api_key ?: config('whatsapp.global_api_key');
+        $this->webhookUrl = $branch->whatsapp_webhook_url ?: config('whatsapp.webhook_url');
+        $this->timeout    = $branch->whatsapp_timeout ?: (int) config('whatsapp.timeout', 30);
+
+        return $this;
+    }
+
+    /**
+     * (Legacy) تحميل إعدادات مكتب / شركة — يبحث عن الفرع الرئيسي ويحمّل إعداداته
      */
     public function loadAppConfig(App $app): self
     {
-        $this->currentApp = $app;
-        $this->baseUrl    = $app->whatsapp_base_url ?: rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
-        $this->instanceId = $app->whatsapp_instance_id ?: config('whatsapp.instance_id');
-        $this->token      = $app->whatsapp_api_key ?: config('whatsapp.global_api_key');
-        $this->webhookUrl = $app->whatsapp_webhook_url ?: config('whatsapp.webhook_url');
-        $this->timeout    = $app->whatsapp_timeout ?: (int) config('whatsapp.timeout', 30);
+        $mainBranch = $app->branches()->where('is_main', true)->first()
+            ?? $app->branches()->whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first()
+            ?? $app->branches()->first();
 
-        return $this;
+        if ($mainBranch) {
+            return $this->loadBranchConfig($mainBranch);
+        }
+
+        return $this->loadDefaultConfig();
     }
 
     /**
@@ -61,7 +79,7 @@ class WhatsAppService
      */
     public function loadDefaultConfig(): self
     {
-        $this->currentApp = null;
+        $this->currentBranch = null;
         $this->baseUrl    = rtrim(config('whatsapp.base_url', 'http://195.35.24.73:4000'), '/');
         $this->instanceId = config('whatsapp.instance_id');
         $this->token      = config('whatsapp.global_api_key');
@@ -72,7 +90,28 @@ class WhatsAppService
     }
 
     /**
-     * إرجاع نسخة معزولة خاصة بمكتب محدد لمنع تسرب الإعدادات بين الطلبات والمهام الخلفية (Queue/Jobs)
+     * إرجاع نسخة معزولة خاصة بفرع محدد لمنع تسرب الإعدادات بين الطلبات والمهام الخلفية (Queue/Jobs)
+     */
+    public function forBranch(Branch|int|null $branch): self
+    {
+        $clone = clone $this;
+
+        if ($branch instanceof Branch) {
+            $clone->loadBranchConfig($branch);
+        } elseif (is_numeric($branch)) {
+            $branchModel = Branch::find($branch);
+            if ($branchModel) {
+                $clone->loadBranchConfig($branchModel);
+            }
+        } elseif ($branch === null) {
+            $clone->loadDefaultConfig();
+        }
+
+        return $clone;
+    }
+
+    /**
+     * (Legacy) إرجاع نسخة معزولة خاصة بمكتب — يبحث عن الفرع الرئيسي
      */
     public function forApp(App|int|null $app): self
     {
@@ -151,9 +190,17 @@ class WhatsAppService
         return $this->timeout;
     }
 
+    public function getCurrentBranch(): ?Branch
+    {
+        return $this->currentBranch;
+    }
+
+    /**
+     * (Legacy) إرجاع الـ App الخاص بالفرع الحالي
+     */
     public function getCurrentApp(): ?App
     {
-        return $this->currentApp;
+        return $this->currentBranch?->app;
     }
 
     /**

@@ -1,6 +1,6 @@
 @extends('mobile.layouts.app')
 
-@section('title', 'إعدادات الواتساب (WhatsApp)')
+@section('title', 'إعدادات الواتساب (WhatsApp) - ' . $branch->name)
 
 @section('content')
     <div x-data="{
@@ -11,6 +11,8 @@
         isOperatingSession: false,
         isFetchingQr: false,
         isRequestingPairing: false,
+
+        selectedBranchId: {{ $branch->id }},
 
         isConfigured: {{ $isConfigured ? 'true' : 'false' }},
         connectionState: 'unknown',
@@ -31,12 +33,22 @@
         sessionFeedback: '',
         sessionFeedbackType: 'success',
 
-        baseUrlInput: '{{ $company->whatsapp_base_url }}',
-        instanceIdInput: '{{ $company->whatsapp_instance_id }}',
+        baseUrlInput: '{{ $branch->whatsapp_base_url }}',
+        instanceIdInput: '{{ $branch->whatsapp_instance_id }}',
         instanceTokenInput: '',
+        webhookUrlInput: '{{ $branch->whatsapp_webhook_url }}',
+        timeoutInput: {{ $branch->whatsapp_timeout ?? 30 }},
         maskedTokenDisplay: '{{ $maskedToken }}',
         saveFeedbackMsg: '',
         saveFeedbackType: 'success',
+
+        buildUrl(base) {
+            return base + (base.includes('?') ? '&' : '?') + 'branch_id=' + this.selectedBranchId;
+        },
+
+        switchBranch(branchId) {
+            window.location.href = '{{ route('app.whatsapp.settings') }}?branch_id=' + branchId;
+        },
 
         async saveSettings() {
             this.isSaving = true;
@@ -50,9 +62,12 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
+                        branch_id: this.selectedBranchId,
                         whatsapp_base_url: this.baseUrlInput,
                         whatsapp_instance_id: this.instanceIdInput,
                         whatsapp_instance_token: this.instanceTokenInput,
+                        whatsapp_webhook_url: this.webhookUrlInput,
+                        whatsapp_timeout: this.timeoutInput,
                     })
                 });
                 const data = await res.json();
@@ -89,7 +104,7 @@
         async checkStatus() {
             this.isCheckingStatus = true;
             try {
-                const res = await fetch('{{ route('app.whatsapp.settings.status') }}', {
+                const res = await fetch(this.buildUrl('{{ route('app.whatsapp.settings.status') }}'), {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -129,9 +144,13 @@
                 const res = await fetch(routeUrl, {
                     method: 'POST',
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        branch_id: this.selectedBranchId
+                    })
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
@@ -157,7 +176,7 @@
             this.isFetchingQr = true;
             this.qrError = '';
             try {
-                const res = await fetch('{{ route('app.whatsapp.settings.qr') }}', {
+                const res = await fetch(this.buildUrl('{{ route('app.whatsapp.settings.qr') }}'), {
                     headers: { 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -192,7 +211,10 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ phone: this.pairingPhone })
+                    body: JSON.stringify({
+                        branch_id: this.selectedBranchId,
+                        phone: this.pairingPhone
+                    })
                 });
                 const data = await res.json();
                 if (res.ok && data.success && data.code) {
@@ -229,6 +251,7 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
+                        branch_id: this.selectedBranchId,
                         recipient: this.testRecipient,
                         message: this.testMessage
                     })
@@ -256,7 +279,7 @@
                 </button>
                 <div>
                     <h1 class="text-base font-black font-headline text-slate-800 dark:text-white">إعدادات WhatsApp</h1>
-                    <p class="text-[11px] font-bold text-slate-400">بوابة المراسلة والربط المباشر</p>
+                    <p class="text-[11px] font-bold text-slate-400">بوابة المراسلة والربط المباشر للفرع</p>
                 </div>
             </div>
 
@@ -266,6 +289,23 @@
                 <span>فحص</span>
             </button>
         </div>
+
+        {{-- محدد الفرع إذا وجد أكثر من فرع --}}
+        @if(isset($branches) && $branches->count() > 1)
+            <div class="bg-white dark:bg-boxdark rounded-2xl p-3 shadow-sm border border-slate-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-gray-300">
+                    <span class="material-symbols-outlined text-emerald-600 text-[18px]">store</span>
+                    <span>اختر الفرع:</span>
+                </div>
+                <select @change="switchBranch($event.target.value)" class="text-xs font-bold py-1.5 px-3 rounded-xl bg-slate-50 dark:bg-gray-800 border-none ring-1 ring-slate-200 dark:ring-gray-700 text-slate-800 dark:text-white outline-none">
+                    @foreach($branches as $b)
+                        <option value="{{ $b->id }}" {{ $b->id === $branch->id ? 'selected' : '' }}>
+                            {{ $b->name }} {{ $b->is_main ? '(الرئيسي)' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        @endif
 
         {{-- تنبيه الجلسة --}}
         <div x-cloak x-show="sessionFeedback" class="p-3 rounded-2xl text-xs font-bold flex items-center gap-2"
@@ -285,8 +325,11 @@
             </div>
 
             <h2 class="text-base font-black font-headline text-slate-800 dark:text-white mb-1">
-                {{ $company->name }}
+                {{ $branch->name }}
             </h2>
+            <p class="text-xs font-semibold text-slate-400 mb-2">
+                {{ $company->name }}
+            </p>
 
             <div class="flex flex-wrap justify-center items-center gap-2 mt-3">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold font-headline"
@@ -315,8 +358,8 @@
                     <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">tune</span>
                 </div>
                 <div>
-                    <h3 class="text-sm font-black font-headline text-slate-800 dark:text-white">إعدادات الـ Instance</h3>
-                    <p class="text-[10px] font-bold text-slate-400">بيانات الربط مع خادم WhatsApp</p>
+                    <h3 class="text-sm font-black font-headline text-slate-800 dark:text-white">إعدادات الـ Instance للفرع</h3>
+                    <p class="text-[10px] font-bold text-slate-400">بيانات الربط مع خادم WhatsApp لهذا الفرع</p>
                 </div>
             </div>
 
@@ -367,6 +410,14 @@
                     </div>
                 </div>
 
+                {{-- Webhook URL --}}
+                <div>
+                    <label class="block px-1 mb-1 text-xs font-bold text-slate-600 dark:text-gray-300 font-headline">رابط الويب هوك (Webhook URL)</label>
+                    <input type="url" name="whatsapp_webhook_url" x-model="webhookUrlInput" dir="ltr"
+                        placeholder="https://yourdomain.com/api/whatsapp/webhook"
+                        class="w-full h-11 px-3 text-xs font-mono rounded-xl border-none ring-1 ring-slate-200 dark:ring-gray-700 bg-slate-50 dark:bg-gray-800/40 text-slate-800 dark:text-white outline-none">
+                </div>
+
                 {{-- زر الحفظ --}}
                 <button type="submit" :disabled="isSaving"
                     class="w-full h-11 flex justify-center items-center gap-2 text-xs font-bold text-white rounded-xl shadow-md bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition-all disabled:opacity-50 font-headline">
@@ -378,7 +429,7 @@
 
         {{-- بطاقة التحكم بالجلسة --}}
         <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-5 space-y-3">
-            <h3 class="text-xs font-bold text-slate-700 dark:text-gray-200 font-headline">أوامر التحكم بالجلسة</h3>
+            <h3 class="text-xs font-bold text-slate-700 dark:text-gray-200 font-headline">أوامر التحكم بجلسة الفرع</h3>
             <div class="grid grid-cols-2 gap-2">
                 <button type="button" @click="triggerSessionAction('connect', '{{ route('app.whatsapp.settings.connect') }}')"
                     class="h-10 px-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 active:scale-95">
@@ -402,7 +453,7 @@
         {{-- بطاقة مسح QR / كود الاقتران --}}
         <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm border border-slate-100 dark:border-gray-800 p-5 space-y-3">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-gray-800">
-                <h3 class="text-xs font-bold text-slate-700 dark:text-gray-200 font-headline">ربط الحساب</h3>
+                <h3 class="text-xs font-bold text-slate-700 dark:text-gray-200 font-headline">ربط الحساب للفرع</h3>
                 <div class="flex gap-1 text-[11px] font-bold">
                     <button type="button" @click="activeLinkTab = 'qr'" :class="activeLinkTab === 'qr' ? 'text-emerald-600 font-black' : 'text-slate-400'">رمز QR</button>
                     <span class="text-slate-300">|</span>

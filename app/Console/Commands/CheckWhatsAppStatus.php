@@ -4,32 +4,32 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use App\Models\App;
+use App\Models\Branch;
 use App\Services\WhatsAppService;
 
 class CheckWhatsAppStatus extends Command
 {
     protected $signature = 'whatsapp:check-status';
-    protected $description = 'فحص حالة اتصال واتساب لكل تطبيق وحفظها في الكاش عبر WhatsAppService';
+    protected $description = 'فحص حالة اتصال واتساب لكل فرع وحفظها في الكاش عبر WhatsAppService';
 
     public function handle(WhatsAppService $whatsAppService)
     {
-        // جلب جميع التطبيقات التي تمتلك مفاتيح واتساب
-        $apps = App::whereNotNull('whatsapp_api_key')
+        // جلب جميع الفروع التي تمتلك مفاتيح واتساب
+        $branches = Branch::whereNotNull('whatsapp_api_key')
             ->where('whatsapp_api_key', '!=', '')
             ->get();
 
-        if ($apps->isEmpty()) {
-            $this->warn('لا توجد تطبيقات مهيأة بإعدادات واتساب.');
+        if ($branches->isEmpty()) {
+            $this->warn('لا توجد فروع مهيأة بإعدادات واتساب.');
             return Command::SUCCESS;
         }
 
-        foreach ($apps as $app) {
-            $cacheKey = 'whatsapp_status_' . $app->id;
+        foreach ($branches as $branch) {
+            $cacheKey = 'whatsapp_status_branch_' . $branch->id;
 
             try {
-                // استخدام السيرفيس المعزولة الخاصة بالتطبيق مع timeout سريع للفحص
-                $service = $whatsAppService->forApp($app)->withConfig(['timeout' => 4]);
+                // استخدام السيرفيس المعزولة الخاصة بالفرع مع timeout سريع للفحص
+                $service = $whatsAppService->forBranch($branch)->withConfig(['timeout' => 4]);
 
                 $result = $service->getStatus();
 
@@ -37,7 +37,7 @@ class CheckWhatsAppStatus extends Command
                 if (isset($result['error']) && $result['error'] === true) {
                     Cache::put($cacheKey, 'offline', now()->addMinutes(15));
                     $errorMsg = $result['message'] ?? 'Connection error';
-                    $this->warn("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ ({$errorMsg})");
+                    $this->warn("Branch [{$branch->name} - ID: {$branch->id}]: WhatsApp is OFFLINE ❌ ({$errorMsg})");
                     continue;
                 }
 
@@ -60,15 +60,15 @@ class CheckWhatsAppStatus extends Command
                 // 4. حفظ النتيجة في الكاش
                 if ($isOnline) {
                     Cache::put($cacheKey, 'online', now()->addMinutes(15));
-                    $this->info("App [{$app->name} - ID: {$app->id}]: WhatsApp is ONLINE ✅ (State: {$state})");
+                    $this->info("Branch [{$branch->name} - ID: {$branch->id}]: WhatsApp is ONLINE ✅ (State: {$state})");
                 } else {
                     Cache::put($cacheKey, 'offline', now()->addMinutes(15));
-                    $this->warn("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ (State: {$state})");
+                    $this->warn("Branch [{$branch->name} - ID: {$branch->id}]: WhatsApp is OFFLINE ❌ (State: {$state})");
                 }
 
             } catch (\Exception $e) {
                 Cache::put($cacheKey, 'offline', now()->addMinutes(15));
-                $this->error("App [{$app->name} - ID: {$app->id}]: WhatsApp is OFFLINE ❌ ({$e->getMessage()})");
+                $this->error("Branch [{$branch->name} - ID: {$branch->id}]: WhatsApp is OFFLINE ❌ ({$e->getMessage()})");
             }
         }
 

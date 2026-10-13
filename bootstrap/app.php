@@ -40,6 +40,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'active.Subscription' => CheckActiveSubscription::class,
             'check.limit' => CheckSubscriptionLimits::class,
             'check.service' => CheckServiceAccess::class,
+            'branch.admin' => \App\Http\Middleware\BranchOrAdminMiddleware::class,
         ]);
         $middleware->appendToGroup('api', [
         ]);

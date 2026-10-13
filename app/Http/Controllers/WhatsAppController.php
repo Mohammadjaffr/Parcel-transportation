@@ -42,19 +42,19 @@ class WhatsAppController extends Controller
         // تجهيز رابط الواتساب اليدوي البديل (wa.me) مسبقاً
         $fallbackLink = WhatsAppLinkService::generate($shipment, 'sender');
 
-        // 2. تحديد التطبيق (App) المرتبط بالشحنة لتحميل إعداداته وفحص الكاش الخاص به
-        $app = $shipment->senderBranch?->app 
-            ?? $shipment->receiverBranch?->app 
-            ?? auth()->user()?->app;
+        // 2. تحديد الفرع المرسل لتحميل إعدادات واتساب الخاصة به
+        $branch = $shipment->senderBranch
+            ?? $shipment->receiverBranch
+            ?? auth()->user()?->branch;
 
-        if (!$app) {
-            $app = \App\Models\App::whereNotNull('whatsapp_api_key')
+        if (!$branch) {
+            $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
                 ->where('whatsapp_api_key', '!=', '')
                 ->first();
         }
 
-        if ($app) {
-            $this->whatsAppService->loadAppConfig($app);
+        if ($branch) {
+            $this->whatsAppService->loadBranchConfig($branch);
         }
 
         // 3. التحقق من وجود رقم هاتف المرسل
@@ -79,7 +79,7 @@ class WhatsAppController extends Controller
         // ---------------------------------------------------------------------
         // ⚡ 5. فحص حالة الاتصال من الكاش (الذي يتم تحديثه عبر الـ Cron Job كل 10 دقائق)
         // ---------------------------------------------------------------------
-        $cacheKey = 'whatsapp_status_' . ($app?->id ?? 'default');
+        $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
         $serviceStatus = Cache::get($cacheKey, 'online'); // القيمة الافتراضية online في حال لم يتم الفحص بعد
 
         if ($serviceStatus === 'offline') {

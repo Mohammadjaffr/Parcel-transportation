@@ -22,7 +22,9 @@ class WhatsAppSettingsTest extends TestCase
     protected User $adminUser;
     protected User $otherAdminUser;
     protected User $regularUser;
+    protected User $branchAdminUser;
     protected Branch $branch;
+    protected Branch $otherBranch;
 
     protected function setUp(): void
     {
@@ -99,7 +101,7 @@ class WhatsAppSettingsTest extends TestCase
             'is_active'               => true,
         ]);
 
-        $otherBranch = Branch::create([
+        $this->otherBranch = Branch::create([
             'app_id'  => $this->otherAppModel->id,
             'name'    => 'فرع عدن',
             'code'    => 'ADN01',
@@ -126,7 +128,7 @@ class WhatsAppSettingsTest extends TestCase
             'password'          => bcrypt('password'),
             'type'              => 'admin',
             'app_id'            => $this->otherAppModel->id,
-            'branch_id'         => $otherBranch->id,
+            'branch_id'         => $this->otherBranch->id,
             'is_phone_verified' => true,
         ]);
 
@@ -135,6 +137,18 @@ class WhatsAppSettingsTest extends TestCase
             'phone'             => '967774445566',
             'password'          => bcrypt('password'),
             'type'              => 'user',
+            'is_branch_admin'   => false,
+            'app_id'            => $this->appModel->id,
+            'branch_id'         => $this->branch->id,
+            'is_phone_verified' => true,
+        ]);
+
+        $this->branchAdminUser = User::create([
+            'name'              => 'مدير فرع صنعاء',
+            'phone'             => '967775556677',
+            'password'          => bcrypt('password'),
+            'type'              => 'user',
+            'is_branch_admin'   => true,
             'app_id'            => $this->appModel->id,
             'branch_id'         => $this->branch->id,
             'is_phone_verified' => true,
@@ -149,12 +163,24 @@ class WhatsAppSettingsTest extends TestCase
         $response = $this->actingAs($this->adminUser)->get(route('app.whatsapp.settings'));
 
         $response->assertStatus(200);
-        $response->assertSee('إعدادات تكامل الواتساب (WhatsApp)');
-        $response->assertSee('شركة الأمان للشحن');
+        $response->assertSee('إعدادات الواتساب (WhatsApp)');
+        $response->assertSee('فرع صنعاء الرئيسي');
     }
 
     /**
-     * 2. منع المستخدم غير المصرح له (الموظف العادي) من فتح إعدادات WhatsApp
+     * 2. فتح صفحة إعدادات WhatsApp لمدير الفرع (is_branch_admin)
+     */
+    public function test_branch_admin_can_open_whatsapp_settings_page(): void
+    {
+        $response = $this->actingAs($this->branchAdminUser)->get(route('app.whatsapp.settings'));
+
+        $response->assertStatus(200);
+        $response->assertSee('إعدادات الواتساب (WhatsApp)');
+        $response->assertSee('فرع صنعاء الرئيسي');
+    }
+
+    /**
+     * 3. منع المستخدم غير المصرح له (الموظف العادي ليس مدير فرع) من فتح إعدادات WhatsApp
      */
     public function test_regular_user_cannot_access_whatsapp_settings(): void
     {
@@ -164,11 +190,64 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 3. حفظ وتحديث إعدادات WhatsApp للمكتب
+     * 4. مدير الفرع يمكنه حفظ إعدادات الواتساب لفرعه
+     */
+    public function test_branch_admin_can_save_whatsapp_settings_for_their_branch(): void
+    {
+        $response = $this->actingAs($this->branchAdminUser)->put(route('app.whatsapp.settings.update'), [
+            'whatsapp_base_url'       => 'https://api.branchwa.com',
+            'whatsapp_instance_id'    => 'branch_instance_01',
+            'whatsapp_instance_token' => 'branch_secret_token_123',
+            'whatsapp_timeout'        => 25,
+        ]);
+
+        $response->assertRedirect(route('app.whatsapp.settings'));
+
+        $this->branch->refresh();
+        $this->assertEquals('https://api.branchwa.com', $this->branch->whatsapp_base_url);
+        $this->assertEquals('branch_instance_01', $this->branch->whatsapp_instance_id);
+        $this->assertEquals('branch_secret_token_123', $this->branch->whatsapp_api_key);
+        $this->assertEquals(25, $this->branch->whatsapp_timeout);
+    }
+
+    /**
+     * 5. مدير الفرع لا يمكنه تعديل إعدادات فرع آخر حتى لو مرر branch_id لفرع آخر
+     */
+    public function test_branch_admin_cannot_modify_other_branch(): void
+    {
+        $secondBranch = Branch::create([
+            'app_id'  => $this->appModel->id,
+            'name'    => 'فرع الحديدة',
+            'code'    => 'HOD01',
+            'city'    => 'الحديدة',
+            'address' => 'شارع الميناء',
+            'phone'   => '773334445',
+            'is_main' => false,
+            'whatsapp_instance_id' => 'orig_hod_inst',
+        ]);
+
+        // مدير فرع صنعاء يحاول إرسال إعدادات لفرع الحديدة
+        $response = $this->actingAs($this->branchAdminUser)->put(route('app.whatsapp.settings.update'), [
+            'branch_id'               => $secondBranch->id,
+            'whatsapp_instance_id'    => 'hacked_instance',
+            'whatsapp_instance_token' => 'hacked_token',
+        ]);
+
+        // يجب أن يتم حفظ الإعدادات على فرع صنعاء (فرعه هو) ولا يتأثر فرع الحديدة
+        $secondBranch->refresh();
+        $this->assertEquals('orig_hod_inst', $secondBranch->whatsapp_instance_id);
+
+        $this->branch->refresh();
+        $this->assertEquals('hacked_instance', $this->branch->whatsapp_instance_id);
+    }
+
+    /**
+     * 3. حفظ وتحديث إعدادات WhatsApp للفرع
      */
     public function test_admin_can_save_whatsapp_settings(): void
     {
         $response = $this->actingAs($this->adminUser)->put(route('app.whatsapp.settings.update'), [
+            'branch_id'               => $this->branch->id,
             'whatsapp_base_url'       => 'https://api.mywhatsapp.com',
             'whatsapp_instance_id'    => 'aman_instance_01',
             'whatsapp_instance_token' => 'super_secret_token_12345678',
@@ -178,13 +257,13 @@ class WhatsAppSettingsTest extends TestCase
 
         $response->assertRedirect(route('app.whatsapp.settings'));
 
-        $this->appModel->refresh();
-        $this->assertEquals('https://api.mywhatsapp.com', $this->appModel->whatsapp_base_url);
-        $this->assertEquals('aman_instance_01', $this->appModel->whatsapp_instance_id);
-        $this->assertEquals('super_secret_token_12345678', $this->appModel->whatsapp_instance_token);
-        $this->assertEquals('https://aman.com/api/webhook', $this->appModel->whatsapp_webhook_url);
-        $this->assertEquals(45, $this->appModel->whatsapp_timeout);
-        $this->assertTrue($this->appModel->hasWhatsAppConfigured());
+        $this->branch->refresh();
+        $this->assertEquals('https://api.mywhatsapp.com', $this->branch->whatsapp_base_url);
+        $this->assertEquals('aman_instance_01', $this->branch->whatsapp_instance_id);
+        $this->assertEquals('super_secret_token_12345678', $this->branch->whatsapp_api_key);
+        $this->assertEquals('https://aman.com/api/webhook', $this->branch->whatsapp_webhook_url);
+        $this->assertEquals(45, $this->branch->whatsapp_timeout);
+        $this->assertTrue($this->branch->hasWhatsAppConfigured());
     }
 
     /**
@@ -192,31 +271,33 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_blank_or_masked_token_does_not_overwrite_existing_token(): void
     {
-        $this->appModel->update([
-            'whatsapp_instance_id'    => 'existing_instance',
-            'whatsapp_instance_token' => 'existing_token_secret_999',
-            'whatsapp_timeout'        => 30,
+        $this->branch->update([
+            'whatsapp_instance_id' => 'existing_instance',
+            'whatsapp_api_key'     => 'existing_token_secret_999',
+            'whatsapp_timeout'     => 30,
         ]);
 
         // إرسال الحقل فارغاً
         $response = $this->actingAs($this->adminUser)->put(route('app.whatsapp.settings.update'), [
+            'branch_id'               => $this->branch->id,
             'whatsapp_instance_id'    => 'updated_instance',
             'whatsapp_instance_token' => '',
         ]);
 
-        $this->appModel->refresh();
-        $this->assertEquals('existing_token_secret_999', $this->appModel->whatsapp_instance_token);
-        $this->assertEquals('updated_instance', $this->appModel->whatsapp_instance_id);
+        $this->branch->refresh();
+        $this->assertEquals('existing_token_secret_999', $this->branch->whatsapp_api_key);
+        $this->assertEquals('updated_instance', $this->branch->whatsapp_instance_id);
 
         // إرسال الحقل مقنعاً بنجوم أو نقاط
         $response2 = $this->actingAs($this->adminUser)->put(route('app.whatsapp.settings.update'), [
+            'branch_id'               => $this->branch->id,
             'whatsapp_instance_id'    => 'updated_instance_2',
             'whatsapp_instance_token' => '••••••••••••••••',
         ]);
 
-        $this->appModel->refresh();
-        $this->assertEquals('existing_token_secret_999', $this->appModel->whatsapp_instance_token);
-        $this->assertEquals('updated_instance_2', $this->appModel->whatsapp_instance_id);
+        $this->branch->refresh();
+        $this->assertEquals('existing_token_secret_999', $this->branch->whatsapp_api_key);
+        $this->assertEquals('updated_instance_2', $this->branch->whatsapp_instance_id);
     }
 
     /**
@@ -224,53 +305,53 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_token_is_masked_in_view(): void
     {
-        $this->appModel->update([
-            'whatsapp_instance_id'    => 'inst_1',
-            'whatsapp_instance_token' => 'my_super_secret_token_987654321',
+        $this->branch->update([
+            'whatsapp_instance_id' => 'inst_1',
+            'whatsapp_api_key'     => 'my_super_secret_token_987654321',
         ]);
 
         $response = $this->actingAs($this->adminUser)->get(route('app.whatsapp.settings'));
 
         $response->assertStatus(200);
         $response->assertDontSee('my_super_secret_token_987654321');
-        $response->assertSee($this->appModel->masked_whatsapp_token);
+        $response->assertSee($this->branch->masked_whatsapp_token);
     }
 
     /**
-     * 6. عزل إعدادات المكاتب ومنع تسربها
+     * 6. عزل إعدادات الفروع ومنع تداخلها
      */
     public function test_office_settings_isolation(): void
     {
-        // تهيئة إعدادات مختلفة للمكتبين
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://office1.example.com',
-            'whatsapp_instance_id'    => 'office1_inst',
-            'whatsapp_instance_token' => 'office1_token_123',
+        // تهيئة إعدادات مختلفة للفرعين
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://office1.example.com',
+            'whatsapp_instance_id' => 'office1_inst',
+            'whatsapp_api_key'     => 'office1_token_123',
         ]);
 
-        $this->otherAppModel->update([
-            'whatsapp_base_url'       => 'https://office2.example.com',
-            'whatsapp_instance_id'    => 'office2_inst',
-            'whatsapp_instance_token' => 'office2_token_456',
+        $this->otherBranch->update([
+            'whatsapp_base_url'    => 'https://office2.example.com',
+            'whatsapp_instance_id' => 'office2_inst',
+            'whatsapp_api_key'     => 'office2_token_456',
         ]);
 
         /** @var WhatsAppService $service */
         $service = app(WhatsAppService::class);
 
-        // تحميل خدمة المكتب الأول
-        $serviceApp1 = $service->forApp($this->appModel);
-        $this->assertEquals('https://office1.example.com', $serviceApp1->getBaseUrl());
-        $this->assertEquals('office1_inst', $serviceApp1->getInstanceId());
-        $this->assertEquals('office1_token_123', $serviceApp1->getToken());
+        // تحميل خدمة الفرع الأول
+        $serviceBranch1 = $service->forBranch($this->branch);
+        $this->assertEquals('https://office1.example.com', $serviceBranch1->getBaseUrl());
+        $this->assertEquals('office1_inst', $serviceBranch1->getInstanceId());
+        $this->assertEquals('office1_token_123', $serviceBranch1->getToken());
 
-        // تحميل خدمة المكتب الثاني
-        $serviceApp2 = $service->forApp($this->otherAppModel);
-        $this->assertEquals('https://office2.example.com', $serviceApp2->getBaseUrl());
-        $this->assertEquals('office2_inst', $serviceApp2->getInstanceId());
-        $this->assertEquals('office2_token_456', $serviceApp2->getToken());
+        // تحميل خدمة الفرع الثاني
+        $serviceBranch2 = $service->forBranch($this->otherBranch);
+        $this->assertEquals('https://office2.example.com', $serviceBranch2->getBaseUrl());
+        $this->assertEquals('office2_inst', $serviceBranch2->getInstanceId());
+        $this->assertEquals('office2_token_456', $serviceBranch2->getToken());
 
         // التأكد من أن الكائن الأول لم يتأثر
-        $this->assertEquals('office1_inst', $serviceApp1->getInstanceId());
+        $this->assertEquals('office1_inst', $serviceBranch1->getInstanceId());
     }
 
     /**
@@ -278,20 +359,24 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_check_connection_status_success(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/instance/status' => Http::response([
+            'https://wa.mock-server.com/instance/status*' => Http::response([
+                'state' => 'open',
+                'instance' => ['status' => 'connected']
+            ], 200),
+            'https://wa.mock-server.com/instance/connectionState/*' => Http::response([
                 'state' => 'open',
                 'instance' => ['status' => 'connected']
             ], 200),
         ]);
 
-        $response = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.status'));
+        $response = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.status', ['branch_id' => $this->branch->id]));
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -305,19 +390,22 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_check_connection_status_failure(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/instance/status' => Http::response([
+            'https://wa.mock-server.com/instance/status*' => Http::response([
+                'message' => 'Unauthorized Apikey',
+            ], 401),
+            'https://wa.mock-server.com/instance/connectionState/*' => Http::response([
                 'message' => 'Unauthorized Apikey',
             ], 401),
         ]);
 
-        $failResponse = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.status'));
+        $failResponse = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.status', ['branch_id' => $this->branch->id]));
         $failResponse->assertStatus(400);
         $failResponse->assertJson([
             'success' => false,
@@ -326,23 +414,26 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 8. استخراج QR Code بنجاح
+     * 9. استخراج QR Code بنجاح
      */
     public function test_fetch_qr_code_success(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/instance/qr' => Http::response([
+            'https://wa.mock-server.com/instance/qr*' => Http::response([
+                'base64' => 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+            ], 200),
+            'https://wa.mock-server.com/instance/connect/*' => Http::response([
                 'base64' => 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
             ], 200),
         ]);
 
-        $response = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.qr'));
+        $response = $this->actingAs($this->adminUser)->getJson(route('app.whatsapp.settings.qr', ['branch_id' => $this->branch->id]));
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -352,24 +443,28 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 9. طلب كود الاقتران السريع برقم الهاتف
+     * 10. طلب كود الاقتران السريع برقم الهاتف
      */
     public function test_pairing_code_generation(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/instance/pair' => Http::response([
+            'https://wa.mock-server.com/instance/pair*' => Http::response([
+                'code' => 'ABCD-1234',
+            ], 200),
+            'https://wa.mock-server.com/instance/connect/*' => Http::response([
                 'code' => 'ABCD-1234',
             ], 200),
         ]);
 
         $response = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.pair'), [
-            'phone' => '771234567',
+            'branch_id' => $this->branch->id,
+            'phone'     => '771234567',
         ]);
 
         $response->assertStatus(200);
@@ -380,37 +475,39 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 10. تنفيذ أوامر الجلسة (Connect, Reconnect, Disconnect, Logout)
+     * 11. تنفيذ أوامر الجلسة (Connect, Reconnect, Disconnect, Logout)
      */
     public function test_session_lifecycle_actions(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/instance/connect'    => Http::response(['status' => 'connecting'], 200),
-            'https://wa.mock-server.com/instance/reconnect'  => Http::response(['status' => 'reconnected'], 200),
-            'https://wa.mock-server.com/instance/disconnect' => Http::response(['status' => 'disconnected'], 200),
-            'https://wa.mock-server.com/instance/logout'     => Http::response(['status' => 'logged_out'], 200),
+            'https://wa.mock-server.com/instance/connect*'    => Http::response(['status' => 'connecting'], 200),
+            'https://wa.mock-server.com/instance/reconnect*'  => Http::response(['status' => 'reconnected'], 200),
+            'https://wa.mock-server.com/instance/restart*'    => Http::response(['status' => 'reconnected'], 200),
+            'https://wa.mock-server.com/instance/disconnect*' => Http::response(['status' => 'disconnected'], 200),
+            'https://wa.mock-server.com/instance/logout*'     => Http::response(['status' => 'logged_out'], 200),
+            'https://wa.mock-server.com/instance/delete*'     => Http::response(['status' => 'logged_out'], 200),
         ]);
 
         // Connect
-        $connRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.connect'));
+        $connRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.connect'), ['branch_id' => $this->branch->id]);
         $connRes->assertStatus(200)->assertJson(['success' => true]);
 
         // Reconnect
-        $recRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.reconnect'));
+        $recRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.reconnect'), ['branch_id' => $this->branch->id]);
         $recRes->assertStatus(200)->assertJson(['success' => true]);
 
         // Disconnect
-        $disRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.disconnect'));
+        $disRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.disconnect'), ['branch_id' => $this->branch->id]);
         $disRes->assertStatus(200)->assertJson(['success' => true]);
 
         // Logout
-        $logRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.logout'));
+        $logRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.logout'), ['branch_id' => $this->branch->id]);
         $logRes->assertStatus(200)->assertJson(['success' => true]);
     }
 
@@ -419,20 +516,25 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_send_test_message_success(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/send/text' => Http::response([
+            'https://wa.mock-server.com/message/sendText*' => Http::response([
+                'key' => ['id' => 'MSG_12345'],
+                'message' => 'Sent successfully'
+            ], 200),
+            'https://wa.mock-server.com/send/text*' => Http::response([
                 'key' => ['id' => 'MSG_12345'],
                 'message' => 'Sent successfully'
             ], 200),
         ]);
 
         $successRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.test'), [
+            'branch_id' => $this->branch->id,
             'recipient' => '771234567',
             'message'   => 'رسالة تجريبية للتحقق من الاتصال',
         ]);
@@ -446,19 +548,23 @@ class WhatsAppSettingsTest extends TestCase
      */
     public function test_send_test_message_failure(): void
     {
-        $this->appModel->update([
-            'whatsapp_base_url'       => 'https://wa.mock-server.com',
-            'whatsapp_instance_id'    => 'mock_inst',
-            'whatsapp_instance_token' => 'mock_token',
+        $this->branch->update([
+            'whatsapp_base_url'    => 'https://wa.mock-server.com',
+            'whatsapp_instance_id' => 'mock_inst',
+            'whatsapp_api_key'     => 'mock_token',
         ]);
 
         Http::fake([
-            'https://wa.mock-server.com/send/text' => Http::response([
+            'https://wa.mock-server.com/message/sendText*' => Http::response([
+                'error' => 'Connection closed or instance not ready',
+            ], 400),
+            'https://wa.mock-server.com/send/text*' => Http::response([
                 'error' => 'Connection closed or instance not ready',
             ], 400),
         ]);
 
         $failRes = $this->actingAs($this->adminUser)->postJson(route('app.whatsapp.settings.test'), [
+            'branch_id' => $this->branch->id,
             'recipient' => '771234567',
             'message'   => 'رسالة تجريبية أخرى',
         ]);
@@ -468,7 +574,7 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 12. التحقق من تنسيق الأرقام المحلية والدولية دون تكرار
+     * 14. التحقق من تنسيق الأرقام المحلية والدولية دون تكرار
      */
     public function test_phone_number_formatting(): void
     {
@@ -492,7 +598,7 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 13. استمرار الوظائف السابقة ودوال توليد الروابط
+     * 15. استمرار الوظائف السابقة ودوال توليد الروابط
      */
     public function test_legacy_whatsapp_link_generation(): void
     {
@@ -507,7 +613,7 @@ class WhatsAppSettingsTest extends TestCase
     }
 
     /**
-     * 14. فتح صفحة إعدادات WhatsApp عبر الموبايل
+     * 16. فتح صفحة إعدادات WhatsApp عبر الموبايل
      */
     public function test_mobile_whatsapp_settings_view(): void
     {
@@ -519,6 +625,6 @@ class WhatsAppSettingsTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('إعدادات WhatsApp');
-        $response->assertSee('شركة الأمان للشحن');
+        $response->assertSee('فرع صنعاء الرئيسي');
     }
 }

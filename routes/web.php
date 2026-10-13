@@ -284,7 +284,7 @@ Route::middleware('auth')->group(function () {
         });
 
         // WhatsApp Integration Settings
-        Route::middleware('admin')->group(function () {
+        Route::middleware('branch.admin')->group(function () {
             Route::get('/app/whatsapp-settings', [WhatsAppSettingsController::class, 'index'])->name('app.whatsapp.settings');
             Route::put('/app/whatsapp-settings', [WhatsAppSettingsController::class, 'update'])->name('app.whatsapp.settings.update');
             Route::get('/app/whatsapp-settings/status', [WhatsAppSettingsController::class, 'status'])->name('app.whatsapp.settings.status');
