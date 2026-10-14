@@ -624,14 +624,14 @@
                                                         </button>
                                                     @endif
 
-                                                    @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
+                                                    {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
                                                         <button type="button"
                                                             onclick="sendReceiverDirect({{ $shipment->id }}, this, '{{ $shipment->receiver_whatsapp_link }}')"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
                                                             <span>إرسال للمستلم</span>
                                                         </button>
-                                                    @endif
+                                                    @endif --}}
                                                 @endif
                                             </div>
                                         </div>
