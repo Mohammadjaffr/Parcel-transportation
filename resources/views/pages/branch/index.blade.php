@@ -18,50 +18,49 @@
 @endsection
 @section('content')
     <div class="space-y-6 font-outfit" dir="rtl" x-data="{
-        search: '',
-        filterCity: 'all',
-        createModalOpen: false,
-        editModalOpen: false,
-        isFetching: null,
-        editBranch: {
-            code: '',
-            name: '',
-            city: '',
-            address: '',
-            phone: ''
-        },
-        showRow(city, name, code) {
-            const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || code.toLowerCase().includes(this.search.toLowerCase());
-            const matchesCity = this.filterCity === 'all' || city === this.filterCity;
-            return matchesSearch && matchesCity;
-        },
-        async openEditModal(branchCode) {
-            this.isFetching = branchCode;
-            try {
-                const response = await fetch(`/branch/${branchCode}/edit`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
+                search: '',
+                filterCity: 'all',
+                createModalOpen: false,
+                editModalOpen: false,
+                isFetching: null,
+                editBranch: {
+                    code: '',
+                    name: '',
+                    city: '',
+                    address: '',
+                    phone: ''
+                },
+                showRow(city, name, code) {
+                    const matchesSearch = name.toLowerCase().includes(this.search.toLowerCase()) || code.toLowerCase().includes(this.search.toLowerCase());
+                    const matchesCity = this.filterCity === 'all' || city === this.filterCity;
+                    return matchesSearch && matchesCity;
+                },
+                async openEditModal(branchCode) {
+                    this.isFetching = branchCode;
+                    try {
+                        const response = await fetch(`/branch/${branchCode}/edit`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+                        this.editBranch = {
+                            code: data.code,
+                            name: data.name,
+                            city: data.city,
+                            address: data.address,
+                            phone: data.phone
+                        };
+                        this.editModalOpen = true;
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('حدث خطأ أثناء جلب البيانات');
+                    } finally {
+                        this.isFetching = null;
                     }
-                });
-                const data = await response.json();
-                this.editBranch = {
-                    code: data.code,
-                    name: data.name,
-                    city: data.city,
-                    address: data.address,
-                    phone: data.phone
-                };
-                this.editModalOpen = true;
-            } catch (error) {
-                console.error('Error:', error);
-                alert('حدث خطأ أثناء جلب البيانات');
-            } finally {
-                this.isFetching = null;
-            }
-        }
-    }"
-        @open-create-modal.window="createModalOpen = true">
+                }
+            }" @open-create-modal.window="createModalOpen = true">
 
         {{-- Modal إضافة فرع --}}
         @include('pages.branch.create-branch-modal')
@@ -162,8 +161,7 @@
                                     {{ $branch->code }}
                                 </span>
                                 <div class="flex flex-col">
-                                    <span
-                                        class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
+                                    <span class="text-sm font-black text-gray-900 dark:text-white">{{ $branch->name }}</span>
                                     <x-phone-number :value="$branch->phone" class="mt-0.5 text-xs text-gray-500 font-medium" />
                                 </div>
                             </div>
@@ -171,8 +169,7 @@
                                 <a href="{{ route('branch.show', $branch->id) }}"
                                     class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
                                     title="عرض التفاصيل">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round"
                                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -182,8 +179,7 @@
                                 <a href="{{ route('branch.edit', $branch->code) }}"
                                     class="p-2 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-colors hover:text-brand-500 dark:bg-gray-900 dark:border-gray-800"
                                     title="تعديل">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2"
-                                        viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                         <path
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
@@ -222,8 +218,7 @@
                         class="py-12 text-center rounded-xl border border-gray-100 border-dashed bg-gray-50/50 dark:bg-gray-800/20 dark:border-gray-800">
                         <div class="flex flex-col justify-center items-center">
                             <div class="p-3 mb-3 bg-white rounded-full shadow-sm dark:bg-gray-800">
-                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
@@ -319,8 +314,7 @@
                                     <x-phone-number :value="$branch->phone" />
                                 </td> --}}
 
-                                <td
-                                    class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
+                                <td class="px-6 py-5 text-center border-l last:rounded-l-2xl border-y dark:border-gray-800/50">
                                     <div class="flex gap-2 justify-center items-center">
                                         {{-- زر العرض --}}
                                         <a href="{{ route('branch.show', $branch->id) }}"
@@ -369,14 +363,13 @@
 
 
                                         {{-- زر الحذف --}}
-                                        <button type="button"
-                                            @click="$dispatch('open-warning-modal', {
-                                                        url: '{{ route('branch.destroy', ['branch' => $branch->code]) }}',
-                                                        title: 'هل أنت متأكد من حذف هذا الفرع؟',
-                                                        message: 'سيتم حذف الفرع نهائياً. لا يمكن التراجع عن هذا الإجراء.',
-                                                        confirmButtonText: 'نعم، احذف',
-                                                        cancelButtonText: 'إلغاء'
-                                                    })"
+                                        <button type="button" @click="$dispatch('open-warning-modal', {
+                                                                        url: '{{ route('branch.destroy', ['branch' => $branch->code]) }}',
+                                                                        title: 'هل أنت متأكد من حذف هذا الفرع؟',
+                                                                        message: 'سيتم حذف الفرع نهائياً. لا يمكن التراجع عن هذا الإجراء.',
+                                                                        confirmButtonText: 'نعم، احذف',
+                                                                        cancelButtonText: 'إلغاء'
+                                                                    })"
                                             class="inline-flex p-2 text-gray-400 rounded-lg transition-all hover:bg-white hover:text-brand-600 hover:shadow-sm dark:hover:bg-gray-800 dark:hover:text-brand-400"
                                             title="حذف">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
