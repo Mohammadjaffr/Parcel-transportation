@@ -53,20 +53,20 @@
 
         <div class="px-4">
             <div
-                class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden pt-12 pb-6 px-6 text-center">
+                class="relative dark:bg-gray-900 rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden pt-12 pb-6 px-6 text-center">
 
                 <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-primary/20 to-primary/5"></div>
 
-                <div class="absolute top-4 left-4 flex items-center gap-2">
+                <div class="flex absolute top-4 left-4 gap-2 items-center">
                     {{-- <a href="{{ route('app.whatsapp.settings') }}"
                         title="إعدادات تكامل WhatsApp"
-                        class="flex justify-center items-center px-3 py-1.5 rounded-full backdrop-blur-md transition-all bg-emerald-50/90 hover:bg-emerald-100 text-emerald-800 hover:text-emerald-900 text-xs font-bold gap-1.5 shadow-sm border border-emerald-200/60 active:scale-95">
+                        class="flex gap-1.5 justify-center items-center px-3 py-1.5 text-xs font-bold text-emerald-800 rounded-full border shadow-sm backdrop-blur-md transition-all bg-emerald-50/90 hover:bg-emerald-100 hover:text-emerald-900 border-emerald-200/60 active:scale-95">
                         <span class="material-symbols-outlined text-[16px]">chat</span>
                         <span>إعدادات WhatsApp</span>
                     </a> --}}
                     {{-- <a href="{{ route('app.sms.settings') }}"
                         title="إعدادات الرسائل النصية SMS"
-                        class="flex justify-center items-center px-3 py-1.5 rounded-full backdrop-blur-md transition-all bg-white/80 hover:bg-white text-slate-700 hover:text-primary text-xs font-bold gap-1.5 shadow-sm border border-slate-100 active:scale-95">
+                        class="flex gap-1.5 justify-center items-center px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm backdrop-blur-md transition-all bg-white/80 hover:bg-white text-slate-700 hover:text-primary border-slate-100 active:scale-95">
                         <span class="material-symbols-outlined text-[16px]">sms</span>
                         <span>إعدادات SMS</span>
                     </a> --}}
@@ -85,7 +85,7 @@
                     </div>
                 </div>
 
-                <h2 class="flex gap-2 justify-center items-center mb-2 text-2xl font-black font-headline text-slate-800">
+                <h2 class="flex gap-2 justify-center items-center mb-2 text-2xl font-black font-headline text-slate-800 dark:text-white">
                     {{ $company->name ?? 'اسم الشركة غير محدد' }}
                     <span
                         class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.5)]"></span>
@@ -101,16 +101,16 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 pt-5 border-t border-slate-100">
-                    <div class="flex flex-col items-center p-3 rounded-2xl bg-slate-50">
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-slate-50 dark:bg-boxdark dark:border-boxdark-2">
                         <span class="mb-1 material-symbols-outlined text-primary">domain</span>
-                        <span class="text-lg font-black text-slate-800">
+                        <span class="text-lg font-black text-slate-800 dark:text-white">
                             {{ $company->branches_count ?? 0 }}
                         </span>
                         <span class="text-[10px] font-bold text-slate-400">إجمالي الفروع</span>
                     </div>
-                    <div class="flex flex-col items-center p-3 rounded-2xl bg-slate-50">
+                    <div class="flex flex-col items-center p-3 rounded-2xl bg-slate-50 dark:bg-boxdark dark:border-boxdark-2">
                         <span class="mb-1 material-symbols-outlined text-primary">group</span>
-                        <span class="text-lg font-black text-slate-800">
+                        <span class="text-lg font-black text-slate-800 dark:text-white">
                             {{ $company->users_count ?? 0 }}
                         </span>
                         <span class="text-[10px] font-bold text-slate-400">موظفي الشركة</span>
@@ -123,9 +123,9 @@
         @if (isset($subscription))
             <div class="px-4 mt-6 space-y-4">
                 <div class="flex justify-between items-center">
-                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                    <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800 dark:text:white">
                         <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                        تفاصيل الباقة
+                        <span class="dark:text-white">تفاصيل الباقة</span>
                     </h3>
 
                     <a href="{{ route('pricing.page') }}"
@@ -135,7 +135,7 @@
                     </a>
                 </div>
 
-                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden">
+                <div class="relative bg-white rounded-[2rem] shadow-sm border border-slate-100 p-6 overflow-hidden dark:bg-boxdark dark:border-boxdark-2">
                     {{-- حالة الاشتراك --}}
                     <div class="relative z-10 mb-5">
                         <p
@@ -196,7 +196,7 @@
             <div class="flex justify-between items-center">
                 <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
                     <span class="material-symbols-outlined text-primary">account_tree</span>
-                    فروعي
+                   <span class="dark:text-white"> فروعي</span>
                 </h3>
 
                 <button @click="showAddBranchModal = true"
@@ -209,7 +209,7 @@
                 @if (isset($company))
                     @forelse($company->branches as $branch)
                         <div
-                            class="flex items-center gap-4 p-4 bg-white rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
+                            class="flex items-center gap-4 p-4 bg-white rounded-[1.5rem] shadow-sm border border-slate-100 relative overflow-hidden dark:bg-boxdark dark:border-boxdark-2">
 
                             @if ($branch->is_main)
                                 <div class="absolute top-0 right-0 bottom-0 w-1.5 bg-primary"></div>
@@ -222,7 +222,7 @@
 
                             <div class="flex-1 min-w-0">
                                 <div class="flex gap-2 items-center">
-                                    <h4 class="text-sm font-bold truncate text-slate-800 font-headline">{{ $branch->name }}
+                                    <h4 class="text-sm font-bold truncate text-slate-800 font-headline dark:text-white">{{ $branch->name }}
                                     </h4>
                                     @if ($branch->is_main)
                                         <span
@@ -277,7 +277,7 @@
             <div class="flex justify-between items-center">
                 <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
                     <span class="material-symbols-outlined text-primary">gavel</span>
-                    الشروط والأحكام
+                    <span class="dark:text-white">الشروط والأحكام</span>
                 </h3>
                 <button @click="showEditCompanyModal = true"
                     class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-100 text-slate-500 active:scale-90 hover:text-primary hover:bg-primary/10">
@@ -309,7 +309,7 @@
                     @endphp
                     @if (count($cachedTerms) > 0)
                         <div
-                            class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full">
+                            class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full dark:bg-boxdark dark:border-boxdark-2">
                             {{-- زخرفة خلفية توحي بالرسمية --}}
                             <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] -z-0"></div>
                             <span
@@ -324,7 +324,7 @@
                                                 class="mt-0.5 w-6 h-6 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-[11px] font-black text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-colors shrink-0">
                                                 {{ $index + 1 }}
                                             </div>
-                                            <p class="pt-0.5 text-xs font-bold leading-relaxed text-slate-600">
+                                            <p class="pt-0.5 text-xs font-bold leading-relaxed text-slate-600 dark:text-white">
                                                 {{ $term }}
                                             </p>
                                         </li>
