@@ -2,6 +2,7 @@
 
 @section('title', 'إرسال طرد جديد')
 
+@section('content')
 <div x-data="{ 
         paymentMethod: '{{ old('payment_method', 'prepaid') }}',
         priceAgreed: {{ old('is_price_agreed', '1') == '1' ? 'true' : 'false' }},
@@ -44,7 +45,7 @@
             </div>
 
             {{-- شبكة الحقول --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
                 {{-- حقل المكتب (يعرض المكتب الحالي فقط - للقراءة فقط) --}}
                 <div class="space-y-1.5">
@@ -52,7 +53,7 @@
                             class="text-red-500">*</span></label>
                     <div class="relative">
                         <input type="text" readonly value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
-                            class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all outline-none text-slate-800 bg-slate-100 border-slate-200/70 cursor-not-allowed select-none">
+                            class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all cursor-not-allowed outline-none select-none text-slate-800 bg-slate-100 border-slate-200/70">
                         <input type="hidden" name="office_id" x-model="selectedOfficeId">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                             <span class="material-symbols-outlined text-[18px]">store</span>
@@ -70,7 +71,7 @@
                         <input type="hidden" name="receiver_branch_id" :value="selectedBranchId">
 
                         {{-- حقل الإدخال والبحث المرئي --}}
-                        <div class="relative flex items-center">
+                        <div class="flex relative items-center">
                             <input type="text"
                                 x-ref="destinationInput"
                                 x-model="searchQuery"
@@ -84,26 +85,26 @@
                                 :class="selectedBranchId ? 'border-emerald-400 bg-emerald-50/20 text-emerald-800 font-black' : ''">
 
                             {{-- أيقونة الموقع في اليمين --}}
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+                            <span class="absolute right-3 top-1/2 transition-colors -translate-y-1/2 pointer-events-none"
                                 :class="selectedBranchId ? 'text-emerald-600' : 'text-slate-400'">
                                 <span class="material-symbols-outlined text-[18px]">location_on</span>
                             </span>
 
                             {{-- أزرار التحكم في اليسار (مسح وسهم الفتح) --}}
-                            <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                            <div class="flex absolute left-2.5 top-1/2 gap-1 items-center -translate-y-1/2">
                                 {{-- زر المسح السريع --}}
                                 <button type="button" 
                                     x-show="searchQuery.length > 0 || selectedBranchId" 
                                     x-cloak
                                     @click="clearSelection(); $refs.destinationInput.focus()"
-                                    class="p-1 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-100 transition-colors">
+                                    class="p-1 rounded-full transition-colors text-slate-400 hover:text-rose-500 hover:bg-slate-100">
                                     <span class="material-symbols-outlined text-[16px] block">close</span>
                                 </button>
 
                                 {{-- سهم القائمة المنسدلة --}}
                                 <button type="button" 
                                     @click="toggleDropdown()"
-                                    class="p-1 rounded-lg text-slate-400 hover:text-emerald-600 transition-colors">
+                                    class="p-1 rounded-lg transition-colors text-slate-400 hover:text-emerald-600">
                                     <span class="material-symbols-outlined text-[18px] transition-transform duration-200 block"
                                         :class="isOpen ? 'rotate-180 text-emerald-600' : ''">expand_more</span>
                                 </button>
@@ -124,9 +125,9 @@
                             {{-- قائمة العناصر المجمعة --}}
                             <template x-for="(items, groupName) in groupedFilteredDestinations" :key="groupName">
                                 <div class="border-b border-slate-100 last:border-b-0">
-                                    <div class="px-3 py-1.5 bg-slate-50/95 sticky top-0 backdrop-blur-md z-10 flex items-center justify-between border-b border-slate-100">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                    <div class="flex sticky top-0 z-10 justify-between items-center px-3 py-1.5 border-b backdrop-blur-md bg-slate-50/95 border-slate-100">
+                                        <div class="flex gap-1.5 items-center">
+                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                                             <span class="text-[11px] font-black text-slate-700" x-text="groupName"></span>
                                         </div>
                                         <span class="text-[9px] font-bold text-slate-400 px-1.5 py-0.5 bg-white border border-slate-100 rounded-md shadow-sm" x-text="items.length"></span>
@@ -136,11 +137,11 @@
                                         <template x-for="dest in items" :key="dest.key">
                                             <button type="button"
                                                 @click="selectDestination(dest)"
-                                                class="flex justify-between items-center w-full px-3 py-2 rounded-xl text-right transition-colors"
+                                                class="flex justify-between items-center px-3 py-2 w-full text-right rounded-xl transition-colors"
                                                 :class="dest.key === selectedDestinationKey ? 'bg-emerald-50 text-emerald-800 font-black ring-1 ring-emerald-500/30' : 'text-slate-700 hover:bg-slate-50'">
                                                 
-                                                <div class="flex items-center gap-2 truncate">
-                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                                                <div class="flex gap-2 items-center truncate">
+                                                    <div class="flex justify-center items-center w-6 h-6 rounded-md shrink-0"
                                                         :class="{
                                                             'bg-emerald-100 text-emerald-600': dest.type === 'internal',
                                                             'bg-blue-100 text-blue-600': dest.type === 'trusted',
@@ -402,7 +403,7 @@
                 <div class="grid grid-cols-2 gap-4">
 
                     {{-- 1. حقل نوع الشحنة (Combobox) --}}
-                    <div class="flex flex-col gap-2 col-span-2" x-data="{
+                    <div class="flex flex-col col-span-2 gap-2" x-data="{
                     isOpen: false,
                     options: ['كرتون', 'كيس'],
                     packageType: '{{ old('package_type', '') }}'
@@ -436,7 +437,7 @@
                     </div>
 
                     {{-- 2. حقل الوزن --}}
-                    {{-- <div class="flex flex-col gap-2 col-span-2">
+                    {{-- <div class="flex flex-col col-span-2 gap-2">
                         <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
                         <div class="relative">
                             <input type="number" step="0.1" name="weight" value="{{ old('weight') }}"
@@ -450,15 +451,15 @@
                     </div> --}}
 
                     {{-- 3. تسعيرة الطرد وعمولته (للموبايل) --}}
-                    <div class="flex flex-col gap-2 col-span-1 mt-1">
+                    <div class="flex flex-col col-span-1 gap-2 mt-1">
                         <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span
                                 class="text-rose-500">*</span></label>
                         <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0" min="0"
                             dir="ltr" required
-                            class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border transition-all outline-none border-blue-200 bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
+                            class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                     </div>
 
-                    <div class="flex flex-col gap-2 col-span-1 mt-1">
+                    <div class="flex flex-col col-span-1 gap-2 mt-1">
                         <label class="text-[11px] font-bold text-slate-500">نسبة العمولة (%)</label>
                         <div class="relative">
                             <input type="number" name="package_commission_rate" x-model.number="packageCommissionRate"
@@ -476,7 +477,7 @@
                 </div>
 
                 {{-- ================= منطقة بيانات العسل ================= --}}
-                <div x-data="{ showHoneyFields: {{ (old('no_gallons_honey') > 0 || old('no_honey_jars') > 0 || old('honey_fee') > 0) ? 'true' : 'false' }} }"
+                {{-- <div x-data="{ showHoneyFields: {{ (old('no_gallons_honey') > 0 || old('no_honey_jars') > 0 || old('honey_fee') > 0) ? 'true' : 'false' }} }" 
                     class="mt-8">
 
                     <button type="button" @click="showHoneyFields = !showHoneyFields"
@@ -494,7 +495,7 @@
                             class="grid grid-cols-2 gap-4 p-4 mt-2 rounded-xl border bg-amber-50/50 border-amber-100/50">
 
                             {{-- الكميات --}}
-                            <div>
+                            {{-- <div> 
                                 <label class="block mb-1.5 text-[10px] font-bold text-amber-600">جوالين العسل</label>
                                 <input type="number" name="no_gallons_honey" value="{{ old('no_gallons_honey') }}"
                                     placeholder="العدد" min="0"
@@ -508,21 +509,21 @@
                             </div>
 
                             {{-- التسعيرة والعمولة --}}
-                            <div class="mt-1">
+                            {{-- <div class="mt-1"> 
                                 <label class="block mb-1.5 text-[10px] font-bold text-amber-600">أجرة العسل
                                     (ريال)</label>
                                 <input type="number" name="honey_fee" x-model.number="honeyFee" placeholder="0" min="0"
                                     dir="ltr"
                                     class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-lg border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
                             </div>
-                            <div class="mt-1 relative">
+                            <div class="relative mt-1">
                                 <label class="block mb-1.5 text-[10px] font-bold text-amber-600">نسبة العمولة
                                     (%)</label>
                                 <input type="number" name="honey_commission_rate" x-model.number="honeyCommissionRate"
                                     placeholder="0" min="0" max="100" dir="ltr"
                                     class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-lg border border-amber-100 transition-all outline-none focus:border-amber-400">
                                 {{-- عرض مباشر للمبلغ المحسوب --}}
-                                <div
+                                {{-- <div 
                                     class="absolute -bottom-5 left-1 flex gap-1 items-center text-[9px] font-bold text-emerald-600">
                                     <span class="material-symbols-outlined text-[10px]">payments</span>
                                     العمولة: <span x-text="honeyCommissionCalc"></span>
@@ -531,7 +532,7 @@
 
                         </div>
                     </div>
-                </div>
+                </div> --}}
 
                 <div class="flex flex-col gap-2 mt-8">
                     <label class="text-[11px] font-bold text-slate-400">ملاحظات إضافية</label>
@@ -579,7 +580,7 @@
                         {{-- 💡 حقل مقفل يحسب المجموع تلقائياً ليتناسب مع تصميم الموبايل --}}
                         <input type="number" required name="total_amount" :value="totalAmount" readonly tabindex="-1"
                             placeholder="0.00"
-                            class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 outline-none bg-slate-100 ring-slate-200 text-primary cursor-not-allowed shadow-inner"
+                            class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 shadow-inner cursor-not-allowed outline-none bg-slate-100 ring-slate-200 text-primary"
                             dir="ltr">
                         <p class="text-[9px] font-bold text-gray-400">يُحسب تلقائياً (الطرد + العسل)</p>
                     </div>
@@ -603,7 +604,7 @@
                             <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
 
                             {{-- Toggle Switch --}}
-                            <div class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300"
+                            <div class="relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0"
                                 :class="priceAgreed ? 'bg-emerald-500' : 'bg-slate-300'">
                                 <div class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
                                     :class="priceAgreed ? 'right-0.5' : 'right-[calc(100%-1.375rem)]'">
