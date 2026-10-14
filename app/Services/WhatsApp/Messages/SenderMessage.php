@@ -28,10 +28,12 @@ class SenderMessage implements WhatsAppMessageInterface
         }
 
         $name       = $entity->senderCustomer->name ?? 'عميلنا العزيز';
-        $bondNumber = $entity->id ?? 'غير متوفر';
+        $bondNumber = $entity->bond_number ?? $entity->id ?? 'غير متوفر';
         
-        // هنا نعرض الإجمالي، وممكن نضيف المتبقي عليه لو أحببت
-        $totalAmount = number_format($entity->total_amount ?? 0);
+        // في حال لم يتم الاتفاق على السعر تظهر "لم يتفق عليها بعد"، وإلا يظهر المبلغ المالي
+        $costText = $entity->is_price_agreed 
+            ? number_format($entity->total_amount ?? 0) . ' ريال' 
+            : 'لم يتفق عليها بعد';
 
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
         $msg .= "الأستاذ / {$name} المحترم،\n";
@@ -40,7 +42,7 @@ class SenderMessage implements WhatsAppMessageInterface
         $msg .= "تم استلام طلب الشحن الخاص بكم بنجاح، وجاري العمل على معالجته.\n\n";
 
         $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
-        $msg .= "💰 إجمالي تكلفة الشحن : {$totalAmount} ريال\n"; // 👈 تغيير المسمى ليكون دقيقاً
+        $msg .= "💰 إجمالي تكلفة الشحن : {$costText}\n";
 
         if ($receiptUrl) {
             $msg .= "\n📄 سند الاستلام الخاص بك:\n{$receiptUrl}\n";
@@ -52,3 +54,4 @@ class SenderMessage implements WhatsAppMessageInterface
         return $msg;
     }
 }
+

@@ -3,7 +3,29 @@
 @section('title', 'تعديل طرد #' . $shipment->bond_number)
 
 @section('content')
-    <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl" x-data="{ paymentMethod: '{{ old('payment_method', $shipment->payment_method) }}', isSubmitting: false }">
+    <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl" 
+        x-data="{ 
+            paymentMethod: '{{ old('payment_method', $shipment->payment_method) }}', 
+            previousPaymentMethod: '{{ old('payment_method', $shipment->payment_method) }}',
+            isSubmitting: false, 
+            priceAgreed: {{ old('is_price_agreed', $shipment->is_price_agreed ? '1' : '0') == '1' ? 'true' : 'false' }},
+            togglePriceAgreed() {
+                this.priceAgreed = !this.priceAgreed;
+                if (!this.priceAgreed) {
+                    if (this.paymentMethod !== 'cod') {
+                        this.previousPaymentMethod = this.paymentMethod;
+                    }
+                    this.paymentMethod = 'cod';
+                } else {
+                    this.paymentMethod = this.previousPaymentMethod || 'prepaid';
+                }
+            },
+            init() {
+                if (!this.priceAgreed) {
+                    this.paymentMethod = 'cod';
+                }
+            }
+        }">
 
         {{-- ================= الشريط العلوي (Sticky Header) ================= --}}
         <div
@@ -566,19 +588,36 @@
 
                         <div class="space-y-5">
                             <div>
-                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">طريقة الدفع
-                                    <span class="text-error">*</span></label>
-                                <select name="payment_method" x-model="paymentMethod"
-                                    class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
-                                    <option value="prepaid">مدفوع مقدماً</option>
-                                    @hasservice('Payment_COD')
-                                        <option value="cod">الدفع عند الاستلام (على المستلم)</option>
-                                    @endhasservice
-                                    <option value="partial_payment">دفع جزئي</option>
-                                    @hasservice('Payment_Credit')
-                                        <option value="customer_credit">آجل (على حساب المرسل)</option>
-                                    @endhasservice
-                                </select>
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <label class="text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        طريقة الدفع <span class="text-error">*</span>
+                                    </label>
+                                    <span x-show="!priceAgreed" x-cloak class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-md">
+                                        <span class="material-symbols-outlined text-[14px]">lock</span>
+                                        مثبتة على المستلم
+                                    </span>
+                                </div>
+                                <div class="relative">
+                                    <select name="payment_method" x-model="paymentMethod" :disabled="!priceAgreed"
+                                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border transition-all appearance-none outline-none text-on-surface dark:text-white"
+                                        :class="!priceAgreed
+                                            ? 'bg-gray-100 dark:bg-boxdark-2 text-gray-500 dark:text-gray-400 cursor-not-allowed border-dashed border-gray-300 dark:border-boxdark'
+                                            : 'bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20'">
+                                        <option value="prepaid">مدفوع مقدماً</option>
+                                        @hasservice('Payment_COD')
+                                            <option value="cod">الدفع عند الاستلام (على المستلم)</option>
+                                        @endhasservice
+                                        <option value="partial_payment">دفع جزئي</option>
+                                        @hasservice('Payment_Credit')
+                                            <option value="customer_credit">آجل (على حساب المرسل)</option>
+                                        @endhasservice
+                                    </select>
+                                    <input type="hidden" name="payment_method" value="cod" :disabled="priceAgreed">
+                                </div>
+                                <p x-show="!priceAgreed" x-cloak class="mt-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[15px]">info</span>
+                                    تم تثبيت طريقة الدفع تلقائياً (على المستلم) لعدم الاتفاق على السعر مسبقاً.
+                                </p>
                             </div>
 
                             <div>
@@ -600,6 +639,65 @@
                                     min="0" :max="totalAmount"
                                     class="px-4 w-full h-14 text-xl font-black text-left text-rose-600 rounded-2xl border border-rose-200 transition-all outline-none bg-rose-50/50 dark:bg-rose-500/5 focus:border-rose-400"
                                     dir="ltr">
+                            </div>
+
+                            {{-- ================= خيار الاتفاق على السعر ================= --}}
+                            <div class="mt-2">
+                                <label @click="togglePriceAgreed()" class="flex gap-4 items-center p-4 rounded-2xl border-2 transition-all duration-300 cursor-pointer select-none group/toggle"
+                                    :class="priceAgreed
+                                        ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/50 shadow-sm shadow-emerald-500/10'
+                                        : 'bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark hover:border-gray-300 dark:hover:border-gray-600'">
+
+                                    {{-- Hidden Checkbox --}}
+                                    <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
+
+                                    {{-- Toggle Switch --}}
+                                    <div class="relative shrink-0 w-12 h-7 rounded-full transition-colors duration-300"
+                                        :class="priceAgreed ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'">
+                                        <div class="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
+                                            :class="priceAgreed ? 'right-0.5' : 'right-[calc(100%-1.625rem)]'">
+                                        </div>
+                                    </div>
+
+                                    {{-- Icon --}}
+                                    <div class="flex justify-center items-center w-10 h-10 rounded-xl transition-all duration-300 shrink-0"
+                                        :class="priceAgreed
+                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                            : 'bg-gray-100 dark:bg-boxdark text-gray-400 dark:text-gray-500'">
+                                        <span class="material-symbols-outlined text-[22px] transition-transform duration-300"
+                                            :class="priceAgreed ? 'scale-110' : 'scale-100'">
+                                            <template x-if="priceAgreed">
+                                                <span>handshake</span>
+                                            </template>
+                                            <template x-if="!priceAgreed">
+                                                <span>pending</span>
+                                            </template>
+                                        </span>
+                                    </div>
+
+                                    {{-- Text --}}
+                                    <div class="flex-1">
+                                        <p class="text-sm font-bold transition-colors duration-300"
+                                            :class="priceAgreed
+                                                ? 'text-emerald-700 dark:text-emerald-400'
+                                                : 'text-gray-700 dark:text-gray-300'"
+                                            x-text="priceAgreed ? 'تم الاتفاق على السعر' : 'لم يتم الاتفاق على السعر بعد'">
+                                            {{ $shipment->is_price_agreed ? 'تم الاتفاق على السعر' : 'لم يتم الاتفاق على السعر بعد' }}
+                                        </p>
+                                        <p class="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5"
+                                            x-text="priceAgreed ? 'السعر معتمد ومتفق عليه مع العميل' : 'اضغط للتحويل إلى تم الاتفاق على السعر'">
+                                            {{ $shipment->is_price_agreed ? 'السعر معتمد ومتفق عليه مع العميل' : 'اضغط للتحويل إلى تم الاتفاق على السعر' }}
+                                        </p>
+                                    </div>
+
+                                    {{-- Check Badge --}}
+                                    <div class="transition-all duration-300"
+                                        :class="priceAgreed ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
+                                        <div class="flex justify-center items-center w-8 h-8 text-white bg-emerald-500 rounded-full shadow-sm shadow-emerald-500/30">
+                                            <span class="material-symbols-outlined text-[18px]">check</span>
+                                        </div>
+                                    </div>
+                                </label>
                             </div>
                         </div>
                     </div>

@@ -127,8 +127,11 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'receiver_branch'   => $receiverDestination,
                 'package_type'      => $shipment->package_type ?? 'طرد',
                 'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
+                'is_price_agreed'   => (bool) ($shipment->is_price_agreed ?? true),
                 'payment_key'       => $shipment->payment_method ?? 'prepaid',
-                'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
+                'payment_method'    => !($shipment->is_price_agreed ?? true)
+                    ? 'سيتم الاتفاق عليه لاحقاً'
+                    : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
                 'total_amount'      => number_format($totalAmount, 0),
                 'partial_amount'    => number_format($paidAmount, 0),
                 'remaining_amount'  => number_format($remainingAmount, 0), // ستظهر النتيجة بناءً على دالة match تماماً

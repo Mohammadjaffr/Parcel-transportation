@@ -153,8 +153,11 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'honey_details'     => $honeyDetails,
             'notes'             => $shipment->notes ?? 'لا توجد ملاحظات إضافية',
 
+            'is_price_agreed'   => (bool) ($shipment->is_price_agreed ?? true),
             'payment_key'       => $shipment->payment_method ?? 'prepaid',
-            'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
+            'payment_method'    => !($shipment->is_price_agreed ?? true)
+                ? 'سيتم الاتفاق عليه لاحقاً'
+                : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
             
             // المبالغ المالية
             'total_amount'      => number_format($totalAmount, 0),

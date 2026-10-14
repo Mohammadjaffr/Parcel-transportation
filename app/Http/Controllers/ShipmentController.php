@@ -287,6 +287,7 @@ class ShipmentController extends Controller
             'payment_method'       => 'required|in:prepaid,cod,partial_payment,customer_credit',
             // 'total_amount'      => 'required|numeric|min:0', 👈 تم إزالته لأنه يحسب برمجياً عبر الـ Observer
             'partial_amount'       => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+            'is_price_agreed'      => ['nullable', 'boolean'],
             'notes'                => 'nullable|string',
         ];
 
@@ -469,13 +470,14 @@ class ShipmentController extends Controller
                 'honey_commission_rate'     => $data['honey_commission_rate'] ?? 0,
 
                 // المالية (الـ Observer سيقوم بحساب total_amount و total_commission)
-                'payment_method'            => $data['payment_method'],
-                'partial_amount'            => $data['payment_method'] === 'partial_payment' ? $data['partial_amount'] : 0,
+                'is_price_agreed'           => $request->boolean('is_price_agreed'),
+                'payment_method'            => $request->boolean('is_price_agreed') ? $data['payment_method'] : 'cod',
+                'partial_amount'            => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'partial_payment') ? $data['partial_amount'] : 0,
                 'notes'                     => $data['notes'] ?? null,
                 'created_by'                => $user->id,
 
                 'status'                    => 'pending',
-                'customer_debt_status'      => $data['payment_method'] === 'customer_credit' ? 'pending' : null,
+                'customer_debt_status'      => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'customer_credit') ? 'pending' : null,
             ]);
 
             // ========================================================
@@ -633,6 +635,7 @@ class ShipmentController extends Controller
             'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
             // 'total_amount'       => 'required|numeric|min:0', 👈 تم إزالته (المودل يحسبه)
             'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+            'is_price_agreed'       => ['nullable', 'boolean'],
             'notes'                 => 'nullable|string',
         ];
 
@@ -829,14 +832,15 @@ class ShipmentController extends Controller
                 'honey_commission_rate'     => $data['honey_commission_rate'] ?? 0,
 
                 // المالية (الـ total_amount و total_commission سيتم حسابها تلقائياً بفضل الـ Boot Method في المودل)
-                'payment_method'            => $data['payment_method'],
-                'partial_amount'            => $data['payment_method'] === 'partial_payment'
+                'is_price_agreed'           => $request->boolean('is_price_agreed'),
+                'payment_method'            => $request->boolean('is_price_agreed') ? $data['payment_method'] : 'cod',
+                'partial_amount'            => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'partial_payment')
                     ? ($data['partial_amount'] ?? 0)
                     : 0,
 
                 'notes'                     => $data['notes'] ?? null,
 
-                'customer_debt_status'      => $data['payment_method'] === 'customer_credit'
+                'customer_debt_status'      => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'customer_credit')
                     ? ($shipment->customer_debt_status ?? 'pending')
                     : null,
             ]);

@@ -143,8 +143,11 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
                 'receiver_branch'      => $receiverDestination,
                 'package_type'         => $shipment->package_type ?? 'طرد',
                 'weight'               => $shipment->weight ? $shipment->weight . ' كجم' : null,
+                'is_price_agreed'      => (bool) ($shipment->is_price_agreed ?? true),
                 'payment_key'          => $paymentMethod,
-                'payment_method'       => $paymentMethods[$paymentMethod] ?? 'غير محدد',
+                'payment_method'       => !($shipment->is_price_agreed ?? true)
+                    ? 'سيتم الاتفاق عليه لاحقاً'
+                    : ($paymentMethods[$paymentMethod] ?? 'غير محدد'),
                 'total_amount'         => number_format($totalAmount, 0),
                 'paid_amount'          => number_format($paidAmount, 0),
                 'remaining_amount'     => $paymentMethod === 'customer_credit' ? 'على حساب المرسل' : number_format($remainingAmount, 0),

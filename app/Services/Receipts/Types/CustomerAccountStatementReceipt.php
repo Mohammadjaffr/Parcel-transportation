@@ -138,7 +138,7 @@ if (file_exists($imagePath)) {
                 'direction_label' => $directionLabel,
                 'other_party_name' => $otherPartyName,
                 'other_branch_name' => $otherBranchName,
-                'payment_method' => $this->paymentMethodLabel($shipment->payment_method),
+                'payment_method' => !($shipment->is_price_agreed ?? true) ? 'سيتم الاتفاق عليه لاحقاً' : $this->paymentMethodLabel($shipment->payment_method),
                 'status' => $this->statusLabel($shipment->status),
                 'package_type' => $shipment->package_type ?? '---',
                 'weight' => $shipment->weight ?? null,

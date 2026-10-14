@@ -250,6 +250,14 @@
 
                                         <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
+                                        @if (!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
+                                            <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
+                                                class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-amber-600 transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 dark:text-amber-400">
+                                                <span class="material-symbols-outlined text-[18px]">price_change</span>
+                                                <span>إشعار المستلم (لتسعير الطرد)</span>
+                                            </a>
+                                        @endif
+
                                         @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
                                             <button type="button"
                                                 onclick="sendSenderDirect({{ $shipment->id }}, this, '{{ $shipment->sender_whatsapp_link }}')"
@@ -328,7 +336,20 @@
                                 @endif
                             </div>
 
-                            <x-shipment-status :status="$shipment->status" />
+                            <div class="flex flex-col gap-1.5 items-end">
+                                <x-shipment-status :status="$shipment->status" />
+                                @if ($shipment->is_price_agreed)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-500/20">
+                                        <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                                        تم الاتفاق
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200/60 dark:border-amber-500/20">
+                                        <span class="material-symbols-outlined text-[13px]">pending</span>
+                                        لم يتم الاتفاق
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -496,13 +517,28 @@
                                     </div>
                                 </td>
 
-                                {{-- المبلغ --}}
+                                {{-- المبلغ مع علامة الاتفاق على السعر --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col gap-1 items-center">
-                                        <span
-                                            class="text-sm font-black {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-500' : 'text-amber-500' }}">
-                                            {{ number_format($shipment->total_amount, 0) }} ر.ي
-                                        </span>
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <span
+                                                class="text-sm font-black {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-500' : 'text-amber-500' }}">
+                                                {{ number_format($shipment->total_amount, 0) }} ر.ي
+                                            </span>
+
+                                            {{-- علامة الاتفاق على السعر --}}
+                                            @if ($shipment->is_price_agreed)
+                                                <span title="تم الاتفاق على السعر"
+                                                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 border border-emerald-200/50">
+                                                    <span class="material-symbols-outlined text-[13px] font-black">check</span>
+                                                </span>
+                                            @else
+                                                <span title="لم يتم الاتفاق على السعر بعد"
+                                                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400 border border-amber-200/50">
+                                                    <span class="material-symbols-outlined text-[13px] font-black">schedule</span>
+                                                </span>
+                                            @endif
+                                        </div>
 
                                         <span
                                             class="px-2.5 py-1 text-[10px] font-black rounded-lg {{ $shipment->payment_method == 'prepaid' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' }}">
@@ -568,6 +604,14 @@
                                                     </a>
 
                                                     <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+
+                                                    @if (!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
+                                                        <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-amber-600 transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 dark:text-amber-400">
+                                                            <span class="material-symbols-outlined text-[18px]">price_change</span>
+                                                            <span>إشعار المستلم (لتسعير الطرد)</span>
+                                                        </a>
+                                                    @endif
 
                                                     @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
                                                         <button type="button"

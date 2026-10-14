@@ -112,7 +112,7 @@
         <div class="space-y-1.5 text-sm">
             <div class="flex justify-between">
                 <span class="text-slate-500">طريقة الدفع</span>
-                <span class="font-bold text-slate-800">{{ $payment_method ?? '---' }}</span>
+                <span class="font-bold {{ (isset($is_price_agreed) && !$is_price_agreed) ? 'text-amber-600' : 'text-slate-800' }}">{{ $payment_method ?? '---' }}</span>
             </div>
             <div class="flex justify-between">
                 <span class="text-slate-500">الإجمالي</span>

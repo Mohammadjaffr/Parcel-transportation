@@ -46,6 +46,7 @@ class Shipment extends Model
         'total_amount',
         'partial_amount',
         'total_commission',
+        'is_price_agreed',
         'customer_debt_status',
 
         // 7. الحالة والملاحظات
@@ -58,6 +59,7 @@ class Shipment extends Model
     ];
     protected $casts = [
         'is_returned' => 'boolean',
+        'is_price_agreed' => 'boolean',
     ];
 
     public function logs()
@@ -237,7 +239,90 @@ class Shipment extends Model
         };
     }
 
+    /**
+     * تسمية طريقة الدفع مع مراعاة حالة الاتفاق على السعر
+     */
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        if (!$this->is_price_agreed) {
+            return 'سيتم الاتفاق عليه لاحقاً';
+        }
 
+        return match ($this->payment_method) {
+            'prepaid'         => 'مدفوع مقدماً',
+            'cod'             => 'الدفع عند الاستلام',
+            'partial_payment' => 'دفع جزئي',
+            'customer_credit' => 'آجل (ذمة)',
+            default           => 'غير محدد',
+        };
+    }
 
+    /**
+     * رابط واتساب لطلب الاتفاق على السعر وتحديد تسعيرة الطرد
+     */
+    public function getPriceAgreementWhatsappLinkAttribute(): ?string
+    {
+        $phone = $this->receiverCustomer?->phone ?? $this->senderCustomer?->phone;
+        if (!$phone) {
+            return null;
+        }
 
+        $clientName = $this->receiverCustomer?->name ?? $this->senderCustomer?->name ?? 'عميلنا العزيز';
+        $senderName = $this->senderCustomer?->name ?? 'غير محدد';
+        $senderPhone = $this->senderCustomer?->phone ?? 'غير متوفر';
+        $packageType = $this->package_type ?? 'طرد';
+        $deliveryPlace = $this->receiverBranch?->name ?? ($this->receiverOfficeBranch?->name ?? 'غير محدد');
+        $cost = ($this->is_price_agreed && $this->total_amount > 0) ? number_format($this->total_amount, 0) . ' ريال' : 'لم يتفق عليها بعد';
+        $bondNumber = $this->bond_number ?? $this->id;
+        $receiptUrl = route('receipt.generate', ['type' => 'sender', 'id' => $this->uuid ?? $this->id]);
+
+        // تحديد اسم المكتب والفرع ديناميكياً
+        $appName    = $this->senderBranch?->app?->name ?? auth()->user()?->app?->name ?? '';
+        $branch     = $this->senderBranch ?? auth()->user()?->branch;
+        $branchName = $branch?->name ? (str_starts_with(trim($branch->name), 'فرع') ? trim($branch->name) : 'فرع ' . trim($branch->name)) : '';
+        $officeName = trim('مكتب ' . ($appName ? $appName . ' ' : '') . $branchName);
+        if (empty($officeName)) {
+            $officeName = 'مكتبنا الرئيسي';
+        }
+
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+        $msg .= "الأخ / {$clientName} المحترم،\n";
+        $msg .= "تحية طيبة وبعد،\n\n";
+        $msg .= "تم استلام طردك بنجاح\n";
+        $msg .= "المرسل/ {$senderName}\n";
+        $msg .= "رقم المرسل/ {$senderPhone}\n";
+        $msg .= "نوع الطرد/ {$packageType}\n";
+        $msg .= "مكان التسليم/ {$deliveryPlace}\n";
+        $msg .= "تكلفة النقل/ {$cost}\n\n";
+        $msg .= "📦 رقم سند الارسال : {$bondNumber}\n\n";
+        $msg .= "تواصل معنا لتسعيرها بالاتصال او على خدمة الواتساب على الارقام \n";
+        $msg .= "{$officeName}\n";
+        $msg .= "الهاتف:782947557\n";
+        $msg .= "الهاتف:778132137\n";
+        $msg .= "الهاتف:02383444 \n\n";
+        $msg .= "او سنتواصل معك في اقرب وقت\n\n";
+        $msg .= "📄 سند الاستلام الخاص بك:\n";
+        $msg .= "{$receiptUrl}\n\n";
+        $msg .= "يمكنكم متابعة حالة الطرد باستخدام رقم الشحنة أعلاه.";
+
+        // تنظيف الرقم من الرموز والمسافات
+        $cleanPhone = preg_replace('/[^\d\+]/', '', $phone);
+        $cleanPhone = ltrim($cleanPhone, '+');
+
+        if (str_starts_with($cleanPhone, '00')) {
+            $cleanPhone = substr($cleanPhone, 2);
+        }
+        if (str_starts_with($cleanPhone, '967967')) {
+            $cleanPhone = substr($cleanPhone, 3);
+        }
+        if (str_starts_with($cleanPhone, '966966')) {
+            $cleanPhone = substr($cleanPhone, 3);
+        }
+        if (preg_match('/^0(7[0-9]\d{7})$/', $cleanPhone, $matches)) {
+            $cleanPhone = '967' . $matches[1];
+        }
+
+        return "https://wa.me/{$cleanPhone}?text=" . urlencode($msg);
+    }
 }
+

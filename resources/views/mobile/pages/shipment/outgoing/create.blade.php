@@ -2,8 +2,27 @@
 
 @section('title', 'إرسال طرد جديد')
 
-@section('content')
-    <div x-data="{ paymentMethod: '{{ old('payment_method', 'prepaid') }}' }" class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
+    <div x-data="{ 
+        paymentMethod: '{{ old('payment_method', 'prepaid') }}',
+        previousPaymentMethod: '{{ old('payment_method', 'prepaid') }}',
+        priceAgreed: {{ old('is_price_agreed', '1') == '1' ? 'true' : 'false' }},
+        togglePriceAgreed() {
+            this.priceAgreed = !this.priceAgreed;
+            if (!this.priceAgreed) {
+                if (this.paymentMethod !== 'cod') {
+                    this.previousPaymentMethod = this.paymentMethod;
+                }
+                this.paymentMethod = 'cod';
+            } else {
+                this.paymentMethod = this.previousPaymentMethod || 'prepaid';
+            }
+        },
+        init() {
+            if (!this.priceAgreed) {
+                this.paymentMethod = 'cod';
+            }
+        }
+    }" class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
 
         {{-- <div class="flex gap-4 items-center mb-2">
             <a href="{{ url()->previous() }}"
@@ -444,22 +463,38 @@
 
         <div class="space-y-4">
             <div class="flex flex-col gap-2">
-                <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span class="text-red-500">*</span></label>
-                <select name="payment_method" x-model="paymentMethod"
-                    class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20 text-slate-700">
-                    @hasservice('Payment_Prepaid')
-                        <option value="prepaid">مدفوع مقدماً</option>
-                    @endhasservice
-                    @hasservice('Payment_COD')
-                        <option value="cod">الدفع عند الاستلام (على حساب المستلم)</option>
-                    @endhasservice
-                    @hasservice('Payment_Partial')
-                        <option value="partial_payment">دفع جزئي</option>
-                    @endhasservice
-                    @hasservice('Payment_Credit')
-                        <option value="customer_credit">آجل (على حساب المرسل)</option>
-                    @endhasservice
-                </select>
+                <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span class="text-red-500">*</span></label>
+                    <span x-show="!priceAgreed" x-cloak class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+                        <span class="material-symbols-outlined text-[13px]">lock</span>
+                        على المستلم
+                    </span>
+                </div>
+                <div class="relative">
+                    <select name="payment_method" x-model="paymentMethod" :disabled="!priceAgreed"
+                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none text-slate-700"
+                        :class="!priceAgreed 
+                            ? 'bg-slate-100 ring-slate-200 text-slate-400 cursor-not-allowed' 
+                            : 'bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                        @hasservice('Payment_Prepaid')
+                            <option value="prepaid">مدفوع مقدماً</option>
+                        @endhasservice
+                        @hasservice('Payment_COD')
+                            <option value="cod">الدفع عند الاستلام (على حساب المستلم)</option>
+                        @endhasservice
+                        @hasservice('Payment_Partial')
+                            <option value="partial_payment">دفع جزئي</option>
+                        @endhasservice
+                        @hasservice('Payment_Credit')
+                            <option value="customer_credit">آجل (على حساب المرسل)</option>
+                        @endhasservice
+                    </select>
+                    <input type="hidden" name="payment_method" value="cod" :disabled="priceAgreed">
+                </div>
+                <p x-show="!priceAgreed" x-cloak class="text-[10px] font-bold text-amber-600 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[13px]">info</span>
+                    تم تثبيت طريقة الدفع تلقائياً (على المستلم) لعدم الاتفاق على السعر مسبقاً.
+                </p>
             </div>
 
             <div class="flex flex-col gap-2">
@@ -477,6 +512,55 @@
                 <input type="number" name="partial_amount" value="{{ old('partial_amount') }}" placeholder="0.00" min="0" :max="totalAmount"
                     class="px-4 w-full h-14 text-lg font-black text-left text-rose-600 rounded-2xl border-none ring-1 ring-rose-200 outline-none bg-rose-50/50 focus:ring-2 focus:ring-rose-400"
                     dir="ltr">
+            </div>
+
+            {{-- ================= خيار الاتفاق على السعر ================= --}}
+            <div class="mt-2">
+                <label @click="togglePriceAgreed()" class="flex gap-3 items-center p-3.5 rounded-2xl border-2 transition-all duration-300 cursor-pointer select-none"
+                    :class="priceAgreed
+                        ? 'bg-emerald-50 border-emerald-400 shadow-sm shadow-emerald-500/10'
+                        : 'bg-slate-50 border-slate-200'">
+
+                    <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
+
+                    {{-- Toggle Switch --}}
+                    <div class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300"
+                        :class="priceAgreed ? 'bg-emerald-500' : 'bg-slate-300'">
+                        <div class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
+                            :class="priceAgreed ? 'right-0.5' : 'right-[calc(100%-1.375rem)]'">
+                        </div>
+                    </div>
+
+                    {{-- Icon --}}
+                    <div class="flex justify-center items-center w-9 h-9 rounded-xl transition-all duration-300 shrink-0"
+                        :class="priceAgreed ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'">
+                        <span class="material-symbols-outlined text-[20px]">
+                            <template x-if="priceAgreed"><span>handshake</span></template>
+                            <template x-if="!priceAgreed"><span>pending</span></template>
+                        </span>
+                    </div>
+
+                    {{-- Text --}}
+                    <div class="flex-1">
+                        <p class="text-xs font-bold transition-colors duration-300"
+                            :class="priceAgreed ? 'text-emerald-700' : 'text-slate-700'"
+                            x-text="priceAgreed ? 'تم الاتفاق على السعر' : 'لم يتم الاتفاق على السعر بعد'">
+                            تم الاتفاق على السعر
+                        </p>
+                        <p class="text-[10px] text-slate-400 mt-0.5"
+                            x-text="priceAgreed ? 'السعر معتمد ومتفق عليه مع العميل' : 'اضغط للتحويل إلى تم الاتفاق على السعر'">
+                            السعر معتمد ومتفق عليه مع العميل
+                        </p>
+                    </div>
+
+                    {{-- Check Badge --}}
+                    <div class="transition-all duration-300"
+                        :class="priceAgreed ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
+                        <div class="flex justify-center items-center w-7 h-7 text-white bg-emerald-500 rounded-full shadow-sm">
+                            <span class="material-symbols-outlined text-[16px]">check</span>
+                        </div>
+                    </div>
+                </label>
             </div>
         </div>
     </div>

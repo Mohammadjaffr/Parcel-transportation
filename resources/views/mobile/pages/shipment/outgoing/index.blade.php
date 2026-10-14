@@ -146,6 +146,15 @@
                                         {{-- فاصل --}}
                                         <div class="mx-3 my-1 h-px bg-slate-100/80"></div>
 
+                                        {{-- إشعار المستلم لتسعير الطرد --}}
+                                        @if(!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
+                                            <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
+                                                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-amber-600 hover:bg-amber-50">
+                                                <span class="material-symbols-outlined text-[16px]">price_change</span>
+                                                إشعار المستلم (لتسعير الطرد)
+                                            </a>
+                                        @endif
+
                                         {{-- إرسال للمرسل --}}
                                         @if($shipment->sender_whatsapp_link)
                                             <a href="{{$shipment->sender_whatsapp_link }}" target="_blank"
@@ -311,10 +320,21 @@
                                 </div>
                             </div>
 
-                            {{-- الإجمالي (بارز جداً) --}}
+                            {{-- الإجمالي مع علامة الاتفاق على السعر --}}
                             <div class="pl-2 text-left">
-                                <p class="text-[9px] font-bold text-slate-400 mb-0.5">الإجمالي</p>
-                                <p class="text-lg font-black tracking-tight leading-none text-amber-400 font-headline">
+                                <div class="flex items-center gap-1.5 justify-end">
+                                    <p class="text-[9px] font-bold text-slate-400">الإجمالي</p>
+                                    @if ($shipment->is_price_agreed)
+                                        <span title="تم الاتفاق على السعر" class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400">
+                                            <span class="material-symbols-outlined text-[12px] font-black">check</span>
+                                        </span>
+                                    @else
+                                        <span title="لم يتم الاتفاق على السعر بعد" class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-400">
+                                            <span class="material-symbols-outlined text-[12px] font-black">schedule</span>
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-lg font-black tracking-tight leading-none text-amber-400 font-headline mt-0.5">
                                     {{ number_format($shipment->total_amount, 0) }} <span
                                         class="text-[10px] font-bold text-slate-300">ريال</span>
                                 </p>

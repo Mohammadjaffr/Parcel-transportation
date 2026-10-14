@@ -765,7 +765,7 @@
                     <div class="finance-payment-method">
                         <span style="color: #475569; font-size: 8pt;">طريقة الدفع:</span>
                         <span
-                            style="color: {{ $primary }}; font-weight: 900; font-size: 9pt;">{{ $payment_method ?? '---' }}</span>
+                            style="color: {{ (isset($is_price_agreed) && !$is_price_agreed) ? '#d97706' : $primary }}; font-weight: 900; font-size: 8.5pt;">{{ $payment_method ?? '---' }}</span>
                     </div>
                 </div>
             </div>
