@@ -258,20 +258,36 @@ class Shipment extends Model
     }
 
     /**
-     * رابط واتساب لطلب الاتفاق على السعر وتحديد تسعيرة الطرد
+     * نص رسالة واتساب لطلب الاتفاق على السعر وتحديد تسعيرة الطرد
      */
-    public function getPriceAgreementWhatsappLinkAttribute(): ?string
+    public function getPriceAgreementMessage(): string
     {
-        $phone = $this->receiverCustomer?->phone ?? $this->senderCustomer?->phone;
-        if (!$phone) {
-            return null;
-        }
-
         $clientName = $this->receiverCustomer?->name ?? $this->senderCustomer?->name ?? 'عميلنا العزيز';
         $senderName = $this->senderCustomer?->name ?? 'غير محدد';
         $senderPhone = $this->senderCustomer?->phone ?? 'غير متوفر';
         $packageType = $this->package_type ?? 'طرد';
-        $deliveryPlace = $this->receiverBranch?->name ?? ($this->receiverOfficeBranch?->name ?? 'غير محدد');
+
+        // تحديد مكتب الإرسال ومكتب التسليم ديناميكياً
+        $senderOffice = null;
+        if ($this->senderBranch) {
+            $appName = $this->senderBranch->app?->name;
+            $senderOffice = ($appName ? $appName . ' / ' : '') . $this->senderBranch->name;
+        } elseif ($this->senderOfficeBranch) {
+            $officeName = $this->senderOfficeBranch->office?->name;
+            $senderOffice = ($officeName ? $officeName . ' / ' : '') . $this->senderOfficeBranch->name;
+        }
+        $senderPlace = $senderOffice ?? 'غير محدد';
+
+        $receiverOffice = null;
+        if ($this->receiverBranch) {
+            $appName = $this->receiverBranch->app?->name;
+            $receiverOffice = ($appName ? $appName . ' / ' : '') . $this->receiverBranch->name;
+        } elseif ($this->receiverOfficeBranch) {
+            $officeName = $this->receiverOfficeBranch->office?->name;
+            $receiverOffice = ($officeName ? $officeName . ' / ' : '') . $this->receiverOfficeBranch->name;
+        }
+        $deliveryPlace = $receiverOffice ?? 'غير محدد';
+
         $cost = ($this->is_price_agreed && $this->total_amount > 0) ? number_format($this->total_amount, 0) . ' ريال' : 'لم يتفق عليها بعد';
         $bondNumber = $this->bond_number ?? $this->id;
         $receiptUrl = route('receipt.generate', ['type' => 'sender', 'id' => $this->uuid ?? $this->id]);
@@ -292,7 +308,8 @@ class Shipment extends Model
         $msg .= "المرسل/ {$senderName}\n";
         $msg .= "رقم المرسل/ {$senderPhone}\n";
         $msg .= "نوع الطرد/ {$packageType}\n";
-        $msg .= "مكان التسليم/ {$deliveryPlace}\n";
+        $msg .= "مكتب الإرسال/ {$senderPlace}\n";
+        $msg .= "مكتب التسليم/ {$deliveryPlace}\n";
         $msg .= "تكلفة النقل/ {$cost}\n\n";
         $msg .= "📦 رقم سند الارسال : {$bondNumber}\n\n";
         $msg .= "تواصل معنا لتسعيرها بالاتصال او على خدمة الواتساب على الارقام \n";
@@ -304,6 +321,21 @@ class Shipment extends Model
         $msg .= "📄 سند الاستلام الخاص بك:\n";
         $msg .= "{$receiptUrl}\n\n";
         $msg .= "يمكنكم متابعة حالة الطرد باستخدام رقم الشحنة أعلاه.";
+
+        return $msg;
+    }
+
+    /**
+     * رابط واتساب لطلب الاتفاق على السعر وتحديد تسعيرة الطرد
+     */
+    public function getPriceAgreementWhatsappLinkAttribute(): ?string
+    {
+        $phone = $this->receiverCustomer?->phone ?? $this->senderCustomer?->phone;
+        if (!$phone) {
+            return null;
+        }
+
+        $msg = $this->getPriceAgreementMessage();
 
         // تنظيف الرقم من الرموز والمسافات
         $cleanPhone = preg_replace('/[^\d\+]/', '', $phone);

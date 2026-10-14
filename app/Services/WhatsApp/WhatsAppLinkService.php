@@ -14,6 +14,7 @@ use App\Services\WhatsApp\Messages\PassengerBookingMessage;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\PassengerTrip;
 use App\Services\WhatsApp\Messages\TripDriverMessage;
+use App\Services\WhatsApp\Messages\PriceAgreementMessage;
 
 
 class WhatsAppLinkService
@@ -26,6 +27,7 @@ class WhatsAppLinkService
             'DriverDetection' => new DriverDetection(),
             'ExternalOfficeDetection' => new ExternalOfficeDetection(),
             'receiver' => new ReceiverMessage(),
+            'price_agreement' => new PriceAgreementMessage(),
             'CustomerAccountStatement' => new CustomerAccountStatementMessage(),
             'transaction' => new CustomerTransactionMessage(), 
             'passengerDriver' => new PassengerDriverMessage(),

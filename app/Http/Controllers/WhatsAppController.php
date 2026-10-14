@@ -10,6 +10,7 @@ use App\Classes\WebResponseClass;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Services\WhatsApp\Messages\SenderMessage;
+use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Models\Customer;
 use App\Services\WhatsApp\WhatsAppLinkService;
 
@@ -106,16 +107,30 @@ class WhatsAppController extends Controller
 
         // 8. التحقق من نتيجة الإرسال
         if (isset($result['error']) && $result['error']) {
-            // في حال فشل الإرسال أو انقطاع مفاجئ، نحدث الكاش فوراً إلى offline لمدة 10 دقائق حتى لا يتأخر بقية الموظفين
-            Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+            $errorMsg = (string) ($result['message'] ?? '');
+            $isNotRegistered = str_contains(strtolower($errorMsg), 'not registered');
+            $isNetworkOrServerDown = !$isNotRegistered && (
+                (isset($result['status']) && in_array((int)$result['status'], [401, 403, 404, 502, 503, 504]))
+                || str_contains(strtolower($errorMsg), 'curl')
+                || str_contains(strtolower($errorMsg), 'connection')
+                || str_contains(strtolower($errorMsg), 'timeout')
+            );
 
-            Log::warning("WhatsApp sendText failed for shipment #{$id}, marked cache as offline: " . ($result['message'] ?? ''));
+            if ($isNetworkOrServerDown) {
+                Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+            }
+
+            Log::warning("WhatsApp sendText (sender) failed for shipment #{$id}: " . $errorMsg);
+
+            $userMessage = $isNotRegistered
+                ? 'رقم هاتف المرسل غير مسجل في الواتساب، جاري فتح الواتساب للتحقق...'
+                : 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
 
             return response()->json([
                 'success'       => false,
                 'fallback'      => true,
                 'whatsapp_link' => $fallbackLink,
-                'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                'message'       => $userMessage,
             ]);
         }
 
@@ -140,6 +155,236 @@ class WhatsAppController extends Controller
         ]);
     }
 }
+
+    /**
+     * إرسال إشعار المستلم لتسعير الطرد (ديناميكي)
+     */
+    public function sendPriceAgreementWhatsapp($id)
+    {
+        try {
+            $shipment = Shipment::with([
+                'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
+                'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
+                'senderBranch.app',
+                'receiverBranch.app',
+                'receiverOfficeBranch.office'
+            ])->findOrFail($id);
+
+            $fallbackLink = WhatsAppLinkService::generate($shipment, 'price_agreement') ?? $shipment->price_agreement_whatsapp_link;
+
+            $branch = $shipment->senderBranch
+                ?? $shipment->receiverBranch
+                ?? auth()->user()?->branch;
+
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            $phone = $shipment->receiverCustomer?->phone ?? $shipment->senderCustomer?->phone ?? null;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف العميل غير متوفر.',
+                ], 422);
+            }
+
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                ]);
+            }
+
+            $message = $shipment->getPriceAgreementMessage();
+
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                $isNotRegistered = str_contains(strtolower($errorMsg), 'not registered');
+                $isNetworkOrServerDown = !$isNotRegistered && (
+                    (isset($result['status']) && in_array((int)$result['status'], [401, 403, 404, 502, 503, 504]))
+                    || str_contains(strtolower($errorMsg), 'curl')
+                    || str_contains(strtolower($errorMsg), 'connection')
+                    || str_contains(strtolower($errorMsg), 'timeout')
+                );
+
+                if ($isNetworkOrServerDown) {
+                    Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+                }
+
+                Log::warning("WhatsApp sendText (price agreement) failed for shipment #{$id}: " . $errorMsg);
+
+                $userMessage = $isNotRegistered
+                    ? 'رقم هاتف العميل غير مسجل في الواتساب، جاري فتح الواتساب للتحقق...'
+                    : 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار تسعير الطرد بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendPriceAgreementWhatsapp Error for shipment #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($shipment) ? (WhatsAppLinkService::generate($shipment, 'price_agreement') ?? $shipment->price_agreement_whatsapp_link) : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
+
+    /**
+     * إرسال إشعار المستلم (رسالة مع رابط السند وموقع الفرع)
+     */
+    public function sendReceiverPdf($id)
+    {
+        try {
+            $shipment = Shipment::with([
+                'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
+                'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
+                'senderBranch.app',
+                'receiverBranch.app',
+                'receiverOfficeBranch.office'
+            ])->findOrFail($id);
+
+            $fallbackLink = WhatsAppLinkService::generate($shipment, 'receiver') ?? $shipment->receiver_whatsapp_link;
+
+            $branch = $shipment->senderBranch
+                ?? $shipment->receiverBranch
+                ?? auth()->user()?->branch;
+
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            $phone = $shipment->receiverCustomer?->phone ?? null;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف المستلم غير متوفر.',
+                ], 422);
+            }
+
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                ]);
+            }
+
+            $receiptUrl = route('receipt.generate', [
+                'type' => 'receiver',
+                'id'   => $shipment->uuid ?? $shipment->id,
+            ]);
+
+            $receiverMessage = new ReceiverMessage();
+            $message = $receiverMessage->getMessageBody($shipment, $receiptUrl);
+
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                $isNotRegistered = str_contains(strtolower($errorMsg), 'not registered');
+                $isNetworkOrServerDown = !$isNotRegistered && (
+                    (isset($result['status']) && in_array((int)$result['status'], [401, 403, 404, 502, 503, 504]))
+                    || str_contains(strtolower($errorMsg), 'curl')
+                    || str_contains(strtolower($errorMsg), 'connection')
+                    || str_contains(strtolower($errorMsg), 'timeout')
+                );
+
+                if ($isNetworkOrServerDown) {
+                    Cache::put($cacheKey, 'offline', now()->addMinutes(10));
+                }
+
+                Log::warning("WhatsApp sendText (receiver) failed for shipment #{$id}: " . $errorMsg);
+
+                $userMessage = $isNotRegistered
+                    ? 'رقم هاتف المستلم غير مسجل في الواتساب، جاري فتح الواتساب للتحقق...'
+                    : 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار المستلم بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendReceiverPdf Error for shipment #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($shipment) ? (WhatsAppLinkService::generate($shipment, 'receiver') ?? $shipment->receiver_whatsapp_link) : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
 
     public function openForSender($id)
     {

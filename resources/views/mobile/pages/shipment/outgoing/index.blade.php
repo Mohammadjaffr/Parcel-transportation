@@ -26,7 +26,7 @@
             <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
         </div>
 
-       
+
 
         <div class="space-y-5">
             @forelse($shipments as $shipment)
@@ -124,15 +124,15 @@
 
                                     {{-- 💡 إخفاء باقي الخيارات إذا كان الطرد ملغي أو مرتجع --}}
                                     @if(!in_array($shipment->status, ['returned', 'cancelled', 'canceled']))
- @if (!in_array($shipment->status, ['delivered']))
-                                        {{-- ================= زر التعديل (باللوجيك المطلوب) ================= --}}
-                                        @if(auth()->user()->type === 'admin' || $shipment->status === 'pending')
-                                            <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
-                                                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-blue-50 hover:text-blue-600">
-                                                <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                                                تعديل البيانات
-                                            </a>
-                                        @endif
+                                        @if (!in_array($shipment->status, ['delivered']))
+                                            {{-- ================= زر التعديل (باللوجيك المطلوب) ================= --}}
+                                            @if(auth()->user()->type === 'admin' || $shipment->status === 'pending')
+                                                <a href="{{ route('shipment.outgoing.edit', $shipment->id) }}"
+                                                    class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-blue-50 hover:text-blue-600">
+                                                    <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                                                    تعديل البيانات
+                                                </a>
+                                            @endif
                                         @endif
 
                                         {{-- طباعة السند --}}
@@ -148,41 +148,41 @@
 
                                         {{-- إشعار المستلم لتسعير الطرد --}}
                                         @if(!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
-                                            <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
-                                                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-amber-600 hover:bg-amber-50">
+                                            <button type="button"
+                                                onclick="sendPriceAgreementDirect({{ $shipment->id }}, this, '{{ $shipment->price_agreement_whatsapp_link }}')"
+                                                class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold transition-colors text-amber-600 hover:bg-amber-50">
                                                 <span class="material-symbols-outlined text-[16px]">price_change</span>
-                                                إشعار المستلم (لتسعير الطرد)
-                                            </a>
+                                                <span>إشعار المستلم (لتسعير الطرد)</span>
+                                            </button>
                                         @endif
 
                                         {{-- إرسال للمرسل --}}
                                         @if($shipment->sender_whatsapp_link)
-                                            <a href="{{$shipment->sender_whatsapp_link }}" target="_blank"
-                                                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+                                            <button type="button"
+                                                onclick="sendSenderDirect({{ $shipment->id }}, this, '{{ $shipment->sender_whatsapp_link }}')"
+                                                class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                                                 <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                                                 </svg>
-                                                إرسال للمرسل
-                                            </a>
+                                                <span>إرسال للمرسل</span>
+                                            </button>
                                         @endif
 
                                         {{-- إرسال السند للمستلم (واتساب) --}}
-                                        @if($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
-                                            @php
-                                                $receiverMsg = "مرحباً *" . $shipment->receiverCustomer->name . "*،\nلديك طرد قادم برقم طرد': *" . $shipment->id . "*\nالإجمالي المطلوب: *" . number_format($shipment->total_amount - $shipment->partial_amount, 0) . "* ريال.";
-                                            @endphp
-                                            <a href="{{  $shipment->receiver_whatsapp_link }}" target="_blank"
-                                                class="flex gap-2.5 items-center px-4 py-2 text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
+                                        {{-- @if($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
+                                            <button type="button"
+                                                onclick="sendReceiverDirect({{ $shipment->id }}, this, '{{ $shipment->receiver_whatsapp_link }}')"
+                                                class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                                                 <svg class="w-[16px] h-[16px] fill-[#25D366]" viewBox="0 0 24 24"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <path
                                                         d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
                                                 </svg>
-                                                إرسال للمستلم
-                                            </a>
-                                        @endif
+                                                <span>إرسال للمستلم</span>
+                                            </button>
+                                        @endif --}}
 
                                     @endif
                                     {{-- نهاية إخفاء الخيارات --}}
@@ -325,11 +325,13 @@
                                 <div class="flex items-center gap-1.5 justify-end">
                                     <p class="text-[9px] font-bold text-slate-400">الإجمالي</p>
                                     @if ($shipment->is_price_agreed)
-                                        <span title="تم الاتفاق على السعر" class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400">
+                                        <span title="تم الاتفاق على السعر"
+                                            class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400">
                                             <span class="material-symbols-outlined text-[12px] font-black">check</span>
                                         </span>
                                     @else
-                                        <span title="لم يتم الاتفاق على السعر بعد" class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-400">
+                                        <span title="لم يتم الاتفاق على السعر بعد"
+                                            class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-500/20 text-amber-400">
                                             <span class="material-symbols-outlined text-[12px] font-black">schedule</span>
                                         </span>
                                     @endif
@@ -368,4 +370,250 @@
 
 
     </div>
+@endsection
+
+@section('script')
+    <script>
+        async function sendPriceAgreementDirect(shipmentId, btn, fallbackLink = '') {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.priceAgreement', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار تسعير الطرد للمستلم بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp price agreement direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendSenderDirect(shipmentId, btn, fallbackLink = '') {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.senderPdf', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار المرسل بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendReceiverDirect(shipmentId, btn, fallbackLink = '') {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.receiverPdf', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار المستلم بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp receiver direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        function showNotificationToast(message, type = 'success') {
+            const existingToast = document.getElementById('direct-whatsapp-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'direct-whatsapp-toast';
+            let bgClass = 'bg-emerald-600 shadow-emerald-600/25';
+            let icon = 'check_circle';
+
+            if (type === 'error') {
+                bgClass = 'bg-red-600 shadow-red-600/25';
+                icon = 'error';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-600 shadow-amber-600/25';
+                icon = 'open_in_new';
+            }
+
+            toast.className = `fixed bottom-24 left-4 right-4 md:left-6 md:right-auto z-[9999] flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-xs sm:text-sm transition-all duration-300 transform translate-y-0 ${bgClass}`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+    </script>
 @endsection

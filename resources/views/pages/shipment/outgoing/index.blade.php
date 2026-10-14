@@ -251,11 +251,12 @@
                                         <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
                                         @if (!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
-                                            <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
+                                            <button type="button"
+                                                onclick="sendPriceAgreementDirect({{ $shipment->id }}, this, '{{ $shipment->price_agreement_whatsapp_link }}')"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-amber-600 transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 dark:text-amber-400">
                                                 <span class="material-symbols-outlined text-[18px]">price_change</span>
                                                 <span>إشعار المستلم (لتسعير الطرد)</span>
-                                            </a>
+                                            </button>
                                         @endif
 
                                         @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
@@ -266,15 +267,15 @@
                                                 <span>إرسال للمرسل</span>
                                             </button>
                                         @endif
-                                        
 
-                                        {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
-                                            <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"
+                                        @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
+                                            <button type="button"
+                                                onclick="sendReceiverDirect({{ $shipment->id }}, this, '{{ $shipment->receiver_whatsapp_link }}')"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">send</span>
-                                                إرسال للمستلم
-                                            </a>
-                                        @endif --}}
+                                                <span>إرسال للمستلم</span>
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                             </div>
@@ -606,11 +607,12 @@
                                                     <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
                                                     @if (!$shipment->is_price_agreed && $shipment->price_agreement_whatsapp_link)
-                                                        <a href="{{ $shipment->price_agreement_whatsapp_link }}" target="_blank"
+                                                        <button type="button"
+                                                            onclick="sendPriceAgreementDirect({{ $shipment->id }}, this, '{{ $shipment->price_agreement_whatsapp_link }}')"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-amber-600 transition-colors hover:bg-amber-50 dark:hover:bg-amber-500/10 dark:text-amber-400">
                                                             <span class="material-symbols-outlined text-[18px]">price_change</span>
                                                             <span>إشعار المستلم (لتسعير الطرد)</span>
-                                                        </a>
+                                                        </button>
                                                     @endif
 
                                                     @if ($shipment->senderCustomer && $shipment->senderCustomer->phone)
@@ -622,13 +624,14 @@
                                                         </button>
                                                     @endif
 
-                                                    {{-- @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone && $shipment->receiver_whatsapp_link)
-                                                        <a href="{{ $shipment->receiver_whatsapp_link }}" target="_blank"
+                                                    @if ($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
+                                                        <button type="button"
+                                                            onclick="sendReceiverDirect({{ $shipment->id }}, this, '{{ $shipment->receiver_whatsapp_link }}')"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
-                                                            إرسال للمستلم
-                                                        </a>
-                                                    @endif --}}
+                                                            <span>إرسال للمستلم</span>
+                                                        </button>
+                                                    @endif
                                                 @endif
                                             </div>
                                         </div>
@@ -717,6 +720,146 @@
                             .length;
                     });
                 }
+            }
+        }
+
+        async function sendPriceAgreementDirect(shipmentId, btn, fallbackLink = '') {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.priceAgreement', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار تسعير الطرد للمستلم بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp price agreement direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendReceiverDirect(shipmentId, btn, fallbackLink = '') {
+            if (!shipmentId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.receiverPdf', ':id') }}".replace(':id', shipmentId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار المستلم بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp receiver direct send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
             }
         }
 
