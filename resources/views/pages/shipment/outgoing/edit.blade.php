@@ -251,13 +251,73 @@
                                     <input type="hidden" name="sender_customer_id" x-model="selectedCustomerId">
                                     <input type="hidden" name="sender_phone" :value="fullPhoneNumber">
 
-                                    {{-- رقم الهاتف --}}
+                                    {{-- اسم المرسل مع خاصية البحث بالاسم --}}
+                                    <div class="relative" @click.away="showCustomerDropdown = false">
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
+                                            اسم المرسل <span class="text-error">*</span>
+                                        </label>
+                                        <div class="relative flex items-center">
+                                            <input type="text" name="sender_name" required x-model="nameInput"
+                                                @input="searchCustomer"
+                                                @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
+                                                :readonly="selectedCustomerId !== null"
+                                                placeholder="ابحث بالاسم أو اكتب اسماً جديداً..." autocomplete="off"
+                                                class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
+                                                :class="selectedCustomerId ?
+                                                    'bg-primary-container/20 border-primary/40 text-primary font-bold dark:bg-primary/10 pl-24 cursor-not-allowed' :
+                                                    'bg-white border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20'">
+
+                                            {{-- مؤشر العميل المسجل وزر الإلغاء --}}
+                                            <div x-show="selectedCustomerId" class="flex absolute left-2 items-center gap-1.5 z-10">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-primary bg-primary/10 rounded-md">
+                                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                                    مسجل
+                                                </span>
+                                                <button type="button" @click="resetSelection"
+                                                    class="p-1 text-gray-400 rounded-full transition-colors hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    title="إلغاء التحديد وتغيير العميل">
+                                                    <span class="material-symbols-outlined text-[18px]">close</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- قائمة نتائج البحث بالاسم وعرض الرقم --}}
+                                        <div x-show="showCustomerDropdown && nameInput.trim().length > 0 && !selectedCustomerId"
+                                            x-transition x-cloak
+                                            class="absolute top-full right-0 mt-1.5 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[65] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                            <template x-for="customer in filteredCustomers" :key="customer.id">
+                                                <button type="button" @click="selectCustomer(customer)"
+                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-primary/5 dark:hover:bg-boxdark-2 dark:border-boxdark group">
+                                                    <div class="flex flex-col gap-0.5">
+                                                        <span class="text-sm font-bold text-on-surface dark:text-white group-hover:text-primary transition-colors"
+                                                            x-text="customer.name"></span>
+                                                        <span
+                                                            class="text-xs font-mono font-medium text-gray-500 dark:text-bodydark dir-ltr text-right flex items-center gap-1">
+                                                            <span class="material-symbols-outlined text-[14px] text-gray-400">call</span>
+                                                            <span x-text="customer.phone || 'بدون رقم'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 text-xs text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span>اختيار</span>
+                                                        <span class="material-symbols-outlined text-[16px]">arrow_back_ios</span>
+                                                    </div>
+                                                </button>
+                                            </template>
+                                            <div x-show="filteredCustomers.length === 0"
+                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مرسل جديد،
+                                                    سيتم حفظه تلقائياً.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- رقم الهاتف (يعرض الرقم تلقائياً عند الاختيار) --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
                                             الهاتف <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(اختياري)</span></label>
                                         <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all group dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary"
                                             :class="selectedCustomerId ?
-                                                 'bg-primary-container dark:bg-primary/10 ring-primary/30' : ''"
+                                                'bg-primary-container/20 dark:bg-primary/10 ring-primary/40' : ''"
                                             style="direction: ltr;">
 
                                             <div class="relative h-full" @click.away="openCountryDropdown = false">
@@ -284,7 +344,7 @@
                                                         <template x-for="country in filteredCountries"
                                                             :key="country.code">
                                                             <button type="button"
-                                                                @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
+                                                                @click="selectedCountry = country; openCountryDropdown = false;"
                                                                 class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
                                                                 <div class="w-5 h-auto rounded-[2px] overflow-hidden"
                                                                     x-html="country.svg"></div>
@@ -300,56 +360,12 @@
                                                 </div>
                                             </div>
 
-                                            <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
-                                                @focus="showCustomerDropdown = true"
-                                                @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
-                                                inputmode="numeric" autocomplete="off"
+                                            <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX"
+                                                 inputmode="numeric" autocomplete="off"
                                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                                 class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
                                                 :class="selectedCustomerId ? 'font-bold text-primary' : ''">
-
-                                            <button type="button" x-show="selectedCustomerId" @click="resetSelection"
-                                                class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
-                                                <span class="material-symbols-outlined text-[16px]">close</span>
-                                            </button>
                                         </div>
-
-                                        {{-- Customer Search Dropdown --}}
-                                        <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
-                                            x-transition x-cloak
-                                            class="absolute top-[4.5rem] right-0 w-full md:w-[calc(50%-0.5rem)] bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
-                                            <template x-for="customer in filteredCustomers" :key="customer.id">
-                                                <button type="button" @click="selectCustomer(customer)"
-                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                                    <div class="flex flex-col gap-0.5">
-                                                        <span class="text-sm font-bold text-on-surface dark:text-white"
-                                                            x-text="customer.name"></span>
-                                                        <span
-                                                            class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                            x-text="customer.phone"></span>
-                                                    </div>
-                                                    <span
-                                                        class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
-                                                </button>
-                                            </template>
-                                            <div x-show="filteredCustomers.length === 0"
-                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
-                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مرسل جديد،
-                                                    سيتم حفظه تلقائياً.</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- الاسم --}}
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
-                                            المرسل <span class="text-error">*</span></label>
-                                        <input type="text" name="sender_name" required x-model="nameInput"
-                                            :readonly="selectedCustomerId !== null" placeholder="الاسم..."
-                                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
-                                            :class="selectedCustomerId ?
-                                                'bg-surface border-transparent text-gray-500 cursor-not-allowed opacity-80' :
-                                                'bg-white border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20'">
                                     </div>
                                 </div>
                             </div>
@@ -368,7 +384,67 @@
                                     <input type="hidden" name="receiver_customer_id" x-model="selectedCustomerId">
                                     <input type="hidden" name="receiver_phone" :value="fullPhoneNumber">
 
-                                    {{-- رقم الهاتف --}}
+                                    {{-- اسم المستلم مع خاصية البحث بالاسم --}}
+                                    <div class="relative" @click.away="showCustomerDropdown = false">
+                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
+                                            اسم المستلم <span class="text-error">*</span>
+                                        </label>
+                                        <div class="relative flex items-center">
+                                            <input type="text" name="receiver_name" required x-model="nameInput"
+                                                @input="searchCustomer"
+                                                @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
+                                                :readonly="selectedCustomerId !== null"
+                                                placeholder="ابحث بالاسم أو اكتب اسماً جديداً..." autocomplete="off"
+                                                class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
+                                                :class="selectedCustomerId ?
+                                                    'bg-green-50/50 border-green-400 text-green-700 font-bold dark:bg-green-500/10 dark:text-green-400 pl-24 cursor-not-allowed' :
+                                                    'bg-white border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'">
+
+                                            {{-- مؤشر العميل المسجل وزر الإلغاء --}}
+                                            <div x-show="selectedCustomerId" class="flex absolute left-2 items-center gap-1.5 z-10">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-green-600 bg-green-50 rounded-md dark:bg-green-500/20 dark:text-green-300">
+                                                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                                    مسجل
+                                                </span>
+                                                <button type="button" @click="resetSelection"
+                                                    class="p-1 text-gray-400 rounded-full transition-colors hover:text-error hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                    title="إلغاء التحديد وتغيير العميل">
+                                                    <span class="material-symbols-outlined text-[18px]">close</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- قائمة نتائج البحث بالاسم وعرض الرقم --}}
+                                        <div x-show="showCustomerDropdown && nameInput.trim().length > 0 && !selectedCustomerId"
+                                            x-transition x-cloak
+                                            class="absolute top-full right-0 mt-1.5 w-full bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[65] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                            <template x-for="customer in filteredCustomers" :key="customer.id">
+                                                <button type="button" @click="selectCustomer(customer)"
+                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-green-50/50 dark:hover:bg-boxdark-2 dark:border-boxdark group">
+                                                    <div class="flex flex-col gap-0.5">
+                                                        <span class="text-sm font-bold text-on-surface dark:text-white group-hover:text-green-600 transition-colors"
+                                                            x-text="customer.name"></span>
+                                                        <span
+                                                            class="text-xs font-mono font-medium text-gray-500 dark:text-bodydark dir-ltr text-right flex items-center gap-1">
+                                                            <span class="material-symbols-outlined text-[14px] text-gray-400">call</span>
+                                                            <span x-text="customer.phone || 'بدون رقم'"></span>
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex items-center gap-1 text-xs text-green-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <span>اختيار</span>
+                                                        <span class="material-symbols-outlined text-[16px]">arrow_back_ios</span>
+                                                    </div>
+                                                </button>
+                                            </template>
+                                            <div x-show="filteredCustomers.length === 0"
+                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
+                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مستلم
+                                                    جديد، سيتم حفظه تلقائياً.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- رقم الهاتف (يعرض الرقم تلقائياً عند الاختيار) --}}
                                     <div>
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">رقم
                                             الهاتف <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(اختياري)</span></label>
@@ -402,7 +478,7 @@
                                                         <template x-for="country in filteredCountries"
                                                             :key="country.code">
                                                             <button type="button"
-                                                                @click="selectedCountry = country; openCountryDropdown = false; searchCustomer()"
+                                                                @click="selectedCountry = country; openCountryDropdown = false;"
                                                                 class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-surface dark:hover:bg-boxdark">
                                                                 <div class="w-5 h-auto rounded-[2px] overflow-hidden"
                                                                     x-html="country.svg"></div>
@@ -418,56 +494,12 @@
                                                 </div>
                                             </div>
 
-                                            <input type="tel" x-model="localPhoneNumber" @input="searchCustomer"
-                                                @focus="showCustomerDropdown = true"
-                                                @click.away="showCustomerDropdown = false" placeholder="7XXXXXXXX"
-                                                inputmode="numeric" autocomplete="off"
+                                            <input type="tel" x-model="localPhoneNumber" placeholder="7XXXXXXXX"
+                                                 inputmode="numeric" autocomplete="off"
                                                 :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                                 class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-on-surface dark:text-white"
                                                 :class="selectedCustomerId ? 'font-bold text-green-600 dark:text-green-400' : ''">
-
-                                            <button type="button" x-show="selectedCustomerId" @click="resetSelection"
-                                                class="absolute right-2 z-10 p-1 text-gray-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-error">
-                                                <span class="material-symbols-outlined text-[16px]">close</span>
-                                            </button>
                                         </div>
-
-                                        {{-- Customer Search Dropdown --}}
-                                        <div x-show="showCustomerDropdown && localPhoneNumber.length > 0 && !selectedCustomerId"
-                                            x-transition x-cloak
-                                            class="absolute top-[4.5rem] right-0 w-full md:w-[calc(50%-0.5rem)] bg-white dark:bg-boxdark border border-gray-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[55] overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
-                                            <template x-for="customer in filteredCustomers" :key="customer.id">
-                                                <button type="button" @click="selectCustomer(customer)"
-                                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
-                                                    <div class="flex flex-col gap-0.5">
-                                                        <span class="text-sm font-bold text-on-surface dark:text-white"
-                                                            x-text="customer.name"></span>
-                                                        <span
-                                                            class="text-[10px] font-mono text-gray-500 dark:text-bodydark dir-ltr text-right"
-                                                            x-text="customer.phone"></span>
-                                                    </div>
-                                                    <span
-                                                        class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[18px]">arrow_back_ios</span>
-                                                </button>
-                                            </template>
-                                            <div x-show="filteredCustomers.length === 0"
-                                                class="px-4 py-3 text-center bg-surface dark:bg-boxdark-2">
-                                                <span class="text-xs font-bold text-gray-500 dark:text-bodydark">مستلم
-                                                    جديد، سيتم حفظه تلقائياً.</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- الاسم --}}
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">اسم
-                                            المستلم <span class="text-error">*</span></label>
-                                        <input type="text" name="receiver_name" required x-model="nameInput"
-                                            :readonly="selectedCustomerId !== null" placeholder="الاسم..."
-                                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
-                                            :class="selectedCustomerId ?
-                                                'bg-surface border-transparent text-gray-500 cursor-not-allowed opacity-80' :
-                                                'bg-white border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'">
                                     </div>
                                 </div>
                             </div>
@@ -962,6 +994,17 @@
                 searchCountryQuery: '',
                 showCustomerDropdown: false,
 
+                normalize(text) {
+                    if (!text) return '';
+                    return String(text)
+                        .replace(/[\u064B-\u065F]/g, '')
+                        .replace(/[أإآ]/g, 'ا')
+                        .replace(/ة/g, 'ه')
+                        .replace(/ى/g, 'ي')
+                        .toLowerCase()
+                        .trim();
+                },
+
                 init() {
                     if (initialData && (initialData.phone || initialData.name || initialData.id)) {
                         let phone = initialData.phone || '';
@@ -1005,32 +1048,59 @@
 
                 searchCustomer() {
                     this.selectedCustomerId = null;
-                    let query = this.fullPhoneNumber.trim();
+                    let rawQuery = (this.nameInput || '').trim();
 
-                    if (this.localPhoneNumber.trim() === '') {
+                    if (rawQuery === '') {
                         this.filteredCustomers = [];
                         this.showCustomerDropdown = false;
                         return;
                     }
 
+                    let normQuery = this.normalize(rawQuery);
                     this.filteredCustomers = this.customers.filter(c => {
-                        return c.phone && String(c.phone).includes(query);
+                        if (!c) return false;
+                        let nameMatch = c.name && this.normalize(c.name).includes(normQuery);
+                        let phoneMatch = c.phone && String(c.phone).includes(rawQuery);
+                        return nameMatch || phoneMatch;
                     });
                     this.showCustomerDropdown = true;
                 },
 
                 selectCustomer(customer) {
                     this.selectedCustomerId = customer.id;
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
-                        '') : '';
+                    this.nameInput = customer.name || '';
 
-                    if (customer.phone && customer.phone.startsWith(dialCode)) {
-                        this.localPhoneNumber = customer.phone.substring(dialCode.length);
+                    let phone = customer.phone ? String(customer.phone) : '';
+                    if (phone) {
+                        let phoneWithPlus = phone;
+                        if (/^\d/.test(phoneWithPlus)) phoneWithPlus = '+' + phoneWithPlus;
+
+                        let matchedCountry = this.countries
+                            .slice()
+                            .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                            .find(c => phoneWithPlus.startsWith(c.dial_code));
+
+                        if (matchedCountry) {
+                            this.selectedCountry = matchedCountry;
+                            this.localPhoneNumber = phoneWithPlus.substring(matchedCountry.dial_code.length);
+                        } else {
+                            let cleanPhone = phone.replace(/^\+/, '');
+                            let matchedCountryClean = this.countries
+                                .slice()
+                                .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                                .find(c => cleanPhone.startsWith(c.dial_code.replace('+', '')));
+
+                            if (matchedCountryClean) {
+                                this.selectedCountry = matchedCountryClean;
+                                this.localPhoneNumber = cleanPhone.substring(matchedCountryClean.dial_code.replace('+', '').length);
+                            } else {
+                                this.localPhoneNumber = phone;
+                            }
+                        }
                     } else {
-                        this.localPhoneNumber = customer.phone;
+                        this.localPhoneNumber = '';
                     }
 
-                    this.nameInput = customer.name;
                     this.showCustomerDropdown = false;
                 },
 

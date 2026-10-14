@@ -413,6 +413,20 @@ class ShipmentController extends Controller
                     ]);
                     $senderCustomerId = $senderCustomer->id;
                 }
+            } else {
+                $senderCustomer = Customer::find($senderCustomerId);
+                if ($senderCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                        $customerUpdates['name'] = $data['sender_name'];
+                    }
+                    if (!empty($data['sender_phone']) && $senderCustomer->phone !== $data['sender_phone']) {
+                        $customerUpdates['phone'] = $data['sender_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $senderCustomer->update($customerUpdates);
+                    }
+                }
             }
 
             // 2. المستلم
@@ -442,6 +456,20 @@ class ShipmentController extends Controller
                         'created_by' => $user->id,
                     ]);
                     $receiverCustomerId = $receiverCustomer->id;
+                }
+            } else {
+                $receiverCustomer = Customer::find($receiverCustomerId);
+                if ($receiverCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                        $customerUpdates['name'] = $data['receiver_name'];
+                    }
+                    if (!empty($data['receiver_phone']) && $receiverCustomer->phone !== $data['receiver_phone']) {
+                        $customerUpdates['phone'] = $data['receiver_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $receiverCustomer->update($customerUpdates);
+                    }
                 }
             }
 
@@ -749,10 +777,17 @@ class ShipmentController extends Controller
                     }
                 }
             } else {
-                if (!empty($data['sender_name'])) {
-                    $senderCustomer = Customer::find($senderCustomerId);
-                    if ($senderCustomer && $senderCustomer->name !== $data['sender_name']) {
-                        $senderCustomer->update(['name' => $data['sender_name']]);
+                $senderCustomer = Customer::find($senderCustomerId);
+                if ($senderCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                        $customerUpdates['name'] = $data['sender_name'];
+                    }
+                    if (!empty($data['sender_phone']) && $senderCustomer->phone !== $data['sender_phone']) {
+                        $customerUpdates['phone'] = $data['sender_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $senderCustomer->update($customerUpdates);
                     }
                 }
             }
@@ -791,10 +826,17 @@ class ShipmentController extends Controller
                     }
                 }
             } else {
-                if (!empty($data['receiver_name'])) {
-                    $receiverCustomer = Customer::find($receiverCustomerId);
-                    if ($receiverCustomer && $receiverCustomer->name !== $data['receiver_name']) {
-                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                $receiverCustomer = Customer::find($receiverCustomerId);
+                if ($receiverCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                        $customerUpdates['name'] = $data['receiver_name'];
+                    }
+                    if (!empty($data['receiver_phone']) && $receiverCustomer->phone !== $data['receiver_phone']) {
+                        $customerUpdates['phone'] = $data['receiver_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $receiverCustomer->update($customerUpdates);
                     }
                 }
             }
@@ -1031,10 +1073,17 @@ class ShipmentController extends Controller
                     }
                 }
             } else {
-                if (!empty($data['sender_name'])) {
-                    $senderCustomer = Customer::find($data['sender_customer_id']);
-                    if ($senderCustomer && $senderCustomer->name !== $data['sender_name']) {
-                        $senderCustomer->update(['name' => $data['sender_name']]);
+                $senderCustomer = Customer::find($data['sender_customer_id']);
+                if ($senderCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['sender_name']) && $senderCustomer->name !== $data['sender_name']) {
+                        $customerUpdates['name'] = $data['sender_name'];
+                    }
+                    if (!empty($data['sender_phone']) && $senderCustomer->phone !== $data['sender_phone']) {
+                        $customerUpdates['phone'] = $data['sender_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $senderCustomer->update($customerUpdates);
                     }
                 }
             }
@@ -1074,10 +1123,17 @@ class ShipmentController extends Controller
                     }
                 }
             } else {
-                if (!empty($data['receiver_name'])) {
-                    $receiverCustomer = Customer::find($data['receiver_customer_id']);
-                    if ($receiverCustomer && $receiverCustomer->name !== $data['receiver_name']) {
-                        $receiverCustomer->update(['name' => $data['receiver_name']]);
+                $receiverCustomer = Customer::find($data['receiver_customer_id']);
+                if ($receiverCustomer) {
+                    $customerUpdates = [];
+                    if (!empty($data['receiver_name']) && $receiverCustomer->name !== $data['receiver_name']) {
+                        $customerUpdates['name'] = $data['receiver_name'];
+                    }
+                    if (!empty($data['receiver_phone']) && $receiverCustomer->phone !== $data['receiver_phone']) {
+                        $customerUpdates['phone'] = $data['receiver_phone'];
+                    }
+                    if (!empty($customerUpdates)) {
+                        $receiverCustomer->update($customerUpdates);
                     }
                 }
             }

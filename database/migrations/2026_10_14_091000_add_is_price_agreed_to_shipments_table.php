@@ -12,10 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->boolean('is_price_agreed')
-                ->default(true)
-                ->after('total_commission')
-                ->comment('هل تم الاتفاق على السعر مع العميل؟');
+            if (!Schema::hasColumn('shipments', 'is_price_agreed')) {
+                $table->boolean('is_price_agreed')
+                    ->default(true)
+                    ->after('total_commission')
+                    ->comment('هل تم الاتفاق على السعر مع العميل؟');
+            }
         });
     }
 

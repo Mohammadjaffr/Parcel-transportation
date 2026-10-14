@@ -10,17 +10,35 @@ return new class extends Migration
     {
         Schema::table('apps', function (Blueprint $table) {
             // ================= WhatsApp Settings =================
-            $table->string('whatsapp_base_url')->nullable()->after('is_active');
-            $table->string('whatsapp_instance_id')->nullable()->after('whatsapp_base_url');
-            $table->string('whatsapp_instance_name')->nullable()->after('whatsapp_base_url');
-            $table->text('whatsapp_api_key')->nullable()->after('whatsapp_instance_name');
-            $table->string('whatsapp_webhook_url')->nullable()->after('whatsapp_api_key');
-            $table->unsignedInteger('whatsapp_timeout')->nullable()->default(30)->after('whatsapp_webhook_url');
+            if (!Schema::hasColumn('apps', 'whatsapp_base_url')) {
+                $table->string('whatsapp_base_url')->nullable()->after('is_active');
+            }
+            if (!Schema::hasColumn('apps', 'whatsapp_instance_id')) {
+                $table->string('whatsapp_instance_id')->nullable()->after('whatsapp_base_url');
+            }
+            if (!Schema::hasColumn('apps', 'whatsapp_instance_name')) {
+                $table->string('whatsapp_instance_name')->nullable()->after('whatsapp_base_url');
+            }
+            if (!Schema::hasColumn('apps', 'whatsapp_api_key')) {
+                $table->text('whatsapp_api_key')->nullable()->after('whatsapp_instance_name');
+            }
+            if (!Schema::hasColumn('apps', 'whatsapp_webhook_url')) {
+                $table->string('whatsapp_webhook_url')->nullable()->after('whatsapp_api_key');
+            }
+            if (!Schema::hasColumn('apps', 'whatsapp_timeout')) {
+                $table->unsignedInteger('whatsapp_timeout')->nullable()->default(30)->after('whatsapp_webhook_url');
+            }
 
             // ================= SMS Settings (HttpSms Gateway) =================
-            $table->string('sms_base_url')->nullable()->after('whatsapp_timeout');
-            $table->text('sms_api_key')->nullable()->after('sms_base_url');
-            $table->string('sms_from_phone')->nullable()->after('sms_api_key');
+            if (!Schema::hasColumn('apps', 'sms_base_url')) {
+                $table->string('sms_base_url')->nullable()->after('whatsapp_timeout');
+            }
+            if (!Schema::hasColumn('apps', 'sms_api_key')) {
+                $table->text('sms_api_key')->nullable()->after('sms_base_url');
+            }
+            if (!Schema::hasColumn('apps', 'sms_from_phone')) {
+                $table->string('sms_from_phone')->nullable()->after('sms_api_key');
+            }
         });
     }
 
