@@ -10,31 +10,45 @@
         
         {{-- دالة لتفكيك رقم الهاتف المخزن إلى (كود دولة + رقم محلي) --}}
         parsePhone(fullPhone) {
-            if(!fullPhone) return { country: null, local: '' };
-            let matched = this.allCountries.find(c => fullPhone.startsWith(c.dial_code.replace('+', '')));
+            let defaultCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+            if(!fullPhone) return { country: defaultCountry, local: '' };
+            let matched = this.allCountries.find(c => String(fullPhone).startsWith(c.dial_code.replace('+', '')));
             if(matched) {
                 return { 
                     country: matched, 
-                    local: fullPhone.substring(matched.dial_code.replace('+', '').length) 
+                    local: String(fullPhone).substring(matched.dial_code.replace('+', '').length) 
                 };
             }
-            return { country: this.allCountries.find(c => c.code === 'YE'), local: fullPhone };
+            return { country: defaultCountry, local: fullPhone };
         },
 
         branches: [],
         
         init() {
-            {{-- تحميل الفروع الموجودة مسبقاً --}}
-            let existingBranches = @js($office->branches);
+            @php
+                $initialBranches = old('branches', $office->branches->count() > 0 
+                    ? $office->branches->map(fn($b) => [
+                        'id' => $b->id,
+                        'name' => $b->name,
+                        'city' => $b->city,
+                        'address' => $b->address,
+                        'phone' => $b->phone,
+                        'can_delete' => $b->can_delete,
+                    ])->values()->toArray()
+                    : [['id' => null, 'name' => '', 'city' => '', 'address' => '', 'phone' => '', 'can_delete' => true]]
+                );
+            @endphp
+            let existingBranches = @js($initialBranches);
             this.branches = existingBranches.map(b => {
-                let phoneData = this.parsePhone(b.phone);
+                let phoneData = this.parsePhone(b.phone || '');
                 return {
-                    id: b.id, // إضافة المعرف للفروع المسجلة
-                    name: b.name,
-                    city: b.city,
-                    address: b.address,
+                    id: b.id || null,
+                    name: b.name || '',
+                    city: b.city || '',
+                    address: b.address || '',
+                    can_delete: b.can_delete !== undefined ? b.can_delete : (!b.id),
                     localPhone: phoneData.local,
-                    fullPhone: b.phone,
+                    fullPhone: b.phone || '',
                     selectedCountry: phoneData.country,
                     open: false,
                     search: ''
@@ -43,9 +57,8 @@
         },
 
         addBranch() {
-            let defaultCountry = this.allCountries.find(c => c.code === 'YE');
-            // إضافة id: null للفرع الجديد
-            this.branches.push({ id: null, name: '', city: '', address: '', localPhone: '', fullPhone: '', selectedCountry: defaultCountry, open: false, search: '' });
+            let defaultCountry = this.allCountries.find(c => c.code === 'YE') || this.allCountries[0];
+            this.branches.push({ id: null, name: '', city: '', address: '', can_delete: true, localPhone: '', fullPhone: '', selectedCountry: defaultCountry, open: false, search: '' });
         },
 
         removeBranch(index) {
@@ -54,7 +67,7 @@
 
         updatePhone(index) {
             let b = this.branches[index];
-            let dCode = b.selectedCountry.dial_code.replace('+', '');
+            let dCode = b.selectedCountry ? b.selectedCountry.dial_code.replace('+', '') : '';
             b.fullPhone = b.localPhone ? dCode + b.localPhone : '';
         }
      }">
@@ -73,7 +86,7 @@
         <div class="px-2">
             <div class="p-6 bg-white rounded-[2rem] shadow-sm border border-slate-100">
                 <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">اسم المكتب الرئيسي</label>
-                <input type="text" name="name" value="{{ $office->name }}" required
+                <input type="text" name="name" value="{{ old('name', $office->name) }}" required
                        class="px-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none ring-slate-100 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-primary/20 font-headline">
             </div>
         </div>
@@ -91,15 +104,18 @@
                     <div class="flex justify-between items-center">
                         <span class="text-[10px] font-black text-primary bg-primary/5 px-2 py-0.5 rounded" x-text="'فرع #' + (index + 1)"></span>
                         
-                        {{-- إخفاء زر الحذف للفروع المسجلة مسبقاً --}}
-                        <button type="button" x-show="!branch.id && branches.length > 1" @click="removeBranch(index)" class="text-rose-400">
+                        {{-- زر الحذف أو قفل الحذف إذا كان مرتبطاً بشحنات --}}
+                        <button type="button" x-show="(!branch.id || branch.can_delete) && branches.length > 1" @click="removeBranch(index)" class="text-rose-400">
                             <span class="text-xl material-symbols-outlined">delete_sweep</span>
                         </button>
+                        <span x-show="branch.id && !branch.can_delete" title="لا يمكن حذف الفرع لوجود شحنات مرتبطة به" class="text-slate-300">
+                            <span class="text-lg material-symbols-outlined">lock</span>
+                        </span>
                     </div>
 
                     <div class="space-y-3">
                         {{-- الحقل المخفي الخاص بمعرف الفرع --}}
-                        <input type="hidden" :name="`branches[${index}][id]`" :value="branch.id">
+                        <input type="hidden" :name="`branches[${index}][id]`" :value="branch.id || ''">
 
                         <div class="grid grid-cols-2 gap-3">
                             <input type="text" :name="`branches[${index}][name]`" x-model="branch.name" required placeholder="اسم الفرع"
@@ -110,7 +126,7 @@
 
                         <div class="relative">
                             {{-- الحقل المخفي الذي سيتم إرساله للسيرفر (رقم الهاتف كاملاً) --}}
-                            <input type="hidden" :name="`branches[${index}][phone]`" x-model="branch.fullPhone">
+                            <input type="hidden" :name="`branches[${index}][phone]`" :value="branch.fullPhone">
 
                             <div class="flex overflow-hidden relative items-center rounded-xl ring-1 transition-all group bg-slate-50 ring-slate-100 focus-within:ring-2 focus-within:ring-primary/20">
                                 
@@ -125,7 +141,6 @@
                                         updatePhone(index);
                                     " 
                                     :maxlength="branch.selectedCountry?.dial_code === '+967' ? 9 : 15"
-                                    required 
                                     placeholder="7XXXXXXXX" 
                                     inputmode="numeric"
                                     class="flex-1 px-4 py-3 pr-11 w-full min-w-0 text-sm text-left bg-transparent border-0 font-headline dir-ltr focus:ring-0">

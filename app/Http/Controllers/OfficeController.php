@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Classes\WebResponseClass;
 use App\Models\Office;
 use App\Models\Shipment;
+use App\Models\ShipmentPackage;
 use App\Services\AdminLoggerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,6 @@ class OfficeController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
             'branches' => 'required|array|min:1',
             'branches.*.name' => 'required|string|max:255',
             'branches.*.city' => 'required|string|max:255',
@@ -72,16 +72,14 @@ class OfficeController extends Controller
                     'app_id'     => $user->app_id,
                     'created_by' => $user->id,
                     'name'       => $request->name,
-                    'phone'      => $request->phone,
-                    'address'    => $request->address,
                 ]);
 
                 foreach ($request->branches as $branchData) {
                     $office->branches()->create([
                         'name'    => $branchData['name'],
                         'city'    => $branchData['city'],
-                        'phone'   => $branchData['phone'],
-                        'address' => $branchData['address'],
+                        'phone'   => $branchData['phone'] ?? null,
+                        'address' => $branchData['address'] ?? null,
                     ]);
                 }
             });
@@ -99,7 +97,10 @@ class OfficeController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $office = Office::with('branches')->findOrFail($id);
+        $office = Office::with(['branches' => function ($q) {
+            $q->withCount(['senderShipments', 'receiverShipments', 'senderShipmentPackages']);
+        }])->findOrFail($id);
+
         if ($request->isMobile) {
             return view('mobile.pages.office.unverified.edit', compact('office'));
         }
@@ -108,10 +109,8 @@ class OfficeController extends Controller
 
     public function show(Request $request, $id)
     {
-
         $office = Office::with('branches')->findOrFail($id);
         $branchIds = $office->branches->pluck('id');
-        
 
         $shipments = Shipment::with(['senderCustomer', 'receiverCustomer', 'receiverOfficeBranch'])
             ->where('sender_branch_id', auth()->user()->branch_id)
@@ -119,23 +118,21 @@ class OfficeController extends Controller
             ->latest()
             ->paginate(15);
 
-     
-
         if ($request->isMobile) {
             return view('mobile.pages.office.unverified.show', compact('office', 'shipments'));
         }
         // ضبط المسار ليعمل في الديسكتوب
         return view('pages.office.unverified.show', compact('office', 'shipments'));
     }
+
     public function update(Request $request, $id)
     {
         $office = Office::findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string',
             'branches' => 'required|array|min:1',
+            'branches.*.id' => 'nullable|integer',
             'branches.*.name' => 'required|string|max:255',
             'branches.*.city' => 'required|string|max:100',
             'branches.*.phone' => 'nullable|string|max:20',
@@ -145,24 +142,62 @@ class OfficeController extends Controller
         try {
             DB::transaction(function () use ($request, $office) {
                 $office->update([
-                    'name'    => $request->name,
-                    'phone'   => $request->phone,
-                    'address' => $request->address,
+                    'name' => $request->name,
                 ]);
-                $office->branches()->delete();
+
+                // 1. جمع معرفات الفروع القائمة التي أرسلها المستخدم في الطلب
+                $submittedIds = collect($request->branches)
+                    ->pluck('id')
+                    ->filter()
+                    ->map(fn($val) => (int) $val)
+                    ->all();
+
+                $existingBranches = $office->branches()->get();
+
+                // 2. التحقق من أي فرع تم حذفه من القائمة: هل مرتبط بشحنات أو طرود؟
+                foreach ($existingBranches as $branch) {
+                    if (!in_array($branch->id, $submittedIds)) {
+                        $hasShipments = Shipment::where('receiver_office_branch_id', $branch->id)
+                            ->orWhere('sender_office_branch_id', $branch->id)
+                            ->exists();
+
+                        $hasPackages = ShipmentPackage::where('sender_office_branch_id', $branch->id)->exists();
+
+                        if ($hasShipments || $hasPackages) {
+                            throw new \Exception("لا يمكن حذف الفرع ({$branch->name}) لوجود شحنات أو طرود مرتبطة به في النظام.");
+                        }
+
+                        $branch->delete();
+                    }
+                }
+
+                // 3. تحديث الفروع القائمة أو إضافة فروع جديدة
                 foreach ($request->branches as $branchData) {
-                    $office->branches()->create([
+                    $branchPayload = [
                         'name'    => $branchData['name'],
                         'city'    => $branchData['city'],
-                        'phone'   => $branchData['phone'],
-                        'address' => $branchData['address'],
-                    ]);
+                        'phone'   => $branchData['phone'] ?? null,
+                        'address' => $branchData['address'] ?? null,
+                    ];
+
+                    $branchId = !empty($branchData['id']) ? (int) $branchData['id'] : null;
+
+                    if ($branchId) {
+                        $branch = $existingBranches->firstWhere('id', $branchId);
+                        if ($branch) {
+                            $branch->update($branchPayload);
+                            continue;
+                        }
+                    }
+
+                    // فرع جديد للمكتب
+                    $office->branches()->create($branchPayload);
                 }
             });
 
             return WebResponseClass::sendResponse(
                 'تم التحديث!',
-                'تم تحديث المكتب بنجاح.',
+                'تم تحديث المكتب وفروعه بنجاح.',
                 'حسناً',
                 'offices.unverified.index'
             );
@@ -174,6 +209,21 @@ class OfficeController extends Controller
     public function destroy(Office $office)
     {
         try {
+            $branchIds = $office->branches()->pluck('id');
+            $hasShipments = Shipment::whereIn('receiver_office_branch_id', $branchIds)
+                ->orWhereIn('sender_office_branch_id', $branchIds)
+                ->exists();
+            $hasPackages = ShipmentPackage::whereIn('sender_office_branch_id', $branchIds)->exists();
+
+            if ($hasShipments || $hasPackages) {
+                return WebResponseClass::sendResponse(
+                    'لا يمكن الحذف!',
+                    'لا يمكن حذف هذا المكتب لوجود شحنات أو طرود مسجلة تابعة لفروعه.',
+                    'حسناً',
+                    'offices.unverified.index'
+                );
+            }
+
             $office->delete();
             return WebResponseClass::sendResponse(
                 'تم الحذف!',

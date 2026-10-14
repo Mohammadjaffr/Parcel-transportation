@@ -530,7 +530,7 @@
                                 options: ['كرتون', 'كيس'],
                                 packageType: '{{ old('package_type', '') }}'
                             }">
-                                <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span class="text-rose-500">*</span></label>
+                                <label class="text-[11px] font-bold text-slate-500">نوع الطرد <span class="text-rose-500">*</span></label>
 
                                 <div class="relative z-[40]" @click.outside="isOpen = false">
                                     <input type="text" name="package_type" x-model="packageType"

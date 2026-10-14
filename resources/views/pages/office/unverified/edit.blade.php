@@ -26,17 +26,18 @@
                         'city' => $branch->city,
                         'phone' => $branch->phone,
                         'address' => $branch->address,
+                        'can_delete' => $branch->can_delete,
                     ],
                 )
                 ->values()
-            : [['name' => '', 'city' => '', 'phone' => '', 'address' => '']],
+            : [['id' => null, 'name' => '', 'city' => '', 'phone' => '', 'address' => '', 'can_delete' => true]],
     ),
 ),
     
         errorIndices: @js(collect($errors->keys())->map(fn($key) => preg_match('/^branches\.(\d+)/', $key, $m) ? (int) $m[1] : null)->filter(fn($v) => !is_null($v))->unique()->values()),
     
         addBranch() {
-            this.branches.push({ name: '', city: '', phone: '', address: '' });
+            this.branches.push({ id: null, name: '', city: '', phone: '', address: '', can_delete: true });
             this.activeItem = this.branches.length - 1;
     
             this.$nextTick(() => {
@@ -204,10 +205,18 @@
                                         </div>
 
                                         <div class="flex gap-2 items-center shrink-0">
-                                            <button type="button" @click.stop="removeBranch(index)" x-show="!branch.id"
+                                            <button type="button" @click.stop="removeBranch(index)" 
+                                                x-show="(!branch.id || branch.can_delete) && branches.length > 1"
+                                                title="حذف الفرع"
                                                 class="flex justify-center items-center w-9 h-9 text-rose-400 rounded-xl transition-all hover:bg-rose-50 hover:text-rose-600">
                                                 <span class="material-symbols-outlined text-[20px]">delete</span>
                                             </button>
+
+                                            <span x-show="branch.id && !branch.can_delete" 
+                                                title="لا يمكن حذف هذا الفرع لوجود شحنات أو طرود مرتبطة به"
+                                                class="flex justify-center items-center w-9 h-9 text-slate-300 cursor-not-allowed">
+                                                <span class="material-symbols-outlined text-[18px]">lock</span>
+                                            </span>
 
                                             <span
                                                 class="transition-transform duration-300 material-symbols-outlined text-slate-300"
