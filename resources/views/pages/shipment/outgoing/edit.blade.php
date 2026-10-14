@@ -6,24 +6,10 @@
     <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl" 
         x-data="{ 
             paymentMethod: '{{ old('payment_method', $shipment->payment_method) }}', 
-            previousPaymentMethod: '{{ old('payment_method', $shipment->payment_method) }}',
             isSubmitting: false, 
             priceAgreed: {{ old('is_price_agreed', $shipment->is_price_agreed ? '1' : '0') == '1' ? 'true' : 'false' }},
             togglePriceAgreed() {
                 this.priceAgreed = !this.priceAgreed;
-                if (!this.priceAgreed) {
-                    if (this.paymentMethod !== 'cod') {
-                        this.previousPaymentMethod = this.paymentMethod;
-                    }
-                    this.paymentMethod = 'cod';
-                } else {
-                    this.paymentMethod = this.previousPaymentMethod || 'prepaid';
-                }
-            },
-            init() {
-                if (!this.priceAgreed) {
-                    this.paymentMethod = 'cod';
-                }
             }
         }">
 
@@ -588,21 +574,12 @@
 
                         <div class="space-y-5">
                             <div>
-                                <div class="flex items-center justify-between mb-1.5">
-                                    <label class="text-xs font-bold text-gray-600 dark:text-gray-300">
-                                        طريقة الدفع <span class="text-error">*</span>
-                                    </label>
-                                    <span x-show="!priceAgreed" x-cloak class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2 py-0.5 rounded-md">
-                                        <span class="material-symbols-outlined text-[14px]">lock</span>
-                                        مثبتة على المستلم
-                                    </span>
-                                </div>
+                                <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                    طريقة الدفع <span class="text-error">*</span>
+                                </label>
                                 <div class="relative">
-                                    <select name="payment_method" x-model="paymentMethod" :disabled="!priceAgreed"
-                                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border transition-all appearance-none outline-none text-on-surface dark:text-white"
-                                        :class="!priceAgreed
-                                            ? 'bg-gray-100 dark:bg-boxdark-2 text-gray-500 dark:text-gray-400 cursor-not-allowed border-dashed border-gray-300 dark:border-boxdark'
-                                            : 'bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20'">
+                                    <select name="payment_method" x-model="paymentMethod"
+                                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
                                         <option value="prepaid">مدفوع مقدماً</option>
                                         @hasservice('Payment_COD')
                                             <option value="cod">الدفع عند الاستلام (على المستلم)</option>
@@ -612,12 +589,7 @@
                                             <option value="customer_credit">آجل (على حساب المرسل)</option>
                                         @endhasservice
                                     </select>
-                                    <input type="hidden" name="payment_method" value="cod" :disabled="priceAgreed">
                                 </div>
-                                <p x-show="!priceAgreed" x-cloak class="mt-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[15px]">info</span>
-                                    تم تثبيت طريقة الدفع تلقائياً (على المستلم) لعدم الاتفاق على السعر مسبقاً.
-                                </p>
                             </div>
 
                             <div>

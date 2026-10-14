@@ -5,23 +5,9 @@
 @section('content')
 <div x-data="{ 
     paymentMethod: '{{ old('payment_method', $shipment->payment_method) }}',
-    previousPaymentMethod: '{{ old('payment_method', $shipment->payment_method) }}',
     priceAgreed: {{ old('is_price_agreed', $shipment->is_price_agreed ? '1' : '0') == '1' ? 'true' : 'false' }},
     togglePriceAgreed() {
         this.priceAgreed = !this.priceAgreed;
-        if (!this.priceAgreed) {
-            if (this.paymentMethod !== 'cod') {
-                this.previousPaymentMethod = this.paymentMethod;
-            }
-            this.paymentMethod = 'cod';
-        } else {
-            this.paymentMethod = this.previousPaymentMethod || 'prepaid';
-        }
-    },
-    init() {
-        if (!this.priceAgreed) {
-            this.paymentMethod = 'cod';
-        }
     }
 }"
     class="flex relative flex-col gap-6 px-4 pt-6 min-h-screen pb-19 bg-slate-50/50">
@@ -462,19 +448,10 @@
 
         <div class="space-y-4">
             <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                    <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span class="text-red-500">*</span></label>
-                    <span x-show="!priceAgreed" x-cloak class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
-                        <span class="material-symbols-outlined text-[13px]">lock</span>
-                        على المستلم
-                    </span>
-                </div>
+                <label class="text-[11px] font-bold text-slate-400">طريقة الدفع <span class="text-red-500">*</span></label>
                 <div class="relative">
-                    <select name="payment_method" x-model="paymentMethod" :disabled="!priceAgreed"
-                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none text-slate-700"
-                        :class="!priceAgreed 
-                            ? 'bg-slate-100 ring-slate-200 text-slate-400 cursor-not-allowed' 
-                            : 'bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20'">
+                    <select name="payment_method" x-model="paymentMethod"
+                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border-none ring-1 appearance-none outline-none text-slate-700 bg-slate-50 ring-slate-100 focus:ring-2 focus:ring-primary/20">
                         @hasservice('Payment_Prepaid')
                             <option value="prepaid" {{ old('payment_method', $shipment->payment_method) === 'prepaid' ? 'selected' : '' }}>مدفوع مقدماً</option>
                         @endhasservice
@@ -488,12 +465,7 @@
                             <option value="customer_credit" {{ old('payment_method', $shipment->payment_method) === 'customer_credit' ? 'selected' : '' }}>آجل (على حساب المرسل)</option>
                         @endhasservice
                     </select>
-                    <input type="hidden" name="payment_method" value="cod" :disabled="priceAgreed">
                 </div>
-                <p x-show="!priceAgreed" x-cloak class="text-[10px] font-bold text-amber-600 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[13px]">info</span>
-                    تم تثبيت طريقة الدفع تلقائياً (على المستلم) لعدم الاتفاق على السعر مسبقاً.
-                </p>
             </div>
 
             <div class="flex flex-col gap-2">

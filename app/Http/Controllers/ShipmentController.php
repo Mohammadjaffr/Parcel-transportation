@@ -471,13 +471,13 @@ class ShipmentController extends Controller
 
                 // المالية (الـ Observer سيقوم بحساب total_amount و total_commission)
                 'is_price_agreed'           => $request->boolean('is_price_agreed'),
-                'payment_method'            => $request->boolean('is_price_agreed') ? $data['payment_method'] : 'cod',
-                'partial_amount'            => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'partial_payment') ? $data['partial_amount'] : 0,
+                'payment_method'            => $data['payment_method'],
+                'partial_amount'            => ($data['payment_method'] === 'partial_payment') ? ($data['partial_amount'] ?? 0) : 0,
                 'notes'                     => $data['notes'] ?? null,
                 'created_by'                => $user->id,
 
                 'status'                    => 'pending',
-                'customer_debt_status'      => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'customer_credit') ? 'pending' : null,
+                'customer_debt_status'      => ($data['payment_method'] === 'customer_credit') ? 'pending' : null,
             ]);
 
             // ========================================================
@@ -833,14 +833,14 @@ class ShipmentController extends Controller
 
                 // المالية (الـ total_amount و total_commission سيتم حسابها تلقائياً بفضل الـ Boot Method في المودل)
                 'is_price_agreed'           => $request->boolean('is_price_agreed'),
-                'payment_method'            => $request->boolean('is_price_agreed') ? $data['payment_method'] : 'cod',
-                'partial_amount'            => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'partial_payment')
+                'payment_method'            => $data['payment_method'],
+                'partial_amount'            => ($data['payment_method'] === 'partial_payment')
                     ? ($data['partial_amount'] ?? 0)
                     : 0,
 
                 'notes'                     => $data['notes'] ?? null,
 
-                'customer_debt_status'      => ($request->boolean('is_price_agreed') && $data['payment_method'] === 'customer_credit')
+                'customer_debt_status'      => ($data['payment_method'] === 'customer_credit')
                     ? ($shipment->customer_debt_status ?? 'pending')
                     : null,
             ]);
