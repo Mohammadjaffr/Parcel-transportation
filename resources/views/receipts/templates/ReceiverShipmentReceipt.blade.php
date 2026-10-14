@@ -692,6 +692,9 @@
                         if (!empty($package_type) && $package_type !== '---') {
                             $shipmentFields[] = ['label' => 'نوع الطرد:', 'value' => $package_type];
                         }
+                        if (!empty($parcels_quantity)) {
+                            $shipmentFields[] = ['label' => 'عدد الطرود:', 'value' => $parcels_quantity];
+                        }
                         if (!empty($weight) && $weight !== '---') {
                             $shipmentFields[] = ['label' => 'الوزن/العدد:', 'value' => $weight];
                         }

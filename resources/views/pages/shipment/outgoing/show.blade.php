@@ -504,6 +504,11 @@
                                 <div class="flex gap-1.5 items-center"><span class="text-gray-400">النوع:</span> <span
                                         class="text-gray-800 dark:text-gray-300">{{ $shipment->package_type ?? '-' }}</span>
                                 </div>
+                                @if ($shipment->parcels_quantity)
+                                    <div class="flex gap-1.5 items-center"><span class="text-gray-400">عدد الطرود:</span> <span
+                                            class="text-gray-800 dark:text-gray-300">{{ $shipment->parcels_quantity }}</span>
+                                    </div>
+                                @endif
                                 @if ($shipment->weight)
                                     <div class="flex gap-1.5 items-center"><span class="text-gray-400">الوزن:</span> <span
                                             class="text-gray-800 dark:text-gray-300">{{ $shipment->weight }} كجم</span>

@@ -272,6 +272,7 @@ class ShipmentController extends Controller
             'receiver_phone'       => 'nullable|string|max:20',
 
             'package_type'         => 'nullable|string',
+            'parcels_quantity'     => 'nullable|integer|min:1',
             'weight'               => 'nullable|numeric|min:0',
             
             // --- حقول العسل ---
@@ -487,6 +488,7 @@ class ShipmentController extends Controller
 
                 // الطرد العادي
                 'package_type'              => $data['package_type'] ?? null,   
+                'parcels_quantity'          => $data['parcels_quantity'] ?? 1,
                 'weight'                    => $data['weight'] ?? null,
                 'package_fee'               => $data['package_fee'],
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
@@ -648,6 +650,7 @@ class ShipmentController extends Controller
             'receiver_phone'        => 'nullable|string|max:20',
 
             'package_type'          => 'nullable|string',
+            'parcels_quantity'      => 'nullable|integer|min:1',
             'weight'                => 'nullable|numeric|min:0',
             
             // --- حقول العسل ---
@@ -863,6 +866,7 @@ class ShipmentController extends Controller
 
                 // الطرد العادي
                 'package_type'              => $data['package_type'],
+                'parcels_quantity'          => $data['parcels_quantity'] ?? 1,
                 'weight' => (filled($data['weight'] ?? null) && (float)$data['weight'] != 0) ? $data['weight'] : null,
                 'package_fee'               => $data['package_fee'],
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
@@ -1167,6 +1171,7 @@ class ShipmentController extends Controller
             $rules = [
                 'code'         => 'nullable|string|max:255',
                 'package_type' => 'nullable|string|max:255',
+                'parcels_quantity' => 'nullable|integer|min:1',
                 'weight'       => 'nullable|numeric|min:0',
                 'total_amount' => 'required|numeric|min:0',
                 'status'       => 'required|in:pending,in_transit,delivered',

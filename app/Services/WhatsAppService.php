@@ -620,6 +620,10 @@ class WhatsAppService
             $message .= "\n\n📦 *نوع الطرد:* {$shipment->package_type}";
         }
 
+        if ($shipment->parcels_quantity) {
+            $message .= "\n📦 *عدد الطرود:* {$shipment->parcels_quantity}";
+        }
+
         if ($shipment->weight) {
             $message .= "\n⚖️ *الوزن:* {$shipment->weight} كجم";
         }
@@ -692,6 +696,10 @@ class WhatsAppService
 
         if ($shipment->package_type) {
             $message .= "\n\n📊 *نوع الطرد:* {$shipment->package_type}";
+        }
+
+        if ($shipment->parcels_quantity) {
+            $message .= "\n📦 *عدد الطرود:* {$shipment->parcels_quantity}";
         }
 
         if ($shipment->weight) {

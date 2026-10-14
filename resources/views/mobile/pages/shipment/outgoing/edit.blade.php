@@ -404,7 +404,7 @@
         <div class="grid grid-cols-2 gap-4">
 
             {{-- 1. حقل نوع الشحنة (Combobox) --}}
-            <div class="flex flex-col gap-2 col-span-2" x-data="{
+            <div class="flex flex-col gap-2 col-span-1" x-data="{
                     isOpen: false,
                     options: ['كرتون', 'كيس', 'مغلف'],
                     packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
@@ -432,6 +432,16 @@
                             </button>
                         </template>
                     </div>
+                </div>
+            </div>
+
+            {{-- حقل عدد الطرود --}}
+            <div class="flex flex-col gap-2 col-span-1">
+                <label class="text-[11px] font-bold text-slate-400">عدد الطرود</label>
+                <div class="relative">
+                    <input type="number" name="parcels_quantity" value="{{ old('parcels_quantity', $shipment->parcels_quantity ?? 1) }}"
+                        placeholder="1" min="1" dir="ltr"
+                        class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
                 </div>
             </div>
 

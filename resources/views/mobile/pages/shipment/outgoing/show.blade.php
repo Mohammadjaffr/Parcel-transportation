@@ -400,6 +400,10 @@
                     <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">نوع الطرد</span>
                     <span class="text-sm font-black text-slate-800">{{ $shipment->package_type }}</span>
                 </div>
+                <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">عدد الطرود</span>
+                    <span class="text-sm font-black text-slate-800">{{ $shipment->parcels_quantity ?? 1 }}</span>
+                </div>
                 @if ($shipment->weight > 0)
                     <div class="p-4 rounded-2xl bg-slate-50/80 border border-slate-100">
                         <span class="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">الوزن</span>

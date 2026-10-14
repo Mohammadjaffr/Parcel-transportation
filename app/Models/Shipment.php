@@ -29,6 +29,7 @@ class Shipment extends Model
 
         // 4. تفاصيل الطرد العادي
         'package_type',
+        'parcels_quantity',
         'weight',
         'package_fee',
         'package_commission_rate',
@@ -60,7 +61,13 @@ class Shipment extends Model
     protected $casts = [
         'is_returned' => 'boolean',
         'is_price_agreed' => 'boolean',
+        'parcels_quantity' => 'integer',
     ];
+
+    public function getParcelsCountAttribute()
+    {
+        return $this->parcels_quantity ?? 1;
+    }
 
     public function logs()
     {

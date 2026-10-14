@@ -152,6 +152,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
             // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? ($honeyDetails ? null : 'طرد عادي'),
+            'parcels_quantity'  => $shipment->parcels_quantity,
             'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
             'honey_details'     => $honeyDetails,
             'notes'             => $shipment->notes ?? 'لا توجد ملاحظات إضافية',

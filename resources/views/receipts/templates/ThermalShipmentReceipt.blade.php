@@ -92,6 +92,12 @@
                 <span class="text-slate-500">نوع الطرد</span>
                 <span class="font-bold text-slate-800">{{ $package_type ?? '---' }}</span>
             </div>
+            @if(!empty($parcels_quantity))
+            <div class="flex justify-between">
+                <span class="text-slate-500">عدد الطرود</span>
+                <span class="font-bold text-slate-800">{{ $parcels_quantity }}</span>
+            </div>
+            @endif
             @if(!empty($weight))
             <div class="flex justify-between">
                 <span class="text-slate-500">الوزن</span>
