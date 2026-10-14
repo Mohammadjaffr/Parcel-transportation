@@ -53,7 +53,8 @@
 
                     {{-- 1. بيانات الفروع (الوجهة) --}}
                     <div x-data='destinationLogic(@json($destinations), "{{ old('receiver_branch_id') }}", "{{ old('office_id') }}")'
-                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative overflow-hidden group/card">
+                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative group/card"
+                        :class="isOpen ? 'relative z-[100]' : 'relative z-20'">
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-bl-[100px] pointer-events-none">
                         </div>
@@ -91,31 +92,119 @@
                                     </div>
                                 </div>
 
-                                {{-- حقل الفرع أو الوجهة (يعرض الفروع الداخلية والمكاتب الموثوقة والخارجية) --}}
-                                <div>
+                                {{-- حقل الفرع أو الوجهة المستلمة (Searchable Combobox) --}}
+                                <div class="space-y-1.5 relative z-[101]" @click.outside="onBlurOutside()">
                                     <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
                                         الفرع أو الوجهة المستلمة <span class="text-error">*</span>
                                     </label>
                                     <div class="relative">
                                         {{-- المعرف الرقمي الحقيقي للفرع المُرسل للخادم --}}
-                                        <input type="hidden" name="receiver_branch_id" x-model="selectedBranchId">
+                                        <input type="hidden" name="receiver_branch_id" :value="selectedBranchId">
 
-                                        <select x-model="selectedDestinationKey" @change="onDestinationChange($event.target.value)" required
-                                            class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white dark:bg-boxdark dark:border-boxdark-2 focus:border-green-500 focus:ring-2 focus:ring-green-500/20">
-                                            <option value="" disabled selected>اختر الفرع أو الوجهة المستلمة...</option>
-                                            @foreach($destinations->groupBy('group') as $groupName => $groupDestinations)
-                                                <optgroup label="{{ $groupName }}">
-                                                    @foreach($groupDestinations as $dest)
-                                                        <option value="{{ $dest['key'] }}">
-                                                            {{ $dest['name'] }}
-                                                        </option>
-                                                    @endforeach
-                                                </optgroup>
-                                            @endforeach
-                                        </select>
-                                        <span class="absolute left-3 top-1/2 text-green-500 -translate-y-1/2 pointer-events-none">
-                                            <span class="material-symbols-outlined text-[20px]">expand_more</span>
-                                        </span>
+                                        {{-- حقل الإدخال والبحث المرئي --}}
+                                        <div class="relative flex items-center">
+                                            <input type="text"
+                                                x-ref="destinationInput"
+                                                x-model="searchQuery"
+                                                @focus="onInputFocus($event)"
+                                                @input="onInputChange()"
+                                                @keydown.enter.prevent="if(filteredDestinations.length > 0) { selectDestination(filteredDestinations[0]); }"
+                                                placeholder="ابحث أو اختر الفرع أو الوجهة..."
+                                                autocomplete="off"
+                                                required
+                                                class="pr-10 pl-16 w-full h-12 text-sm font-bold bg-white dark:bg-boxdark rounded-xl border border-gray-200 dark:border-boxdark-2 transition-all outline-none text-on-surface dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20 placeholder:text-gray-400 placeholder:font-normal"
+                                                :class="selectedBranchId ? 'border-green-500 bg-green-50/20 text-green-900 dark:text-green-400 font-extrabold' : ''">
+
+                                            {{-- أيقونة الموقع في اليمين --}}
+                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+                                                :class="selectedBranchId ? 'text-green-600' : 'text-gray-400'">
+                                                <span class="material-symbols-outlined text-[20px]">location_on</span>
+                                            </span>
+
+                                            {{-- أزرار التحكم في اليسار (مسح وسهم الفتح) --}}
+                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                                {{-- زر المسح السريع --}}
+                                                <button type="button" 
+                                                    x-show="searchQuery.length > 0 || selectedBranchId" 
+                                                    x-cloak
+                                                    @click="clearSelection(); $refs.destinationInput.focus()"
+                                                    class="p-1 rounded-full text-gray-400 hover:text-rose-500 hover:bg-gray-100 dark:hover:bg-boxdark-2 transition-colors">
+                                                    <span class="material-symbols-outlined text-[18px] block">close</span>
+                                                </button>
+
+                                                {{-- سهم القائمة المنسدلة --}}
+                                                <button type="button" 
+                                                    @click="toggleDropdown()"
+                                                    class="p-1 rounded-lg text-gray-400 hover:text-green-600 transition-colors">
+                                                    <span class="material-symbols-outlined text-[20px] transition-transform duration-200 block"
+                                                        :class="isOpen ? 'rotate-180 text-green-600' : ''">expand_more</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {{-- القائمة المنسدلة للوجهات مع سكرول سلس وترتيب متناسق بدون أي تداخل --}}
+                                        <div x-show="isOpen" 
+                                            x-cloak 
+                                            x-transition:enter="transition ease-out duration-150"
+                                            x-transition:enter-start="opacity-0 translate-y-1"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            x-transition:leave="transition ease-in duration-100"
+                                            x-transition:leave-start="opacity-100 translate-y-0"
+                                            x-transition:leave-end="opacity-0 translate-y-1"
+                                            class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-boxdark border border-gray-200 dark:border-boxdark-2 rounded-2xl shadow-2xl max-h-60 overflow-y-auto custom-scrollbar z-[120]">
+                                            
+                                            {{-- قائمة العناصر المجمعة --}}
+                                            <template x-for="(items, groupName) in groupedFilteredDestinations" :key="groupName">
+                                                <div class="border-b border-gray-100 dark:border-boxdark-2/60 last:border-b-0">
+                                                    {{-- رأس المجموعة --}}
+                                                    <div class="px-3.5 py-2 bg-gray-50/95 dark:bg-boxdark-2/95 sticky top-0 backdrop-blur-md z-10 flex items-center justify-between border-b border-gray-100 dark:border-boxdark">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                            <span class="text-xs font-black text-gray-700 dark:text-gray-200" x-text="groupName"></span>
+                                                        </div>
+                                                        <span class="text-[10px] font-bold text-gray-400 bg-white dark:bg-boxdark px-2 py-0.5 rounded-full shadow-sm border border-gray-100 dark:border-boxdark-2" x-text="items.length"></span>
+                                                    </div>
+
+                                                    {{-- عناصر المجموعة --}}
+                                                    <div class="p-1.5 space-y-1">
+                                                        <template x-for="dest in items" :key="dest.key">
+                                                            <button type="button"
+                                                                @click="selectDestination(dest)"
+                                                                class="flex justify-between items-center w-full px-3 py-2.5 rounded-xl text-right transition-all group/item"
+                                                                :class="dest.key === selectedDestinationKey ? 'bg-green-50 dark:bg-green-500/15 text-green-800 dark:text-green-300 font-black ring-1 ring-green-500/30' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-boxdark-2/70'">
+                                                                
+                                                                <div class="flex items-center gap-2.5 truncate">
+                                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+                                                                        :class="{
+                                                                            'bg-green-100/80 text-green-600 dark:bg-green-500/20 dark:text-green-400': dest.type === 'internal',
+                                                                            'bg-blue-100/80 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400': dest.type === 'trusted',
+                                                                            'bg-amber-100/80 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400': dest.type === 'untrusted'
+                                                                        }">
+                                                                        <span class="material-symbols-outlined text-[17px]"
+                                                                            x-text="dest.type === 'internal' ? 'domain' : (dest.type === 'trusted' ? 'verified' : 'swap_horiz')">
+                                                                        </span>
+                                                                    </div>
+                                                                    <span class="text-xs font-bold truncate group-hover/item:text-green-700 dark:group-hover/item:text-green-400 transition-colors" x-text="dest.name"></span>
+                                                                </div>
+
+                                                                <span x-show="dest.key === selectedDestinationKey"
+                                                                    class="material-symbols-outlined text-green-600 dark:text-green-400 text-[18px] shrink-0 mr-2">
+                                                                    check_circle
+                                                                </span>
+                                                            </button>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            {{-- عند عدم وجود نتائج للبحث --}}
+                                            <div x-show="!hasResults" class="p-6 text-center">
+                                                <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[32px] mb-1 block">search_off</span>
+                                                <p class="text-sm font-bold text-gray-500 dark:text-gray-400">لا توجد نتائج مطابقة</p>
+                                                <p class="text-xs text-gray-400 mt-1" x-text="'ابحث باسم مختلف عن: ' + searchQuery"></p>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -124,7 +213,7 @@
 
                     {{-- 2. بيانات العملاء --}}
                     <div
-                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm">
+                        class="bg-white dark:bg-boxdark p-6 md:p-8 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm relative z-10">
                         <h3
                             class="flex gap-2 items-center mb-6 text-lg font-black text-on-surface dark:text-white font-headline">
                             <div
@@ -691,6 +780,9 @@
                 selectedOfficeId: initialOfficeId ? String(initialOfficeId) : '',
                 selectedBranchId: initialBranchId ? String(initialBranchId) : '',
                 selectedDestinationKey: '',
+                searchQuery: '',
+                isOpen: false,
+                isSearching: false,
 
                 init() {
                     // إذا تم تمرير فرع مسبقاً (سواء من old أو من البيانات الأولية)
@@ -707,7 +799,7 @@
                             this.selectedDestinationKey = matched.key;
                             this.selectedOfficeId = String(matched.office_id);
                             this.selectedBranchId = String(matched.branch_id);
-                            return;
+                            this.searchQuery = matched.name;
                         }
                     }
 
@@ -718,19 +810,126 @@
                             this.selectedOfficeId = String(internal.office_id);
                         }
                     }
+
+                    this.updateValidity();
                 },
 
-                onDestinationChange(key) {
-                    const dest = this.destinations.find(d => d.key === key);
+                // تسمية الوجهة المحددة حالياً
+                get selectedDestinationName() {
+                    const found = this.destinations.find(d => d.key === this.selectedDestinationKey);
+                    return found ? found.name : '';
+                },
+
+                // الوجهات المفلترة بالبحث
+                get filteredDestinations() {
+                    if (!this.searchQuery || !this.searchQuery.trim() || (!this.isSearching && this.searchQuery === this.selectedDestinationName)) {
+                        return this.destinations;
+                    }
+                    const q = this.searchQuery.trim().toLowerCase();
+                    return this.destinations.filter(d => 
+                        (d.name && d.name.toLowerCase().includes(q)) ||
+                        (d.group && d.group.toLowerCase().includes(q))
+                    );
+                },
+
+                // تجميع الوجهات المفلترة حسب مجموعاتها
+                get groupedFilteredDestinations() {
+                    const groups = {};
+                    this.filteredDestinations.forEach(dest => {
+                        const grp = dest.group || 'أخرى';
+                        if (!groups[grp]) {
+                            groups[grp] = [];
+                        }
+                        groups[grp].push(dest);
+                    });
+                    return groups;
+                },
+
+                // هل توجد نتائج للبحث؟
+                get hasResults() {
+                    return this.filteredDestinations.length > 0;
+                },
+
+                updateValidity() {
+                    this.$nextTick(() => {
+                        if (this.$refs.destinationInput) {
+                            if (!this.selectedBranchId) {
+                                this.$refs.destinationInput.setCustomValidity('يرجى اختيار الفرع أو الوجهة المستلمة من القائمة');
+                            } else {
+                                this.$refs.destinationInput.setCustomValidity('');
+                            }
+                        }
+                    });
+                },
+
+                // عند فتح أو إغلاق القائمة عبر السهم
+                toggleDropdown() {
+                    this.isOpen = !this.isOpen;
+                    if (this.isOpen) {
+                        this.$nextTick(() => {
+                            if (this.$refs.destinationInput) {
+                                this.$refs.destinationInput.focus();
+                            }
+                        });
+                    }
+                },
+
+                // عند التركيز على الحقل
+                onInputFocus(e) {
+                    this.isOpen = true;
+                    if (e && e.target) {
+                        e.target.select();
+                    }
+                },
+
+                // عند كتابة المستخدم في الحقل
+                onInputChange() {
+                    this.isSearching = true;
+                    this.isOpen = true;
+                    if (this.selectedDestinationName && this.searchQuery !== this.selectedDestinationName) {
+                        this.selectedDestinationKey = '';
+                        this.selectedBranchId = '';
+                    }
+                    this.updateValidity();
+                },
+
+                // اختيار وجهة من القائمة
+                selectDestination(dest) {
                     if (dest) {
                         this.selectedDestinationKey = dest.key;
                         this.selectedOfficeId = String(dest.office_id);
                         this.selectedBranchId = String(dest.branch_id);
+                        this.searchQuery = dest.name;
                     } else {
+                        this.clearSelection();
+                    }
+                    this.isSearching = false;
+                    this.isOpen = false;
+                    this.updateValidity();
+                },
+
+                // مسح التحديد
+                clearSelection() {
+                    this.selectedDestinationKey = '';
+                    this.selectedBranchId = '';
+                    this.searchQuery = '';
+                    this.isSearching = false;
+                    this.isOpen = true;
+                    this.updateValidity();
+                },
+
+                // عند النقر خارج القائمة
+                onBlurOutside() {
+                    this.isOpen = false;
+                    this.isSearching = false;
+                    if (this.selectedBranchId && this.selectedDestinationName) {
+                        this.searchQuery = this.selectedDestinationName;
+                    } else {
+                        this.searchQuery = '';
                         this.selectedDestinationKey = '';
-                        this.selectedOfficeId = '';
                         this.selectedBranchId = '';
                     }
+                    this.updateValidity();
                 }
             }));
 
