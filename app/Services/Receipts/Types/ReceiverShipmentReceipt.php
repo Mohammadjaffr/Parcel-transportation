@@ -17,15 +17,18 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
     {
         // 1. جلب الشحنة مع جميع العلاقات الأساسية (بما فيها المكاتب الخارجية 🎯)
         $shipment = Shipment::with([
-            'senderCustomer',
-            'receiverCustomer',
+            'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
+            'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
             'senderBranch.app',
             'receiverBranch.app',
             'senderOfficeBranch.office',   // 👈 إصلاح: جلب المكتب الخارجي المرسل وشركته
             'receiverOfficeBranch.office', // 👈 إصلاح: جلب شركة المكتب الخارجي المستلم
             'creator.app',
             'creator.branch'
-        ])->where('uuid', $referenceId)->firstOrFail();
+        ])->where(function ($q) use ($referenceId) {
+            $q->where('uuid', $referenceId)
+              ->orWhere('id', $referenceId);
+        })->firstOrFail();
 
         // 2. تحديد الفرع الذي سيطبع السند (الفرع المُستلم أو المكتب الخارجي المُستلم)
         $printBranch = $shipment->receiverBranch ?? $shipment->receiverOfficeBranch ?? $shipment->senderBranch ?? $shipment->senderOfficeBranch;

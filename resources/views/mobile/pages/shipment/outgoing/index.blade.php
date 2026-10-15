@@ -171,7 +171,7 @@
                                         @endif
 
                                         {{-- إرسال السند للمستلم (واتساب) --}}
-                                        {{-- @if($shipment->receiverCustomer && $shipment->receiverCustomer->phone)
+                                        @if($shipment->is_price_agreed && $shipment->receiverCustomer && $shipment->receiverCustomer->phone)
                                             <button type="button"
                                                 onclick="sendReceiverDirect({{ $shipment->id }}, this, '{{ $shipment->receiver_whatsapp_link }}')"
                                                 class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold transition-colors text-slate-600 hover:bg-slate-50 hover:text-slate-900">
@@ -182,7 +182,7 @@
                                                 </svg>
                                                 <span>إرسال للمستلم</span>
                                             </button>
-                                        @endif --}}
+                                        @endif
 
                                     @endif
                                     {{-- نهاية إخفاء الخيارات --}}

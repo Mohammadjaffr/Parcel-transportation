@@ -363,5 +363,21 @@ class Shipment extends Model
 
         return "https://wa.me/{$cleanPhone}?text=" . urlencode($msg);
     }
+
+    /**
+     * رابط واتساب المباشر لإشعار المستلم
+     */
+    public function getReceiverWhatsappLinkAttribute(): ?string
+    {
+        return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'receiver');
+    }
+
+    /**
+     * رابط واتساب المباشر لإشعار المرسل
+     */
+    public function getSenderWhatsappLinkAttribute(): ?string
+    {
+        return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'sender');
+    }
 }
 

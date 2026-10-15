@@ -101,7 +101,14 @@ class ShipmentController extends Controller
         $user = auth()->user();
 
         // جلب الطرود المرسلة من فرع المستخدم
-        $shipments = Shipment::with(['receiverBranch.app', 'receiverOfficeBranch.office', 'receiverCustomer', 'senderCustomer'])
+        $shipments = Shipment::with([
+            'receiverBranch.app',
+            'receiverOfficeBranch.office',
+            'receiverCustomer',
+            'senderCustomer',
+            'senderBranch.app',
+            'senderOfficeBranch.office'
+        ])
             ->where('sender_branch_id', $user->branch_id)
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
