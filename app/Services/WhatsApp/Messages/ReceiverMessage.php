@@ -21,17 +21,38 @@ class ReceiverMessage implements WhatsAppMessageInterface
         return 'receiver';
     }
 
-    public function getMessageBody(Model $entity, ?string $receiptUrl): string
+public function getMessageBody(Model $entity, ?string $receiptUrl): string
     {
         if (!$entity instanceof Shipment) {
             return "بيانات الشحنة غير صالحة.";
         }
 
-        $name       = $entity->receiverCustomer?->name ?? 'عميلنا العزيز';
-        $bondNumber = $entity->bond_number ?? $entity->code ?? $entity->id ?? 'غير متوفر';
-        $senderName = $entity->senderCustomer?->name ?? 'عميل نقدي';
+        // بيانات المرسل والمستلم والسند
+        $name          = $entity->receiverCustomer?->name ?? 'عميلنا العزيز';
+        $receiverPhone = $entity->receiverCustomer?->phone ?? $entity->receiver_phone ?? 'غير متوفر';
+        $senderName    = $entity->senderCustomer?->name ?? 'عميل نقدي';
+        $senderPhone   = $entity->senderCustomer?->phone ?? $entity->sender_phone ?? 'غير متوفر';
+        $bondNumber    = $entity->bond_number ?? $entity->code ?? $entity->id ?? 'غير متوفر';
+        $packageType   = $entity->package_type ?? 'غير محدد';
+        $parcelsCount  = $entity->parcels_quantity ?? 1;
 
-        // 💡 جلب اسم ومكتب الإرسال
+        // تجهيز اليوم والتاريخ والوقت بالعربية
+        $dateObj = $entity->created_at ?? now();
+        $days = [
+            'Sunday'    => 'الأحد',
+            'Monday'    => 'الإثنين',
+            'Tuesday'   => 'الثلاثاء',
+            'Wednesday' => 'الأربعاء',
+            'Thursday'  => 'الخميس',
+            'Friday'    => 'الجمعة',
+            'Saturday'  => 'السبت',
+        ];
+        $dayName       = $days[$dateObj->format('l')] ?? 'اليوم';
+        $dateFormatted = $dateObj->format('d-m-Y');
+        $timePeriod    = $dateObj->format('A') === 'AM' ? 'صباحاً' : 'مساءً';
+        $timeFormatted = $dateObj->format('h:i') . ' ' . $timePeriod;
+
+        // جلب اسم مكتب الإرسال
         $senderOffice = null;
         if ($entity->senderBranch) {
             $appName = $entity->senderBranch->app?->name;
@@ -40,9 +61,9 @@ class ReceiverMessage implements WhatsAppMessageInterface
             $officeName = $entity->senderOfficeBranch->office?->name;
             $senderOffice = ($officeName ? $officeName . ' / ' : '') . $entity->senderOfficeBranch->name;
         }
-        $senderPlace = $senderOffice ?? $entity->senderBranch?->name ?? $entity->senderOfficeBranch?->name ?? 'غير محدد';
+        $senderPlace = $senderOffice ?? $entity->senderBranch?->name ?? $entity->senderOfficeBranch?->name ?? 'مكتب عالم القمة عدن';
 
-        // 💡 جلب اسم فرع / مكتب الاستلام
+        // جلب اسم مكتب التسليم
         $receiverOffice = null;
         if ($entity->receiverBranch) {
             $appName = $entity->receiverBranch->app?->name;
@@ -51,66 +72,107 @@ class ReceiverMessage implements WhatsAppMessageInterface
             $officeName = $entity->receiverOfficeBranch->office?->name;
             $receiverOffice = ($officeName ? $officeName . ' / ' : '') . $entity->receiverOfficeBranch->name;
         }
-        $branchName = $receiverOffice ?? $entity->receiverBranch?->name ?? $entity->receiverOfficeBranch?->name ?? 'الفرع';
-        
-        // 📍 رابط خرائط جوجل الخاص بفرع الاستلام
-        $mapLink = $entity->receiverBranch?->map_link ?? $entity->receiverOfficeBranch?->map_link ?? null;
-        
-        $amountDue = (float) ($entity->amount_to_collect_from_receiver ?? 0); 
+        $branchName = $receiverOffice ?? $entity->receiverBranch?->name ?? $entity->receiverOfficeBranch?->name ?? 'مكتب عالم القمة المركز الرئيسي/ سيئون';
 
-        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
-        $msg .= "الاخ / *{$name}* المحترم،\n";
-        $msg .= "تحية طيبة وبعد،\n\n";
+        // تحديد حالة الطرد
+        $statusText = match ($entity->status) {
+            'received_at_branch' => 'وصل الفرع وجاهز للاستلام.',
+            'delivered'          => 'تم التسليم بنجاح.',
+            default              => 'قيد العمل على معالجتة وإرسالة.',
+        };
 
-        // تحديد نص الإشعار بحسب حالة الشحنة
-        if ($entity->status === 'received_at_branch') {
-            $msg .= "يسعدنا إشعاركم بأن شحنتكم قد وصلت بنجاح وهي الآن *جاهزة للاستلام*.\n\n";
-        } elseif ($entity->status === 'delivered') {
-            $msg .= "تم تسليم شحنتكم بنجاح.\n\n";
-        } else {
-            $msg .= "نود إشعاركم بأن لديكم طرد مسجل باسمكم، وجاري تجهيزه وإرساله إليكم.\n\n";
-        }
+        // تعريب طريقة الدفع وتحديد تكلفة النقل
+        $rawPaymentMethod = strtolower((string) ($entity->payment_method ?? ''));
+        $translatedPayment = match ($rawPaymentMethod) {
+            'prepaid', 'paid', 'cash'         => 'مقدم',
+            'postpaid', 'cod', 'on_delivery'  => 'عند الاستلام (على المستلم)',
+            default                           => $entity->payment_method,
+        };
 
-        $msg .= "📦 رقم الشحنة : {$bondNumber}\n";
-        $msg .= "👤 المرسل : {$senderName}\n";
-        if (!empty($entity->senderCustomer?->phone)) {
-            $msg .= "📞 هاتف المرسل : {$entity->senderCustomer->phone}\n";
-        }
-        $msg .= "📍 من مكتب : {$senderPlace}\n";
-        $msg .= "🏢 إلى مكتب : {$branchName}\n";
+        $amountDue = (float) ($entity->amount_to_collect_from_receiver ?? 0);
+        $totalCost = (float) ($entity->shipping_cost ?? $entity->total_amount ?? $entity->price ?? $amountDue);
 
-        if (!empty($entity->package_type)) {
-            $msg .= "📋 نوع الطرد : {$entity->package_type}\n";
-        }
-
-        if (!empty($entity->parcels_quantity) && $entity->parcels_quantity > 1) {
-            $msg .= "🔢 عدد الطرود : {$entity->parcels_quantity}\n";
-        }
-
-        // توضيح مالي دقيق
         if (!$entity->is_price_agreed) {
-            $msg .= "💰 التكلفة : سيتم الاتفاق عليها لاحقاً\n";
+            $paymentMethod = 'يتم الاتفاق لاحقاً';
+            $shippingCost  = 'سيتم الاتفاق عليها لاحقاً';
         } elseif ($amountDue > 0) {
-            $msg .= "💰 المطلوب سداده عند الاستلام : *" . number_format($amountDue) . " ريال*\n";
+            $paymentMethod = $translatedPayment ?: 'عند الاستلام (على المستلم)';
+            $shippingCost  = number_format($amountDue) . ' ريال';
         } else {
-            $msg .= "✅ حالة الدفع : *خالص* (لا يوجد مبلغ للتحصيل)\n";
+            $paymentMethod = $translatedPayment ?: 'مقدم';
+            $shippingCost  = $totalCost > 0 ? number_format($totalCost) . ' ريال (خالص)' : 'خالص';
         }
+
+        // تعريف الأيقونات بترميز Unicode القياسي لضمان ظهورها في واتساب بدون علامة ()
+        $star     = "\u{1F31F}"; // 🌟
+        $box      = "\u{1F4E6}"; // 📦
+        $calendar = "\u{1F4C5}"; // 📅
+        $numbers  = "\u{1F522}"; // 🔢
+        $linkIcon = "\u{1F517}"; // 🔗
+        $userIcon = "\u{1F464}"; // 👤
+        $phone    = "\u{1F4DE}"; // 📞
+        $chart    = "\u{1F4CA}"; // 📊
+        $check    = "\u{2705}";  // ✅
+        $money    = "\u{1F4B8}"; // 💸
+        $mobile   = "\u{1F4F2}"; // 📲
+        $tel      = "\u{260E}\u{FE0F}"; // ☎️
+        $timer    = "\u{23F1}\u{FE0F}"; // ⏱️
+        $pin      = "\u{1F4CD}"; // 📍
+        $search   = "\u{1F50D}"; // 🔍
+        $warning  = "\u{26A0}\u{FE0F}"; // ⚠️
+        $heart    = "\u{1F49A}"; // 💚
+        $line     = str_repeat("\u{2501}", 24); // ━━━━━━━━━━━━━━━━━━━━━━━━
+
+        // بناء نص الرسالة مطابقاً للتصميم المرفق
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
+        $msg .= "الأخ/ *{$name}*       المحترم.\n";
+        $msg .= "تحية طيبة وبعد:\n\n";
+        $msg .= "       {$star} *مرحباً بك في عالم القمة للنقل السريع* {$star}\n";
+        $msg .= "{$line}\n";
+        $msg .= "                                 >{$box} *إشعار إستلام طرد*<\n";
+        $msg .= "{$calendar}*اليوم:* ~{$dayName}~ | *~التاريخ~*:{$dateFormatted} | *~الوقت~:* {$timeFormatted}\n";
+        $msg .= "{$numbers} *رقم السند:*  {$bondNumber} .\n";
 
         if ($receiptUrl) {
-            $msg .= "\n📄 السند الإلكتروني:\n{$receiptUrl}\n";
+            $msg .= "{$linkIcon} *رابط السند (PDF):*\n{$receiptUrl}\n";
         }
 
-        if ($mapLink) {
-            $msg .= "\n📍 موقع فرع الاستلام (خرائط جوجل) :\n{$mapLink}\n";
-        }
-
-        if ($entity->status === 'received_at_branch') {
-            $msg .= "\nنرجو منكم التكرم بزيارة الفرع لاستلام الطرد في أقرب وقت.\n";
-        } else {
-            $msg .= "\nيمكنكم متابعة حالة الطرد باستخدام رقم الشحنة أعلاه، وسيتم إشعاركم فور وصوله للفرع.\n";
-        }
-
-        $msg .= "نشكر ثقتكم بخدماتنا. 🌹";
+        $msg .= "{$userIcon} *المرسل:* {$senderName} .\n";
+        $msg .= "{$phone} *جوال المرسل:* {$senderPhone} .\n";
+        $msg .= "{$userIcon} *المستلم:* {$name} .\n";
+        $msg .= "{$phone} *جوال المستلم:* {$receiverPhone} .\n";
+        $msg .= "{$chart} *نوع الطرد:* {$packageType} .\n";
+        $msg .= "{$numbers} *عدد الطرد*: {$parcelsCount} .\n";
+        $msg .= "*مكتب الإرسال*: {$senderPlace}.\n";
+        $msg .= "*مكتب التسليم*: {$branchName}.\n";
+        $msg .= "{$check} *حالة الطرد:* {$statusText}\n";
+        $msg .= "{$money} *طريقة الدفع:*   {$paymentMethod} .\n";
+        $msg .= "*تكلفة النقل*:  {$shippingCost} .\n";
+        $msg .= "*~للاستفسار الاتصال بنا او مراسلتنا على خدمة الواتساب على الارقام مكتب عالم القمة فرع عدن~*\n";
+        $msg .= "*موبايل1:*{$mobile}782947557{$mobile}\n";
+        $msg .= "*موبايل2:*{$mobile}778132137{$mobile}\n";
+        $msg .= "*الهاتف:*  {$tel}02383444{$tel}\n";
+        $msg .= "~*اوسنتواصل معك في اقرب وقت.*~\n";
+        $msg .= "{$timer} *التوصيل المتوقع:* خلال 24-48 ساعة عمل\n";
+        $msg .= "{$line}\n";
+        $msg .= "{$pin} *مكتب عالم القمة للنقل السريع*{$pin}\n";
+        $msg .= "المركز الرئيسي/ سيئون:شارع الجزائر مقابل شركة الثور للصرافة بجانب الزبيدي اخوان للكهربائيات للتواصل/ {$mobile}782806886{$mobile} {$mobile}770098841{$mobile}\n";
+        $msg .= " {$tel}105488070{$tel}\n";
+        $msg .= " *فروعنا*:\n";
+        $msg .= "*فرع عدن* الشيخ عثمان-القاهرة قبل بنك التضامن في الجهة المقابلة على دخلة سور مدرسة إدريس حنبلة بجانب بقالة القمة للتواصل/\n";
+        $msg .= "{$mobile}782947557{$mobile}\n";
+        $msg .= "{$mobile}778132137{$mobile}\n";
+        $msg .= "{$tel}02383444{$tel}\n";
+        $msg .= "{$search} *لمتابعة طردك:* برقم السند وتواصل معنا على الأرقام أعلاه.\n";
+        $msg .= "{$warning} *تنبيهات هامة:*\n";
+        $msg .= "1- اي سند لايحمل ختم المكتب غير مقبول.\n";
+        $msg .= "2- المكتب غير مسؤول عن محتويات الطرد ولا تقبل إي مراجعة بعد(1)يوم من تاريخ إستلامه.\n";
+        $msg .= "3- المكتب غير مسؤول عن الإجراءت الأمنية والجمركية الخارجة عن إرادتنا.\n";
+        $msg .= "4- المكتب غير مسؤول عن الطرد بعد شهر من وصوله إلى مكان إستلامة\n";
+        $msg .= "5- نحن غير مسؤولين عن الحريق وحوادث السير.\n";
+        $msg .= "6- الرجاء التأكد من بيانات السند قبل الإرسال.\n";
+        $msg .= "7- لايعتبر هذا السند إثبات لإستلام الإرسالية لذا يجب إحضار البطاقة الشخصية أو جواز السفر.\n\n";
+        $msg .= "{$heart}نتمنى لك يوماً سعيداً! {$heart}";
 
         return $msg;
     }

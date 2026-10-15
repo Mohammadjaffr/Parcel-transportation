@@ -267,69 +267,9 @@ class Shipment extends Model
     /**
      * نص رسالة واتساب لطلب الاتفاق على السعر وتحديد تسعيرة الطرد
      */
-    public function getPriceAgreementMessage(): string
+    public function getPriceAgreementMessage(?string $receiptUrl = null): string
     {
-        $clientName = $this->receiverCustomer?->name ?? $this->senderCustomer?->name ?? 'عميلنا العزيز';
-        $senderName = $this->senderCustomer?->name ?? 'غير محدد';
-        $senderPhone = $this->senderCustomer?->phone ?? 'غير متوفر';
-        $packageType = $this->package_type ?? 'طرد';
-
-        // تحديد مكتب الإرسال ومكتب التسليم ديناميكياً
-        $senderOffice = null;
-        if ($this->senderBranch) {
-            $appName = $this->senderBranch->app?->name;
-            $senderOffice = ($appName ? $appName . ' / ' : '') . $this->senderBranch->name;
-        } elseif ($this->senderOfficeBranch) {
-            $officeName = $this->senderOfficeBranch->office?->name;
-            $senderOffice = ($officeName ? $officeName . ' / ' : '') . $this->senderOfficeBranch->name;
-        }
-        $senderPlace = $senderOffice ?? 'غير محدد';
-
-        $receiverOffice = null;
-        if ($this->receiverBranch) {
-            $appName = $this->receiverBranch->app?->name;
-            $receiverOffice = ($appName ? $appName . ' / ' : '') . $this->receiverBranch->name;
-        } elseif ($this->receiverOfficeBranch) {
-            $officeName = $this->receiverOfficeBranch->office?->name;
-            $receiverOffice = ($officeName ? $officeName . ' / ' : '') . $this->receiverOfficeBranch->name;
-        }
-        $deliveryPlace = $receiverOffice ?? 'غير محدد';
-
-        $cost = ($this->is_price_agreed && $this->total_amount > 0) ? number_format($this->total_amount, 0) . ' ريال' : 'لم يتفق عليها بعد';
-        $bondNumber = $this->bond_number ?? $this->id;
-        $receiptUrl = route('receipt.generate', ['type' => 'sender', 'id' => $this->uuid ?? $this->id]);
-
-        // تحديد اسم المكتب والفرع ديناميكياً
-        $appName    = $this->senderBranch?->app?->name ?? auth()->user()?->app?->name ?? '';
-        $branch     = $this->senderBranch ?? auth()->user()?->branch;
-        $branchName = $branch?->name ? (str_starts_with(trim($branch->name), 'فرع') ? trim($branch->name) : 'فرع ' . trim($branch->name)) : '';
-        $officeName = trim('مكتب ' . ($appName ? $appName . ' ' : '') . $branchName);
-        if (empty($officeName)) {
-            $officeName = 'مكتبنا الرئيسي';
-        }
-
-        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
-        $msg .= "الأخ / {$clientName} المحترم،\n";
-        $msg .= "تحية طيبة وبعد،\n\n";
-        $msg .= "تم استلام طردك بنجاح\n";
-        $msg .= "المرسل/ {$senderName}\n";
-        $msg .= "رقم المرسل/ {$senderPhone}\n";
-        $msg .= "نوع الطرد/ {$packageType}\n";
-        $msg .= "مكتب الإرسال/ {$senderPlace}\n";
-        $msg .= "مكتب التسليم/ {$deliveryPlace}\n";
-        $msg .= "تكلفة النقل/ {$cost}\n\n";
-        $msg .= "📦 رقم سند الارسال : {$bondNumber}\n\n";
-        $msg .= "تواصل معنا لتسعيرها بالاتصال او على خدمة الواتساب على الارقام \n";
-        $msg .= "{$officeName}\n";
-        $msg .= "الهاتف:782947557\n";
-        $msg .= "الهاتف:778132137\n";
-        $msg .= "الهاتف:02383444 \n\n";
-        $msg .= "او سنتواصل معك في اقرب وقت\n\n";
-        $msg .= "📄 سند الاستلام الخاص بك:\n";
-        $msg .= "{$receiptUrl}\n\n";
-        $msg .= "يمكنكم متابعة حالة الطرد باستخدام رقم الشحنة أعلاه.";
-
-        return $msg;
+        return (new \App\Services\WhatsApp\Messages\PriceAgreementMessage())->getMessageBody($this, $receiptUrl);
     }
 
     /**
@@ -337,31 +277,7 @@ class Shipment extends Model
      */
     public function getPriceAgreementWhatsappLinkAttribute(): ?string
     {
-        $phone = $this->receiverCustomer?->phone ?? $this->senderCustomer?->phone;
-        if (!$phone) {
-            return null;
-        }
-
-        $msg = $this->getPriceAgreementMessage();
-
-        // تنظيف الرقم من الرموز والمسافات
-        $cleanPhone = preg_replace('/[^\d\+]/', '', $phone);
-        $cleanPhone = ltrim($cleanPhone, '+');
-
-        if (str_starts_with($cleanPhone, '00')) {
-            $cleanPhone = substr($cleanPhone, 2);
-        }
-        if (str_starts_with($cleanPhone, '967967')) {
-            $cleanPhone = substr($cleanPhone, 3);
-        }
-        if (str_starts_with($cleanPhone, '966966')) {
-            $cleanPhone = substr($cleanPhone, 3);
-        }
-        if (preg_match('/^0(7[0-9]\d{7})$/', $cleanPhone, $matches)) {
-            $cleanPhone = '967' . $matches[1];
-        }
-
-        return "https://wa.me/{$cleanPhone}?text=" . urlencode($msg);
+        return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'price_agreement');
     }
 
     /**
