@@ -13,7 +13,7 @@ class SenderMessage implements WhatsAppMessageInterface
         if (!$entity instanceof Shipment) {
             return null;
         }
-        return $entity->senderCustomer->phone ?? null;
+        return $entity->senderCustomer?->phone ?? $entity->sender_phone ?? null;
     }
 
     public function getReceiptType(): ?string
@@ -21,23 +21,20 @@ class SenderMessage implements WhatsAppMessageInterface
         return 'sender';
     }
 
-   public function getMessageBody(Model $entity, ?string $receiptUrl): string
+    public function getMessageBody(Model $entity, ?string $receiptUrl): string
     {
         if (!$entity instanceof Shipment) {
             return "بيانات الشحنة غير صالحة.";
         }
 
-        // بيانات المرسل والمستلم والسند
-        $senderName    = $entity->senderCustomer?->name ?? 'عميلنا العزيز';
-        $senderPhone   = $entity->senderCustomer?->phone ?? $entity->sender_phone ?? 'غير متوفر';
-        $receiverName  = $entity->receiverCustomer?->name ?? 'غير محدد';
-        $receiverPhone = $entity->receiverCustomer?->phone ?? $entity->receiver_phone ?? 'غير متوفر';
-        $bondNumber    = $entity->bond_number ?? $entity->code ?? $entity->id ?? 'غير متوفر';
-        $packageType   = $entity->package_type ?? 'غير محدد';
-        $parcelsCount  = $entity->parcels_quantity ?? 1;
-
-        // تجهيز اليوم والتاريخ والوقت بالعربية
+        // 📅 تجهيز اليوم والتاريخ والوقت بالعربية بتوقيت اليمن
         $dateObj = $entity->created_at ?? now();
+        if ($dateObj instanceof \Carbon\Carbon || $dateObj instanceof \Carbon\CarbonInterface) {
+            $dateObj = $dateObj->copy()->timezone('Asia/Aden');
+        } else {
+            $dateObj = \Carbon\Carbon::parse($dateObj)->timezone('Asia/Aden');
+        }
+
         $days = [
             'Sunday'    => 'الأحد',
             'Monday'    => 'الإثنين',
@@ -52,51 +49,89 @@ class SenderMessage implements WhatsAppMessageInterface
         $timePeriod    = $dateObj->format('A') === 'AM' ? 'صباحاً' : 'مساءً';
         $timeFormatted = $dateObj->format('h:i') . ' ' . $timePeriod;
 
-        // جلب اسم مكتب الإرسال
+        // 👤 بيانات المرسل والمستلم والسند (عرض الأرقام بدون رمز الدولة)
+        $senderName       = $entity->senderCustomer?->name ?? 'عميلنا العزيز';
+        $rawSenderPhone   = $entity->senderCustomer?->phone ?? $entity->sender_phone ?? null;
+        $senderPhone      = $this->formatPhoneWithoutCountryCode($rawSenderPhone);
+
+        $receiverName     = $entity->receiverCustomer?->name ?? 'غير محدد';
+        $rawReceiverPhone = $entity->receiverCustomer?->phone ?? $entity->receiver_phone ?? null;
+        $receiverPhone    = $this->formatPhoneWithoutCountryCode($rawReceiverPhone);
+
+        $bondNumber       = $entity->bond_number ?? $entity->code ?? $entity->id ?? 'غير متوفر';
+
+        // 📦 نوع الطرد والكمية
+        $packageType = $entity->package_type ?: 'طرد عادي';
+        if ($entity->no_gallons_honey || $entity->no_honey_jars) {
+            $honey = [];
+            if ($entity->no_gallons_honey) {
+                $honey[] = "جوالين ({$entity->no_gallons_honey})";
+            }
+            if ($entity->no_honey_jars) {
+                $honey[] = "قروف ({$entity->no_honey_jars})";
+            }
+            if ($entity->package_type && $entity->package_type !== 'عسل') {
+                $packageType .= ' + عسل: ' . implode(' - ', $honey);
+            } else {
+                $packageType = 'عسل (' . implode(' - ', $honey) . ')';
+            }
+        }
+        $parcelsCount = $entity->parcels_quantity ?? 1;
+
+        // 🏢 جلب اسم مكتب الإرسال
         $senderOffice = null;
         if ($entity->senderBranch) {
-            $appName = $entity->senderBranch->app?->name;
-            $senderOffice = ($appName ? $appName . ' / ' : '') . $entity->senderBranch->name;
+            $rawName = trim(str_replace(['مكتب عالم القمة', 'مكتب'], '', $entity->senderBranch->name));
+            $branchTitle = ($entity->senderBranch->is_main ? 'المركز الرئيسي/ ' : '') . $rawName;
+            $senderOffice = 'مكتب عالم القمة ' . $branchTitle;
         } elseif ($entity->senderOfficeBranch) {
-            $officeName = $entity->senderOfficeBranch->office?->name;
-            $senderOffice = ($officeName ? $officeName . ' / ' : '') . $entity->senderOfficeBranch->name;
+            $rawOffice = $entity->senderOfficeBranch->office?->name ?? 'عالم القمة';
+            $senderOffice = 'مكتب ' . $rawOffice . ' ' . $entity->senderOfficeBranch->name;
         }
         $senderPlace = $senderOffice ?? $entity->senderBranch?->name ?? $entity->senderOfficeBranch?->name ?? 'مكتب عالم القمة عدن';
+        $senderPlace = rtrim($senderPlace, '.');
 
-        // جلب اسم مكتب التسليم
+        // 🏢 جلب اسم مكتب التسليم
         $receiverOffice = null;
         if ($entity->receiverBranch) {
-            $appName = $entity->receiverBranch->app?->name;
-            $receiverOffice = ($appName ? $appName . ' / ' : '') . $entity->receiverBranch->name;
+            $rawName = trim(str_replace(['مكتب عالم القمة', 'مكتب'], '', $entity->receiverBranch->name));
+            $branchTitle = ($entity->receiverBranch->is_main ? 'المركز الرئيسي/ ' : '') . $rawName;
+            $receiverOffice = 'مكتب عالم القمة ' . $branchTitle;
         } elseif ($entity->receiverOfficeBranch) {
-            $officeName = $entity->receiverOfficeBranch->office?->name;
-            $receiverOffice = ($officeName ? $officeName . ' / ' : '') . $entity->receiverOfficeBranch->name;
+            $rawOffice = $entity->receiverOfficeBranch->office?->name ?? 'عالم القمة';
+            $receiverOffice = 'مكتب ' . $rawOffice . ' ' . $entity->receiverOfficeBranch->name;
         }
         $branchName = $receiverOffice ?? $entity->receiverBranch?->name ?? $entity->receiverOfficeBranch?->name ?? 'مكتب عالم القمة المركز الرئيسي/ سيئون';
+        $branchName = rtrim($branchName, '.');
 
-        // جلب مكان التسليم
+        // 📍 جلب مكان التسليم
         $deliveryPlace = $entity->delivery_place
             ?? $entity->delivery_address
             ?? $entity->receiver_address
             ?? $entity->destination
-            ?? $entity->receiverBranch?->address
-            ?? $entity->receiverBranch?->name
+            ?? ($entity->receiverBranch ? ($entity->receiverBranch->address ?: $entity->receiverBranch->name) : null)
+            ?? ($entity->receiverOfficeBranch ? ($entity->receiverOfficeBranch->address ?: $entity->receiverOfficeBranch->name) : null)
             ?? $branchName;
+        $deliveryPlace = rtrim($deliveryPlace, '. ');
 
-        // تحديد حالة الطرد
+        // ✅ تحديد حالة الطرد
         $statusText = match ($entity->status) {
             'received_at_branch' => 'وصل الفرع وجاهز للاستلام.',
             'delivered'          => 'تم التسليم بنجاح.',
+            'cancelled'          => 'تم إلغاء الشحنة.',
+            'returned'           => 'تم إرجاع الطرد.',
             default              => 'قيد العمل على معالجتة وإرسالة.',
         };
 
-        // تعريب طريقة الدفع وتحديد تكلفة النقل
+        // 💸 تعريب طريقة الدفع وتحديد تكلفة النقل
         $rawPaymentMethod = strtolower((string) ($entity->payment_method ?? ''));
-        $translatedPayment = match ($rawPaymentMethod) {
-            'prepaid', 'paid', 'cash'        => 'مقدم',
-            'postpaid', 'cod', 'on_delivery' => 'عند الاستلام (على المستلم)',
-            default                          => $entity->payment_method,
-        };
+        $paymentMethods = [
+            'prepaid'         => 'مقدم',
+            'cod'             => 'عند الاستلام (على المستلم)',
+            'partial_payment' => 'دفع جزئي',
+            'customer_credit' => 'آجل (ذمة)',
+        ];
+        $translatedPayment = $paymentMethods[$rawPaymentMethod] ?? $entity->payment_method_label ?? $entity->payment_method;
 
         $totalAmount = (float) ($entity->total_amount ?? $entity->shipping_cost ?? $entity->price ?? 0);
         $amountDue   = (float) ($entity->amount_to_collect_from_receiver ?? 0);
@@ -106,10 +141,19 @@ class SenderMessage implements WhatsAppMessageInterface
             $costText      = 'لم يتفق عليها بعد';
         } else {
             $paymentMethod = $translatedPayment ?: ($amountDue > 0 ? 'عند الاستلام (على المستلم)' : 'مقدم');
-            $costText      = $totalAmount > 0 ? number_format($totalAmount) . ' ريال' : 'خالص';
+            $costText      = $totalAmount > 0 ? number_format($totalAmount) . ' ريال' : '0 ريال';
         }
 
-        // تعريف الأيقونات بترميز Unicode القياسي
+        // 🔗 رابط السند الإلكتروني (PDF)
+        if (!$receiptUrl) {
+            try {
+                $receiptUrl = route('receipt.generate', ['type' => 'sender', 'id' => $entity->uuid ?? $entity->id]);
+            } catch (\Throwable $e) {
+                $receiptUrl = null;
+            }
+        }
+
+        // تعريف الأيقونات بترميز Unicode القياسي لضمان التوافق وتفادي أي أخطاء
         $star     = "\u{1F31F}"; // 🌟
         $box      = "\u{1F4E6}"; // 📦
         $calendar = "\u{1F4C5}"; // 📅
@@ -129,7 +173,7 @@ class SenderMessage implements WhatsAppMessageInterface
         $heart    = "\u{1F49A}"; // 💚
         $line     = str_repeat("\u{2501}", 24); // ━━━━━━━━━━━━━━━━━━━━━━━━
 
-        // بناء نص الرسالة مطابقاً للتعديل 3
+        // بناء نص الرسالة مطابقاً للتصميم المطلوب بالضبط
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
         $msg .= "الأخ/ *{$senderName}*       المحترم.\n";
         $msg .= "تحية طيبة وبعد:\n\n";
@@ -183,5 +227,59 @@ class SenderMessage implements WhatsAppMessageInterface
 
         return $msg;
     }
-}
 
+    /**
+     * تنسيق رقم الهاتف وعرضه بدون رمز الدولة
+     */
+    public function formatPhoneWithoutCountryCode(?string $phone): string
+    {
+        if (empty($phone) || trim($phone) === '' || trim($phone) === '---' || trim($phone) === 'غير متوفر') {
+            return 'غير متوفر';
+        }
+
+        $parts = preg_split('/[\/]+/', trim($phone));
+        $formattedParts = [];
+
+        $countries = config('countries', []);
+        $dialCodes = [];
+        if (is_array($countries)) {
+            foreach ($countries as $country) {
+                $rawCode = ltrim($country['dial_code'] ?? '', '+');
+                if ($rawCode) {
+                    $dialCodes[] = $rawCode;
+                }
+            }
+        }
+        $dialCodes = array_unique(array_merge($dialCodes, ['967', '966', '968', '971']));
+        usort($dialCodes, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($parts as $part) {
+            $part = trim($part);
+            if ($part === '') continue;
+
+            $cleaned = preg_replace('/[^\d\+]/', '', $part);
+            if ($cleaned === '') continue;
+
+            if (str_starts_with($cleaned, '967967')) {
+                $cleaned = substr($cleaned, 3);
+            } elseif (str_starts_with($cleaned, '966966')) {
+                $cleaned = substr($cleaned, 3);
+            }
+
+            foreach ($dialCodes as $rawCode) {
+                if (preg_match('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', $cleaned)) {
+                    $cleaned = preg_replace('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', '', $cleaned);
+                    break;
+                }
+            }
+
+            if (preg_match('/^0(7\d{8})$/', $cleaned, $matches)) {
+                $cleaned = $matches[1];
+            }
+
+            $formattedParts[] = $cleaned;
+        }
+
+        return !empty($formattedParts) ? implode(' - ', $formattedParts) : 'غير متوفر';
+    }
+}
