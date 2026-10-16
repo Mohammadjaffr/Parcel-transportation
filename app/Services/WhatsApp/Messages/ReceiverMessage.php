@@ -3,6 +3,7 @@
 namespace App\Services\WhatsApp\Messages;
 
 use App\Interfaces\WhatsAppMessageInterface;
+use App\Models\App;
 use App\Models\Shipment;
 use Illuminate\Database\Eloquent\Model;
 
@@ -207,14 +208,49 @@ class ReceiverMessage implements WhatsAppMessageInterface
         $msg .= "{$mobile}778132137{$mobile}\n";
         $msg .= "{$tel}02383444{$tel}\n";
         $msg .= "{$search} *لمتابعة طردك:* برقم السند وتواصل معنا على الأرقام أعلاه.\n";
-        $msg .= "{$warning} *تنبيهات هامة:*\n";
-        $msg .= "1- اي سند لايحمل ختم المكتب غير مقبول.\n";
-        $msg .= "2- المكتب غير مسؤول عن محتويات الطرد ولا تقبل إي مراجعة بعد(1)يوم من تاريخ إستلامه.\n";
-        $msg .= "3- المكتب غير مسؤول عن الإجراءت الأمنية والجمركية الخارجة عن إرادتنا.\n";
-        $msg .= "4- المكتب غير مسؤول عن الطرد بعد شهر من وصوله إلى مكان إستلامة\n";
-        $msg .= "5- نحن غير مسؤولين عن الحريق وحوادث السير.\n";
-        $msg .= "6- الرجاء التأكد من بيانات السند قبل الإرسال.\n";
-        $msg .= "7- لايعتبر هذا السند إثبات لإستلام الإرسالية لذا يجب إحضار البطاقة الشخصية أو جواز السفر.\n\n";
+        // 📜 جلب الشروط والتنبيهات ديناميكياً من إعدادات الشركة (App)
+        $app = $entity->senderBranch?->app 
+            ?? $entity->creator?->app 
+            ?? $entity->receiverBranch?->app;
+
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->app ?? auth()->user()->App;
+        }
+
+        if (!$app) {
+            $app = App::first();
+        }
+
+        $defaultTerms = [
+            'اي سند لايحمل ختم المكتب غير مقبول.',
+            'المكتب غير مسؤول عن محتويات الطرد ولا تقبل إي مراجعة بعد(1)يوم من تاريخ إستلامه.',
+            'المكتب غير مسؤول عن الإجراءت الأمنية والجمركية الخارجة عن إرادتنا.',
+            'المكتب غير مسؤول عن الطرد بعد شهر من وصوله إلى مكان إستلامة',
+            'نحن غير مسؤولين عن الحريق وحوادث السير.',
+            'الرجاء التأكد من بيانات السند قبل الإرسال.',
+            'لايعتبر هذا السند إثبات لإستلام الإرسالية لذا يجب إحضار البطاقة الشخصية أو جواز السفر.',
+        ];
+
+        $terms = [];
+        if (!empty($app?->terms_and_conditions) && is_array($app->terms_and_conditions)) {
+            $terms = array_values(array_filter(array_map('trim', $app->terms_and_conditions)));
+        }
+
+        if (empty($terms)) {
+            $terms = $defaultTerms;
+        }
+
+        if (!empty($terms)) {
+            $msg .= "{$warning} *تنبيهات هامة:*\n";
+            foreach ($terms as $index => $term) {
+                $termText = trim($term);
+                if (!preg_match('/^\d+[\s\.\-\)\:]+/', $termText)) {
+                    $termText = ($index + 1) . '- ' . $termText;
+                }
+                $msg .= "{$termText}\n";
+            }
+            $msg .= "\n";
+        }
         $msg .= "{$heart}نتمنى لك يوماً سعيداً! {$heart}";
 
         return $msg;
