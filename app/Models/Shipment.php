@@ -54,7 +54,7 @@ class Shipment extends Model
         'status',
         'is_returned',
         'notes',
-        
+
         // 8. معلومات النظام
         'created_by',
     ];
@@ -81,67 +81,46 @@ class Shipment extends Model
         parent::boot();
 
         static::creating(function ($shipment) {
+            // 1. توليد UUID
             if (empty($shipment->uuid)) {
                 $shipment->uuid = (string) Str::uuid();
             }
-            
-            // تعيين قيمة مؤقتة لرقم السند لتمرير قاعدة البيانات
-            $shipment->bond_number = 'temp-' . Str::random(8);
-        });
 
-        static::created(function ($shipment) {
-            $branchName = 'فرع';
-            
-            if ($shipment->sender_branch_id) {
-                $branch = \Illuminate\Support\Facades\DB::table('branches')->where('id', $shipment->sender_branch_id)->first();
-                if ($branch) {
-                    $branchName = trim(str_replace('فرع', '', $branch->name));
-                }
-            } elseif ($shipment->sender_office_branch_id) {
-                $office = \Illuminate\Support\Facades\DB::table('office_branches')->where('id', $shipment->sender_office_branch_id)->first();
-                if ($office) {
-                    $branchName = trim(str_replace('مكتب', '', $office->name));
-                }
+            // 💡 جلب بيانات الفرع
+            $branchId = $shipment->sender_branch_id ?? auth()->user()->branch_id;
+            $branch = \Illuminate\Support\Facades\DB::table('branches')->where('id', $branchId)->first();
+
+            // تحديد كود الفرع (ALQ أو SYW ..الخ). إذا كان فارغاً نستخدم B1 كاحتياطي.
+            $branchCode = ($branch && !empty($branch->code)) ? $branch->code : 'B' . $branchId;
+
+            // 2. تعبئة عمود code تلقائياً بـ (ALQ)
+            if (empty($shipment->code)) {
+                $shipment->code = $branchCode;
             }
 
-            // استخدام اسم الفرع كبادئة
-            $bondPrefix = '';
+            // 3. توليد رقم السند (bond_number) بالصيغة المخفية (مثال: ALQ-001)
+            if (empty($shipment->bond_number) || str_starts_with($shipment->bond_number, 'temp-')) {
 
-            $existingBonds = \Illuminate\Support\Facades\DB::table('shipments')
-                ->select('bond_number')
-                ->where('bond_number', 'LIKE', $bondPrefix . '%')
-                ->where('id', '!=', $shipment->id)
-                ->pluck('bond_number');
+                $bondPrefix = $branchCode . '-'; // البادئة المخفية (مثال: ALQ-)
 
-            $maxSeq = 0;
-            foreach ($existingBonds as $bond) {
-                $parts = explode('-', $bond);
-                if (count($parts) > 1) {
-                    $seq = (int) end($parts);
-                    if ($seq > $maxSeq) {
-                        $maxSeq = $seq;
-                    }
+                // جلب أعلى رقم سند لهذا الفرع تحديداً
+                $lastShipment = static::where('bond_number', 'LIKE', $bondPrefix . '%')
+                    ->orderByRaw('CAST(SUBSTRING_INDEX(bond_number, "-", -1) AS UNSIGNED) DESC')
+                    ->first();
+
+                // توليد الرقم التالي
+                if ($lastShipment) {
+                    $parts = explode('-', $lastShipment->bond_number);
+                    $nextNumber = (int) end($parts) + 1;
+                } else {
+                    $nextNumber = 1; // البداية دائماً من 1
                 }
-            }
-            
-            $sequence = $maxSeq + 1;
-            $sequenceStr = str_pad($sequence, 3, '0', STR_PAD_LEFT);
-            $bondNumber = $bondPrefix . $sequenceStr;
 
-            // التأكد من عدم وجود تكرار كإجراء احتياطي
-            while (\Illuminate\Support\Facades\DB::table('shipments')->where('bond_number', $bondNumber)->exists()) {
-                $sequence++;
-                $sequenceStr = str_pad($sequence, 3, '0', STR_PAD_LEFT);
-                $bondNumber = $bondPrefix . $sequenceStr;
+                // الحفظ النهائي في قاعدة البيانات (مثال: ALQ-001)
+                $shipment->bond_number = $bondPrefix . $nextNumber;
             }
-            
-            $shipment->bond_number = $bondNumber;
-            \Illuminate\Support\Facades\DB::table('shipments')
-                ->where('id', $shipment->id)
-                ->update(['bond_number' => $bondNumber]);
         });
     }
-
     public function package()
     {
         return $this->belongsTo(ShipmentPackage::class, 'shipment_package_id');
@@ -221,10 +200,10 @@ class Shipment extends Model
         $partial = (float) ($this->partial_amount ?? 0);
 
         return match ($this->payment_method) {
-            'prepaid'         => 0, 
-            'customer_credit' => 0, 
-            'partial_payment' => max(0, $total - $partial), 
-            'cod'             => $total, 
+            'prepaid'         => 0,
+            'customer_credit' => 0,
+            'partial_payment' => max(0, $total - $partial),
+            'cod'             => $total,
             default           => $total,
         };
     }
@@ -238,10 +217,10 @@ class Shipment extends Model
         $partial = (float) ($this->partial_amount ?? 0);
 
         return match ($this->payment_method) {
-            'prepaid'         => $total,   
-            'partial_payment' => $partial, 
-            'cod'             => 0,       
-            'customer_credit' => 0,        
+            'prepaid'         => $total,
+            'partial_payment' => $partial,
+            'cod'             => 0,
+            'customer_credit' => 0,
             default           => 0,
         };
     }
@@ -296,4 +275,3 @@ class Shipment extends Model
         return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'sender');
     }
 }
-

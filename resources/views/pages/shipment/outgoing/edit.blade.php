@@ -115,7 +115,7 @@
                                         <input type="hidden" name="receiver_branch_id" :value="selectedBranchId">
 
                                         {{-- حقل الإدخال والبحث المرئي --}}
-                                        <div class="relative flex items-center">
+                                        <div class="flex relative items-center">
                                             <input type="text"
                                                 x-ref="destinationInput"
                                                 x-model="searchQuery"
@@ -124,31 +124,31 @@
                                                 @keydown.enter.prevent="if(filteredDestinations.length > 0) { selectDestination(filteredDestinations[0]); }"
                                                 placeholder="ابحث أو اختر الفرع أو الوجهة..."
                                                 autocomplete="off"
-                                                required
-                                                class="pr-10 pl-16 w-full h-12 text-sm font-bold bg-white dark:bg-boxdark rounded-xl border border-gray-200 dark:border-boxdark-2 transition-all outline-none text-on-surface dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20 placeholder:text-gray-400 placeholder:font-normal"
+                                                
+                                                class="pr-10 pl-16 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark dark:border-boxdark-2 text-on-surface dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20 placeholder:text-gray-400 placeholder:font-normal"
                                                 :class="selectedBranchId ? 'border-green-500 bg-green-50/20 text-green-900 dark:text-green-400 font-extrabold' : ''">
 
                                             {{-- أيقونة الموقع في اليمين --}}
-                                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+                                            <span class="absolute right-3 top-1/2 transition-colors -translate-y-1/2 pointer-events-none"
                                                 :class="selectedBranchId ? 'text-green-600' : 'text-gray-400'">
                                                 <span class="material-symbols-outlined text-[20px]">location_on</span>
                                             </span>
 
                                             {{-- أزرار التحكم في اليسار (مسح وسهم الفتح) --}}
-                                            <div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                            <div class="flex absolute left-3 top-1/2 gap-1 items-center -translate-y-1/2">
                                                 {{-- زر المسح السريع --}}
                                                 <button type="button" 
                                                     x-show="searchQuery.length > 0 || selectedBranchId" 
                                                     x-cloak
                                                     @click="clearSelection(); $refs.destinationInput.focus()"
-                                                    class="p-1 rounded-full text-gray-400 hover:text-rose-500 hover:bg-gray-100 dark:hover:bg-boxdark-2 transition-colors">
+                                                    class="p-1 text-gray-400 rounded-full transition-colors hover:text-rose-500 hover:bg-gray-100 dark:hover:bg-boxdark-2">
                                                     <span class="material-symbols-outlined text-[18px] block">close</span>
                                                 </button>
 
                                                 {{-- سهم القائمة المنسدلة --}}
                                                 <button type="button" 
                                                     @click="toggleDropdown()"
-                                                    class="p-1 rounded-lg text-gray-400 hover:text-green-600 transition-colors">
+                                                    class="p-1 text-gray-400 rounded-lg transition-colors hover:text-green-600">
                                                     <span class="material-symbols-outlined text-[20px] transition-transform duration-200 block"
                                                         :class="isOpen ? 'rotate-180 text-green-600' : ''">expand_more</span>
                                                 </button>
@@ -170,9 +170,9 @@
                                             <template x-for="(items, groupName) in groupedFilteredDestinations" :key="groupName">
                                                 <div class="border-b border-gray-100 dark:border-boxdark-2/60 last:border-b-0">
                                                     {{-- رأس المجموعة --}}
-                                                    <div class="px-3.5 py-2 bg-gray-50/95 dark:bg-boxdark-2/95 sticky top-0 backdrop-blur-md z-10 flex items-center justify-between border-b border-gray-100 dark:border-boxdark">
-                                                        <div class="flex items-center gap-2">
-                                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                                    <div class="flex sticky top-0 z-10 justify-between items-center px-3.5 py-2 border-b border-gray-100 backdrop-blur-md bg-gray-50/95 dark:bg-boxdark-2/95 dark:border-boxdark">
+                                                        <div class="flex gap-2 items-center">
+                                                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                                                             <span class="text-xs font-black text-gray-700 dark:text-gray-200" x-text="groupName"></span>
                                                         </div>
                                                         <span class="text-[10px] font-bold text-gray-400 bg-white dark:bg-boxdark px-2 py-0.5 rounded-full shadow-sm border border-gray-100 dark:border-boxdark-2" x-text="items.length"></span>
@@ -183,11 +183,11 @@
                                                         <template x-for="dest in items" :key="dest.key">
                                                             <button type="button"
                                                                 @click="selectDestination(dest)"
-                                                                class="flex justify-between items-center w-full px-3 py-2.5 rounded-xl text-right transition-all group/item"
+                                                                class="flex justify-between items-center px-3 py-2.5 w-full text-right rounded-xl transition-all group/item"
                                                                 :class="dest.key === selectedDestinationKey ? 'bg-green-50 dark:bg-green-500/15 text-green-800 dark:text-green-300 font-black ring-1 ring-green-500/30' : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-boxdark-2/70'">
                                                                 
-                                                                <div class="flex items-center gap-2.5 truncate">
-                                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors"
+                                                                <div class="flex gap-2.5 items-center truncate">
+                                                                    <div class="flex justify-center items-center w-7 h-7 rounded-lg transition-colors shrink-0"
                                                                         :class="{
                                                                             'bg-green-100/80 text-green-600 dark:bg-green-500/20 dark:text-green-400': dest.type === 'internal',
                                                                             'bg-blue-100/80 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400': dest.type === 'trusted',
@@ -197,7 +197,7 @@
                                                                             x-text="dest.type === 'internal' ? 'domain' : (dest.type === 'trusted' ? 'verified' : 'swap_horiz')">
                                                                         </span>
                                                                     </div>
-                                                                    <span class="text-xs font-bold truncate group-hover/item:text-green-700 dark:group-hover/item:text-green-400 transition-colors" x-text="dest.name"></span>
+                                                                    <span class="text-xs font-bold truncate transition-colors group-hover/item:text-green-700 dark:group-hover/item:text-green-400" x-text="dest.name"></span>
                                                                 </div>
 
                                                                 <span x-show="dest.key === selectedDestinationKey"
@@ -214,7 +214,7 @@
                                             <div x-show="!hasResults" class="p-6 text-center">
                                                 <span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-[32px] mb-1 block">search_off</span>
                                                 <p class="text-sm font-bold text-gray-500 dark:text-gray-400">لا توجد نتائج مطابقة</p>
-                                                <p class="text-xs text-gray-400 mt-1" x-text="'ابحث باسم مختلف عن: ' + searchQuery"></p>
+                                                <p class="mt-1 text-xs text-gray-400" x-text="'ابحث باسم مختلف عن: ' + searchQuery"></p>
                                             </div>
                                         </div>
 
@@ -256,8 +256,8 @@
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
                                             اسم المرسل <span class="text-error">*</span>
                                         </label>
-                                        <div class="relative flex items-center">
-                                            <input type="text" name="sender_name" required x-model="nameInput"
+                                        <div class="flex relative items-center">
+                                            <input type="text" name="sender_name"  x-model="nameInput"
                                                 @input="searchCustomer"
                                                 @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
                                                 :readonly="selectedCustomerId !== null"
@@ -268,7 +268,7 @@
                                                     'bg-white border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20'">
 
                                             {{-- مؤشر العميل المسجل وزر الإلغاء --}}
-                                            <div x-show="selectedCustomerId" class="flex absolute left-2 items-center gap-1.5 z-10">
+                                            <div x-show="selectedCustomerId" class="flex absolute left-2 z-10 gap-1.5 items-center">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-primary bg-primary/10 rounded-md">
                                                     <span class="material-symbols-outlined text-[14px]">check_circle</span>
                                                     مسجل
@@ -289,15 +289,15 @@
                                                 <button type="button" @click="selectCustomer(customer)"
                                                     class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-primary/5 dark:hover:bg-boxdark-2 dark:border-boxdark group">
                                                     <div class="flex flex-col gap-0.5">
-                                                        <span class="text-sm font-bold text-on-surface dark:text-white group-hover:text-primary transition-colors"
+                                                        <span class="text-sm font-bold transition-colors text-on-surface dark:text-white group-hover:text-primary"
                                                             x-text="customer.name"></span>
                                                         <span
-                                                            class="text-xs font-mono font-medium text-gray-500 dark:text-bodydark dir-ltr text-right flex items-center gap-1">
+                                                            class="flex gap-1 items-center font-mono text-xs font-medium text-right text-gray-500 dark:text-bodydark dir-ltr">
                                                             <span class="material-symbols-outlined text-[14px] text-gray-400">call</span>
                                                             <span x-text="customer.phone || 'بدون رقم'"></span>
                                                         </span>
                                                     </div>
-                                                    <div class="flex items-center gap-1 text-xs text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div class="flex gap-1 items-center text-xs font-bold opacity-0 transition-opacity text-primary group-hover:opacity-100">
                                                         <span>اختيار</span>
                                                         <span class="material-symbols-outlined text-[16px]">arrow_back_ios</span>
                                                     </div>
@@ -389,8 +389,8 @@
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
                                             اسم المستلم <span class="text-error">*</span>
                                         </label>
-                                        <div class="relative flex items-center">
-                                            <input type="text" name="receiver_name" required x-model="nameInput"
+                                        <div class="flex relative items-center">
+                                            <input type="text" name="receiver_name"  x-model="nameInput"
                                                 @input="searchCustomer"
                                                 @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
                                                 :readonly="selectedCustomerId !== null"
@@ -401,7 +401,7 @@
                                                     'bg-white border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'">
 
                                             {{-- مؤشر العميل المسجل وزر الإلغاء --}}
-                                            <div x-show="selectedCustomerId" class="flex absolute left-2 items-center gap-1.5 z-10">
+                                            <div x-show="selectedCustomerId" class="flex absolute left-2 z-10 gap-1.5 items-center">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold text-green-600 bg-green-50 rounded-md dark:bg-green-500/20 dark:text-green-300">
                                                     <span class="material-symbols-outlined text-[14px]">check_circle</span>
                                                     مسجل
@@ -422,15 +422,15 @@
                                                 <button type="button" @click="selectCustomer(customer)"
                                                     class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-green-50/50 dark:hover:bg-boxdark-2 dark:border-boxdark group">
                                                     <div class="flex flex-col gap-0.5">
-                                                        <span class="text-sm font-bold text-on-surface dark:text-white group-hover:text-green-600 transition-colors"
+                                                        <span class="text-sm font-bold transition-colors text-on-surface dark:text-white group-hover:text-green-600"
                                                             x-text="customer.name"></span>
                                                         <span
-                                                            class="text-xs font-mono font-medium text-gray-500 dark:text-bodydark dir-ltr text-right flex items-center gap-1">
+                                                            class="flex gap-1 items-center font-mono text-xs font-medium text-right text-gray-500 dark:text-bodydark dir-ltr">
                                                             <span class="material-symbols-outlined text-[14px] text-gray-400">call</span>
                                                             <span x-text="customer.phone || 'بدون رقم'"></span>
                                                         </span>
                                                     </div>
-                                                    <div class="flex items-center gap-1 text-xs text-green-600 font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div class="flex gap-1 items-center text-xs font-bold text-green-600 opacity-0 transition-opacity group-hover:opacity-100">
                                                         <span>اختيار</span>
                                                         <span class="material-symbols-outlined text-[16px]">arrow_back_ios</span>
                                                     </div>
@@ -596,7 +596,7 @@
                                 <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span
                                         class="text-rose-500">*</span></label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
-                                    min="0" dir="ltr" required
+                                    min="0" dir="ltr" 
                                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                             </div>
 
@@ -710,7 +710,7 @@
                                 </label>
                                 <div class="relative">
                                     <select name="payment_method" x-model="paymentMethod"
-                                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
+                                        class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
                                         <option value="prepaid">مدفوع مقدماً</option>
                                         @hasservice('Payment_COD')
                                             <option value="cod">الدفع عند الاستلام (على المستلم)</option>
@@ -726,7 +726,7 @@
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ
                                     الإجمالي (ريال) <span class="text-error">*</span></label>
-                                <input type="number" required name="total_amount" :value="totalAmount" readonly
+                                <input type="number"  name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
                                     class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"
                                     dir="ltr">
@@ -755,7 +755,7 @@
                                     <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
 
                                     {{-- Toggle Switch --}}
-                                    <div class="relative shrink-0 w-12 h-7 rounded-full transition-colors duration-300"
+                                    <div class="relative w-12 h-7 rounded-full transition-colors duration-300 shrink-0"
                                         :class="priceAgreed ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'">
                                         <div class="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
                                             :class="priceAgreed ? 'right-0.5' : 'right-[calc(100%-1.625rem)]'">

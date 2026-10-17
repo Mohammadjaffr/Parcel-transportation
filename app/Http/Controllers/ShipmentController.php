@@ -649,11 +649,11 @@ class ShipmentController extends Controller
             'receiver_branch_id'    => 'required|integer',
 
             'sender_customer_id'    => 'nullable|exists:customers,id',
-            'sender_name'           => 'required_without:sender_customer_id|string|max:255',
+            'sender_name'           => 'nullable|string|max:255',
             'sender_phone'          => 'nullable|string|max:20',
 
             'receiver_customer_id'  => 'nullable|exists:customers,id',
-            'receiver_name'         => 'required_without:receiver_customer_id|string|max:255',
+            'receiver_name'         => 'nullable|string|max:255',
             'receiver_phone'        => 'nullable|string|max:20',
 
             'package_type'          => 'nullable|string',
