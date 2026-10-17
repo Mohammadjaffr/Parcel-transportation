@@ -53,11 +53,11 @@ class SenderMessage implements WhatsAppMessageInterface
         // 👤 بيانات المرسل والمستلم والسند (مع رمز الدولة 967 كما في التصميم)
         $senderName       = $entity->senderCustomer?->name ?? 'عميلنا العزيز';
         $rawSenderPhone   = $entity->senderCustomer?->phone ?? $entity->sender_phone ?? null;
-        $senderPhone      = $this->formatPhoneWithCountryCode($rawSenderPhone);
+        $senderPhone      = $this->formatPhoneWithoutCountryCode($rawSenderPhone);
 
         $receiverName     = $entity->receiverCustomer?->name ?? 'غير محدد';
         $rawReceiverPhone = $entity->receiverCustomer?->phone ?? $entity->receiver_phone ?? null;
-        $receiverPhone    = $this->formatPhoneWithCountryCode($rawReceiverPhone);
+        $receiverPhone    = $this->formatPhoneWithoutCountryCode($rawReceiverPhone);
 
         $bondNumber       = $entity->bond_number ?? $entity->code ?? $entity->id ?? 'غير متوفر';
 
@@ -94,7 +94,7 @@ class SenderMessage implements WhatsAppMessageInterface
         $senderOffice = null;
         if ($entity->senderBranch) {
             $rawName = trim(str_replace(['مكتب عالم القمة', 'مكتب', 'فرع'], '', $entity->senderBranch->name));
-            $branchTitle = ($entity->senderBranch->is_main ? 'المركز الرئيسي/ ' : '/ ') . $rawName;
+            $branchTitle = ($entity->senderBranch->is_main ? '/ ' : '/ ') . $rawName;
             $senderOffice = 'مكتب عالم القمة ' . $branchTitle;
         } elseif ($entity->senderOfficeBranch) {
             $rawOffice = $entity->senderOfficeBranch->office?->name ?? 'عالم القمة';
@@ -183,7 +183,7 @@ class SenderMessage implements WhatsAppMessageInterface
         }
 
         // 📝 الملاحظات من قاعدة البيانات أو النص الافتراضي
-        $notesText = !empty(trim((string) $entity->notes)) ? trim($entity->notes) : 'الموجودة بالسند     ';
+        $notesText = !empty(trim((string) $entity->notes)) ? trim($entity->notes) : 'لاتوجد ';
 
         // بناء نص الرسالة مطابقاً للتصميم المطلوب بالضبط
         $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
@@ -279,7 +279,8 @@ class SenderMessage implements WhatsAppMessageInterface
     /**
      * تنسيق رقم الهاتف مع ضمان وجود رمز الدولة (مثلاً 967771027082) كما في التصميم
      */
-    public function formatPhoneWithCountryCode(?string $phone): string
+   
+    public function formatPhoneWithoutCountryCode(?string $phone): string
     {
         if (empty($phone) || trim($phone) === '' || trim($phone) === '---' || trim($phone) === 'غير متوفر') {
             return 'غير متوفر';
@@ -288,38 +289,46 @@ class SenderMessage implements WhatsAppMessageInterface
         $parts = preg_split('/[\/]+/', trim($phone));
         $formattedParts = [];
 
+        $countries = config('countries', []);
+        $dialCodes = [];
+        if (is_array($countries)) {
+            foreach ($countries as $country) {
+                $rawCode = ltrim($country['dial_code'] ?? '', '+');
+                if ($rawCode) {
+                    $dialCodes[] = $rawCode;
+                }
+            }
+        }
+        $dialCodes = array_unique(array_merge($dialCodes, ['967', '966', '968', '971']));
+        usort($dialCodes, fn($a, $b) => strlen($b) <=> strlen($a));
+
         foreach ($parts as $part) {
             $part = trim($part);
             if ($part === '') continue;
 
-            // إزالة أي رموز غير رقمية مثل + أو المسافات
-            $cleaned = preg_replace('/[^\d]/', '', $part);
+            $cleaned = preg_replace('/[^\d\+]/', '', $part);
             if ($cleaned === '') continue;
 
-            // إزالة الأصفار الدولية في البداية إن وجدت (مثل 00967)
-            if (str_starts_with($cleaned, '00')) {
-                $cleaned = substr($cleaned, 2);
-            }
-
-            // معالجة تكرار مفتاح الدولة بالخطأ (مثل 967967)
             if (str_starts_with($cleaned, '967967')) {
                 $cleaned = substr($cleaned, 3);
             } elseif (str_starts_with($cleaned, '966966')) {
                 $cleaned = substr($cleaned, 3);
             }
 
-            // إذا كان الرقم يمني محلي يبدأ بـ 07 (10 أرقام) نحذف الصفر ونضيف 967
-            if (preg_match('/^0(7\d{8})$/', $cleaned, $matches)) {
-                $cleaned = '967' . $matches[1];
+            foreach ($dialCodes as $rawCode) {
+                if (preg_match('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', $cleaned)) {
+                    $cleaned = preg_replace('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', '', $cleaned);
+                    break;
+                }
             }
-            // إذا كان الرقم يمني محلي يبدأ بـ 7 مباشرة (9 أرقام) نضيف 967
-            elseif (preg_match('/^(7\d{8})$/', $cleaned, $matches)) {
-                $cleaned = '967' . $matches[1];
+
+            if (preg_match('/^0(7\d{8})$/', $cleaned, $matches)) {
+                $cleaned = $matches[1];
             }
 
             $formattedParts[] = $cleaned;
         }
 
-        return !empty($formattedParts) ? implode(' / ', $formattedParts) : 'غير متوفر';
+        return !empty($formattedParts) ? implode(' - ', $formattedParts) : 'غير متوفر';
     }
 }

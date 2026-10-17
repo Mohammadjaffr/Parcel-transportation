@@ -111,7 +111,7 @@
                                                 @keydown.enter.prevent="if(filteredDestinations.length > 0) { selectDestination(filteredDestinations[0]); }"
                                                 placeholder="ابحث أو اختر الفرع أو الوجهة..."
                                                 autocomplete="off"
-                                                required
+                                                
                                                 class="pr-10 pl-16 w-full h-12 text-sm font-bold bg-white rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark dark:border-boxdark-2 text-on-surface dark:text-white focus:border-green-500 focus:ring-2 focus:ring-green-500/20 placeholder:text-gray-400 placeholder:font-normal"
                                                 :class="selectedBranchId ? 'border-green-500 bg-green-50/20 text-green-900 dark:text-green-400 font-extrabold' : ''">
 
@@ -240,7 +240,7 @@
                                             اسم المرسل <span class="text-error">*</span>
                                         </label>
                                         <div class="flex relative items-center">
-                                            <input type="text" name="sender_name" required x-model="nameInput"
+                                            <input type="text" name="sender_name"  x-model="nameInput"
                                                 @input="searchCustomer"
                                                 @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
                                                 :readonly="selectedCustomerId !== null"
@@ -369,7 +369,7 @@
                                             اسم المستلم <span class="text-error">*</span>
                                         </label>
                                         <div class="flex relative items-center">
-                                            <input type="text" name="receiver_name" required x-model="nameInput"
+                                            <input type="text" name="receiver_name"  x-model="nameInput"
                                                 @input="searchCustomer"
                                                 @focus="if(nameInput.trim().length > 0 && !selectedCustomerId) showCustomerDropdown = true"
                                                 :readonly="selectedCustomerId !== null"
@@ -587,7 +587,7 @@
                             <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
-                                    min="0" dir="ltr" required
+                                    min="0" dir="ltr" 
                                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
                             </div>
 
@@ -717,7 +717,7 @@
                                     الإجمالي (ريال) <span class="text-error">*</span></label>
 
                                 {{-- 💡 حقل المبلغ الإجمالي: مقفل (Readonly) ويأخذ قيمته من x-bind:value --}}
-                                <input type="number" required name="total_amount" :value="totalAmount" readonly
+                                <input type="number"  name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
                                     class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"
                                     dir="ltr">

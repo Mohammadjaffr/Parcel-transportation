@@ -83,7 +83,7 @@ class ReceiverMessage implements WhatsAppMessageInterface
         $senderOffice = null;
         if ($entity->senderBranch) {
             $rawName = trim(str_replace(['مكتب عالم القمة', 'مكتب'], '', $entity->senderBranch->name));
-            $branchTitle = ($entity->senderBranch->is_main ? 'المركز الرئيسي/ ' : '') . $rawName;
+            $branchTitle = ($entity->senderBranch->is_main ? '/ ' : '') . $rawName;
             $senderOffice = 'مكتب عالم القمة ' . $branchTitle;
         } elseif ($entity->senderOfficeBranch) {
             $rawOffice = $entity->senderOfficeBranch->office?->name ?? 'عالم القمة';
@@ -102,7 +102,7 @@ class ReceiverMessage implements WhatsAppMessageInterface
             $rawOffice = $entity->receiverOfficeBranch->office?->name ?? 'عالم القمة';
             $receiverOffice = 'مكتب ' . $rawOffice . ' ' . $entity->receiverOfficeBranch->name;
         }
-        $branchName = $receiverOffice ?? $entity->receiverBranch?->name ?? $entity->receiverOfficeBranch?->name ?? 'مكتب عالم القمة المركز الرئيسي/ سيئون';
+        $branchName = $receiverOffice ?? $entity->receiverBranch?->name ?? $entity->receiverOfficeBranch?->name ?? 'مكتب عالم القمة / سيئون';
         $branchName = rtrim($branchName, '.');
 
         // ✅ تحديد حالة الطرد
