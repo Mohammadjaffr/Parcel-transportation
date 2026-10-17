@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
             'office_name' => ['required', 'string', 'max:255'],
 
             'branch_name' => ['required', 'string', 'max:255'],
+            'branch_code' => ['nullable', 'string', 'max:50'],
             'branch_address' => ['required', 'string', 'max:255'],
             'branch_phone' => ['required', 'string', 'max:20'],
             'branch_city' => ['required', 'string', 'max:255'],
@@ -84,9 +85,34 @@ class RegisteredUserController extends Controller
                 ],
             ]);
 
+            $branchCode = $request->filled('branch_code') ? strtoupper(trim($request->branch_code)) : null;
+            if (!$branchCode) {
+                $sourceText = $request->branch_city ?: $request->branch_name;
+                $cityMap = [
+                    'عدن' => 'ADN', 'صنعاء' => 'SNA', 'تعز' => 'TAI', 'حضرموت' => 'HAD',
+                    'المكلا' => 'MUK', 'الحديدة' => 'HUD', 'إب' => 'IBB', 'لحج' => 'LAJ',
+                    'أبين' => 'ABY', 'شبوة' => 'SHA', 'مأرب' => 'MAR', 'المهرة' => 'MAH',
+                    'البيضاء' => 'BAY', 'حجة' => 'HAJ', 'صعدة' => 'SAD', 'الضالع' => 'DAL',
+                    'عمران' => 'AMR', 'المحويت' => 'MAW', 'الجوف' => 'JAW', 'ذمار' => 'DHA',
+                    'ريمة' => 'RAY', 'سقطرى' => 'SOC', 'الرياض' => 'RUH', 'جدة' => 'JED',
+                    'الدمام' => 'DMM', 'مكة' => 'MAK', 'المدينة' => 'MED', 'الطائف' => 'TIF'
+                ];
+                foreach ($cityMap as $city => $c) {
+                    if (str_contains($sourceText, $city)) {
+                        $branchCode = $c;
+                        break;
+                    }
+                }
+                if (!$branchCode) {
+                    $clean = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $sourceText));
+                    $branchCode = substr($clean, 0, 3) ?: 'HQ1';
+                }
+            }
+
             $branch = Branch::create([
                 'app_id' => $app->id,
                 'name' => $request->branch_name,
+                'code' => $branchCode,
                 'address' => $request->branch_address,
                 'phone' => $request->branch_phone,
                 'is_main' => true, 

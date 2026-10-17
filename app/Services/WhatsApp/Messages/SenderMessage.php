@@ -170,7 +170,7 @@ class SenderMessage implements WhatsAppMessageInterface
 
         if (!$entity->is_price_agreed) {
             $paymentMethod = 'حسب السند مدفوع مقدماً او اجل على المستلم';
-            $costText      = '  ';
+            $costText      = 'بيتم الاتفاق عليها ';
         } else {
             $paymentMethod = match ($entity->payment_method) {
                 'prepaid'         => 'مدفوع مقدماً',
@@ -179,7 +179,7 @@ class SenderMessage implements WhatsAppMessageInterface
                 'customer_credit' => 'آجل (على حساب العميل)',
                 default           => 'حسب السند مدفوع مقدماً او اجل على المستلم',
             };
-            $costText = $totalAmount > 0 ? number_format($totalAmount) . ' ريال' : '  ';
+            $costText = $totalAmount > 0 ? number_format($totalAmount) . ' ريال' : ' كلفة النقل بيتم الاتفاق عليها ';
         }
 
         // 📝 الملاحظات من قاعدة البيانات أو النص الافتراضي

@@ -90,8 +90,13 @@
                 class="flex justify-center items-center w-10 h-10 bg-white rounded-full border shadow-sm transition-all border-slate-100 text-slate-500 active:scale-90">
                 <span class="material-symbols-outlined text-[20px]">arrow_forward_ios</span>
             </a>
-            <div>
+            <div class="flex items-center gap-2">
                 <h1 class="text-xl font-black font-headline text-slate-800">تجهيز شحنة</h1>
+                @if(!empty($nextTrackingNumber))
+                    <span class="px-2 py-0.5 text-xs font-mono font-black text-primary bg-primary/10 rounded-lg">
+                        #{{ $nextTrackingNumber }}
+                    </span>
+                @endif
             </div>
         </div>
 

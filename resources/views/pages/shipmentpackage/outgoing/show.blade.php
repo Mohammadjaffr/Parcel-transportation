@@ -24,7 +24,7 @@
                 </a>
                 <div>
                     <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">إرسالية
-                        #{{ $package->id }}</h1>
+                        #{{ $package->tracking_number }}</h1>
                     <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">
                         {{ $package->created_at->format('Y-m-d h:i A') }}</p>
                 </div>
@@ -262,7 +262,7 @@
                                     @forelse($uniqueDestinations as $dest)
                                         <div
                                             class="bg-white dark:bg-boxdark px-4 py-3 rounded-xl text-[13px] font-black text-on-surface dark:text-white flex items-center justify-between border border-emerald-100 dark:border-emerald-500/20 shadow-sm transition-all hover:scale-[1.02]">
-                                            <div class="flex items-center gap-2.5">
+                                            <div class="flex gap-2.5 items-center">
                                                 <span
                                                     class="material-symbols-outlined text-[18px] text-emerald-500">location_on</span>
                                                 {{ $dest['name'] }}
@@ -319,7 +319,7 @@
 
                     </div>
 
-                    <div class="flex flex-col gap-4 flex-1">
+                    <div class="flex flex-col flex-1 gap-4">
                         @forelse($package->shipments as $shipment)
                             <div
                                 class="flex items-center gap-5 bg-white dark:bg-boxdark-2 p-5 rounded-[2rem] border border-gray-100 dark:border-boxdark shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 group">
@@ -455,7 +455,7 @@
                                         @csrf
 
                                         <button type="button" @click="showDeleteModal = false"
-                                            class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                            class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
                                             تراجع
                                         </button>
 
@@ -472,7 +472,7 @@
                         {{-- ================= زر إضافة طرد جديد (Desktop) ================= --}}
                         @if (!in_array($package->status, ['delivered', 'returned', 'received_at_branch']) && isset($availableShipments))
                             <button type="button" @click="isAddModalOpen = true"
-                                class="flex gap-2 justify-center items-center mt-4 w-full h-14 text-sm font-black rounded-2xl border-2 border-dashed transition-all border-gray-200 dark:border-boxdark text-gray-400 dark:text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 active:scale-95">
+                                class="flex gap-2 justify-center items-center mt-4 w-full h-14 text-sm font-black text-gray-400 rounded-2xl border-2 border-gray-200 border-dashed transition-all dark:border-boxdark dark:text-gray-500 hover:border-primary hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 active:scale-95">
                                 <span class="material-symbols-outlined text-[24px]">add_box</span>
                                 إضافة طرد جديد للإرسالية
                             </button>
@@ -510,31 +510,31 @@
 
                         {{-- الهيدر وزر الإغلاق --}}
                         <div
-                            class="flex z-10 justify-between items-center p-6 border-b border-gray-100 dark:border-boxdark-2 bg-white dark:bg-boxdark shrink-0">
+                            class="flex z-10 justify-between items-center p-6 bg-white border-b border-gray-100 dark:border-boxdark-2 dark:bg-boxdark shrink-0">
                             <div>
                                 <h2
-                                    class="text-xl font-black text-on-surface dark:text-white font-headline flex items-center gap-2">
+                                    class="flex gap-2 items-center text-xl font-black text-on-surface dark:text-white font-headline">
                                     <span class="material-symbols-outlined text-primary">add_circle</span>
                                     إضافة طرد للإرسالية
                                 </h2>
-                                <p class="text-xs font-bold text-gray-500 dark:text-gray-400 mt-1">ابحث عن الطرد المطلوب
+                                <p class="mt-1 text-xs font-bold text-gray-500 dark:text-gray-400">ابحث عن الطرد المطلوب
                                     واضغط إضافة لربطه بالرحلة</p>
                             </div>
                             <button type="button" @click="isAddModalOpen = false"
-                                class="w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-boxdark-2 text-gray-500 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 transition-colors active:scale-90">
+                                class="flex justify-center items-center w-10 h-10 text-gray-500 bg-gray-50 rounded-xl transition-colors dark:bg-boxdark-2 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-90">
                                 <span class="material-symbols-outlined">close</span>
                             </button>
                         </div>
 
                         {{-- حقل البحث --}}
                         <div
-                            class="p-6 border-b bg-gray-50/50 dark:bg-boxdark-2/50 shrink-0 border-gray-100 dark:border-boxdark-2">
+                            class="p-6 border-b border-gray-100 bg-gray-50/50 dark:bg-boxdark-2/50 shrink-0 dark:border-boxdark-2">
                             <div class="relative group">
                                 <input type="text" x-model="searchShipment"
                                     placeholder="ابحث برقم السند أو اسم المستلم..."
-                                    class="pr-12 pl-4 w-full h-14 text-sm font-bold bg-white dark:bg-boxdark rounded-xl border transition-all outline-none border-gray-200 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-sm">
+                                    class="pr-12 pl-4 w-full h-14 text-sm font-bold placeholder-gray-400 text-gray-700 bg-white rounded-xl border border-gray-200 shadow-sm transition-all outline-none dark:bg-boxdark dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white dark:placeholder-gray-500">
                                 <div
-                                    class="flex absolute inset-y-0 right-0 items-center pr-4 transition-colors text-gray-400 group-focus-within:text-primary">
+                                    class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
                                     <span class="material-symbols-outlined text-[24px]">search</span>
                                 </div>
                             </div>
@@ -542,9 +542,9 @@
 
                         {{-- قائمة الطرود المتاحة للإضافة (عرض شبكي Grid) --}}
                         <div class="overflow-y-auto flex-1 p-6 custom-scrollbar bg-gray-50/30 dark:bg-boxdark/30">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 @forelse($availableShipments as $availShipment)
-                                    <div class="flex flex-col justify-between p-5 bg-white dark:bg-boxdark-2 rounded-2xl border shadow-sm transition-colors border-gray-100 dark:border-boxdark hover:border-primary/30 group"
+                                    <div class="flex flex-col justify-between p-5 bg-white rounded-2xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 group"
                                         x-show="'{{ $availShipment->bond_number }}'.includes(searchShipment) || '{{ $availShipment->receiverCustomer->name ?? '' }}'.includes(searchShipment)">
 
                                         <div class="mb-5">
@@ -569,7 +569,7 @@
                                             @csrf
                                             <input type="hidden" name="shipment_id" value="{{ $availShipment->id }}">
                                             <button type="submit"
-                                                class="w-full h-11 bg-primary/10 text-primary hover:bg-primary hover:text-white dark:bg-primary/20 dark:hover:bg-primary rounded-xl text-xs font-black transition-all active:scale-95 flex justify-center items-center gap-2">
+                                                class="flex gap-2 justify-center items-center w-full h-11 text-xs font-black rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary hover:text-white dark:bg-primary/20 dark:hover:bg-primary active:scale-95">
                                                 <span class="material-symbols-outlined text-[18px]">add</span>
                                                 إضافة للإرسالية
                                             </button>

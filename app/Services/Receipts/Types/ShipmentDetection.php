@@ -117,7 +117,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $totalExpectedCash += $remainingAmount;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->code ?? $shipment->id ?? '---',
+                'bond_number'       => $shipment->bond_number ?? $shipment->id ?? '---',
                 'tracking_code'     => $shipment->code ?? '---',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',

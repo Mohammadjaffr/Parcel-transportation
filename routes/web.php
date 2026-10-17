@@ -311,6 +311,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/shipment/incoming/show/{id}', [ShipmentController::class, 'incomingShow'])->name('shipment.incoming.show');
             Route::get('/shipment/incoming/scan', [ShipmentScanController::class, 'incoming'])->name('shipment.incoming.scan');
             Route::post('/shipment/incoming/scan/receive', [ShipmentScanController::class, 'receive'])->name('shipment.incoming.scan.receive');
+            Route::post('/shipment/incoming/batch-receive', [ShipmentController::class, 'batchReceive'])->name('shipment.incoming.batchReceive');
         });
     });
 });

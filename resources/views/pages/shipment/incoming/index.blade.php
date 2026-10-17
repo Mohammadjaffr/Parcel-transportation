@@ -4,44 +4,186 @@
 
 
 @section('content')
+    @php
+        $currentStatus = request('status');
+        $pageShipments = $shipments->getCollection();
 
-    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl" x-data="incomingShipmentsRegistry()">
+        $receivedAtBranchCount = $pageShipments->where('status', 'received_at_branch')->count();
+        $inTransitCount = $pageShipments->where('status', 'in_transit')->count();
+        $deliveredCount = $pageShipments->where('status', 'delivered')->count();
+        $returnedCount = $pageShipments->where('is_returned', true)->count();
+
+        $totalCollectable = $pageShipments
+            ->filter(fn($shipment) => $shipment->payment_method !== 'prepaid')
+            ->sum('total_amount');
+
+        $statusUrl = fn($status = null) => request()->fullUrlWithQuery([
+            'status' => $status,
+            'page' => null,
+        ]);
+
+        // 1. استخراج الفروع المصدرة للفلترة
+        $uniqueSourceBranches = $pageShipments
+            ->map(function ($shipment) {
+                return $shipment->senderBranch?->name ?? ($shipment->senderOfficeBranch?->name ?? 'مصدر غير محدد');
+            })
+            ->filter()
+            ->unique()
+            ->values();
+
+        // 2. تجميع بيانات الطرود لـ Alpine.js (شاملة المعروضة + كل طرود في الطريق للفرع)
+        $allParcelsMap = collect();
+        foreach ($pageShipments as $s) {
+            $allParcelsMap->put($s->id, $s);
+        }
+        if (isset($inTransitParcels)) {
+            foreach ($inTransitParcels as $itp) {
+                if (!$allParcelsMap->has($itp->id)) {
+                    $allParcelsMap->put($itp->id, $itp);
+                }
+            }
+        }
+
+        $alpineParcels = $allParcelsMap->values()->map(function ($p) {
+            $branchName = $p->senderBranch?->name ?? ($p->senderOfficeBranch?->name ?? 'مصدر غير محدد');
+            $customerName = $p->receiverCustomer?->name ?? ($p->senderCustomer?->name ?? '');
+            return [
+                'id' => $p->id,
+                'uuid' => $p->uuid ?? '',
+                'bond_number' => $p->bond_number ?? '',
+                'code' => $p->code ?? '',
+                'status' => $p->status,
+                'status_label' => match ($p->status) {
+                    'pending' => 'قيد التجهيز',
+                    'in_transit' => 'في الطريق',
+                    'received_at_branch' => 'بالمستودع',
+                    'out_for_delivery' => 'خرج للتوصيل',
+                    'delivered' => 'تم التسليم',
+                    'returned' => 'مرتجع',
+                    'cancelled' => 'ملغي',
+                    default => $p->status
+                },
+                'customer_name' => $customerName,
+                'branch_name' => $branchName,
+            ];
+        });
+
+        $currentBranchCode = auth()->user()->branch?->code ?? 'B' . auth()->user()->branch_id;
+    @endphp
+
+    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl"
+        x-data="incomingShipmentsRegistry({{ $alpineParcels->toJson() }}, '{{ $currentBranchCode }}')">
+
+        {{-- ================= نافذة مسح الباركود بالكاميرا (Camera Scanner Modal) ================= --}}
+        <div x-show="isScannerOpen" x-cloak x-transition.opacity
+            class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div @click.away="stopCameraScanner()"
+                class="relative w-full max-w-md overflow-hidden bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6">
+
+                <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-100 dark:border-boxdark-2">
+                    <div class="flex gap-2.5 items-center">
+                        <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-on-surface dark:text-white">مسح باركود السند للاستلام</h3>
+                            <p class="text-[11px] font-bold text-gray-400">وجه الكاميرا نحو رمز QR أو الباركود في السند</p>
+                        </div>
+                    </div>
+                    <button type="button" @click="stopCameraScanner()"
+                        class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-boxdark-2 hover:text-error">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+
+                {{-- منطقة الكاميرا --}}
+                <div class="overflow-hidden relative bg-black rounded-2xl aspect-square">
+                    <div id="qr-reader" class="w-full h-full"></div>
+                </div>
+
+                {{-- رسالة الحالة داخل المودال --}}
+                <template x-if="scanFeedback.message">
+                    <div x-transition class="flex gap-2 items-center p-3 mt-4 text-xs font-bold rounded-xl"
+                        :class="{
+                            'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400': scanFeedback.type === 'success',
+                            'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400': scanFeedback.type === 'info',
+                            'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400': scanFeedback.type === 'error'
+                        }">
+                        <span class="material-symbols-outlined text-[18px]"
+                            x-text="scanFeedback.type === 'success' ? 'check_circle' : (scanFeedback.type === 'info' ? 'info' : 'error')"></span>
+                        <span x-text="scanFeedback.message"></span>
+                    </div>
+                </template>
+
+                <div class="flex justify-between items-center pt-3 mt-5 border-t border-gray-100 dark:border-boxdark-2">
+                    <span class="text-xs font-bold text-gray-500">الطرود المحددة: <strong class="text-primary"
+                            x-text="selectedParcels.length"></strong></span>
+                    <button type="button" @click="stopCameraScanner()"
+                        class="px-5 py-2 text-xs font-black text-white rounded-xl bg-primary hover:bg-primary-hover">
+                        إغلاق الكاميرا
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- ================= نموذج استلام الطرود الجماعي (Hidden Form) ================= --}}
+        <form id="receiveParcelsForm" action="{{ route('shipment.incoming.batchReceive') }}" method="POST"
+            @submit="if(!isSubmitting) { isSubmitting = true; return true; } else { $event.preventDefault(); return false; }">
+            @csrf
+            <template x-for="id in selectedParcels" :key="id">
+                <input type="hidden" name="parcel_ids[]" :value="id">
+            </template>
+        </form>
 
         <div class="mx-auto w-full max-w-7xl">
-            <div class="flex gap-4 justify-between items-center">
+            <div class="flex flex-col gap-4 justify-between items-start md:flex-row md:items-center">
                 <div class="text-right">
                     <h1 class="text-2xl font-black md:text-3xl text-on-surface dark:text-white">
                         الطرود الواردة
                     </h1>
                     <p class="mt-1 text-sm font-bold text-gray-500 dark:text-bodydark">
-                        إجمالي {{ $shipments->total() ?? 0 }} طرد وارد
+                        إجمالي {{ $shipments->total() ?? 0 }} طرد وارد مسجل بالنظام
                     </p>
                 </div>
-                <a href="{{ route('shipment.incoming.scan') }}"
-                    class="inline-flex gap-2 items-center px-4 h-12 text-sm font-black text-white rounded-2xl transition-all bg-[#fb6514] hover:bg-[#e0550c] shadow-sm hover:shadow-lg hover:shadow-[#fb6514]/20 active:scale-95 shrink-0">
-                    <span class="material-symbols-outlined text-[22px]">barcode_scanner</span>
-                    <span>الاستلام السريع (باركود)</span>
-                </a>
+
+                <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                    {{-- مؤشر الطرود المحددة للاستلام --}}
+                    <div class="hidden flex-col items-end pl-4 border-l border-gray-200 dark:border-boxdark-2 sm:flex"
+                        x-show="selectedParcels.length > 0" x-cloak>
+                        <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500">الطرود المحددة</span>
+                        <span class="text-sm font-black text-primary" x-text="selectedParcels.length + ' طرد'"></span>
+                    </div>
+
+                    {{-- زر استلام الطرود المحددة --}}
+                    <button type="button" @click="submitBatchReceive()"
+                        :disabled="selectedParcels.length === 0 || isSubmitting"
+                        class="flex gap-2 items-center px-6 h-12 text-sm font-black text-white rounded-2xl shadow-md transition-all bg-primary hover:bg-primary-hover shadow-primary/20 disabled:bg-surface disabled:dark:bg-boxdark-2 disabled:text-gray-400 disabled:shadow-none active:scale-95 shrink-0"
+                        :class="selectedParcels.length > 0 ? 'ring-2 ring-primary/40' : ''">
+                        <template x-if="isSubmitting">
+                            <div class="flex gap-2 items-center">
+                                <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                                <span>جاري الاستلام...</span>
+                            </div>
+                        </template>
+                        <template x-if="!isSubmitting">
+                            <div class="flex gap-2 items-center">
+                                <span class="material-symbols-outlined text-[20px]">warehouse</span>
+                                <span>استلام الطرود</span>
+                                <span x-show="selectedParcels.length > 0" x-text="'(' + selectedParcels.length + ')'"
+                                    class="px-2 py-0.5 text-xs bg-white/20 rounded-lg"></span>
+                            </div>
+                        </template>
+                    </button>
+
+                    <a href="{{ route('shipment.incoming.scan') }}"
+                        class="hidden sm:inline-flex gap-2 items-center px-4 h-12 text-sm font-black text-white rounded-2xl transition-all bg-[#fb6514] hover:bg-[#e0550c] shadow-sm hover:shadow-lg hover:shadow-[#fb6514]/20 active:scale-95 shrink-0"
+                        title="الانتقال لشاشة الاستلام السريع بالباركود المنفصلة">
+                        <span class="material-symbols-outlined text-[22px]">barcode_scanner</span>
+                        <span>شاشة الاستلام المنفصلة</span>
+                    </a>
+                </div>
             </div>
         </div>
-        @php
-            $currentStatus = request('status');
-            $pageShipments = $shipments->getCollection();
-
-            $receivedAtBranchCount = $pageShipments->where('status', 'received_at_branch')->count();
-            $inTransitCount = $pageShipments->where('status', 'in_transit')->count();
-            $deliveredCount = $pageShipments->where('status', 'delivered')->count();
-            $returnedCount = $pageShipments->where('is_returned', true)->count();
-
-            $totalCollectable = $pageShipments
-                ->filter(fn($shipment) => $shipment->payment_method !== 'prepaid')
-                ->sum('total_amount');
-
-            $statusUrl = fn($status = null) => request()->fullUrlWithQuery([
-                'status' => $status,
-                'page' => null,
-            ]);
-        @endphp
 
         {{-- ====================== Stats Cards ====================== --}}
         <div class="grid grid-cols-1 gap-2 mx-auto max-w-7xl xl:grid-cols-4 md:gap-6">
@@ -127,46 +269,118 @@
         <div
             class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
-            {{-- Search --}}
+            {{-- ================= شريط مسح الباركود والبحث والفلترة ================= --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
-                <div class="flex flex-col gap-4 justify-between items-stretch md:flex-row md:items-center">
+                <div class="flex flex-wrap gap-3 justify-between items-center mb-4">
+                    <h3 class="flex gap-2 items-center text-sm font-black font-headline text-on-surface dark:text-white">
+                        <div class="flex justify-center items-center w-8 h-8 text-blue-500 bg-blue-50 rounded-lg dark:bg-blue-500/10">
+                            <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                        </div>
+                        استلام الطرود الواردة (في الطريق إلينا)
+                    </h3>
 
-                    {{-- مربع البحث --}}
-                    <div
-                        class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                    <div class="flex gap-2">
+                        <button type="button" @click="selectAllFiltered()"
+                            class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-lg transition-colors text-primary bg-primary-container dark:bg-primary/10 hover:bg-primary/20 active:scale-95">
+                            <span class="material-symbols-outlined text-[16px]">done_all</span>
+                            <span class="hidden sm:inline">تحديد المعروض (في الطريق)</span>
+                            <span class="sm:hidden">الكل</span>
+                        </button>
+                        <button type="button" @click="selectedParcels = [];" x-show="selectedParcels.length > 0" x-cloak
+                            class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-lg transition-colors text-error bg-error/10 hover:bg-error/20 active:scale-95">
+                            <span class="material-symbols-outlined text-[16px]">deselect</span>
+                            إلغاء (<span x-text="selectedParcels.length"></span>)
+                        </button>
+                    </div>
+                </div>
 
-                        <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
-                            placeholder="ابحث برقم السند، اسم العميل، أو رقم الهاتف..."
-                            class="pr-12 pl-12 w-full h-12 text-sm font-bold placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
-
-                        <div
-                            class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
-                            <span class="material-symbols-outlined text-[22px]">search</span>
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    {{-- 1. حقل مسح الباركود السريع + زر الكاميرا --}}
+                    <div class="flex gap-2 w-full lg:w-2/5">
+                        <div class="relative flex-1">
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined">qr_code_scanner</span>
+                            <input type="text" x-model="barcodeInput" x-ref="barcodeField"
+                                @keydown.enter.prevent="handleBarcodeScan(barcodeInput)"
+                                placeholder="امسح باركود السند للاستلام (أو اكتب الرقم + Enter)..."
+                                class="pr-10 pl-4 w-full h-11 text-sm font-bold rounded-xl border-2 transition-all outline-none border-primary/30 bg-primary/5 dark:bg-primary/10 dark:border-primary/40 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:bg-white">
                         </div>
 
-                        <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''; updateVisibility()"
-                            x-cloak
-                            class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
-                            <span class="text-[18px] material-symbols-outlined">close</span>
+                        <button type="button" @click="startCameraScanner()"
+                            class="flex gap-1.5 justify-center items-center px-4 h-11 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-primary hover:bg-primary-hover shrink-0 active:scale-95"
+                            title="مسح باستخدام الكاميرا">
+                            <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                            <span class="hidden sm:inline">مسح بالكاميرا</span>
                         </button>
                     </div>
 
-                    {{-- معلومات النتائج --}}
-                    <div class="flex gap-2 items-center text-xs font-black text-gray-500 dark:text-bodydark">
-                        <span
-                            class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
-                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
-                        </span>
+                    {{-- 2. حقل البحث النصي العادي --}}
+                    <div class="relative flex-1">
+                        <span class="absolute right-3 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined">search</span>
+                        <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
+                            placeholder="ابحث برقم السند، اسم العميل، أو رقم الهاتف..."
+                            class="pr-10 pl-10 w-full h-11 text-sm rounded-xl border border-gray-200 transition-all outline-none bg-surface dark:bg-boxdark dark:border-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white">
+                        <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''; updateVisibility()" x-cloak
+                            class="flex absolute left-2 top-1/2 justify-center items-center w-7 h-7 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
+                            <span class="text-[16px] material-symbols-outlined">close</span>
+                        </button>
+                    </div>
 
+                    {{-- 3. فلتر الفرع المصدر --}}
+                    <div class="relative w-full lg:w-56 shrink-0">
+                        <span class="absolute right-3 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined">store</span>
+                        <select x-model="selectedBranch" @change="updateVisibility()"
+                            class="pr-10 pl-4 w-full h-11 text-sm rounded-xl border border-gray-200 transition-all appearance-none cursor-pointer outline-none bg-surface dark:bg-boxdark dark:border-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white">
+                            <option value="">كل الفروع المصدرة</option>
+                            @foreach ($uniqueSourceBranches as $branch)
+                                <option value="{{ $branch }}">{{ $branch }}</option>
+                            @endforeach
+                        </select>
+                        <span class="absolute left-3 top-1/2 text-gray-400 -translate-y-1/2 pointer-events-none material-symbols-outlined">expand_more</span>
+                    </div>
+                </div>
+
+                {{-- معلومات النتائج --}}
+                <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-50 dark:border-boxdark">
+                    <div class="flex gap-2 items-center text-xs font-black text-gray-500 dark:text-bodydark">
+                        <span class="inline-flex justify-center items-center w-7 h-7 rounded-lg bg-primary-container dark:bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined text-[16px]">filter_alt</span>
+                        </span>
                         <span>
                             النتائج المعروضة:
-                            <span class="text-primary" x-text="visibleCount"></span>
+                            <span class="text-primary font-mono" x-text="visibleCount"></span>
                             من
-                            <span>{{ $shipments->count() }}</span>
+                            <span class="font-mono">{{ $shipments->count() }}</span>
                         </span>
+                    </div>
+
+                    <div class="flex items-center gap-2" x-show="selectedParcels.length > 0" x-cloak>
+                        <span class="text-xs font-bold text-gray-500">تم تحديد:</span>
+                        <span class="px-2.5 py-0.5 text-xs font-black text-primary bg-primary/10 rounded-full font-mono" x-text="selectedParcels.length + ' طرد'"></span>
                     </div>
                 </div>
             </div>
+
+            {{-- ================= تنبيه نتيجة المسح الضوئي (Feedback Alert) ================= --}}
+            <template x-if="scanFeedback.message && !isScannerOpen">
+                <div class="p-4 md:px-6">
+                    <div x-transition
+                        class="flex justify-between items-center p-3 text-xs font-bold rounded-xl border"
+                        :class="{
+                            'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400': scanFeedback.type === 'success',
+                            'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400': scanFeedback.type === 'info',
+                            'bg-red-50 border-red-200 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400': scanFeedback.type === 'error'
+                        }">
+                        <div class="flex gap-2 items-center">
+                            <span class="material-symbols-outlined text-[18px]"
+                                x-text="scanFeedback.type === 'success' ? 'check_circle' : (scanFeedback.type === 'info' ? 'info' : 'error')"></span>
+                            <span x-text="scanFeedback.message"></span>
+                        </div>
+                        <button type="button" @click="scanFeedback.message = ''" class="opacity-60 hover:opacity-100">
+                            <span class="material-symbols-outlined text-[16px]">close</span>
+                        </button>
+                    </div>
+                </div>
+            </template>
 
             {{-- ====================== Mobile View ====================== --}}
             <div class="flex flex-col gap-4 p-5 lg:hidden">
@@ -215,7 +429,10 @@
                         }
                     @endphp
 
-                    <div class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all incoming-shipment-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm"
+                    <div id="shipment-card-{{ $shipment->id }}"
+                        class="flex flex-col gap-4 p-5 rounded-2xl border border-gray-100 transition-all incoming-shipment-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm {{ $shipment->status === 'in_transit' ? 'cursor-pointer' : '' }}"
+                        :class="selectedParcels.includes({{ $shipment->id }}) ? 'ring-2 ring-primary border-primary bg-primary-container/20 dark:bg-primary/10' : ''"
+                        @click="{{ $shipment->status === 'in_transit' ? 'toggleParcel(' . $shipment->id . ')' : '' }}"
                         x-show="showRow(
                                             @js($shipment->code ?? $shipment->bond_number),
                                             @js($shipment->senderCustomer?->name),
@@ -227,6 +444,18 @@
 
                         <div class="flex justify-between items-start">
                             <div class="flex gap-3 items-center min-w-0">
+                                @if($shipment->status === 'in_transit')
+                                    <label class="flex justify-center items-center p-1.5 cursor-pointer shrink-0" @click.stop>
+                                        <input type="checkbox" class="sr-only peer"
+                                            :checked="selectedParcels.includes({{ $shipment->id }})"
+                                            @change.stop="toggleParcel({{ $shipment->id }})">
+                                        <div
+                                            class="flex justify-center items-center w-6 h-6 bg-white rounded-lg border-2 border-gray-300 shadow-sm transition-all dark:border-gray-600 dark:bg-boxdark peer-checked:bg-primary peer-checked:border-primary">
+                                            <span
+                                                class="material-symbols-outlined text-[16px] text-white opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+                                        </div>
+                                    </label>
+                                @endif
                                 <div
                                     class="flex justify-center items-center w-12 h-12 text-white rounded-xl shadow-inner bg-primary shrink-0">
                                     <span class="material-symbols-outlined text-[22px]">inventory_2</span>
@@ -502,12 +731,36 @@
                 </div>
             </div>
 
+            {{-- ================= شريط الإجراءات العائم للموبايل ================= --}}
+            <div x-show="selectedParcels.length > 0" x-cloak x-transition
+                class="fixed bottom-4 inset-x-4 z-50 p-4 bg-white/95 backdrop-blur-md dark:bg-boxdark/95 rounded-2xl shadow-2xl border border-gray-100 dark:border-boxdark-2 flex items-center justify-between lg:hidden">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center font-black text-sm shadow-sm" x-text="selectedParcels.length"></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black text-on-surface dark:text-white">طرود محددة</span>
+                        <span class="text-[10px] text-gray-500 dark:text-bodydark">جاهزة للتأكيد والاستلام</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="selectedParcels = []"
+                        class="px-3 py-2 text-xs font-bold text-gray-500 hover:text-error transition-colors">
+                        إلغاء
+                    </button>
+                    <button type="button" @click="submitBatchReceive()" :disabled="isSubmitting"
+                        class="px-4 py-2.5 text-xs font-black text-white bg-primary rounded-xl shadow-md hover:bg-primary-hover active:scale-95 flex items-center gap-1.5 shadow-primary/20">
+                        <span class="material-symbols-outlined text-[16px]">warehouse</span>
+                        <span>استلام الآن</span>
+                    </button>
+                </div>
+            </div>
+
             {{-- ====================== Desktop View ====================== --}}
             <div class="hidden overflow-visible w-full lg:block">
                 <table class="w-full text-right border-collapse">
                     <thead>
                         <tr
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
+                            <th class="px-4 py-4 w-12 text-center">تحديد</th>
                             <th class="px-6 py-4">رقم السند</th>
                             <th class="px-6 py-4">المصدر</th>
                             <th class="px-6 py-4">المستلم</th>
@@ -520,58 +773,85 @@
 
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                         @forelse($shipments as $shipment)
-                                                @php
-                                                    $source = $shipment->senderBranch?->name ?? $shipment->senderOfficeBranch?->name ?? 'مصدر غير محدد';
-                                                    $paymentLabel = match ($shipment->payment_method) {
-                                                        'prepaid' => 'خالص الدفع',
-                                                        'cod' => 'الدفع عند الاستلام',
-                                                        'partial_payment' => 'دفع جزئي',
-                                                        'customer_credit' => 'آجل',
-                                                        default => $shipment->payment_method,
-                                                    };
+                            @php
+                                $source = $shipment->senderBranch?->name ?? $shipment->senderOfficeBranch?->name ?? 'مصدر غير محدد';
+                                $paymentLabel = match ($shipment->payment_method) {
+                                    'prepaid' => 'خالص الدفع',
+                                    'cod' => 'الدفع عند الاستلام',
+                                    'partial_payment' => 'دفع جزئي',
+                                    'customer_credit' => 'آجل',
+                                    default => $shipment->payment_method,
+                                };
 
-                                                    $collectAmount = $shipment->payment_method === 'prepaid'
-                                                        ? 0
-                                                        : (float) ($shipment->total_amount ?? 0);
+                                $collectAmount = $shipment->payment_method === 'prepaid'
+                                    ? 0
+                                    : (float) ($shipment->total_amount ?? 0);
 
-                                                    $remainingAmount = (float) ($shipment->total_amount ?? 0) - (float) ($shipment->partial_amount ?? 0);
+                                $remainingAmount = (float) ($shipment->total_amount ?? 0) - (float) ($shipment->partial_amount ?? 0);
 
-                                                    $targetCustomer = $shipment->is_returned ? $shipment->senderCustomer : $shipment->receiverCustomer;
+                                $targetCustomer = $shipment->is_returned ? $shipment->senderCustomer : $shipment->receiverCustomer;
 
-                                                    if ($targetCustomer && $targetCustomer->phone) {
-                                                        if ($shipment->is_returned) {
-                                                            $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" . ($shipment->code ?? $shipment->bond_number) . "* إلى فرعنا.\nيرجى التفضل باستلامه.";
-                                                        } else {
-                                                            $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردك برقم السند: *" . ($shipment->code ?? $shipment->bond_number) . "* إلى فرعنا.\n" . ($shipment->payment_method !== 'prepaid' ? "المبلغ المطلوب عند الاستلام: *" . number_format($shipment->total_amount, 0) . "* ريال." : "الطرد خالص الدفع.");
-                                                        }
+                                if ($targetCustomer && $targetCustomer->phone) {
+                                    if ($shipment->is_returned) {
+                                        $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردكم (المرتجع) برقم السند: *" . ($shipment->code ?? $shipment->bond_number) . "* إلى فرعنا.\nيرجى التفضل باستلامه.";
+                                    } else {
+                                        $whatsappMsg = "مرحباً *" . $targetCustomer->name . "*،\nنفيدك بوصول طردك برقم السند: *" . ($shipment->code ?? $shipment->bond_number) . "* إلى فرعنا.\n" . ($shipment->payment_method !== 'prepaid' ? "المبلغ المطلوب عند الاستلام: *" . number_format($shipment->total_amount, 0) . "* ريال." : "الطرد خالص الدفع.");
+                                    }
 
-                                                        $targetPhone = ltrim($targetCustomer->phone, '+');
+                                    $targetPhone = ltrim($targetCustomer->phone, '+');
 
-                                                        if (str_starts_with($targetPhone, '00')) {
-                                                            $targetPhone = substr($targetPhone, 2);
-                                                        }
+                                    if (str_starts_with($targetPhone, '00')) {
+                                        $targetPhone = substr($targetPhone, 2);
+                                    }
 
-                                                        if (preg_match('/^0(7\d{8})$/', $targetPhone, $matches)) {
-                                                            $targetPhone = '967' . $matches[1];
-                                                        } elseif (preg_match('/^(7\d{8})$/', $targetPhone, $matches)) {
-                                                            $targetPhone = '967' . $matches[1];
-                                                        }
+                                    if (preg_match('/^0(7\d{8})$/', $targetPhone, $matches)) {
+                                        $targetPhone = '967' . $matches[1];
+                                    } elseif (preg_match('/^(7\d{8})$/', $targetPhone, $matches)) {
+                                        $targetPhone = '967' . $matches[1];
+                                    }
 
-                                                        $whatsappLink = "https://wa.me/{$targetPhone}?text=" . urlencode($whatsappMsg);
-                                                    } else {
-                                                        $whatsappLink = null;
-                                                    }
-                                                @endphp
+                                    $whatsappLink = "https://wa.me/{$targetPhone}?text=" . urlencode($whatsappMsg);
+                                } else {
+                                    $whatsappLink = null;
+                                }
+                            @endphp
 
-                                                <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group incoming-shipment-row"
-                                                    x-show="showRow(
-                                                                        @js($shipment->code ?? $shipment->bond_number),
-                                                                        @js($shipment->senderCustomer?->name),
-                                                                        @js($shipment->senderCustomer?->phone),
-                                                                        @js($shipment->receiverCustomer?->name),
-                                                                        @js($shipment->receiverCustomer?->phone),
-                                                                        @js($source)
-                                                                    )">
+                            <tr id="shipment-row-{{ $shipment->id }}"
+                                class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group incoming-shipment-row {{ $shipment->status === 'in_transit' ? 'cursor-pointer' : '' }}"
+                                :class="selectedParcels.includes({{ $shipment->id }}) ? 'bg-primary/5 dark:bg-primary/10' : ''"
+                                @click="{{ $shipment->status === 'in_transit' ? 'toggleParcel(' . $shipment->id . ')' : '' }}"
+                                x-show="showRow(
+                                    @js($shipment->code ?? $shipment->bond_number),
+                                    @js($shipment->senderCustomer?->name),
+                                    @js($shipment->senderCustomer?->phone),
+                                    @js($shipment->receiverCustomer?->name),
+                                    @js($shipment->receiverCustomer?->phone),
+                                    @js($source)
+                                )">
+
+                                {{-- عمود التحديد --}}
+                                <td class="px-4 py-4 text-center" @click.stop>
+                                    @if($shipment->status === 'in_transit')
+                                        <label class="flex relative justify-center items-center p-2 w-full h-full cursor-pointer">
+                                            <input type="checkbox" class="sr-only peer"
+                                                :checked="selectedParcels.includes({{ $shipment->id }})"
+                                                @change.stop="toggleParcel({{ $shipment->id }})">
+                                            <div
+                                                class="flex justify-center items-center w-5 h-5 bg-white rounded border-2 border-gray-300 shadow-sm transition-all dark:border-gray-600 dark:bg-boxdark peer-checked:bg-primary peer-checked:border-primary">
+                                                <span
+                                                    class="material-symbols-outlined text-[14px] text-white opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+                                            </div>
+                                        </label>
+                                    @elseif($shipment->status === 'received_at_branch')
+                                        <div class="flex justify-center items-center w-full h-full text-purple-500" title="بالمستودع (تم الاستلام)">
+                                            <span class="material-symbols-outlined text-[18px]">warehouse</span>
+                                        </div>
+                                    @else
+                                        <div class="flex justify-center items-center w-full h-full text-gray-300 dark:text-gray-600" title="تم إنهاء هذا الطرد">
+                                            <span class="material-symbols-outlined text-[18px]">done</span>
+                                        </div>
+                                    @endif
+                                </td>
 
                                                     {{-- رقم السند --}}
                                                     <td class="px-6 py-4">
@@ -858,7 +1138,7 @@
                                                         </tr>
                         @empty
                                 <tr>
-                                    <td colspan="7" class="py-24 text-center">
+                                    <td colspan="8" class="py-24 text-center">
                                         <div class="flex flex-col gap-4 justify-center items-center">
                                             <div
                                                 class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -879,7 +1159,7 @@
                             @endforelse
 
                             <tr x-show="visibleCount === 0 && {{ $shipments->count() }} > 0" x-cloak>
-                                <td colspan="7" class="py-24 text-center">
+                                <td colspan="8" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
                                             class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -910,29 +1190,240 @@
 @endsection
 
 @section('script')
+    {{-- مكتبة html5-qrcode لمسح الباركود و QR عبر الكاميرا --}}
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
     <script>
-        function incomingShipmentsRegistry() {
+        function incomingShipmentsRegistry(parcels = [], branchCode = '') {
             return {
                 searchQuery: '',
+                selectedBranch: '',
+                barcodeInput: '',
+                selectedParcels: [],
+                isScannerOpen: false,
+                html5QrCode: null,
+                scanFeedback: { message: '', type: '' },
+                feedbackTimeout: null,
+                parcels: parcels || [],
+                branchCode: branchCode || '',
+                isSubmitting: false,
                 visibleCount: {{ $shipments->count() }},
 
                 init() {
                     this.updateVisibility();
                 },
 
-                showRow(code, senderName, senderPhone, receiverName, receiverPhone, source) {
-                    const query = this.searchQuery.toLowerCase().trim();
+                playBeep(isSuccess = true) {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = isSuccess ? 'sine' : 'sawtooth';
+                        osc.frequency.setValueAtTime(isSuccess ? 880 : 240, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        osc.start();
+                        osc.stop(ctx.currentTime + (isSuccess ? 0.12 : 0.25));
+                    } catch (e) {}
+                },
 
-                    if (!query) {
-                        return true;
+                showFeedback(message, type = 'success') {
+                    this.scanFeedback = { message, type };
+                    if (this.feedbackTimeout) clearTimeout(this.feedbackTimeout);
+                    this.feedbackTimeout = setTimeout(() => {
+                        this.scanFeedback = { message: '', type: '' };
+                    }, 4000);
+                },
+
+                // اللوجيك الذكي لمسح الباركود
+                handleBarcodeScan(rawValue) {
+                    if (!rawValue || !rawValue.trim()) return;
+
+                    let scanned = rawValue.trim();
+
+                    // معالجة الروابط في حال تم مسح رابط كامل
+                    if (scanned.includes('/')) {
+                        const parts = scanned.replace(/\/$/, '').split('/');
+                        scanned = parts[parts.length - 1].split('?')[0];
                     }
 
-                    return String(code || '').toLowerCase().includes(query)
+                    // تنظيف علامة #
+                    const cleanScanned = scanned.replace(/^#/, '');
+
+                    // إضافة أصفار لتطابق 001 أو 01
+                    let paddedNumber = cleanScanned.padStart(3, '0');
+                    const numericScanned = cleanScanned.replace(/^0+/, '');
+
+                    let expectedBondNumber = cleanScanned;
+                    if (!cleanScanned.includes('-') && this.branchCode) {
+                        expectedBondNumber = this.branchCode + '-' + paddedNumber;
+                    }
+
+                    // البحث عن الطرد المطابق
+                    const matchedParcel = this.parcels.find(p => {
+                        const pId = String(p.id);
+                        const pBond = String(p.bond_number || '').replace(/^#/, '');
+                        const pUuid = String(p.uuid || '');
+                        const pCode = String(p.code || '');
+
+                        return (
+                            pId === cleanScanned ||
+                            pBond === cleanScanned ||
+                            pBond === expectedBondNumber ||
+                            pBond.endsWith('-' + cleanScanned) ||
+                            pBond.endsWith('-' + paddedNumber) ||
+                            (numericScanned && pBond.endsWith('-' + numericScanned)) ||
+                            pUuid === cleanScanned ||
+                            pCode === cleanScanned
+                        );
+                    });
+
+                    if (matchedParcel) {
+                        let displayNum = matchedParcel.bond_number || matchedParcel.id;
+                        if (displayNum.includes('-')) {
+                            displayNum = displayNum.split('-').pop();
+                        }
+
+                        // التحقق من حالة الطرد
+                        if (matchedParcel.status !== 'in_transit') {
+                            this.playBeep(false);
+                            if (matchedParcel.status === 'received_at_branch') {
+                                this.showFeedback(`الطرد رقم #${displayNum} مستلم في المستودع مسبقاً`, 'info');
+                            } else if (matchedParcel.status === 'delivered') {
+                                this.showFeedback(`الطرد رقم #${displayNum} تم تسليمه للعميل مسبقاً`, 'info');
+                            } else {
+                                this.showFeedback(`الطرد رقم #${displayNum} غير مؤهل للاستلام (حالته: ${matchedParcel.status_label || matchedParcel.status})`, 'error');
+                            }
+                            this.barcodeInput = '';
+                            return;
+                        }
+
+                        const alreadySelected = this.selectedParcels.includes(matchedParcel.id);
+
+                        if (!alreadySelected) {
+                            this.selectedParcels.push(matchedParcel.id);
+                            this.playBeep(true);
+                            this.showFeedback(`تم تحديد الطرد رقم #${displayNum} (${matchedParcel.customer_name || 'بدون اسم'}) للاستلام بنجاح`, 'success');
+
+                            // التمرير إلى السطر المحدد إن كان معروضاً في الصفحة
+                            this.$nextTick(() => {
+                                const rowElem = document.getElementById('shipment-row-' + matchedParcel.id) || document.getElementById('shipment-card-' + matchedParcel.id);
+                                if (rowElem) {
+                                    rowElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            });
+                        } else {
+                            this.playBeep(true);
+                            this.showFeedback(`الطرد رقم #${displayNum} محدد بالفعل في القائمة`, 'info');
+                        }
+                    } else {
+                        this.playBeep(false);
+                        this.showFeedback(`لم يتم العثور على طرد يطابق الكود: (${cleanScanned})`, 'error');
+                    }
+
+                    this.barcodeInput = '';
+                },
+
+                // تشغيل كاميرا المسح
+                startCameraScanner() {
+                    this.isScannerOpen = true;
+                    this.$nextTick(() => {
+                        if (!this.html5QrCode) {
+                            this.html5QrCode = new Html5Qrcode("qr-reader");
+                        }
+                        this.html5QrCode.start(
+                            { facingMode: "environment" },
+                            {
+                                fps: 10,
+                                qrbox: { width: 230, height: 230 }
+                            },
+                            (decodedText) => {
+                                this.handleBarcodeScan(decodedText);
+                            },
+                            (errorMessage) => {}
+                        ).catch((err) => {
+                            this.showFeedback('تعذر الوصول إلى الكاميرا، تأكد من منح الصلاحية للمتصفح.', 'error');
+                        });
+                    });
+                },
+
+                // إيقاف الكاميرا
+                stopCameraScanner() {
+                    if (this.html5QrCode && this.html5QrCode.isScanning) {
+                        this.html5QrCode.stop().then(() => {
+                            this.isScannerOpen = false;
+                        }).catch(() => {
+                            this.isScannerOpen = false;
+                        });
+                    } else {
+                        this.isScannerOpen = false;
+                    }
+                },
+
+                toggleParcel(id) {
+                    const index = this.selectedParcels.indexOf(id);
+                    if (index > -1) {
+                        this.selectedParcels.splice(index, 1);
+                    } else {
+                        this.selectedParcels.push(id);
+                    }
+                },
+
+                selectAllFiltered() {
+                    let addedCount = 0;
+                    this.parcels.forEach(p => {
+                        if (p.status !== 'in_transit') return;
+
+                        const matchesSearch = this.searchQuery === '' ||
+                            (p.id + ' ' + p.bond_number + ' ' + p.code + ' ' + p.customer_name).toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchesBranch = this.selectedBranch === '' ||
+                            p.branch_name === this.selectedBranch;
+
+                        if (matchesSearch && matchesBranch) {
+                            if (!this.selectedParcels.includes(p.id)) {
+                                this.selectedParcels.push(p.id);
+                                addedCount++;
+                            }
+                        }
+                    });
+
+                    if (addedCount > 0) {
+                        this.playBeep(true);
+                        this.showFeedback(`تم تحديد ${addedCount} طرد للاستلام بنجاح`, 'success');
+                    } else if (this.selectedParcels.length > 0) {
+                        this.showFeedback(`جميع الطرود المعروضة محددة بالفعل`, 'info');
+                    } else {
+                        this.playBeep(false);
+                        this.showFeedback(`لا توجد طرود في الطريق متاحة للاستلام في هذا العرض`, 'info');
+                    }
+                },
+
+                submitBatchReceive() {
+                    if (this.selectedParcels.length === 0 || this.isSubmitting) return;
+                    const form = document.getElementById('receiveParcelsForm');
+                    if (form) {
+                        this.isSubmitting = true;
+                        form.submit();
+                    }
+                },
+
+                showRow(code, senderName, senderPhone, receiverName, receiverPhone, source) {
+                    const query = this.searchQuery.toLowerCase().trim();
+                    const branchMatch = this.selectedBranch === '' || String(source || '') === this.selectedBranch;
+
+                    if (!query) {
+                        return branchMatch;
+                    }
+
+                    const searchMatch = String(code || '').toLowerCase().includes(query)
                         || String(senderName || '').toLowerCase().includes(query)
                         || String(senderPhone || '').toLowerCase().includes(query)
                         || String(receiverName || '').toLowerCase().includes(query)
                         || String(receiverPhone || '').toLowerCase().includes(query)
                         || String(source || '').toLowerCase().includes(query);
+
+                    return branchMatch && searchMatch;
                 },
 
                 updateVisibility() {
@@ -940,7 +1431,7 @@
                         this.visibleCount = document.querySelectorAll('.incoming-shipment-row:not([style*="display: none"])').length;
                     });
                 }
-            }
+            };
         }
     </script>
 @endsection

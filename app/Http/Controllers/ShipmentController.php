@@ -947,19 +947,102 @@ class ShipmentController extends Controller
             ->latest()
             ->paginate(10)
             ->withQueryString();
-  $shipments->getCollection()->transform(function ($shipment) {
-
+        $shipments->getCollection()->transform(function ($shipment) {
             $shipment->whatsappUrl = WhatsAppLinkService::generate($shipment, 'receiver');
-
             return $shipment;
         });
 
+        // جلب جميع الطرود التي في الطريق الموجهة لهذا الفرع للتعرف عليها فورياً عند مسح الباركود
+        $inTransitParcels = Shipment::with(['senderBranch', 'senderOfficeBranch', 'senderCustomer', 'receiverCustomer'])
+            ->where('receiver_branch_id', $user->branch_id)
+            ->where('status', 'in_transit')
+            ->get();
 
         if ($request->isMobile) {
-            return view('mobile.pages.shipment.incoming.index', compact('shipments'));
+            return view('mobile.pages.shipment.incoming.index', compact('shipments', 'inTransitParcels'));
         }
 
-        return view('pages.shipment.incoming.index', compact('shipments'));
+        return view('pages.shipment.incoming.index', compact('shipments', 'inTransitParcels'));
+    }
+
+    /**
+     * استلام مجموعة من الطرود وتحديث حالتها إلى بالمستودع
+     */
+    public function batchReceive(Request $request)
+    {
+        $request->validate([
+            'parcel_ids' => 'required|array|min:1',
+            'parcel_ids.*' => 'required|integer',
+        ], [
+            'parcel_ids.required' => 'يرجى تحديد طرد واحد على الأقل للاستلام.',
+            'parcel_ids.min' => 'يرجى تحديد طرد واحد على الأقل للاستلام.',
+        ]);
+
+        $user = auth()->user();
+
+        // جلب الطرود المتجهة لهذا الفرع وحالتها "في الطريق" فقط
+        $shipments = Shipment::whereIn('id', $request->parcel_ids)
+            ->where('receiver_branch_id', $user->branch_id)
+            ->where('status', 'in_transit')
+            ->get();
+
+        if ($shipments->isEmpty()) {
+            return back()->with('error', 'لم يتم العثور على طرود مؤهلة للاستلام (يجب أن تكون موجهة لفرعكم وحالتها في الطريق).');
+        }
+
+        $statusService = new \App\Services\ShipmentStatusService();
+        $receivedCount = 0;
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($shipments as $shipment) {
+                $shipment->update([
+                    'status' => 'received_at_branch',
+                ]);
+
+                // الإشعارات والآثار الجانبية للإرساليات
+                $statusService->handleNotifications($shipment, 'received_at_branch', $user);
+                $statusService->handlePackageSideEffects($shipment, 'received_at_branch', $user);
+
+                // تسجيل في سجل العمليات
+                \App\Services\AdminLoggerService::log(
+                    'batch_receive',
+                    'Shipment',
+                    $shipment->id,
+                    "استلام طرد بالمستودع #{$shipment->bond_number}"
+                );
+
+                $receivedCount++;
+            }
+
+            DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "تم استلام ({$receivedCount}) طرد وتحديث حالتها إلى بالمستودع بنجاح 📦",
+                    'count' => $receivedCount
+                ]);
+            }
+
+            return back()->with([
+                'success_title' => 'تم الاستلام بنجاح!',
+                'success_message' => "تم استلام ({$receivedCount}) طرد وتحديث حالتها إلى بالمستودع بنجاح 📦"
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            report($e);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء استلام الطرود: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return back()->with('error', 'حدث خطأ أثناء استلام الطرود: ' . $e->getMessage());
+        }
     }
     public function incomingShow(Request $request, $id)
     {

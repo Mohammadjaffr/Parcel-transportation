@@ -116,6 +116,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
+
+    public function getBranchCodeAttribute(): ?string
+    {
+        return $this->branch?->code;
+    }
    
 
     public function devices()

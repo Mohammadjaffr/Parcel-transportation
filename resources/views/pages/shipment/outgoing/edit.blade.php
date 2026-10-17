@@ -618,9 +618,9 @@
                         </div>
 
                         {{-- ================= بيانات العسل ================= --}}
-                        <div x-data="{ showHoneyFields: {{ old('no_gallons_honey', $shipment->no_gallons_honey) > 0 || old('no_honey_jars', $shipment->no_honey_jars) > 0 || old('honey_fee', $shipment->honey_fee) > 0 ? 'true' : 'false' }} }" class="mt-8">
+                        {{-- <div x-data="{ showHoneyFields: {{ old('no_gallons_honey', $shipment->no_gallons_honey) > 0 || old('no_honey_jars', $shipment->no_honey_jars) > 0 || old('honey_fee', $shipment->honey_fee) > 0 ? 'true' : 'false' }} }" class="mt-8"> --}}
 
-                            <button type="button" @click="showHoneyFields = !showHoneyFields"
+                            {{-- <button type="button" @click="showHoneyFields = !showHoneyFields"
                                 class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
                                 <div class="flex gap-2 items-center">
                                     <span class="text-[20px] material-symbols-outlined">hive</span>
@@ -628,14 +628,14 @@
                                 </div>
                                 <span class="transition-transform duration-300 material-symbols-outlined"
                                     :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
-                            </button>
+                            </button> --}}
 
-                            <div x-show="showHoneyFields" x-cloak x-collapse>
+                            {{-- <div x-show="showHoneyFields" x-cloak x-collapse>
                                 <div
-                                    class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
+                                    class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10"> --}}
 
                                     {{-- الكميات --}}
-                                    <div>
+                                    {{-- <div>
                                         <label
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
                                             العسل</label>
@@ -652,36 +652,36 @@
                                             value="{{ old('no_honey_jars', $shipment->no_honey_jars) }}"
                                             placeholder="العدد" min="0"
                                             class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 text-on-surface dark:text-white">
-                                    </div>
+                                    </div> --}}
 
                                     {{-- تسعيرة وعمولة العسل --}}
-                                    <div class="mt-2">
+                                    {{-- <div class="mt-2">
                                         <label
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">أجرة
                                             العسل (ريال)</label>
                                         <input type="number" name="honey_fee" x-model.number="honeyFee" placeholder="0"
                                             min="0" dir="ltr"
                                             class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-xl border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-                                    </div>
-                                    <div class="relative mt-2">
+                                    </div> --}}
+                                    {{-- <div class="relative mt-2">
                                         <label
                                             class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">نسبة
-                                            العمولة (%)</label>
-                                        <input type="number" name="honey_commission_rate"
-                                            x-model.number="honeyCommissionRate" placeholder="0" min="0"
-                                            max="100" dir="ltr"
-                                            class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-xl border border-amber-100 transition-all outline-none focus:border-amber-400">
+                                            العمولة (%)</label> --}}
+                                        {{-- <input type="number" name="honey_commission_rate" --}}
+                                            {{-- x-model.number="honeyCommissionRate" placeholder="0" min="0"
+                                            max="100" dir="ltr" --}}
+                                            {{-- class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-xl border border-amber-100 transition-all outline-none focus:border-amber-400"> --}}
                                         {{-- عرض مباشر للمبلغ المحسوب --}}
-                                        <div
+                                        {{-- <div
                                             class="absolute -bottom-5 left-1 flex gap-1 items-center text-[10px] font-bold text-emerald-600">
                                             <span class="material-symbols-outlined text-[12px]">payments</span>
                                             المبلغ: <span x-text="honeyCommissionCalc"></span>
-                                        </div>
-                                    </div>
+                                        </div> --}}
+                                    {{-- </div>
 
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="mt-8">
                             <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">ملاحظات

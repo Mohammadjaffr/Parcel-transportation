@@ -13,6 +13,64 @@
     <script src="{{ asset('assets/js/cdn.min.js') }}"></script>
     <script src="{{asset('assets/js/cdn.tailwindcss.js')}}"></script>
 
+    <script>
+        window.generateBranchCode = function(name) {
+            if (!name) return '';
+            const nameMap = {
+                'عدن': 'ADN',
+                'صنعاء': 'SNA',
+                'تعز': 'TAI',
+                'حضرموت': 'HAD',
+                'المكلا': 'MUK',
+                'الحديدة': 'HUD',
+                'إب': 'IBB',
+                'لحج': 'LAJ',
+                'أبين': 'ABY',
+                'شبوة': 'SHA',
+                'مأرب': 'MAR',
+                'المهرة': 'MAH',
+                'البيضاء': 'BAY',
+                'حجة': 'HAJ',
+                'صعدة': 'SAD',
+                'الضالع': 'DAL',
+                'عمران': 'AMR',
+                'المحويت': 'MAW',
+                'الجوف': 'JAW',
+                'ذمار': 'DHA',
+                'ريمة': 'RAY',
+                'سقطرى': 'SOC',
+                'الرياض': 'RUH',
+                'جدة': 'JED',
+                'الدمام': 'DMM',
+                'مكة': 'MAK',
+                'المدينة': 'MED',
+                'الطائف': 'TIF'
+            };
+
+            let cleanName = name.replace(/فرع/g, '').trim();
+            for (const [key, value] of Object.entries(nameMap)) {
+                if (cleanName.includes(key)) return value;
+            }
+
+            const charMap = {
+                'ا': 'A', 'أ': 'A', 'إ': 'E', 'آ': 'A', 'ب': 'B', 'ت': 'T', 'ث': 'T',
+                'ج': 'J', 'ح': 'H', 'خ': 'K', 'د': 'D', 'ذ': 'D', 'ر': 'R', 'ز': 'Z',
+                'س': 'S', 'ش': 'S', 'ص': 'S', 'ض': 'D', 'ط': 'T', 'ظ': 'Z', 'ع': 'A',
+                'غ': 'G', 'ف': 'F', 'ق': 'Q', 'ك': 'K', 'ل': 'L', 'م': 'M', 'ن': 'N',
+                'ه': 'H', 'ة': 'H', 'و': 'W', 'ي': 'Y', 'ى': 'A', 'ء': 'A'
+            };
+
+            let code = '';
+            for (let i = 0; i < cleanName.length; i++) {
+                let char = cleanName[i];
+                if (char === ' ' || char === 'ال') continue;
+                if (charMap[char]) code += charMap[char];
+                else if (/[a-zA-Z]/.test(char)) code += char.toUpperCase();
+            }
+            return code.substring(0, 3) || Math.random().toString(36).substring(2, 5).toUpperCase();
+        };
+    </script>
+
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -342,11 +400,36 @@
                         <div class="flex-1 h-px bg-slate-200"></div>
                     </div>
 
-                    <div class="p-3 space-y-4 rounded-xl border md:space-y-5 bg-slate-50/50 sm:p-4 border-slate-100">
+                    <div class="p-3 space-y-4 rounded-xl border md:space-y-5 bg-slate-50/50 sm:p-4 border-slate-100"
+                        x-data="{
+                            branchName: '{{ old('branch_name', '') }}',
+                            branchCity: '{{ old('branch_city', '') }}',
+                            branchCode: '{{ old('branch_code', '') }}',
+                            isCustomCode: false,
+                            init() {
+                                if (!this.branchCode && (this.branchName || this.branchCity)) {
+                                    this.updateCode();
+                                }
+                                this.$watch('branchName', () => {
+                                    if (!this.isCustomCode) this.updateCode();
+                                });
+                                this.$watch('branchCity', () => {
+                                    if (!this.isCustomCode) this.updateCode();
+                                });
+                            },
+                            updateCode() {
+                                if (typeof window.generateBranchCode !== 'function') return;
+                                let source = this.branchName || this.branchCity || '';
+                                if (this.branchName && (this.branchName.includes('الرئيسي') || this.branchName.includes('الإدارة') || this.branchName.includes('العامة')) && this.branchCity) {
+                                    source = this.branchCity;
+                                }
+                                this.branchCode = window.generateBranchCode(source);
+                            }
+                        }">
                         <div class="space-y-1.5">
                             <label for="branch_name" class="block pr-1 text-sm font-bold text-on-background/80">اسم الفرع</label>
                             <div class="relative group">
-                                <input id="branch_name" type="text" name="branch_name" value="{{ old('branch_name') }}" required
+                                <input id="branch_name" type="text" name="branch_name" x-model="branchName" required
                                     class="px-4 py-3.5 pr-11 w-full text-base rounded-lg border transition-all bg-surface-container-lowest border-slate-200 sm:text-sm text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container"
                                     placeholder="مثال: الإدارة العامة" />
                                 <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">
@@ -357,9 +440,34 @@
                         </div>
 
                         <div class="space-y-1.5">
+                            <div class="flex justify-between items-center pr-1">
+                                <label for="branch_code" class="block text-sm font-bold text-on-background/80">
+                                    كود الفرع (مميز)
+                                </label>
+                                <button type="button" @click="isCustomCode = !isCustomCode"
+                                    class="text-xs text-secondary hover:underline flex items-center gap-1 font-body">
+                                    <span class="material-symbols-outlined text-[14px]" x-text="isCustomCode ? 'lock' : 'edit'">edit</span>
+                                    <span x-text="isCustomCode ? 'قفل وتوليد تلقائي' : 'تعديل يدوي'">تعديل يدوي</span>
+                                </button>
+                            </div>
+                            <div class="relative group">
+                                <input id="branch_code" type="text" name="branch_code" x-model="branchCode" dir="ltr"
+                                    :readonly="!isCustomCode"
+                                    :class="!isCustomCode ? 'cursor-not-allowed bg-slate-100 text-slate-600' : 'bg-surface-container-lowest text-on-background focus:ring-2 focus:ring-secondary-container'"
+                                    class="px-4 py-3.5 pr-11 w-full text-base text-left uppercase rounded-lg border transition-all border-slate-200 sm:text-sm font-headline"
+                                    placeholder="مثال: MUK" />
+                                <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <span class="material-symbols-outlined">tag</span>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-400 pr-1">يتم توليد كود مميز للفرع تلقائياً بناءً على اسم الفرع أو المدينة</p>
+                            <x-input-error :messages="$errors->get('branch_code')" class="mt-1" />
+                        </div>
+
+                        <div class="space-y-1.5">
                             <label for="branch_city" class="block pr-1 text-sm font-bold text-on-background/80">المدينة</label>
                             <div class="relative group">
-                                <input id="branch_city" type="text" name="branch_city" value="{{ old('branch_city') }}" required
+                                <input id="branch_city" type="text" name="branch_city" x-model="branchCity" required
                                     class="px-4 py-3.5 pr-11 w-full text-base rounded-lg border transition-all bg-surface-container-lowest border-slate-200 sm:text-sm text-on-background placeholder:text-slate-400 focus:ring-2 focus:ring-secondary-container"
                                     placeholder="صنعاء، عدن..." />
                                 <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-secondary">

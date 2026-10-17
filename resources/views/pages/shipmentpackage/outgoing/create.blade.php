@@ -107,9 +107,16 @@
                             <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </a>
                         <div>
-                            <h1 class="text-xl font-black leading-tight font-headline text-on-surface dark:text-white">
-                                تجهيز رحلة (إرسالية)
-                            </h1>
+                            <div class="flex items-center gap-2.5">
+                                <h1 class="text-xl font-black leading-tight font-headline text-on-surface dark:text-white">
+                                    تجهيز رحلة (إرسالية)
+                                </h1>
+                                @if(!empty($nextTrackingNumber))
+                                    <span class="px-2.5 py-0.5 text-xs font-mono font-black text-primary bg-primary-container dark:bg-primary/10 rounded-lg border border-primary/20" title="رقم الرحلة التلقائي">
+                                        #{{ $nextTrackingNumber }}
+                                    </span>
+                                @endif
+                            </div>
                             <p class="text-[11px] md:text-xs font-bold text-gray-500 dark:text-bodydark mt-0.5">
                                 تحديد السائق واختيار الطرود المتجهة معه
                             </p>
