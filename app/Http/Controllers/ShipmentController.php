@@ -83,7 +83,7 @@ class ShipmentController extends Controller
             // إذا أردت تجهيز رابط المستلم أيضاً (مفيد في صفحة الوارد)
             $shipment->receiver_whatsapp_link = WhatsAppLinkService::generate($shipment, 'receiver');
             return $shipment;
-        }); 
+        });
 
         if ($request->isMobile) {
             // تمرير المتغيرات للصفحة
@@ -267,7 +267,7 @@ class ShipmentController extends Controller
     public function outgoingStore(Request $request)
     {
         $rules = [
-            'office_id'            => 'required|string',
+            'office_id'            => 'nullable|string', // تم تغييره إلى nullable
             'receiver_branch_id'   => 'nullable|integer',
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
@@ -281,20 +281,19 @@ class ShipmentController extends Controller
             'package_type'         => 'nullable|string',
             'parcels_quantity'     => 'nullable|integer|min:1',
             'weight'               => 'nullable|numeric|min:0',
-            
+
             // --- حقول العسل ---
             'no_gallons_honey'     => 'nullable|numeric|min:0',
             'no_honey_jars'        => 'nullable|numeric|min:0',
 
             // --- 💡 التسعير والعمولات الجديدة ---
-            'package_fee'             => 'required|numeric|min:0',
+            'package_fee'             => 'nullable|numeric|min:0', // تم تغييره إلى nullable
             'package_commission_rate' => 'nullable|numeric|min:0|max:100',
             'honey_fee'               => 'nullable|numeric|min:0',
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
 
-            'payment_method'       => 'required|in:prepaid,cod,partial_payment,customer_credit',
-            // 'total_amount'      => 'required|numeric|min:0', 👈 تم إزالته لأنه يحسب برمجياً عبر الـ Observer
-            'partial_amount'       => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+            'payment_method'       => 'nullable|in:prepaid,cod,partial_payment,customer_credit', // تم تغييره إلى nullable
+            'partial_amount'       => 'nullable|numeric|min:0', // تم إزالة required_if
             'is_price_agreed'      => ['nullable', 'boolean'],
             'notes'                => 'nullable|string',
         ];
@@ -302,6 +301,7 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         // تحقق إضافي للدفع الجزئي والوجهة المحددة
+     // تحقق إضافي للدفع الجزئي والوجهة المحددة
         $validator->after(function ($validator) use ($request) {
             $user = auth()->user();
 
@@ -309,56 +309,59 @@ class ShipmentController extends Controller
                 // نحسب الإجمالي مؤقتاً هنا للتحقق فقط
                 $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
                 $partial = (float) $request->partial_amount;
-                if ($partial >= $total) {
+                if ($total > 0 && $partial >= $total) {
                     $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي (' . $total . ' ريال).');
                 }
             }
 
-            // التحقق الأمني المتقدم من صحة الوجهة وصلاحياتها
-            $officeId = (string) $request->office_id;
-            $branchId = (int) $request->receiver_branch_id;
-            $officeParts = explode('_', $officeId);
-            $officeType = $officeParts[0] ?? '';
-            $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
+            // 💡 التعديل هنا: نقوم بالتحقق من صحة الفروع فقط إذا تم إرسال office_id و receiver_branch_id
+            if ($request->filled('office_id') && $request->filled('receiver_branch_id')) {
+                
+                $officeId = (string) $request->office_id;
+                $branchId = (int) $request->receiver_branch_id;
+                $officeParts = explode('_', $officeId);
+                $officeType = $officeParts[0] ?? '';
+                $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
 
-            if ($officeType === 'internal') {
-                if ($targetId !== (int) $user->app_id) {
-                    $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
-                }
-                if ($branchId === (int) $user->branch_id) {
-                    $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
-                }
-                $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
-                if (!$branchExists) {
-                    $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
-                }
-            } elseif ($officeType === 'trusted') {
-                $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
-                    || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
-                if (!$isTrusted) {
-                    $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
-                }
-                $trustedBranchExists = Branch::withoutGlobalScope('app_id')
-                    ->where('app_id', $targetId)
-                    ->where('id', $branchId)
-                    ->exists();
-                if (!$trustedBranchExists) {
-                    $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
-                }
-            } elseif ($officeType === 'untrusted') {
-                $office = Office::where('app_id', $user->app_id)->find($targetId);
-                if (!$office) {
-                    $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
-                } else {
-                    $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                if ($officeType === 'internal') {
+                    if ($targetId !== (int) $user->app_id) {
+                        $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
+                    }
+                    if ($branchId === (int) $user->branch_id) {
+                        $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+                    }
+                    $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
+                    if (!$branchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
+                    }
+                } elseif ($officeType === 'trusted') {
+                    $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
+                        || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
+                    if (!$isTrusted) {
+                        $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
+                    }
+                    $trustedBranchExists = Branch::withoutGlobalScope('app_id')
+                        ->where('app_id', $targetId)
                         ->where('id', $branchId)
                         ->exists();
-                    if (!$officeBranchExists) {
-                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                    if (!$trustedBranchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
                     }
+                } elseif ($officeType === 'untrusted') {
+                    $office = Office::where('app_id', $user->app_id)->find($targetId);
+                    if (!$office) {
+                        $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
+                    } else {
+                        $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                            ->where('id', $branchId)
+                            ->exists();
+                        if (!$officeBranchExists) {
+                            $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                        }
+                    }
+                } else {
+                    $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
                 }
-            } else {
-                $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
             }
         });
 
@@ -377,16 +380,16 @@ class ShipmentController extends Controller
             // ========================================================
             // اللوجيك الذكي: تحديد مسار الفرع الوجهة
             // ========================================================
-            $officeIdParts = explode('_', $data['office_id']);
-            $officeType = $officeIdParts[0]; // (internal, trusted, untrusted)
+            $officeIdParts = explode('_', $data['office_id'] ?? '');
+            $officeType = $officeIdParts[0] ?? null; // (internal, trusted, untrusted)
 
             $finalReceiverBranchId = null;
             $finalReceiverOfficeBranchId = null;
 
             if ($officeType === 'untrusted') {
-                $finalReceiverOfficeBranchId = (int) $data['receiver_branch_id'];
-            } else {
-                $finalReceiverBranchId = (int) $data['receiver_branch_id'];
+                $finalReceiverOfficeBranchId = isset($data['receiver_branch_id']) ? (int) $data['receiver_branch_id'] : null;
+            } elseif (!empty($officeType)) {
+                $finalReceiverBranchId = isset($data['receiver_branch_id']) ? (int) $data['receiver_branch_id'] : null;
             }
 
             // ========================================================
@@ -395,12 +398,12 @@ class ShipmentController extends Controller
 
             // 1. المرسل
             $senderCustomerId = $data['sender_customer_id'] ?? null;
-            if (empty($senderCustomerId)) {
+            if (empty($senderCustomerId) && (!empty($data['sender_phone']) || !empty($data['sender_name']))) {
                 if (!empty($data['sender_phone'])) {
                     $senderCustomer = Customer::firstOrCreate(
                         ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
                         [
-                            'name'       => $data['sender_name'],
+                            'name'       => $data['sender_name'] ?? 'غير معروف',
                             'branch_id'  => $senderBranchId,
                             'created_by' => $user->id,
                         ]
@@ -411,7 +414,7 @@ class ShipmentController extends Controller
                     }
 
                     $senderCustomerId = $senderCustomer->id;
-                } elseif (!empty($data['sender_name'])) {
+                } else {
                     $senderCustomer = Customer::create([
                         'name'       => $data['sender_name'],
                         'phone'      => null,
@@ -421,7 +424,7 @@ class ShipmentController extends Controller
                     ]);
                     $senderCustomerId = $senderCustomer->id;
                 }
-            } else {
+            } elseif (!empty($senderCustomerId)) {
                 $senderCustomer = Customer::find($senderCustomerId);
                 if ($senderCustomer) {
                     $customerUpdates = [];
@@ -439,12 +442,12 @@ class ShipmentController extends Controller
 
             // 2. المستلم
             $receiverCustomerId = $data['receiver_customer_id'] ?? null;
-            if (empty($receiverCustomerId)) {
+            if (empty($receiverCustomerId) && (!empty($data['receiver_phone']) || !empty($data['receiver_name']))) {
                 if (!empty($data['receiver_phone'])) {
                     $receiverCustomer = Customer::firstOrCreate(
                         ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
                         [
-                            'name'       => $data['receiver_name'],
+                            'name'       => $data['receiver_name'] ?? 'غير معروف',
                             'branch_id'  => $senderBranchId,
                             'created_by' => $user->id,
                         ]
@@ -455,7 +458,7 @@ class ShipmentController extends Controller
                     }
 
                     $receiverCustomerId = $receiverCustomer->id;
-                } elseif (!empty($data['receiver_name'])) {
+                } else {
                     $receiverCustomer = Customer::create([
                         'name'       => $data['receiver_name'],
                         'phone'      => null,
@@ -465,7 +468,7 @@ class ShipmentController extends Controller
                     ]);
                     $receiverCustomerId = $receiverCustomer->id;
                 }
-            } else {
+            } elseif (!empty($receiverCustomerId)) {
                 $receiverCustomer = Customer::find($receiverCustomerId);
                 if ($receiverCustomer) {
                     $customerUpdates = [];
@@ -481,6 +484,9 @@ class ShipmentController extends Controller
                 }
             }
 
+            // تحديد طريقة الدفع (إذا لم تُرسل نضع 'prepaid' كقيمة افتراضية حتى لا يحدث خطأ في قاعدة البيانات)
+            $paymentMethod = $data['payment_method'] ?? 'prepaid';
+
             // ========================================================
             // إنشاء الشحنة (الطرد)
             // ========================================================
@@ -494,10 +500,10 @@ class ShipmentController extends Controller
                 'receiver_customer_id'      => $receiverCustomerId,
 
                 // الطرد العادي
-                'package_type'              => $data['package_type'] ?? null,   
+                'package_type'              => $data['package_type'] ?? null,
                 'parcels_quantity'          => $data['parcels_quantity'] ?? 1,
                 'weight'                    => $data['weight'] ?? null,
-                'package_fee'               => $data['package_fee'],
+                'package_fee'               => $data['package_fee'] ?? 0, // قيمة افتراضية صفر
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
 
                 // العسل
@@ -508,13 +514,13 @@ class ShipmentController extends Controller
 
                 // المالية (الـ Observer سيقوم بحساب total_amount و total_commission)
                 'is_price_agreed'           => $request->boolean('is_price_agreed'),
-                'payment_method'            => $data['payment_method'],
-                'partial_amount'            => ($data['payment_method'] === 'partial_payment') ? ($data['partial_amount'] ?? 0) : 0,
+                'payment_method'            => $paymentMethod,
+                'partial_amount'            => ($paymentMethod === 'partial_payment') ? ($data['partial_amount'] ?? 0) : 0,
                 'notes'                     => $data['notes'] ?? null,
                 'created_by'                => $user->id,
 
                 'status'                    => 'pending',
-                'customer_debt_status'      => ($data['payment_method'] === 'customer_credit') ? 'pending' : null,
+                'customer_debt_status'      => ($paymentMethod === 'customer_credit') ? 'pending' : null,
             ]);
 
             // ========================================================
@@ -528,7 +534,7 @@ class ShipmentController extends Controller
             $admins = User::where('app_id', $user->app_id)
                 ->where('type', 'admin')
                 ->get();
-                
+
             if ($admins->isNotEmpty()) {
                 // (تم تجاهل استدعاء Notification::send هنا كونه موجود مسبقاً في كودك)
             }
@@ -659,7 +665,7 @@ class ShipmentController extends Controller
             'package_type'          => 'nullable|string',
             'parcels_quantity'      => 'nullable|integer|min:1',
             'weight'                => 'nullable|numeric|min:0',
-            
+
             // --- حقول العسل ---
             'no_gallons_honey'      => 'nullable|numeric|min:0',
             'no_honey_jars'         => 'nullable|numeric|min:0',
@@ -1561,107 +1567,105 @@ class ShipmentController extends Controller
     }
 
     public function updateStatus(Request $request, $id)
-{
-    // 1. التحقق من صحة المدخلات
-    $request->validate([
-        'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
-    ]);
-
-    try {
-        DB::beginTransaction();
-
-        $shipment = Shipment::findOrFail($id);
-        $oldStatus = $shipment->status;
-        $newStatus = $request->status;
-        $transactionService = new CustomerTransactionService();
-        $statusService = new \App\Services\ShipmentStatusService();
-
-        // ========================================================
-        // 2. الحماية البرمجية (Backend State Validation) 🛡️
-        // ========================================================
-        $validTransitions = [
-            'pending'            => ['in_transit', 'cancelled', 'returned'],
-            'in_transit'         => ['received_at_branch', 'delivered', 'returned'],
-            'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'],
-            'out_for_delivery'   => ['delivered', 'returned'],
-        ];
-
-        if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
-            return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
-        }
-
-        // ========================================================
-        // 3. تحديث الحالة (نظام المرتجعات والمالية الذكي 🔄💰)
-        // ========================================================
-        if ($newStatus === 'returned') {
-
-            // أ. حالة إلغاء الإرسال (في الطريق -> إرجاع للمستودع قبل وصوله)
-            if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
-                $packageId = $shipment->shipment_package_id;
-                $shipment->update([
-                    'status' => 'pending',
-                    'shipment_package_id' => null,
-                ]);
-                $statusService->checkAndClosePackage($packageId);
-                $newStatus = 'pending';
-            }
-            // ب. المرحلة الأولى للمرتجع الحقيقي (رفض المستلم)
-            elseif (!$shipment->is_returned) {
-                $packageId = $shipment->shipment_package_id;
-                $shipment->update([
-                    'is_returned' => true,
-                    'status' => 'pending',
-                    'shipment_package_id' => null,
-                ]);
-                $statusService->checkAndClosePackage($packageId);
-                $newStatus = 'pending';
-            } 
-            // ج. المرحلة النهائية للمرتجع (تسليم الطرد للتاجر/المُرسل)
-            else {
-                $shipment->update(['status' => 'returned']);
-                
-                // 💰 إلغاء الديون المالية عبر السيرفيس لأن الطرد عاد لصاحبه
-                $transactionService->cancelTransactions($shipment);
-            }
-        } 
-        else {
-            // التحديث الطبيعي لأي حالة أخرى
-            $shipment->update(['status' => $newStatus]);
-
-            // 💰 تسجيل رصيد للعميل إذا تم التسليم بنجاح
-            if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
-                $transactionService->recordDelivery($shipment);
-            }
-        }
-
-        // ========================================================
-        // 4. الإشعارات والإجراءات الجانبية
-        // ========================================================
-        $statusService->handleNotifications($shipment, $newStatus, $user = auth()->user());
-        $statusService->handlePackageSideEffects($shipment, $newStatus, $user);
-
-        DB::commit();
-
-        // رسائل النجاح المخصصة
-        $successMessages = [
-            'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
-            'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
-            'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
-            'delivered'          => 'تم التسليم وتوثيق المستحقات المالية ✅',
-            'cancelled'          => 'تم إلغاء الطرد 🚫',
-            'pending'            => ($oldStatus === 'in_transit' && !$shipment->is_returned) ? 'تم إلغاء الإرسال وإعادة الطرد للانتظار 🔄' : 'تم تسجيل المرتجع وقيد العودة ❌',
-        ];
-
-        return back()->with([
-            'success_title' => 'تم التحديث!',
-            'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
+    {
+        // 1. التحقق من صحة المدخلات
+        $request->validate([
+            'status' => 'required|string|in:pending,in_transit,received_at_branch,out_for_delivery,delivered,cancelled,returned',
         ]);
 
-    } catch (Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+        try {
+            DB::beginTransaction();
+
+            $shipment = Shipment::findOrFail($id);
+            $oldStatus = $shipment->status;
+            $newStatus = $request->status;
+            $transactionService = new CustomerTransactionService();
+            $statusService = new \App\Services\ShipmentStatusService();
+
+            // ========================================================
+            // 2. الحماية البرمجية (Backend State Validation) 🛡️
+            // ========================================================
+            $validTransitions = [
+                'pending'            => ['in_transit', 'cancelled', 'returned'],
+                'in_transit'         => ['received_at_branch', 'delivered', 'returned'],
+                'received_at_branch' => ['out_for_delivery', 'delivered', 'returned'],
+                'out_for_delivery'   => ['delivered', 'returned'],
+            ];
+
+            if (!isset($validTransitions[$oldStatus]) || !in_array($newStatus, $validTransitions[$oldStatus])) {
+                return back()->with('error', 'عفواً، لا يمكن تحويل الطرد من حالة (' . $oldStatus . ') إلى (' . $newStatus . ')');
+            }
+
+            // ========================================================
+            // 3. تحديث الحالة (نظام المرتجعات والمالية الذكي 🔄💰)
+            // ========================================================
+            if ($newStatus === 'returned') {
+
+                // أ. حالة إلغاء الإرسال (في الطريق -> إرجاع للمستودع قبل وصوله)
+                if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
+                    $packageId = $shipment->shipment_package_id;
+                    $shipment->update([
+                        'status' => 'pending',
+                        'shipment_package_id' => null,
+                    ]);
+                    $statusService->checkAndClosePackage($packageId);
+                    $newStatus = 'pending';
+                }
+                // ب. المرحلة الأولى للمرتجع الحقيقي (رفض المستلم)
+                elseif (!$shipment->is_returned) {
+                    $packageId = $shipment->shipment_package_id;
+                    $shipment->update([
+                        'is_returned' => true,
+                        'status' => 'pending',
+                        'shipment_package_id' => null,
+                    ]);
+                    $statusService->checkAndClosePackage($packageId);
+                    $newStatus = 'pending';
+                }
+                // ج. المرحلة النهائية للمرتجع (تسليم الطرد للتاجر/المُرسل)
+                else {
+                    $shipment->update(['status' => 'returned']);
+
+                    // 💰 إلغاء الديون المالية عبر السيرفيس لأن الطرد عاد لصاحبه
+                    $transactionService->cancelTransactions($shipment);
+                }
+            } else {
+                // التحديث الطبيعي لأي حالة أخرى
+                $shipment->update(['status' => $newStatus]);
+
+                // 💰 تسجيل رصيد للعميل إذا تم التسليم بنجاح
+                if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+                    $transactionService->recordDelivery($shipment);
+                }
+            }
+
+            // ========================================================
+            // 4. الإشعارات والإجراءات الجانبية
+            // ========================================================
+            $statusService->handleNotifications($shipment, $newStatus, $user = auth()->user());
+            $statusService->handlePackageSideEffects($shipment, $newStatus, $user);
+
+            DB::commit();
+
+            // رسائل النجاح المخصصة
+            $successMessages = [
+                'in_transit'         => 'تم تحريك الطرد وبدء الرحلة 🚚',
+                'received_at_branch' => 'تم استلام الطرد بالمستودع بنجاح 📦',
+                'out_for_delivery'   => 'الطرد الآن مع المندوب للتوصيل 🛵',
+                'delivered'          => 'تم التسليم وتوثيق المستحقات المالية ✅',
+                'cancelled'          => 'تم إلغاء الطرد 🚫',
+                'pending'            => ($oldStatus === 'in_transit' && !$shipment->is_returned) ? 'تم إلغاء الإرسال وإعادة الطرد للانتظار 🔄' : 'تم تسجيل المرتجع وقيد العودة ❌',
+            ];
+
+            return back()->with([
+                'success_title' => 'تم التحديث!',
+                'success_message' => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح'
+            ]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'حدث خطأ أثناء تحديث الحالة: ' . $e->getMessage());
+        }
     }
-}
 
     /**
      * دالة مساعدة لإرسال إشعار تحرك الطرد للفرع المستلم (إذا كان مسجلاً بالنظام)

@@ -78,7 +78,7 @@
                                 {{-- حقل المكتب (يعرض المكتب الحالي فقط - للقراءة فقط) --}}
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                        المكتب الحالي <span class="text-error">*</span>
+                                        المكتب الحالي
                                     </label>
                                     <div class="relative">
                                         <input type="text" readonly
@@ -95,7 +95,7 @@
                                 {{-- حقل الفرع أو الوجهة المستلمة (Searchable Combobox) --}}
                                 <div class="space-y-1.5 relative z-[101]" @click.outside="onBlurOutside()">
                                     <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                        الفرع أو الوجهة المستلمة <span class="text-error">*</span>
+                                        الفرع أو الوجهة المستلمة
                                     </label>
                                     <div class="relative">
                                         {{-- المعرف الرقمي الحقيقي للفرع المُرسل للخادم --}}
@@ -237,7 +237,7 @@
                                     {{-- اسم المرسل مع خاصية البحث بالاسم --}}
                                     <div class="relative" @click.away="showCustomerDropdown = false">
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                            اسم المرسل <span class="text-error">*</span>
+                                            اسم المرسل
                                         </label>
                                         <div class="flex relative items-center">
                                             <input type="text" name="sender_name"  x-model="nameInput"
@@ -366,7 +366,7 @@
                                     {{-- اسم المستلم مع خاصية البحث بالاسم --}}
                                     <div class="relative" @click.away="showCustomerDropdown = false">
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                            اسم المستلم <span class="text-error">*</span>
+                                            اسم المستلم
                                         </label>
                                         <div class="flex relative items-center">
                                             <input type="text" name="receiver_name"  x-model="nameInput"
@@ -489,7 +489,6 @@
                 </div>
 
                 {{-- الجانب الأيسر: محتويات الطرد والدفع (4 أعمدة) --}}
-                {{-- 💡 تمت إضافة متغيرات الحساب المالي في الـ x-data هنا --}}
                 <div class="flex flex-col gap-6 lg:col-span-5 xl:col-span-4" x-data="{
                     packageFee: {{ old('package_fee', 0) }},
                     packageCommissionRate: {{ old('package_commission_rate', 0) }},
@@ -530,7 +529,7 @@
                                 options: ['كرتون', 'كيس'],
                                 packageType: '{{ old('package_type', '') }}'
                             }">
-                                <label class="text-[11px] font-bold text-slate-500">نوع الطرد <span class="text-rose-500">*</span></label>
+                                <label class="text-[11px] font-bold text-slate-500">نوع الطرد</label>
 
                                 <div class="relative z-[40]" @click.outside="isOpen = false">
                                     <input type="text" name="package_type" x-model="packageType"
@@ -568,24 +567,9 @@
                                 </div>
                             </div>
 
-                            {{-- ================= 2. حقل الوزن (مُعلق مؤقتاً) ================= --}}
-                            {{-- 
-                            <div class="flex flex-col col-span-1 gap-2">
-                                <label class="text-[11px] font-bold text-slate-500">الوزن (كجم)</label>
-                                <div class="relative">
-                                    <input type="number" step="0.1" name="weight" value="{{ old('weight') }}"
-                                        placeholder="مثال: 2.5" min="0" dir="ltr"
-                                        class="px-4 pr-10 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
-                                    <div class="flex absolute inset-y-0 right-0 items-center pr-3 pointer-events-none text-slate-400">
-                                        <span class="material-symbols-outlined text-[18px]">scale</span>
-                                    </div>
-                                </div>
-                            </div> 
-                            --}}
-
                             {{-- ================= 3. تسعيرة الطرد وعمولته ================= --}}
                             <div class="flex flex-col col-span-1 gap-2 mt-2">
-                                <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
+                                <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال)</label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
                                     min="0" dir="ltr" 
                                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
@@ -598,7 +582,6 @@
                                         x-model.number="packageCommissionRate" placeholder="0" min="0"
                                         max="100" dir="ltr"
                                         class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
-                                    {{-- 💡 عرض مباشر للمبلغ المحسوب --}}
                                     <div class="absolute -bottom-5 left-1 flex gap-1 items-center text-[10px] font-bold text-emerald-600">
                                         <span class="material-symbols-outlined text-[12px]">payments</span>
                                         المبلغ: <span x-text="packageCommissionCalc"></span>
@@ -607,70 +590,6 @@
                             </div>
 
                         </div>
-
-                        {{-- ================= بيانات العسل (مخفية افتراضياً) ================= --}}
-                        {{-- <div x-data="{ showHoneyFields: {{ old('no_gallons_honey') || old('no_honey_jars') ? 'true' : 'false' }} }" class="mt-8">
-
-                            <button type="button" @click="showHoneyFields = !showHoneyFields"
-                                class="flex justify-between items-center px-4 w-full h-12 text-sm font-bold transition-all rounded-2xl text-amber-600 bg-amber-50 hover:bg-amber-100 dark:text-amber-500 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]">
-                                <div class="flex gap-2 items-center">
-                                    <span class="text-[20px] material-symbols-outlined">hive</span>
-                                    <span>إضافة بيانات وتسعيرة العسل</span>
-                                </div>
-                                <span class="transition-transform duration-300 material-symbols-outlined"
-                                    :class="showHoneyFields ? 'rotate-180' : ''">expand_more</span>
-                            </button>
-
-                            <div x-show="showHoneyFields" x-cloak x-collapse>
-                                <div
-                                    class="grid grid-cols-2 gap-4 p-4 mt-3 rounded-2xl border bg-amber-50/50 dark:bg-amber-500/5 border-amber-100/50 dark:border-amber-500/10">
-
-                                    {{-- الكميات --}}
-                                    {{-- <div>
-                                        <label
-                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">جوالين
-                                            العسل</label>
-                                        <input type="number" name="no_gallons_honey"
-                                            value="{{ old('no_gallons_honey') }}" placeholder="العدد" min="0"
-                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 text-on-surface dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label
-                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">قروف
-                                            العسل</label>
-                                        <input type="number" name="no_honey_jars" value="{{ old('no_honey_jars') }}"
-                                            placeholder="العدد" min="0"
-                                            class="px-3 w-full h-11 text-sm bg-white rounded-xl border border-amber-100 transition-all outline-none dark:bg-boxdark dark:border-amber-500/20 focus:border-amber-400 text-on-surface dark:text-white">
-                                    </div> --}}
-
-                                    {{-- تسعيرة وعمولة العسل --}}
-                                    {{-- <div class="mt-2">
-                                        <label
-                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">أجرة
-                                            العسل (ريال)</label>
-                                        <input type="number" name="honey_fee" x-model.number="honeyFee" placeholder="0"
-                                            min="0" dir="ltr"
-                                            class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-xl border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
-                                    </div> --}}
-                                    {{-- <div class="relative mt-2">
-                                        <label
-                                            class="block mb-1.5 text-[10px] font-bold text-amber-600 dark:text-amber-500">نسبة
-                                            العمولة (%)</label>
-                                        <input type="number" name="honey_commission_rate"
-                                            x-model.number="honeyCommissionRate" placeholder="0" min="0"
-                                            max="100" dir="ltr"
-                                            class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-xl border border-amber-100 transition-all outline-none focus:border-amber-400"> --}}
-                                        {{-- 💡 عرض مباشر للمبلغ المحسوب --}}
-                                        {{-- <div
-                                            class="absolute -bottom-5 left-1 flex gap-1 items-center text-[10px] font-bold text-emerald-600">
-                                            <span class="material-symbols-outlined text-[12px]">payments</span>
-                                            المبلغ: <span x-text="honeyCommissionCalc"></span>
-                                        </div> --}}
-                                    {{-- </div> --}}
-
-                                {{-- </div>
-                            </div> --}}
-                        {{-- </div> --}}
 
                         <div class="mt-8">
                             <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">ملاحظات
@@ -695,7 +614,7 @@
                         <div class="space-y-5">
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                    طريقة الدفع <span class="text-error">*</span>
+                                    طريقة الدفع
                                 </label>
                                 <div class="relative">
                                     <select name="payment_method" x-model="paymentMethod"
@@ -714,20 +633,17 @@
 
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ
-                                    الإجمالي (ريال) <span class="text-error">*</span></label>
+                                    الإجمالي (ريال)</label>
 
-                                {{-- 💡 حقل المبلغ الإجمالي: مقفل (Readonly) ويأخذ قيمته من x-bind:value --}}
                                 <input type="number"  name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
                                     class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"
                                     dir="ltr">
-                                <p class="mt-1.5 text-[10px] font-bold text-gray-400">يتم حسابه تلقائياً (أجرة الطرد + أجرة
-                                    العسل)</p>
+                                <p class="mt-1.5 text-[10px] font-bold text-gray-400">يتم حسابه تلقائياً (أجرة الطرد + أجرة العسل)</p>
                             </div>
 
                             <div x-show="paymentMethod === 'partial_payment'" x-collapse>
-                                <label class="block text-[11px] font-bold text-rose-500 dark:text-rose-400 mb-1.5">المبلغ
-                                    المدفوع حالياً (ريال)</label>
+                                <label class="block text-[11px] font-bold text-rose-500 dark:text-rose-400 mb-1.5">المبلغ المدفوع حالياً (ريال)</label>
                                 <input type="number" name="partial_amount" value="{{ old('partial_amount') }}"
                                     placeholder="0.00" min="0" :max="totalAmount"
                                     class="px-4 w-full h-14 text-xl font-black text-left text-rose-600 rounded-2xl border border-rose-200 transition-all outline-none bg-rose-50/50 dark:bg-rose-500/5 focus:border-rose-400"
@@ -741,10 +657,8 @@
                                         ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-400 dark:border-emerald-500/50 shadow-sm shadow-emerald-500/10'
                                         : 'bg-surface dark:bg-boxdark-2 border-gray-200 dark:border-boxdark hover:border-gray-300 dark:hover:border-gray-600'">
 
-                                    {{-- Hidden Checkbox --}}
                                     <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
 
-                                    {{-- Toggle Switch --}}
                                     <div class="relative w-12 h-7 rounded-full transition-colors duration-300 shrink-0"
                                         :class="priceAgreed ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'">
                                         <div class="absolute top-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
@@ -752,7 +666,6 @@
                                         </div>
                                     </div>
 
-                                    {{-- Icon --}}
                                     <div class="flex justify-center items-center w-10 h-10 rounded-xl transition-all duration-300 shrink-0"
                                         :class="priceAgreed
                                             ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
@@ -768,7 +681,6 @@
                                         </span>
                                     </div>
 
-                                    {{-- Text --}}
                                     <div class="flex-1">
                                         <p class="text-sm font-bold transition-colors duration-300"
                                             :class="priceAgreed
@@ -783,7 +695,6 @@
                                         </p>
                                     </div>
 
-                                    {{-- Check Badge --}}
                                     <div class="transition-all duration-300"
                                         :class="priceAgreed ? 'opacity-100 scale-100' : 'opacity-0 scale-75'">
                                         <div class="flex justify-center items-center w-8 h-8 text-white bg-emerald-500 rounded-full shadow-sm shadow-emerald-500/30">
@@ -827,7 +738,6 @@
                 isSearching: false,
 
                 init() {
-                    // إذا تم تمرير فرع مسبقاً (سواء من old أو من البيانات الأولية)
                     if (this.selectedBranchId) {
                         const matched = this.destinations.find(d => {
                             const matchBranch = String(d.branch_id) === String(this.selectedBranchId);
@@ -845,7 +755,6 @@
                         }
                     }
 
-                    // في حال لم يتم تحديد مكتب بعد، نعين مكتبنا الداخلي كافتراضي
                     if (!this.selectedOfficeId && this.destinations.length > 0) {
                         const internal = this.destinations.find(d => d.type === 'internal');
                         if (internal) {
@@ -856,13 +765,11 @@
                     this.updateValidity();
                 },
 
-                // تسمية الوجهة المحددة حالياً
                 get selectedDestinationName() {
                     const found = this.destinations.find(d => d.key === this.selectedDestinationKey);
                     return found ? found.name : '';
                 },
 
-                // الوجهات المفلترة بالبحث
                 get filteredDestinations() {
                     if (!this.searchQuery || !this.searchQuery.trim() || (!this.isSearching && this.searchQuery === this.selectedDestinationName)) {
                         return this.destinations;
@@ -874,7 +781,6 @@
                     );
                 },
 
-                // تجميع الوجهات المفلترة حسب مجموعاتها
                 get groupedFilteredDestinations() {
                     const groups = {};
                     this.filteredDestinations.forEach(dest => {
@@ -887,24 +793,20 @@
                     return groups;
                 },
 
-                // هل توجد نتائج للبحث؟
                 get hasResults() {
                     return this.filteredDestinations.length > 0;
                 },
 
+                // تعطيل التحقق الإجباري وجعله اختياري
                 updateValidity() {
                     this.$nextTick(() => {
                         if (this.$refs.destinationInput) {
-                            if (!this.selectedBranchId) {
-                                this.$refs.destinationInput.setCustomValidity('يرجى اختيار الفرع أو الوجهة المستلمة من القائمة');
-                            } else {
-                                this.$refs.destinationInput.setCustomValidity('');
-                            }
+                            // تم إفراغ رسالة الخطأ هنا ليسمح بإرسال الفورم حتى لو كان فارغاً
+                            this.$refs.destinationInput.setCustomValidity(''); 
                         }
                     });
                 },
 
-                // عند فتح أو إغلاق القائمة عبر السهم
                 toggleDropdown() {
                     this.isOpen = !this.isOpen;
                     if (this.isOpen) {
@@ -916,7 +818,6 @@
                     }
                 },
 
-                // عند التركيز على الحقل
                 onInputFocus(e) {
                     this.isOpen = true;
                     if (e && e.target) {
@@ -924,7 +825,6 @@
                     }
                 },
 
-                // عند كتابة المستخدم في الحقل
                 onInputChange() {
                     this.isSearching = true;
                     this.isOpen = true;
@@ -935,7 +835,6 @@
                     this.updateValidity();
                 },
 
-                // اختيار وجهة من القائمة
                 selectDestination(dest) {
                     if (dest) {
                         this.selectedDestinationKey = dest.key;
@@ -950,7 +849,6 @@
                     this.updateValidity();
                 },
 
-                // مسح التحديد
                 clearSelection() {
                     this.selectedDestinationKey = '';
                     this.selectedBranchId = '';
@@ -960,7 +858,6 @@
                     this.updateValidity();
                 },
 
-                // عند النقر خارج القائمة
                 onBlurOutside() {
                     this.isOpen = false;
                     this.isSearching = false;
