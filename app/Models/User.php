@@ -59,6 +59,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_banned' => 'boolean',
+            'is_branch_admin' => 'boolean',
         ];
     }
 

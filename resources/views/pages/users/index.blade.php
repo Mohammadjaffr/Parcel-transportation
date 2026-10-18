@@ -424,6 +424,7 @@
                     whatsapp_number: '',
                     type: '',
                     branch_id: '',
+                    is_branch_admin: false,
                     is_banned: 0,
                     url: ''
                 },
@@ -551,6 +552,7 @@
                         whatsapp_number: user.whatsapp_number || '',
                         type: user.type || '',
                         branch_id: user.branch_id || '',
+                        is_branch_admin: Boolean(Number(user.is_branch_admin) === 1 || user.is_branch_admin === true || user.is_branch_admin === '1'),
                         is_banned: user.is_banned ?? 0,
                         url: '{{ url('users') }}/' + user.id
                     };
