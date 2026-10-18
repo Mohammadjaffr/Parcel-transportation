@@ -52,7 +52,7 @@
             </div>
 
             {{-- شبكة الحقول --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 
                 {{-- اختيار المكتب --}}
                 <div class="space-y-1.5">
@@ -61,7 +61,7 @@
                     <div class="relative">
                         <input type="text" readonly
                             value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
-                            class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all outline-none text-slate-800 bg-slate-100 border-slate-200/70 cursor-not-allowed select-none">
+                            class="pr-3 pl-8 w-full h-12 text-xs font-bold rounded-xl border transition-all cursor-not-allowed outline-none select-none text-slate-800 bg-slate-100 border-slate-200/70">
                         <input type="hidden" name="office_id" x-model="selectedOfficeId">
                         <span class="absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                             <span class="material-symbols-outlined text-[18px]">store</span>
@@ -77,7 +77,7 @@
                         <input type="hidden" name="receiver_branch_id" :value="selectedBranchId">
 
                         {{-- حقل الإدخال والبحث المرئي --}}
-                        <div class="relative flex items-center">
+                        <div class="flex relative items-center">
                             <input type="text"
                                 x-ref="destinationInput"
                                 x-model="searchQuery"
@@ -91,26 +91,26 @@
                                 :class="selectedBranchId ? 'border-blue-400 bg-blue-50/20 text-blue-900 font-black' : ''">
 
                             {{-- أيقونة الموقع في اليمين --}}
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors"
+                            <span class="absolute right-3 top-1/2 transition-colors -translate-y-1/2 pointer-events-none"
                                 :class="selectedBranchId ? 'text-blue-600' : 'text-slate-400'">
                                 <span class="material-symbols-outlined text-[18px]">location_on</span>
                             </span>
 
                             {{-- أزرار التحكم في اليسار (مسح وسهم الفتح) --}}
-                            <div class="absolute left-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                            <div class="flex absolute left-2.5 top-1/2 gap-1 items-center -translate-y-1/2">
                                 {{-- زر المسح السريع --}}
                                 <button type="button" 
                                     x-show="searchQuery.length > 0 || selectedBranchId" 
                                     x-cloak
                                     @click="clearSelection(); $refs.destinationInput.focus()"
-                                    class="p-1 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-100 transition-colors">
+                                    class="p-1 rounded-full transition-colors text-slate-400 hover:text-rose-500 hover:bg-slate-100">
                                     <span class="material-symbols-outlined text-[16px] block">close</span>
                                 </button>
 
                                 {{-- سهم القائمة المنسدلة --}}
                                 <button type="button" 
                                     @click="toggleDropdown()"
-                                    class="p-1 rounded-lg text-slate-400 hover:text-blue-600 transition-colors">
+                                    class="p-1 rounded-lg transition-colors text-slate-400 hover:text-blue-600">
                                     <span class="material-symbols-outlined text-[18px] transition-transform duration-200 block"
                                         :class="isOpen ? 'rotate-180 text-blue-600' : ''">expand_more</span>
                                 </button>
@@ -131,9 +131,9 @@
                             {{-- قائمة العناصر المجمعة --}}
                             <template x-for="(items, groupName) in groupedFilteredDestinations" :key="groupName">
                                 <div class="border-b border-slate-100 last:border-b-0">
-                                    <div class="px-3 py-1.5 bg-slate-50/95 sticky top-0 backdrop-blur-md z-10 flex items-center justify-between border-b border-slate-100">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                    <div class="flex sticky top-0 z-10 justify-between items-center px-3 py-1.5 border-b backdrop-blur-md bg-slate-50/95 border-slate-100">
+                                        <div class="flex gap-1.5 items-center">
+                                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                                             <span class="text-[11px] font-black text-slate-700" x-text="groupName"></span>
                                         </div>
                                         <span class="text-[9px] font-bold text-slate-400 px-1.5 py-0.5 bg-white border border-slate-100 rounded-md shadow-sm" x-text="items.length"></span>
@@ -143,11 +143,11 @@
                                         <template x-for="dest in items" :key="dest.key">
                                             <button type="button"
                                                 @click="selectDestination(dest)"
-                                                class="flex justify-between items-center w-full px-3 py-2 rounded-xl text-right transition-colors"
+                                                class="flex justify-between items-center px-3 py-2 w-full text-right rounded-xl transition-colors"
                                                 :class="dest.key === selectedDestinationKey ? 'bg-blue-50 text-blue-800 font-black ring-1 ring-blue-500/30' : 'text-slate-700 hover:bg-slate-50'">
                                                 
-                                                <div class="flex items-center gap-2 truncate">
-                                                    <div class="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+                                                <div class="flex gap-2 items-center truncate">
+                                                    <div class="flex justify-center items-center w-6 h-6 rounded-md shrink-0"
                                                         :class="{
                                                             'bg-emerald-100 text-emerald-600': dest.type === 'internal',
                                                             'bg-blue-100 text-blue-600': dest.type === 'trusted',
@@ -404,7 +404,7 @@
         <div class="grid grid-cols-2 gap-4">
 
             {{-- 1. حقل نوع الشحنة (Combobox) --}}
-            <div class="flex flex-col gap-2 col-span-1" x-data="{
+            <div class="flex flex-col col-span-1 gap-2" x-data="{
                     isOpen: false,
                     options: ['كرتون', 'كيس', 'مغلف'],
                     packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
@@ -436,7 +436,7 @@
             </div>
 
             {{-- حقل عدد الطرود --}}
-            <div class="flex flex-col gap-2 col-span-1">
+            <div class="flex flex-col col-span-1 gap-2">
                 <label class="text-[11px] font-bold text-slate-400">عدد الطرود</label>
                 <div class="relative">
                     <input type="number" name="parcels_quantity" value="{{ old('parcels_quantity', $shipment->parcels_quantity ?? 1) }}"
@@ -446,7 +446,7 @@
             </div>
 
             {{-- 2. حقل الوزن --}}
-            <div class="flex flex-col gap-2 col-span-2">
+            <div class="flex flex-col col-span-2 gap-2">
                 <label class="text-[11px] font-bold text-slate-400">الوزن (كجم)</label>
                 <input type="number" step="0.1" name="weight" placeholder="مثال: 2.5"
                     value="{{ old('weight', $shipment->weight) }}" min="0"
@@ -455,13 +455,13 @@
             </div>
 
             {{-- 3. تسعيرة الطرد وعمولته --}}
-            <div class="flex flex-col gap-2 col-span-1 mt-1">
+            <div class="flex flex-col col-span-1 gap-2 mt-1">
                 <label class="text-[11px] font-bold text-slate-400">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0" min="0" dir="ltr" required
                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-500/20">
             </div>
 
-            <div class="flex flex-col gap-2 col-span-1 mt-1">
+            <div class="flex flex-col col-span-1 gap-2 mt-1">
                 <label class="text-[11px] font-bold text-slate-400">نسبة العمولة (%)</label>
                 <div class="relative">
                     <input type="number" name="package_commission_rate" x-model.number="packageCommissionRate" placeholder="0" min="0" max="100" dir="ltr"
@@ -510,7 +510,7 @@
                         <input type="number" name="honey_fee" x-model.number="honeyFee" placeholder="0" min="0" dir="ltr"
                             class="px-3 w-full h-11 text-sm font-black text-left text-amber-700 bg-white rounded-lg border border-amber-200 transition-all outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20">
                     </div>
-                    <div class="mt-1 relative">
+                    <div class="relative mt-1">
                         <label class="block mb-1.5 text-[10px] font-bold text-amber-600">نسبة العمولة (%)</label>
                         <input type="number" name="honey_commission_rate" x-model.number="honeyCommissionRate" placeholder="0" min="0" max="100" dir="ltr"
                             class="px-3 w-full h-11 text-sm font-bold text-left bg-white rounded-lg border border-amber-100 transition-all outline-none focus:border-amber-400">
@@ -566,7 +566,7 @@
                 <label class="text-[11px] font-bold text-slate-400">المبلغ الإجمالي (ريال) <span class="text-red-500">*</span></label>
                 {{-- 💡 حقل مقفل يحسب المجموع تلقائياً --}}
                 <input type="number" required name="total_amount" :value="totalAmount" readonly tabindex="-1" placeholder="0.00"
-                    class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 outline-none bg-slate-100 ring-slate-200 text-primary cursor-not-allowed shadow-inner"
+                    class="px-4 w-full h-14 text-lg font-black text-left rounded-2xl border-none ring-1 shadow-inner cursor-not-allowed outline-none bg-slate-100 ring-slate-200 text-primary"
                     dir="ltr">
                 <p class="text-[9px] font-bold text-gray-400">يُحسب تلقائياً (الطرد + العسل)</p>
             </div>
@@ -591,7 +591,7 @@
                     <input type="hidden" name="is_price_agreed" :value="priceAgreed ? '1' : '0'">
 
                     {{-- Toggle Switch --}}
-                    <div class="relative shrink-0 w-11 h-6 rounded-full transition-colors duration-300"
+                    <div class="relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0"
                         :class="priceAgreed ? 'bg-emerald-500' : 'bg-slate-300'">
                         <div class="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-in-out"
                             :class="priceAgreed ? 'right-0.5' : 'right-[calc(100%-1.375rem)]'">
@@ -881,20 +881,33 @@
                     return dialCode + this.localPhoneNumber;
                 },
 
-                searchCustomer() {
-                    this.selectedCustomerId = null; // إعادة تعيين الاختيار إذا قام المستخدم بتعديل الرقم
-                    let query = this.fullPhoneNumber.trim();
-
-                    if (this.localPhoneNumber.trim() === '') {
+              searchCustomer() {
+                    this.selectedCustomerId = null;
+                    let rawQuery = (this.nameInput || '').trim();
+                    if (rawQuery === '') {
                         this.filteredCustomers = [];
                         this.showCustomerDropdown = false;
                         return;
                     }
 
-                    this.filteredCustomers = this.customers.filter(c => {
-                        return c.phone && String(c.phone).includes(query);
-                    });
+                    // تنظيف نص البحث وتقسيمه إلى مصفوفة من الكلمات
+                    let normQuery = this.normalize(rawQuery);
+                    let searchWords = normQuery.split(/\s+/); // يفصل الكلمات بناءً على المسافات
 
+                    this.filteredCustomers = this.customers.filter(c => {
+                        if (!c) return false;
+                        
+                        let nameMatch = false;
+                        if (c.name) {
+                            let normalizedName = this.normalize(c.name);
+                            // نتحقق مما إذا كانت *كل* كلمة كتبها المستخدم موجودة داخل اسم العميل
+                            nameMatch = searchWords.every(word => normalizedName.includes(word));
+                        }
+
+                        let phoneMatch = c.phone && String(c.phone).includes(rawQuery);
+                        
+                        return nameMatch || phoneMatch;
+                    });
                     this.showCustomerDropdown = true;
                 },
 

@@ -916,24 +916,33 @@
                 /* --- دوال العمليات (Actions) --- */
 
                 // البحث عن العميل أثناء الكتابة
-                searchCustomer() {
-                    this.selectedCustomerId =
-                        null; // إعادة تعيين الاختيار إذا قام المستخدم بتعديل الرقم
-
-                    let query = this.fullPhoneNumber.trim();
-
-                    // إغلاق القائمة إذا الحقل فارغ
-                    if (this.localPhoneNumber.trim() === '') {
+               searchCustomer() {
+                    this.selectedCustomerId = null;
+                    let rawQuery = (this.nameInput || '').trim();
+                    if (rawQuery === '') {
                         this.filteredCustomers = [];
                         this.showCustomerDropdown = false;
                         return;
                     }
 
-                    // فلترة العملاء بالرقم الكامل
-                    this.filteredCustomers = this.customers.filter(c => {
-                        return c.phone && String(c.phone).includes(query);
-                    });
+                    // تنظيف نص البحث وتقسيمه إلى مصفوفة من الكلمات
+                    let normQuery = this.normalize(rawQuery);
+                    let searchWords = normQuery.split(/\s+/); // يفصل الكلمات بناءً على المسافات
 
+                    this.filteredCustomers = this.customers.filter(c => {
+                        if (!c) return false;
+                        
+                        let nameMatch = false;
+                        if (c.name) {
+                            let normalizedName = this.normalize(c.name);
+                            // نتحقق مما إذا كانت *كل* كلمة كتبها المستخدم موجودة داخل اسم العميل
+                            nameMatch = searchWords.every(word => normalizedName.includes(word));
+                        }
+
+                        let phoneMatch = c.phone && String(c.phone).includes(rawQuery);
+                        
+                        return nameMatch || phoneMatch;
+                    });
                     this.showCustomerDropdown = true;
                 },
 
