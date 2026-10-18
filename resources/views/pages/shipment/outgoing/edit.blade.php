@@ -93,7 +93,7 @@
                                 {{-- حقل المكتب (يعرض المكتب الحالي فقط - للقراءة فقط) --}}
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                        المكتب الحالي <span class="text-error">*</span>
+                                        المكتب الحالي 
                                     </label>
                                     <div class="relative">
                                         <input type="text" readonly
@@ -109,7 +109,7 @@
                                 {{-- حقل الفرع أو الوجهة المستلمة (Searchable Combobox) --}}
                                 <div class="space-y-1.5 relative z-[101]" @click.outside="onBlurOutside()">
                                     <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                        الفرع أو الوجهة المستلمة <span class="text-error">*</span>
+                                        الفرع أو الوجهة المستلمة 
                                     </label>
                                     <div class="relative">
                                         <input type="hidden" name="receiver_branch_id" :value="selectedBranchId">
@@ -254,7 +254,7 @@
                                     {{-- اسم المرسل مع خاصية البحث بالاسم --}}
                                     <div class="relative" @click.away="showCustomerDropdown = false">
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                            اسم المرسل <span class="text-error">*</span>
+                                            اسم المرسل 
                                         </label>
                                         <div class="flex relative items-center">
                                             <input type="text" name="sender_name"  x-model="nameInput"
@@ -387,7 +387,7 @@
                                     {{-- اسم المستلم مع خاصية البحث بالاسم --}}
                                     <div class="relative" @click.away="showCustomerDropdown = false">
                                         <label class="block mb-1.5 text-xs font-bold text-gray-500 dark:text-gray-400">
-                                            اسم المستلم <span class="text-error">*</span>
+                                            اسم المستلم 
                                         </label>
                                         <div class="flex relative items-center">
                                             <input type="text" name="receiver_name"  x-model="nameInput"
@@ -551,8 +551,7 @@
                                 options: ['كرتون', 'كيس'],
                                 packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
                             }">
-                                <label class="text-[11px] font-bold text-slate-500">نوع الشحنة <span
-                                        class="text-rose-500">*</span></label>
+                                <label class="text-[11px] font-bold text-slate-500">نوع الشحنة</label>
 
                                 <div class="relative z-[40]" @click.outside="isOpen = false">
                                     <input type="text" name="package_type" x-model="packageType"
@@ -593,8 +592,7 @@
 
                             {{-- ================= 3. تسعيرة الطرد وعمولته ================= --}}
                             <div class="flex flex-col col-span-1 gap-2 mt-2">
-                                <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) <span
-                                        class="text-rose-500">*</span></label>
+                                <label class="text-[11px] font-bold text-slate-500">أجرة الطرد (ريال) </label>
                                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0"
                                     min="0" dir="ltr" 
                                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border border-blue-200 transition-all outline-none bg-blue-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20">
@@ -706,7 +704,7 @@
                         <div class="space-y-5">
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">
-                                    طريقة الدفع <span class="text-error">*</span>
+                                    طريقة الدفع 
                                 </label>
                                 <div class="relative">
                                     <select name="payment_method" x-model="paymentMethod"
@@ -725,7 +723,7 @@
 
                             <div>
                                 <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ
-                                    الإجمالي (ريال) <span class="text-error">*</span></label>
+                                    الإجمالي (ريال) </label>
                                 <input type="number"  name="total_amount" :value="totalAmount" readonly
                                     tabindex="-1"
                                     class="px-4 w-full h-14 text-xl font-black text-left rounded-2xl border border-transparent shadow-inner transition-all cursor-not-allowed outline-none bg-slate-100 dark:bg-boxdark-2 text-primary dark:text-primary"

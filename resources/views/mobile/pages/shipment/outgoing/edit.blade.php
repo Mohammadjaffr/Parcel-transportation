@@ -197,8 +197,7 @@
                 {{-- ================= المرسل ================= --}}
                 <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('sender_customer_id', $shipment->sender_customer_id) }}', name: '{{ old('sender_name', $shipment->senderCustomer->name ?? $shipment->sender_name) }}', phone: '{{ old('sender_phone', $shipment->senderCustomer->phone ?? $shipment->sender_phone) }}' })"
                     class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
-                    <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل <span
-                            class="text-red-500">*</span></span>
+                    <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المرسل </span>
 
                     <div class="grid relative grid-cols-1 gap-3 mt-2">
                         <input type="hidden" name="sender_customer_id" x-model="selectedCustomerId">
@@ -284,8 +283,7 @@
                 {{-- ================= المستلم ================= --}}
                 <div x-data="customerSelect({{ $customers }}, @js(array_values(config('countries', []))), { id: '{{ old('receiver_customer_id', $shipment->receiver_customer_id) }}', name: '{{ old('receiver_name', $shipment->receiverCustomer->name ?? $shipment->receiver_name) }}', phone: '{{ old('receiver_phone', $shipment->receiverCustomer->phone ?? $shipment->receiver_phone) }}' })"
                     class="z-40 p-4 rounded-2xl border bg-slate-50 border-slate-100">
-                    <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم
-                        <span class="text-red-500">*</span></span>
+                    <span class=" -top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">المستلم</span>
 
                     <div class="grid relative grid-cols-1 gap-3 mt-2">
                         <input type="hidden" name="receiver_customer_id" x-model="selectedCustomerId">
@@ -409,7 +407,7 @@
                     options: ['كرتون', 'كيس', 'مغلف'],
                     packageType: '{{ old('package_type', $shipment->package_type ?? '') }}'
                 }">
-                <label class="text-[11px] font-bold text-slate-400">النوع <span class="text-rose-500">*</span></label>
+                <label class="text-[11px] font-bold text-slate-400">النوع </label>
 
                 <div class="relative z-[40]" @click.outside="isOpen = false">
                     <input type="text" name="package_type" x-model="packageType" @focus="isOpen = true" @click="isOpen = true"
@@ -456,7 +454,7 @@
 
             {{-- 3. تسعيرة الطرد وعمولته --}}
             <div class="flex flex-col col-span-1 gap-2 mt-1">
-                <label class="text-[11px] font-bold text-slate-400">أجرة الطرد (ريال) <span class="text-rose-500">*</span></label>
+                <label class="text-[11px] font-bold text-slate-400">أجرة الطرد (ريال) </label>
                 <input type="number" name="package_fee" x-model.number="packageFee" placeholder="0" min="0" dir="ltr" required
                     class="px-4 w-full h-12 text-sm font-black text-left text-blue-600 rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-blue-500/20">
             </div>
