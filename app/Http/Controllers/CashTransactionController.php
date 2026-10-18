@@ -38,16 +38,17 @@ class CashTransactionController extends Controller
             : ($isSuperAdmin || $isAdmin ? null : (int) $user->branch_id);
 
         // تحديد نطاق التاريخ: افتراضياً الشهر الحالي عند الدخول لأول مرة لسرعة الأداء
+        // تحديد نطاق التاريخ: افتراضياً تاريخ اليوم عند الدخول لأول مرة
         $isDefaultLoad = !$request->has('start_date') && !$request->has('end_date');
 
         if ($isDefaultLoad) {
-            $startDate = now()->startOfMonth()->toDateString();
-            $endDate = now()->endOfMonth()->toDateString();
+            // تم التعديل هنا ليكون تاريخ اليوم هو الافتراضي
+            $startDate = now()->toDateString();
+            $endDate = now()->toDateString();
         } else {
             $startDate = $request->filled('start_date') ? $request->start_date : null;
             $endDate = $request->filled('end_date') ? $request->end_date : null;
         }
-
         $query = CashTransaction::with(['category', 'user', 'branch', 'source']);
 
         if ($startDate && $endDate) {
@@ -80,13 +81,13 @@ class CashTransactionController extends Controller
                 // البحث الذكي: الاستفادة من فهرس السندات ذرياً قبل البحث في النصوص العامة
                 if (preg_match('/^[A-Za-z0-9\-]+$/', $search)) {
                     $q->where('receipt_number', 'like', "{$search}%")
-                      ->orWhere('receipt_number', 'like', "%{$search}%")
-                      ->orWhere('reference_number', 'like', "{$search}%")
-                      ->orWhere('reference_number', 'like', "%{$search}%");
+                        ->orWhere('receipt_number', 'like', "%{$search}%")
+                        ->orWhere('reference_number', 'like', "{$search}%")
+                        ->orWhere('reference_number', 'like', "%{$search}%");
                 } else {
                     $q->where('receipt_number', 'like', "%{$search}%")
-                      ->orWhere('reference_number', 'like', "%{$search}%")
-                      ->orWhere('notes', 'like', "%{$search}%");
+                        ->orWhere('reference_number', 'like', "%{$search}%")
+                        ->orWhere('notes', 'like', "%{$search}%");
                 }
             });
         }

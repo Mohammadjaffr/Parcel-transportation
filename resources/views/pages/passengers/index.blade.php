@@ -396,6 +396,12 @@
                                 {{-- العدد والعمولة --}}
                                 <td class="px-6 py-4 text-center align-top">
                                     <div class="flex flex-col gap-2 items-center">
+                                        @if($passenger->vehicle_type)
+                                            <span class="inline-flex gap-1 items-center px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
+                                                <span class="material-symbols-outlined text-[13px]">directions_car</span>
+                                                {{ $passenger->vehicle_type }}
+                                            </span>
+                                        @endif
                                         <span
                                             class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold rounded-lg bg-primary/10 text-primary">
                                             <span class="material-symbols-outlined text-[16px]">group</span>
@@ -475,11 +481,13 @@
                                                     status: @js($statusKey),
                                                     pickup_location: @js($passenger->pickup_location),
                                                     destination: @js($passenger->destination),
+                                                    vehicle_type: @js($passenger->vehicle_type),
                                                     count: @js($passenger->count),
                                                     office_commission: @js($passenger->office_commission),
                                                     other_office_commission: @js($passenger->other_office_commission),
                                                     broker_id: @js($passenger->broker_id),
                                                     broker_name: @js($passenger->broker->name ?? ''),
+                                                    broker_phone: @js($passenger->broker->phone ?? ''),
                                                     driver_id: @js($passenger->driver_id),
                                                     driver_name: @js($passenger->driver->name ?? ''),
                                                     driver_phone: @js($passenger->driver->phone ?? ''),
@@ -495,13 +503,26 @@
                                                         $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerBooking');
                                                     @endphp
                                                     @if ($whatsappUrl)
-                                                        <a href="{{ $whatsappUrl }}" target="_blank" @click="openOptions = false"
-                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-emerald-50 hover:text-emerald-600 dark:text-gray-300 dark:hover:bg-emerald-500/10">
-                                                            <svg class="w-[18px] h-[18px] fill-current" viewBox="0 0 24 24">
-                                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                            </svg>
-                                                            إرسال الحجز (واتساب)
-                                                        </a>
+                                                        <button type="button"
+                                                            onclick="sendPassengerBookingDirect({{ $passenger->id }}, this, '{{ $whatsappUrl }}')"
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
+                                                            <span class="material-symbols-outlined text-[18px]">send</span>
+                                                            <span>إرسال الحجز (واتساب)</span>
+                                                        </button>
+                                                    @endif
+                                                @endif
+
+                                                @if ($statusKey == 'cancel')
+                                                    @php
+                                                        $whatsappCancelUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
+                                                    @endphp
+                                                    @if ($whatsappCancelUrl)
+                                                        <button type="button"
+                                                            onclick="sendPassengerCancelDirect({{ $passenger->id }}, this, '{{ $whatsappCancelUrl }}')"
+                                                            class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700 dark:text-rose-400 dark:hover:bg-rose-500/10">
+                                                            <span class="material-symbols-outlined text-[18px]">send</span>
+                                                            <span>إرسال الإلغاء للوسيط (واتساب)</span>
+                                                        </button>
                                                     @endif
                                                 @endif
 
@@ -518,6 +539,7 @@
                                                     office_commission: @js($passenger->office_commission),
                                                     other_office_commission: @js($passenger->other_office_commission),
                                                     broker_name: @js($passenger->broker->name ?? ''),
+                                                    broker_phone: @js($passenger->broker->phone ?? ''),
                                                     driver_phone: @js($passenger->driver->phone ?? ''),
                                                     driver_name: @js($passenger->driver->name ?? ''),
                                                     cancel_reason: @js($passenger->cancel_reason ?? ''),
@@ -681,12 +703,13 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="{
                                 searchQuery: '',
                                 selectedId: '',
+                                brokerPhone: '',
                                 showDropdown: false,
-                                brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                                brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name, 'phone' => $b->phone])->values()),
                                 get filteredBrokers() {
                                     if (!this.searchQuery) return [];
                                     return this.brokers.filter(b => b.name.includes(this.searchQuery));
@@ -694,11 +717,13 @@
                                 selectBroker(broker) {
                                     this.selectedId = broker.id;
                                     this.searchQuery = broker.name;
+                                    this.brokerPhone = broker.phone || '';
                                     this.showDropdown = false;
                                 },
                                 resetSelection() {
                                     this.selectedId = '';
                                     this.searchQuery = '';
+                                    this.brokerPhone = '';
                                 }
                             }">
 
@@ -743,6 +768,21 @@
                                             </span>
                                         </button>
                                     </template>
+                                </div>
+                            </div>
+
+                            <div class="relative text-right">
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                                    رقم هاتف الوسيط (واتساب) <span class="text-xs text-gray-400 font-normal">(اختياري)</span>
+                                </label>
+
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40">
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px] text-gray-400">call</span>
+                                    <input type="text" name="broker_phone" x-model="brokerPhone"
+                                        placeholder="77xxxxxxxx"
+                                        dir="ltr"
+                                        autocomplete="off"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-on-surface dark:text-white text-right">
                                 </div>
                             </div>
                         </div>
@@ -838,7 +878,12 @@
                             </div>
                         </div> --}}
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">نوع المركبة</label>
+                                <input type="text" name="vehicle_type" list="vehicle_types_list" placeholder="مثلاً: صالون، باص..."
+                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -993,12 +1038,12 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark-2"
                             x-data="{
                                 searchQuery: '',
                                 selectedId: '',
                                 showDropdown: false,
-                                brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                                brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name, 'phone' => $b->phone])->values()),
                                 get filteredBrokers() {
                                     if (!this.searchQuery || this.selectedId) return [];
                                     return this.brokers.filter(b => b.name.includes(this.searchQuery));
@@ -1008,6 +1053,7 @@
                                     this.searchQuery = broker.name;
                                     editPassengerData.broker_id = broker.id;
                                     editPassengerData.broker_name = broker.name;
+                                    editPassengerData.broker_phone = broker.phone || '';
                                     this.showDropdown = false;
                                 },
                                 resetSelection() {
@@ -1015,6 +1061,7 @@
                                     this.searchQuery = '';
                                     editPassengerData.broker_id = '';
                                     editPassengerData.broker_name = '';
+                                    editPassengerData.broker_phone = '';
                                 }
                             }"
                             x-effect="
@@ -1065,6 +1112,21 @@
                                                 إلى <span class="material-symbols-outlined text-[14px]">done</span></span>
                                         </button>
                                     </template>
+                                </div>
+                            </div>
+
+                            <div class="relative text-right">
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                                    رقم هاتف الوسيط (واتساب) <span class="text-xs text-gray-400 font-normal">(اختياري)</span>
+                                </label>
+
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40">
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px] text-gray-400">call</span>
+                                    <input type="text" name="broker_phone" x-model="editPassengerData.broker_phone"
+                                        placeholder="77xxxxxxxx"
+                                        dir="ltr"
+                                        autocomplete="off"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-on-surface dark:text-white text-right">
                                 </div>
                             </div>
                         </div>
@@ -1161,7 +1223,12 @@
                             </div>
                         </div> --}}
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">نوع المركبة</label>
+                                <input type="text" name="vehicle_type" x-model="editPassengerData.vehicle_type" list="vehicle_types_list" placeholder="مثلاً: صالون، باص..."
+                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -1240,18 +1307,42 @@
                     <h3 class="mb-3 text-2xl font-black font-headline text-on-surface dark:text-white">
                         تأكيد إلغاء الراكب</h3>
 
-                    <p class="mb-8 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                    <p class="mb-4 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
                         هل أنت متأكد من إلغاء الراكب رقم <br>
                         <span class="text-base font-black text-on-surface dark:text-white font-headline"
                             x-text="statusPassengerData.passenger_number"></span>؟<br>
                         <span class="text-amber-500/80">سيتم تغيير حالة الراكب إلى ملغي.</span>
                     </p>
 
+                    {{-- شارة الوسيط --}}
+                    <template x-if="statusPassengerData.broker_name">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                            <span class="material-symbols-outlined text-[16px]">handshake</span>
+                            <span>الوسيط:</span>
+                            <span x-text="statusPassengerData.broker_name"></span>
+                        </div>
+                    </template>
+
                     {{-- فورم الإرسال --}}
                     <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true"
                         class="space-y-4">
                         @csrf
                         <input type="hidden" name="status" value="cancel">
+
+                        {{-- حقل رقم هاتف الوسيط (واتساب) --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>رقم هاتف الوسيط (واتساب)</span>
+                                <span class="text-xs font-normal text-gray-400">(لإرسال إشعار الإلغاء عبر الواتساب)</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-[18px] text-gray-400">call</span>
+                                <input type="text" name="broker_phone" x-model="statusPassengerData.broker_phone"
+                                    placeholder="أدخل رقم الوسيط (مثال: 771234567)"
+                                    dir="ltr"
+                                    class="p-3.5 pr-10 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400 text-right">
+                            </div>
+                        </div>
 
                         {{-- حقل سبب الإلغاء --}}
                         <div class="text-right">
@@ -1262,6 +1353,16 @@
                             <textarea name="cancel_reason" x-model="statusPassengerData.cancel_reason" rows="3"
                                 placeholder="اكتب سبب إلغاء الحجز..."
                                 class="p-3.5 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400"></textarea>
+                        </div>
+
+                        {{-- خيار إرسال واتساب للوسيط --}}
+                        <div class="flex items-center gap-2.5 p-3 text-right bg-emerald-50/70 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                            <input type="checkbox" id="send_whatsapp_cancel" name="send_whatsapp" value="1" 
+                                x-model="statusPassengerData.send_whatsapp"
+                                class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer">
+                            <label for="send_whatsapp_cancel" class="text-xs font-bold text-gray-700 dark:text-gray-200 cursor-pointer select-none flex-1">
+                                إرسال إشعار الإلغاء للوسيط عبر واتساب 💬
+                            </label>
                         </div>
 
                         <div class="flex gap-3">
@@ -1342,6 +1443,14 @@
         </template>
 
     </div>
+<datalist id="vehicle_types_list">
+    <option value="صالون">
+    <option value="باص">
+    <option value="نوها">
+    <option value="هايلوكس">
+    <option value="فوكسي">
+    <option value="خصوصي">
+</datalist>
 @endsection
 
 @section('script')
@@ -1378,11 +1487,13 @@
                     status: 'pending',
                     pickup_location: '',
                     destination: '',
+                    vehicle_type: '',
                     count: 1,
                     office_commission: 0,
                     other_office_commission: 0,
                     broker_id: '',
                     broker_name: '',
+                    broker_phone: '',
                     driver_id: '',
                     driver_name: '',
                     driver_phone: '',
@@ -1406,6 +1517,8 @@
                     office_commission: 0,
                     other_office_commission: 0,
                     broker_name: '',
+                    broker_phone: '',
+                    send_whatsapp: true,
                     driver_phone: '',
                     driver_name: '',
                     cancel_reason: '',
@@ -1425,6 +1538,7 @@
                         ...passenger,
                         broker_id: passenger.broker_id || '',
                         broker_name: passenger.broker_name || '',
+                        broker_phone: passenger.broker_phone || '',
                         url: '{{ route('passengers.index') }}/' + passenger.id
                     };
                     this.showEditModal = true;
@@ -1440,12 +1554,13 @@
                 },
 
                 openStatusModal(passenger) {
-                    // نمرر كل البيانات كمدخلات مخفية حتى ينجح الـ Validation في الكنترولر بدون 404
                     this.statusPassengerData = {
                         ...passenger,
                         cancel_reason: passenger.cancel_reason || '',
                         note: passenger.note || '',
                         broker_name: passenger.broker_name || '',
+                        broker_phone: passenger.broker_phone || '',
+                        send_whatsapp: true,
                         url: '{{ route('passengers.index') }}/' + passenger.id + '/status'
                     };
                     this.showStatusModal = true;
@@ -1512,8 +1627,11 @@
                 },
                 get fullPhoneNumber() {
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
-                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    let local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
                     if (!local) return '';
+                    if (dial && local.startsWith(dial)) {
+                        local = local.substring(dial.length).replace(/^0+/, '');
+                    }
                     return dial + local;
                 },
                 loadInitial(phone) {
@@ -1561,8 +1679,11 @@
 
                 get fullPhoneNumber() {
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
-                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    let local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
                     if (!local) return '';
+                    if (dial && local.startsWith(dial)) {
+                        local = local.substring(dial.length).replace(/^0+/, '');
+                    }
                     return dial + local;
                 },
 
@@ -1627,5 +1748,187 @@
                 }
             }
         }
+
+        async function sendPassengerBookingDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerBooking', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال تفاصيل الحجز للراكب بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct booking send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendPassengerCancelDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerCancel', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار الإلغاء للوسيط بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct cancel send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        function showNotificationToast(message, type = 'success') {
+            const existingToast = document.getElementById('direct-whatsapp-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'direct-whatsapp-toast';
+            let bgClass = 'bg-emerald-600 shadow-emerald-600/25';
+            let icon = 'check_circle';
+
+            if (type === 'error') {
+                bgClass = 'bg-red-600 shadow-red-600/25';
+                icon = 'error';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-600 shadow-amber-600/25';
+                icon = 'open_in_new';
+            }
+
+            toast.className = `fixed bottom-6 left-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-sm transition-all duration-300 transform translate-y-0 ${bgClass}`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
     </script>
+
+    @if (session('whatsapp_redirect_url'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(function() {
+                    window.open(@js(session('whatsapp_redirect_url')), '_blank');
+                }, 300);
+            });
+        </script>
+    @endif
 @endsection

@@ -176,13 +176,25 @@
                                             $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerBooking');
                                         @endphp
                                         @if ($whatsappUrl)
-                                            <a href="{{ $whatsappUrl }}" target="_blank" @click="open = false"
+                                            <button type="button"
+                                                onclick="sendPassengerBookingDirect({{ $passenger->id }}, this, '{{ $whatsappUrl }}')"
                                                 class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 font-headline">
-                                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.305-.885-.653-1.48-1.459-1.653-1.756-.173-.298-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51h-.57c-.198 0-.52.074-.792.347-.272.273-1.04 1.02-1.04 2.482s1.065 2.876 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-                                                </svg>
-                                                إرسال الحجز 
-                                            </a>
+                                                <span class="material-symbols-outlined text-[16px]">send</span>
+                                                إرسال الحجز
+                                            </button>
+                                        @endif
+                                    @endif
+                                    @if ($statusKey == 'cancel')
+                                        @php
+                                            $whatsappCancelUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
+                                        @endphp
+                                        @if ($whatsappCancelUrl)
+                                            <button type="button"
+                                                onclick="sendPassengerCancelDirect({{ $passenger->id }}, this, '{{ $whatsappCancelUrl }}')"
+                                                class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-rose-700 hover:bg-rose-50 font-headline">
+                                                <span class="material-symbols-outlined text-[16px]">send</span>
+                                                إرسال الإلغاء للوسيط
+                                            </button>
                                         @endif
                                     @endif
                                     @if ($statusKey != 'cancel' && $statusKey != 'completed')
@@ -190,6 +202,8 @@
                                             @click="openStatusModal({
                                                 id: {{ $passenger->id }},
                                                 passenger_number: @js($passenger->passenger_number),
+                                                broker_name: @js($passenger->broker?->name ?? 'غير محدد'),
+                                                broker_phone: @js($passenger->broker?->phone ?? ''),
                                                 status: 'cancel',
                                                 cancel_reason: @js($passenger->cancel_reason ?? ''),
                                                 note: @js($passenger->note)
@@ -272,9 +286,14 @@
                         </div>
                         <div>
                             <span class="text-slate-400 font-bold block text-[9px] mb-0.5">عدد الركاب:</span>
-                            <div class="flex gap-1 items-center font-black text-slate-700">
+                            <div class="flex gap-1.5 items-center font-black text-slate-700">
                                 <span class="material-symbols-outlined text-[14px] text-slate-400">group</span>
                                 <span>{{ $passenger->count }} راكب</span>
+                                @if($passenger->vehicle_type)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[10px] font-bold">
+                                        {{ $passenger->vehicle_type }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -325,6 +344,26 @@
                 <form :action="statusPassengerData.url" method="POST" @submit="isSubmitting = true" class="space-y-4 w-full">
                     @csrf
                     <input type="hidden" name="status" value="cancel">
+
+                    {{-- معلومات الوسيط --}}
+                    <template x-if="statusPassengerData.broker_name">
+                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between text-right">
+                            <span class="text-xs font-bold text-slate-400">الوسيط المعتمد:</span>
+                            <span class="text-xs font-black text-slate-700" x-text="statusPassengerData.broker_name"></span>
+                        </div>
+                    </template>
+
+                    {{-- هاتف / واتساب الوسيط --}}
+                    <div class="text-right">
+                        <label class="block mb-1.5 text-xs font-bold text-slate-700">
+                            واتساب الوسيط لإرسال الإلغاء <span class="text-slate-400 font-normal">(اختياري)</span>
+                        </label>
+                        <input type="text" name="broker_phone" x-model="statusPassengerData.broker_phone"
+                            placeholder="مثال: 967770000000"
+                            dir="ltr"
+                            class="w-full p-3 text-xs font-bold text-slate-700 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500/20">
+                    </div>
+
                     <div class="text-right">
                         <label class="block mb-1.5 text-xs font-bold text-slate-700">
                             سبب الإلغاء <span class="text-slate-400 font-normal">(اختياري)</span>
@@ -333,6 +372,17 @@
                             placeholder="اكتب سبب إلغاء الحجز هنا..."
                             class="w-full p-3 text-xs font-bold text-slate-700 bg-slate-50 rounded-2xl border border-slate-200 outline-none focus:ring-2 focus:ring-amber-500/20"></textarea>
                     </div>
+
+                    {{-- إرسال الإلغاء عبر واتساب --}}
+                    <div class="flex items-center gap-2 pt-1 text-right">
+                        <input type="checkbox" name="send_whatsapp" id="send_whatsapp_mobile_index" value="1"
+                            x-model="statusPassengerData.send_whatsapp"
+                            class="w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                        <label for="send_whatsapp_mobile_index" class="text-xs font-bold text-slate-700 cursor-pointer">
+                            إرسال إشعار الإلغاء للوسيط عبر واتساب تلقائياً
+                        </label>
+                    </div>
+
                     <div class="flex gap-3 w-full">
                         <button type="button" @click="closeModals()"
                             class="flex-1 h-14 text-sm font-bold text-slate-600 rounded-[1rem] transition-all bg-slate-50 hover:bg-slate-100 active:scale-95 font-headline">تراجع</button>
@@ -415,6 +465,9 @@
                     location: '',
                     count: 1,
                     total_commission: 0,
+                    broker_name: '',
+                    broker_phone: '',
+                    send_whatsapp: true,
                     customer_phone: '',
                     customer_name: '',
                     driver_phone: '',
@@ -495,6 +548,9 @@
                 openStatusModal(passenger) {
                     this.statusPassengerData = {
                         ...passenger,
+                        broker_name: passenger.broker_name || 'غير محدد',
+                        broker_phone: passenger.broker_phone || '',
+                        send_whatsapp: true,
                         cancel_reason: passenger.cancel_reason || '',
                         note: passenger.note || '',
                         url: '{{ url('passengers') }}/' + passenger.id + '/status'
@@ -683,9 +739,201 @@
                 },
 
                 updateFullPhone() {
-                    this.fullPhone = this.phone ? (this.selectedCountry.dial_code + this.phone) : '';
+                    if (!this.phone) {
+                        this.fullPhone = '';
+                        return;
+                    }
+                    const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
+                    let cleanPhone = String(this.phone).replace(/[^0-9]/g, '').replace(/^0+/, '');
+                    if (dial && cleanPhone.startsWith(dial)) {
+                        cleanPhone = cleanPhone.substring(dial.length).replace(/^0+/, '');
+                    }
+                    this.fullPhone = dial ? (dial + cleanPhone) : cleanPhone;
                 }
             }));
         });
+
+        async function sendPassengerBookingDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerBooking', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال تفاصيل الحجز للراكب بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct booking send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendPassengerCancelDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerCancel', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار الإلغاء للوسيط بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct cancel send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        function showNotificationToast(message, type = 'success') {
+            const existingToast = document.getElementById('direct-whatsapp-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'direct-whatsapp-toast';
+            let bgClass = 'bg-emerald-600 shadow-emerald-600/25';
+            let icon = 'check_circle';
+
+            if (type === 'error') {
+                bgClass = 'bg-red-600 shadow-red-600/25';
+                icon = 'error';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-600 shadow-amber-600/25';
+                icon = 'open_in_new';
+            }
+
+            toast.className = `fixed bottom-24 left-4 right-4 md:left-6 md:right-auto z-[9999] flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-xs sm:text-sm transition-all duration-300 transform translate-y-0 ${bgClass}`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
     </script>
+
+    @if (session('whatsapp_redirect_url'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const url = @js(session('whatsapp_redirect_url'));
+                if (url) {
+                    window.open(url, '_blank');
+                }
+            });
+        </script>
+    @endif
 @endsection

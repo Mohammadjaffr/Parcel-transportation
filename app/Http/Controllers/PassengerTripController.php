@@ -46,7 +46,7 @@ class PassengerTripController extends Controller
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->get();
-        $brokers = Broker::select('id', 'name')->orderBy('name')->get();
+        $brokers = Broker::select('id', 'name', 'phone')->orderBy('name')->get();
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers', 'brokers'));
         }
@@ -161,7 +161,7 @@ class PassengerTripController extends Controller
             ->where('branch_id', auth()->user()->branch_id)
             ->latest()
             ->get();
-        $brokers = Broker::select('id', 'name')->orderBy('name')->get();
+        $brokers = Broker::select('id', 'name', 'phone')->orderBy('name')->get();
 
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.edit', compact('trip', 'drivers', 'pendingPassengers', 'brokers'));

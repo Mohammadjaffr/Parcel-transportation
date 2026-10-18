@@ -115,8 +115,9 @@
                             x-data="{
                                             searchQuery: '{{ $passenger->broker?->name ?? '' }}',
                                             selectedId: '{{ $passenger->broker_id ?? '' }}',
+                                            brokerPhone: '{{ $passenger->broker?->phone ?? '' }}',
                                             showDropdown: false,
-                                            brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->values()),
+                                            brokers: @js($brokers->map(fn($b) => ['id' => $b->id, 'name' => $b->name, 'phone' => $b->phone ?? ''])->values()),
                                             get filteredBrokers() {
                                                 if (!this.searchQuery) return [];
                                                 return this.brokers.filter(b => b.name.includes(this.searchQuery));
@@ -124,11 +125,13 @@
                                             selectBroker(broker) {
                                                 this.selectedId = broker.id;
                                                 this.searchQuery = broker.name;
+                                                this.brokerPhone = broker.phone || '';
                                                 this.showDropdown = false;
                                             },
                                             resetSelection() {
                                                 this.selectedId = '';
                                                 this.searchQuery = '';
+                                                this.brokerPhone = '';
                                             }
                                         }">
 
@@ -170,6 +173,18 @@
                                             </span>
                                         </button>
                                     </template>
+                                </div>
+                            </div>
+
+                            <div class="relative text-right">
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                                    هاتف أو واتساب الوسيط <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                                </label>
+                                <div class="relative flex items-center bg-white rounded-xl ring-1 ring-gray-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40">
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px] text-gray-400">call</span>
+                                    <input type="text" name="broker_phone" x-model="brokerPhone"
+                                        placeholder="مثال: 967770000000" dir="ltr"
+                                        class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-on-surface dark:text-white">
                                 </div>
                             </div>
                         </div>
@@ -263,7 +278,12 @@
                         </div> --}}
 
                         {{-- ================= الأعداد والعمولات الماليّة ================= --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">نوع المركبة</label>
+                                <input type="text" name="vehicle_type" list="vehicle_types_list" value="{{ $passenger->vehicle_type }}" placeholder="مثلاً: صالون، باص..."
+                                    class="px-4 w-full h-12 rounded-xl border-none ring-1 ring-gray-200 bg-surface dark:bg-boxdark-2 dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
                             <div>
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">عدد الركاب
                                     <span class="text-error">*</span></label>
@@ -323,8 +343,12 @@
                 },
                 get fullPhoneNumber() {
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
-                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
-                    if (!local) return ''; return dial + local;
+                    let local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    if (!local) return '';
+                    if (dial && local.startsWith(dial)) {
+                        local = local.substring(dial.length).replace(/^0+/, '');
+                    }
+                    return dial + local;
                 },
                 loadInitial(phone) {
                     if (!phone || this.initializedPhone === phone) return;
@@ -356,8 +380,12 @@
 
                 get fullPhoneNumber() {
                     const dial = String(this.selectedCountry?.dial_code || '').replace('+', '');
-                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
-                    if (!local) return ''; return dial + local;
+                    let local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
+                    if (!local) return '';
+                    if (dial && local.startsWith(dial)) {
+                        local = local.substring(dial.length).replace(/^0+/, '');
+                    }
+                    return dial + local;
                 },
 
                 get filteredRecords() {
@@ -413,4 +441,12 @@
             }
         }
     </script>
+    <datalist id="vehicle_types_list">
+        <option value="صالون">
+        <option value="باص">
+        <option value="نوها">
+        <option value="هايلوكس">
+        <option value="فوكسي">
+        <option value="خصوصي">
+    </datalist>
 @endsection

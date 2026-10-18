@@ -12,7 +12,10 @@ use Illuminate\Support\Facades\Log;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Models\Customer;
+use App\Models\Passengers;
 use App\Services\WhatsApp\WhatsAppLinkService;
+use App\Services\WhatsApp\Messages\PassengerBookingMessage;
+use App\Services\WhatsApp\Messages\PassengerCancelMessage;
 
 class WhatsAppController extends Controller
 {
@@ -446,19 +449,231 @@ class WhatsAppController extends Controller
         return redirect()->away($link);
     }
     public function sendCustomerAccountStatement($id)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    $customer = Customer::where('app_id', $user->app_id)
-        ->where('branch_id', $user->branch_id)
-        ->findOrFail($id);
+        $customer = Customer::where('app_id', $user->app_id)
+            ->where('branch_id', $user->branch_id)
+            ->findOrFail($id);
 
-    $link = WhatsAppLinkService::generate($customer, 'CustomerAccountStatement');
+        $link = WhatsAppLinkService::generate($customer, 'CustomerAccountStatement');
 
-    if (!$link) {
-        return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم العميل.');
+        if (!$link) {
+            return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم العميل.');
+        }
+
+        return redirect()->away($link);
     }
 
-    return redirect()->away($link);
-}
+    /**
+     * إرسال تفاصيل حجز الراكب مباشرة عبر واتساب (النهج المتبع في الطرود)
+     */
+    public function sendPassengerBooking($id)
+    {
+        try {
+            $passenger = Passengers::with(['broker', 'driver', 'branch.app'])->findOrFail($id);
+
+            $fallbackLink = WhatsAppLinkService::generate($passenger, 'passengerBooking');
+
+            $branch = $passenger->branch ?? auth()->user()?->branch;
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            $phone = $passenger->passenger_number;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف الراكب غير متوفر.',
+                ], 422);
+            }
+
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                $checkLive = $this->whatsAppService->getStatus();
+                if (!empty($checkLive['data']['Connected'])) {
+                    $serviceStatus = 'online';
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                } else {
+                    return response()->json([
+                        'success'       => false,
+                        'fallback'      => true,
+                        'whatsapp_link' => $fallbackLink,
+                        'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                    ]);
+                }
+            }
+
+            $bookingMessage = new PassengerBookingMessage();
+            $message = $bookingMessage->getMessageBody($passenger);
+
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                
+                $serverStatus = $this->whatsAppService->getStatus();
+                $isServerOnline = !empty($serverStatus['data']['Connected']);
+
+                if (!$isServerOnline) {
+                    Cache::put($cacheKey, 'offline', now()->addMinute());
+                    $userMessage = 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+                } else {
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                    $userMessage = 'رقم هاتف الراكب غير مسجل في الواتساب أو غير صحيح، جاري فتح الواتساب للتحقق...';
+                }
+
+                Log::warning("WhatsApp sendText (passengerBooking) failed for passenger #{$id}: " . $errorMsg);
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال تفاصيل الحجز للراكب بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendPassengerBooking Error for passenger #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($passenger) ? WhatsAppLinkService::generate($passenger, 'passengerBooking') : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
+
+    /**
+     * إرسال إشعار إلغاء حجز الراكب للوسيط مباشرة عبر واتساب (النهج المتبع في الطرود)
+     */
+    public function sendPassengerCancel($id)
+    {
+        try {
+            $passenger = Passengers::with(['broker', 'driver', 'branch.app'])->findOrFail($id);
+
+            $fallbackLink = WhatsAppLinkService::generate($passenger, 'passengerCancel');
+
+            $branch = $passenger->branch ?? auth()->user()?->branch;
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            $phone = $passenger->broker?->phone;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف أو واتساب الوسيط غير متوفر في السند.',
+                ], 422);
+            }
+
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                $checkLive = $this->whatsAppService->getStatus();
+                if (!empty($checkLive['data']['Connected'])) {
+                    $serviceStatus = 'online';
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                } else {
+                    return response()->json([
+                        'success'       => false,
+                        'fallback'      => true,
+                        'whatsapp_link' => $fallbackLink,
+                        'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                    ]);
+                }
+            }
+
+            $cancelMessage = new PassengerCancelMessage();
+            $message = $cancelMessage->getMessageBody($passenger);
+
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                
+                $serverStatus = $this->whatsAppService->getStatus();
+                $isServerOnline = !empty($serverStatus['data']['Connected']);
+
+                if (!$isServerOnline) {
+                    Cache::put($cacheKey, 'offline', now()->addMinute());
+                    $userMessage = 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+                } else {
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                    $userMessage = 'رقم هاتف الوسيط غير مسجل في الواتساب أو غير صحيح، جاري فتح الواتساب للإرسال اليدوي...';
+                }
+
+                Log::warning("WhatsApp sendText (passengerCancel) failed for passenger #{$id}: " . $errorMsg);
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار الإلغاء للوسيط بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendPassengerCancel Error for passenger #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($passenger) ? WhatsAppLinkService::generate($passenger, 'passengerCancel') : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
 }

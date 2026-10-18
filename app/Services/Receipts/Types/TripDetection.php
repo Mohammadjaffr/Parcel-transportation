@@ -199,6 +199,7 @@ public function fetchData(string $referenceId): array
                 'branch_name'             => $p->branch?->name ?? '---',
                 'pickup_location'         => $pPickup,
                 'destination'             => $pDest,
+                'vehicle_type'            => $p->vehicle_type ?? '---',
                 'count'                   => $pCnt,
                 'office_commission'       => number_format($p->office_commission ?? 0, 0),
                 'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
@@ -210,6 +211,9 @@ public function fetchData(string $referenceId): array
             $msg .= "{$i}. الراكب: {$pNum}\n";
             $msg .= "📍 مكان الراكب: {$pPickup}\n";
             $msg .= "🏁 الوجهة: {$pDest}\n";
+            if (!empty($p->vehicle_type)) {
+                $msg .= "🚗 نوع المركبة: {$p->vehicle_type}\n";
+            }
             $msg .= "👥 العدد: {$pCnt}\n";
 
             if ($p->note) {

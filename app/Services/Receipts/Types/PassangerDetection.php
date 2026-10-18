@@ -106,6 +106,7 @@ class PassangerDetection implements ReceiptStrategyInterface
                     'passenger_number' => $displayPhone,
                     'pickup_location'  => $p->pickup_location ?? '---',
                     'destination'      => $p->destination ?? '---',
+                    'vehicle_type'     => $p->vehicle_type ?? '---',
                     'count'            => $p->count ?? 0,
                     'note'             => $p->note ?: '---',
                 ];

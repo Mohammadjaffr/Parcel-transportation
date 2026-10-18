@@ -208,6 +208,7 @@
                                     @endauth
                                     <th class="px-2 py-3 w-32 font-black border-l text-slate-500 border-slate-200">المكان</th>
                                     <th class="px-2 py-3 w-32 font-black border-l text-slate-500 border-slate-200">الوجهة</th>
+                                    <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">نوع المركبة</th>
                                     <th class="px-2 py-3 w-16 font-black border-l text-slate-500 border-slate-200">العدد</th>
                                     <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">عمولة المكتب</th>
                                     <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">عمولة أخرى</th>
@@ -226,6 +227,7 @@
                                             @endauth
                                             <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['pickup_location'] }}</td>
                                             <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['destination'] }}</td>
+                                            <td class="px-2 py-2 font-medium border-l text-slate-700 border-slate-100 print:border-slate-200">{{ $passenger['vehicle_type'] ?? '-' }}</td>
                                             <td class="px-2 py-2 font-black border-l text-slate-800 bg-slate-50/50 border-slate-100 print:border-slate-200">{{ $passenger['count'] }}</td>
                                             <td class="px-2 py-2 font-sans font-black border-l text-emerald-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['office_commission'] }}</td>
                                             <td class="px-2 py-2 font-sans font-black border-l text-amber-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['other_office_commission'] }}</td>

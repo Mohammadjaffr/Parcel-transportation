@@ -173,6 +173,8 @@
                                     </th>
                                     <th class="px-2 py-3 w-28 font-black border-l text-slate-500 border-slate-200">رقم
                                         الراكب</th>
+                                    <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">نوع المركبة
+                                    </th>
                                     <th class="px-2 py-3 w-16 font-black border-l text-slate-500 border-slate-200">العدد
                                     </th>
                                     <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200 w-[18%]">مكان
@@ -195,6 +197,9 @@
                                             {{ $passenger['day'] }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-800 border-slate-100 print:border-slate-200"
                                             dir="ltr">{{ $passenger['passenger_number'] }}</td>
+                                        <td
+                                            class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">
+                                            {{ $passenger['vehicle_type'] ?? '-' }}</td>
                                         <td
                                             class="px-2 py-2 font-black border-l text-slate-800 bg-slate-50/50 border-slate-100 print:border-slate-200">
                                             {{ $passenger['count'] }}</td>

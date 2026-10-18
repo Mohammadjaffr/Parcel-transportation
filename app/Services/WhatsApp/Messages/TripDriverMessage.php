@@ -55,6 +55,9 @@ class TripDriverMessage implements WhatsAppMessageInterface
             $msg .= "👤 *الراكب ({$i}):* {$pNum}\n";
             $msg .= "📍 *من:* {$pPickup}\n";
             $msg .= "🏁 *إلى:* {$pDest}\n";
+            if (!empty($p->vehicle_type)) {
+                $msg .= "🚗 *نوع المركبة:* {$p->vehicle_type}\n";
+            }
             $msg .= "👥 *العدد:* {$pCnt}\n";
 
             if ($pNote !== '---') {

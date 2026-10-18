@@ -10,7 +10,7 @@ class Broker extends Model
 {
     use BelongsToApp;
 
-    protected $fillable = ['name', 'app_id'];
+    protected $fillable = ['name', 'phone', 'app_id'];
 
     protected static function booted(): void
     {

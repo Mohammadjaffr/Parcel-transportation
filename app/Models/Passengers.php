@@ -17,6 +17,7 @@ class Passengers extends Model
         'passenger_number',
         'pickup_location',
         'destination',
+        'vehicle_type',
         'count',
         'office_commission',
         'other_office_commission',
@@ -60,7 +61,11 @@ class Passengers extends Model
         return $this->office_commission + $this->other_office_commission;
     }
 
-  
+    public function getCancelWhatsappLinkAttribute(): ?string
+    {
+        return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'passengerCancel');
+    }
+
 
    
 }

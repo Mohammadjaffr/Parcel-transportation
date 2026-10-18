@@ -79,7 +79,7 @@ class PassengersController extends Controller
             return $passenger;
         });
         $drivers = Driver::orderBy('name')->get();
-        $brokers = Broker::select('id', 'name')->get();
+        $brokers = Broker::select('id', 'name', 'phone')->get();
 
         if ($request->isMobile) {
             return view('mobile.pages.passenger.passengers.index', compact(
@@ -99,7 +99,7 @@ class PassengersController extends Controller
     public function create(Request $request)
     {
         $drivers = Driver::orderBy('name')->get();
-        $brokers = Broker::select('id', 'name')->get();
+        $brokers = Broker::select('id', 'name', 'phone')->get();
         if ($request->isMobile) {
             return view('mobile.pages.passenger.passengers.create', compact(
                 'drivers',
@@ -123,13 +123,15 @@ class PassengersController extends Controller
             'passenger_number' => ['required', 'string', 'max:255'],
 
             // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع المودال
-            'broker_id'   => ['nullable', 'exists:brokers,id'],
-            'broker_name' => ['required', 'string', 'max:255'], // الحقل النصي دائماً مطلوب لأنه يحمل اسم الوسيط المكتوب
+            'broker_id'    => ['nullable', 'exists:brokers,id'],
+            'broker_name'  => ['required', 'string', 'max:255'], // الحقل النصي دائماً مطلوب لأنه يحمل اسم الوسيط المكتوب
+            'broker_phone' => ['nullable', 'string', 'max:25'],
 
-            'count' => ['required', 'integer', 'min:1'],
+            'vehicle_type'            => ['nullable', 'string', 'max:255'],
+            'count'                   => ['required', 'integer', 'min:1'],
             'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
-            'note' => ['nullable', 'string'],
+            'note'                    => ['nullable', 'string'],
         ]);
 
         if ($validator->fails()) {
@@ -143,15 +145,28 @@ class PassengersController extends Controller
             $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
+            $brokerPhone = !empty($data['broker_phone']) ? $this->normalizePhone($data['broker_phone']) : null;
+
             // 🌟 هندسة الوسطاء: إذا لم يتم اختيار وسيط مسبقاً (أي أن broker_id فارغ)
             if (empty($data['broker_id']) && !empty($data['broker_name'])) {
                 // سيبحث عن الاسم في الداتابيز، إن وجده يجلبه، وإن لم يجده ينشئ وسيطاً جديداً فوراً
                 $broker = Broker::firstOrCreate([
                     'name' => $data['broker_name']
+                ], [
+                    'phone' => $brokerPhone
                 ]);
+
+                if ($brokerPhone && $broker->phone !== $brokerPhone) {
+                    $broker->update(['phone' => $brokerPhone]);
+                }
 
                 // إسناد الـ id المستخرج لقاعدة بيانات الراكب
                 $data['broker_id'] = $broker->id;
+            } elseif (!empty($data['broker_id']) && $brokerPhone) {
+                $broker = Broker::find($data['broker_id']);
+                if ($broker && $broker->phone !== $brokerPhone) {
+                    $broker->update(['phone' => $brokerPhone]);
+                }
             }
 
             // معالجة السائق (تبقى كما هي تماماً في كودك الأصلي بدون تغيير)
@@ -159,7 +174,7 @@ class PassengersController extends Controller
             //     ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
             // 🗑️ تنظيف البيانات من الحقول المؤقتة لكي لا يظهر خطأ "عمود غير موجود" عند الحفظ
-            unset($data['broker_name']);
+            unset($data['broker_name'], $data['broker_phone']);
 
             // إنشاء وحفظ سجل الراكب الجديد مربوطاً بالوسيط والسائق
             $passenger = Passengers::create($data);
@@ -185,7 +200,7 @@ class PassengersController extends Controller
     {
         $passenger = Passengers::with(['driver', 'broker', 'branch'])->findOrFail($id);
         $drivers = Driver::orderBy('name')->get();
-        $brokers = Broker::select('id', 'name')->get();
+        $brokers = Broker::select('id', 'name', 'phone')->get();
         $branches = Branch::orderBy('name')->get();
 
         $currentBranch = $this->currentBranchId()
@@ -231,6 +246,8 @@ class PassengersController extends Controller
             'pickup_location'         => ['required', 'string', 'max:255'],
             'broker_id'               => ['nullable', 'exists:brokers,id'],
             'broker_name'             => ['nullable', 'string', 'max:255'],
+            'broker_phone'            => ['nullable', 'string', 'max:25'],
+            'vehicle_type'            => ['nullable', 'string', 'max:255'],
             'count'                   => ['required', 'integer', 'min:1'],
             'office_commission'       => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'other_office_commission' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
@@ -252,14 +269,27 @@ class PassengersController extends Controller
             // $driverPhone = $this->normalizePhone($data['driver_phone'] ?? '');
             $data['branch_id'] = $this->currentBranchId();
 
+            $brokerPhone = !empty($data['broker_phone']) ? $this->normalizePhone($data['broker_phone']) : null;
+
             // 🌟 هندسة الوسطاء في التعديل: إذا لم يتم اختيار وسيط من القائمة (أي تم كتابة اسم جديد يدوياً)
             if (empty($data['broker_id']) && !empty($data['broker_name'])) {
                 // سيبحث عن الاسم، إن وجده يجلبه، وإن لم يجده ينشئ وسيطاً جديداً في جدول الوسطاء فوراً
                 $broker = Broker::firstOrCreate([
                     'name' => $data['broker_name']
+                ], [
+                    'phone' => $brokerPhone
                 ]);
 
+                if ($brokerPhone && $broker->phone !== $brokerPhone) {
+                    $broker->update(['phone' => $brokerPhone]);
+                }
+
                 $data['broker_id'] = $broker->id;
+            } elseif (!empty($data['broker_id']) && $brokerPhone) {
+                $broker = Broker::find($data['broker_id']);
+                if ($broker && $broker->phone !== $brokerPhone) {
+                    $broker->update(['phone' => $brokerPhone]);
+                }
             }
 
             // معالجة السائق (تبقى كما هي في كودك الأصلي)
@@ -267,7 +297,7 @@ class PassengersController extends Controller
             //     ?: $this->resolvePassengerDriver($driverPhone, $data['driver_name'] ?? null);
 
             // 🗑️ تنظيف المصفوفة من الحقول النصية المؤقتة لكي لا يظهر خطأ أعمدة غير موجودة عند الحفظ
-            unset($data['broker_name']);
+            unset($data['broker_name'], $data['broker_phone']);
 
             // تحديث سجل الراكب ببياناته الجديدة والوسيط الجديد
             $passenger->update($data);
@@ -309,6 +339,8 @@ class PassengersController extends Controller
             'status'        => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
             'note'          => ['nullable', 'string', 'max:1000'],
             'cancel_reason' => ['nullable', 'string', 'max:1000'],
+            'broker_phone'  => ['nullable', 'string', 'max:25'],
+            'send_whatsapp' => ['nullable'],
         ]);
 
         try {
@@ -328,18 +360,32 @@ class PassengersController extends Controller
                 if ($request->has('cancel_reason')) {
                     $updateData['cancel_reason'] = $request->cancel_reason;
                 }
+
+                if ($request->filled('broker_phone')) {
+                    $cleanBrokerPhone = $this->normalizePhone($request->broker_phone);
+                    if ($passenger->broker) {
+                        $passenger->broker->update(['phone' => $cleanBrokerPhone]);
+                    } else if ($cleanBrokerPhone) {
+                        $broker = Broker::firstOrCreate(
+                            ['name' => 'وسيط'],
+                            ['phone' => $cleanBrokerPhone]
+                        );
+                        $updateData['broker_id'] = $broker->id;
+                    }
+                }
             } else {
                 if ($request->has('note')) {
                     $updateData['note'] = $request->note;
                 }
             }
 
-            if ($oldStatus === $newStatus && !isset($updateData['cancel_reason']) && !isset($updateData['note'])) {
+            if ($oldStatus === $newStatus && !isset($updateData['cancel_reason']) && !isset($updateData['note']) && !$request->filled('broker_phone')) {
                 return back();
             }
 
             $passenger->update($updateData);
-            $passenger->refresh(); // تحديث الموديل لضمان وجود بيانات الفرع
+            $passenger->refresh(); // تحديث الموديل لضمان وجود بيانات الفرع والوسيط
+            $passenger->load(['broker', 'branch']);
 
             if ($newStatus === 'completed' && $oldStatus !== 'completed') {
                 \Log::info('[CONTROLLER] استدعاء recordPassengerCommission من updateStatus', [
@@ -352,10 +398,55 @@ class PassengersController extends Controller
 
             DB::commit();
 
+            if ($newStatus === 'cancel' && ($request->boolean('send_whatsapp') || $request->filled('send_whatsapp'))) {
+                $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
+                $sentDirectly = false;
+
+                if (!empty($passenger->broker?->phone)) {
+                    try {
+                        $whatsAppService = app(\App\Services\WhatsAppService::class);
+                        $branch = $passenger->branch ?? auth()->user()?->branch;
+                        if (!$branch) {
+                            $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
+                        }
+                        if ($branch) {
+                            $whatsAppService->loadBranchConfig($branch);
+                        }
+                        $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+                        $isOnline = \Illuminate\Support\Facades\Cache::get($cacheKey, 'online') === 'online';
+
+                        if (!$isOnline) {
+                            $checkLive = $whatsAppService->getStatus();
+                            if (!empty($checkLive['data']['Connected'])) {
+                                $isOnline = true;
+                                \Illuminate\Support\Facades\Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                            }
+                        }
+
+                        if ($whatsAppService->isConfigured() && $isOnline) {
+                            $cancelMsg = new \App\Services\WhatsApp\Messages\PassengerCancelMessage();
+                            $body = $cancelMsg->getMessageBody($passenger);
+                            $result = $whatsAppService->sendText($passenger->broker->phone, $body);
+
+                            if (!isset($result['error']) || !$result['error']) {
+                                \Illuminate\Support\Facades\Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                                $sentDirectly = true;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::warning("Direct WhatsApp cancel sending error: " . $e->getMessage());
+                    }
+                }
+
+                if (!$sentDirectly && $whatsappUrl) {
+                    session()->flash('whatsapp_redirect_url', $whatsappUrl);
+                }
+            }
+
             $successMessages = [
                 'confirmed' => 'تم تأكيد الحجز ✅',
                 'completed' => 'تم إكمال الرحلة وتسجيل العمولة ✅',
-                'cancel'    => 'تم إلغاء الحجز 🚫',
+                'cancel'    => (!empty($sentDirectly)) ? 'تم إلغاء الحجز وإرسال إشعار الواتساب للوسيط بنجاح ✅' : 'تم إلغاء الحجز 🚫',
                 'pending'   => 'تم إعادة الراكب لقيد الانتظار 🔄',
             ];
 
@@ -403,27 +494,46 @@ class PassengersController extends Controller
             return null;
         }
 
-        $phone = preg_replace('/[^\d\+]/', '', $phone);
-        $phone = ltrim($phone, '+');
+        $phone = preg_replace('/[^\d]/', '', $phone);
 
-        if (str_starts_with($phone, '00')) {
+        while (str_starts_with($phone, '00')) {
             $phone = substr($phone, 2);
         }
 
-        if (str_starts_with($phone, '967967')) {
+        while (str_starts_with($phone, '967967')) {
             $phone = substr($phone, 3);
         }
 
-        if (str_starts_with($phone, '966966')) {
+        while (str_starts_with($phone, '966966')) {
             $phone = substr($phone, 3);
         }
 
-        if (preg_match('/^0(7\d{8})$/', $phone, $matches)) {
-            return '967' . $matches[1];
+        if (str_starts_with($phone, '9670')) {
+            $phone = '967' . substr($phone, 4);
         }
 
-        if (preg_match('/^(7\d{8})$/', $phone, $matches)) {
-            return '967' . $matches[1];
+        if (str_starts_with($phone, '9660')) {
+            $phone = '966' . substr($phone, 4);
+        }
+
+        if (str_starts_with($phone, '05')) {
+            return '966' . substr($phone, 1);
+        }
+
+        if (str_starts_with($phone, '0')) {
+            return '967' . substr($phone, 1);
+        }
+
+        if (str_starts_with($phone, '7') && !str_starts_with($phone, '967')) {
+            return '967' . $phone;
+        }
+
+        if (str_starts_with($phone, '5') && !str_starts_with($phone, '966') && strlen($phone) <= 10) {
+            return '966' . $phone;
+        }
+
+        if (!str_starts_with($phone, '967') && !str_starts_with($phone, '966') && strlen($phone) <= 9) {
+            return '967' . $phone;
         }
 
         return $phone;

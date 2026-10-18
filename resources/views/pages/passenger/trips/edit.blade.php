@@ -228,6 +228,12 @@
                                                 </div>
                                                 
                                                 <div class="flex flex-wrap gap-2 items-center">
+                                                    <template x-if="passenger.vehicle_type">
+                                                        <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+                                                            <span class="material-symbols-outlined text-[12px]">directions_car</span>
+                                                            <span class="truncate max-w-[120px]" x-text="passenger.vehicle_type"></span>
+                                                        </div>
+                                                    </template>
                                                     <div class="flex gap-1.5 items-center bg-slate-50 dark:bg-boxdark-2 w-max px-2.5 py-1 rounded-md">
                                                         <span class="material-symbols-outlined text-[14px] text-amber-500">location_on</span>
                                                         <span class="text-xs font-bold text-slate-600 dark:text-gray-300 truncate" x-text="passenger.destination || 'غير محدد'"></span>
@@ -358,8 +364,13 @@
                                 </div>
                             </div>
 
-                            {{-- Grid: عدد الركاب والعمولات --}}
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {{-- Grid: نوع المركبة وعدد الركاب والعمولات --}}
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
+                                    <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
+                                        class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                                </div>
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
                                     <input type="number" min="1" x-model="editPassengerData.count" required
@@ -458,6 +469,15 @@
     </div>
 </div>
 
+    <datalist id="vehicle_types_list">
+        <option value="صالون">
+        <option value="باص">
+        <option value="نوها">
+        <option value="هايلوكس">
+        <option value="فوكسي">
+        <option value="خصوصي">
+    </datalist>
+
 @endsection
 
 @section('script')
@@ -480,6 +500,7 @@
                 // بيانات الركاب المتاحة
                 passengers: (allPassengersList || []).map(p => ({
                     id: p.id,
+                    vehicle_type: p.vehicle_type || '',
                     date: p.date ? (typeof p.date === 'string' ? p.date.substring(0, 10) : p.date) : new Date().toISOString().slice(0, 10),
                     passenger_number: p.passenger_number || '',
                     count: p.count || 1,
@@ -504,6 +525,7 @@
 
                 editPassengerData: {
                     id: null,
+                    vehicle_type: '',
                     date: '',
                     localPhone: '',
                     selectedCountry: null,
@@ -641,6 +663,7 @@
                     const phoneDetails = this.getPassengerPhoneDetails(passenger.passenger_number);
                     this.editPassengerData = {
                         id: passenger.id,
+                        vehicle_type: passenger.vehicle_type || '',
                         date: passenger.date ? (typeof passenger.date === 'string' ? passenger.date.substring(0, 10) : passenger.date) : new Date().toISOString().slice(0, 10),
                         localPhone: phoneDetails.localNumber || '',
                         selectedCountry: phoneDetails.country || this.countries.find(c => c.code === 'YE') || this.countries[0],
@@ -697,6 +720,7 @@
 
                     try {
                         const payload = {
+                            vehicle_type: this.editPassengerData.vehicle_type || null,
                             date: this.editPassengerData.date,
                             passenger_number: fullPhone,
                             pickup_location: this.editPassengerData.pickup_location,
@@ -728,6 +752,7 @@
                             // تحديث بيانات الراكب في المصفوفة فوراً
                             const index = this.passengers.findIndex(p => p.id == this.editPassengerData.id);
                             if (index !== -1) {
+                                this.passengers[index].vehicle_type = this.editPassengerData.vehicle_type || '';
                                 this.passengers[index].passenger_number = fullPhone;
                                 this.passengers[index].date = this.editPassengerData.date;
                                 this.passengers[index].pickup_location = this.editPassengerData.pickup_location;

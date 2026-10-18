@@ -181,6 +181,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/whatsapp/sender-pdf/{id}', [WhatsAppController::class, 'sendSenderPdf'])->name('whatsapp.senderPdf');
         Route::post('/whatsapp/receiver-pdf/{id}', [WhatsAppController::class, 'sendReceiverPdf'])->name('whatsapp.receiverPdf');
         Route::post('/whatsapp/price-agreement/{id}', [WhatsAppController::class, 'sendPriceAgreementWhatsapp'])->name('whatsapp.priceAgreement');
+        Route::post('/whatsapp/passenger-booking/{id}', [WhatsAppController::class, 'sendPassengerBooking'])->name('whatsapp.passengerBooking');
+        Route::post('/whatsapp/passenger-cancel/{id}', [WhatsAppController::class, 'sendPassengerCancel'])->name('whatsapp.passengerCancel');
 
         Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])->name('shipment.adminlog');
 

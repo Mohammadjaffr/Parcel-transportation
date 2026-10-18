@@ -50,6 +50,10 @@ class PassengerBookingMessage implements WhatsAppMessageInterface
             $msg .= "🏁 الوجهة: {$destination}\n";
         }
 
+        if (!empty($entity->vehicle_type)) {
+            $msg .= "🚗 نوع المركبة: {$entity->vehicle_type}\n";
+        }
+
         $msg .= "👥 عدد الركاب: {$count}\n";
         $msg .= "━━━━━━━━━━━━━━━━━━\n";
 

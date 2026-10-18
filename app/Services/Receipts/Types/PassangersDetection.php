@@ -129,7 +129,8 @@ class PassangersDetection implements ReceiptStrategyInterface
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
                     'passenger_number'        => $pNum,
                     'broker_name'             => $p->broker?->name ?? 'بدون وسيط',
-                    'pickup_location'                => $pLoc,
+                    'pickup_location'         => $pLoc,
+                    'vehicle_type'            => $p->vehicle_type ?? '---',
                     'count'                   => $pCnt,
                     'office_commission'       => number_format($p->office_commission ?? 0, 0),
                     'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
@@ -139,6 +140,9 @@ class PassangersDetection implements ReceiptStrategyInterface
                 ];
 
                 $msg .= "{$i}. الراكب: {$pNum}\n";
+                if (!empty($p->vehicle_type)) {
+                    $msg .= "🚗 نوع المركبة: {$p->vehicle_type}\n";
+                }
                 $msg .= "📍 المكان: {$pLoc}\n";
                 $msg .= "👥 العدد: {$pCnt}\n";
                 if ($p->note) {

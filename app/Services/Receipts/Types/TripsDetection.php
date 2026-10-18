@@ -126,6 +126,7 @@ class TripsDetection implements ReceiptStrategyInterface
                     'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
                     'pickup_location'         => $pPickup,
                     'destination'             => $pDest,
+                    'vehicle_type'            => $p->vehicle_type ?? '---',
                     'count'                   => $pCnt,
                     'office_commission'       => number_format($p->office_commission ?? 0, 0),
                     'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
@@ -138,6 +139,9 @@ class TripsDetection implements ReceiptStrategyInterface
                 $msg .= "{$i}. الراكب: {$pNum}\n";
                 $msg .= "📍 مكان الراكب: {$pPickup}\n";
                 $msg .= "🏁 الوجهة: {$pDest}\n";
+                if (!empty($p->vehicle_type)) {
+                    $msg .= "🚗 نوع المركبة: {$p->vehicle_type}\n";
+                }
                 $msg .= "👥 العدد: {$pCnt}\n";
                 if ($p->note) {
                     $msg .= "📝 ملاحظات: {$pNote}\n";

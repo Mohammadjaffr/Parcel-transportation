@@ -167,10 +167,18 @@
                                                 <x-phone-number :value="$passenger->passenger_number"
                                                     class="text-base text-slate-800 dark:text-white !justify-start" />
                                             </span>
-                                            <div class="flex gap-1.5 items-center">
-                                                <span class="material-symbols-outlined text-[14px] text-primary">flag</span>
-                                                <span
-                                                    class="text-xs font-bold truncate text-slate-500 dark:text-gray-400">{{ $passenger->destination ?? ' ' }}</span>
+                                            <div class="flex flex-wrap gap-2 items-center">
+                                                @if($passenger->vehicle_type)
+                                                    <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+                                                        <span class="material-symbols-outlined text-[12px]">directions_car</span>
+                                                        <span class="truncate max-w-[120px]">{{ $passenger->vehicle_type }}</span>
+                                                    </div>
+                                                @endif
+                                                <div class="flex gap-1.5 items-center">
+                                                    <span class="material-symbols-outlined text-[14px] text-primary">flag</span>
+                                                    <span
+                                                        class="text-xs font-bold truncate text-slate-500 dark:text-gray-400">{{ $passenger->destination ?? ' ' }}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -258,7 +266,7 @@
                             <option value="">-- اختر راكب من قائمة الانتظار --</option>
                             @forelse($pendingPassengers ?? [] as $pending)
                                 <option value="{{ $pending->id }}">
-                                    {{ $pending->passenger_number }} - (العدد: {{ $pending->count ?? 1 }}) - {{ $pending->destination }}
+                                    {{ $pending->passenger_number }} - {{ $pending->vehicle_type ? '(' . $pending->vehicle_type . ') - ' : '' }}(العدد: {{ $pending->count ?? 1 }}) - {{ $pending->destination }}
                                 </option>
                             @empty
                                 <option value="" disabled>لا يوجد ركاب في قائمة الانتظار حالياً</option>

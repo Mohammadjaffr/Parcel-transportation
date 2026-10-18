@@ -292,6 +292,7 @@
 
                                     <th class="w-32 text-right font-black text-slate-800">مكان الراكب</th>
                                     <th class="w-32 text-right font-black text-slate-800">الوجهة</th>
+                                    <th class="w-24 text-center font-black text-slate-800">نوع المركبة</th>
                                     <th class="w-14 text-center font-black text-slate-800">العدد</th>
 
                                     <th class="w-36 text-right font-black text-slate-800">الملاحظات</th>
@@ -307,6 +308,7 @@
                                         <td class="font-bold text-slate-900">{{ $passenger['pickup_location'] }}
                                         </td>
                                         <td class="font-bold text-slate-900">{{ $passenger['destination'] }}</td>
+                                        <td class="font-bold text-center text-slate-800">{{ $passenger['vehicle_type'] ?? '---' }}</td>
                                         <td class="font-black text-center text-slate-900">{{ $passenger['count'] }}</td>
 
                                         <td class="max-w-xs font-bold text-slate-800">

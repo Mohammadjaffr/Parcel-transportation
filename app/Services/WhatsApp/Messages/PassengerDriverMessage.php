@@ -46,6 +46,9 @@ class PassengerDriverMessage implements WhatsAppMessageInterface
         $msg .= "------------------------------------------\n";
         $msg .= "الراكب: {$pNum}\n";
         $msg .= "📍 المكان: {$pLoc}\n";
+        if (!empty($entity->vehicle_type)) {
+            $msg .= "🚗 نوع المركبة: {$entity->vehicle_type}\n";
+        }
         $msg .= "👥 العدد: {$pCnt} راكب\n";
 
         if ($entity->note) {

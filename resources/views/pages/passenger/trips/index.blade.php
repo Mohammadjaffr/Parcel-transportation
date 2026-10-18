@@ -262,7 +262,7 @@
                 </table>
             </div>
             {{-- pagination --}}
-            {{ $trips->links('vendor.pagination.custom-minimal') }}
+            {{ $trips->links('vendor.pagination.tailwind') }}
 
         </div>
     </div>
