@@ -122,7 +122,7 @@
                         </div>
 
                         {{-- قائمة اختيار التاريخ واليوم --}}
-                        <div class="relative w-full sm:w-60" x-data="{ openDateMenu: false }" @click.away="openDateMenu = false">
+                        <div class="relative w-full sm:w-72" x-data="{ openDateMenu: false }" @click.away="openDateMenu = false">
                             {{-- الزر الرئيسي لعرض القائمة --}}
                             <button type="button" @click="openDateMenu = !openDateMenu"
                                 class="flex justify-between items-center px-3.5 w-full h-12 text-sm font-bold text-gray-700 rounded-2xl border border-gray-200 transition-all dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-gray-200">
@@ -131,14 +131,22 @@
                                     <span class="truncate">
                                         @if (request('date') === 'all')
                                             كل الأيام
-                                        @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today')
-                                            اليوم ({{ now()->translatedFormat('l') }})
+                                        @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')))
+                                            اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
                                         @elseif (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
-                                            أمس ({{ now()->subDay()->translatedFormat('l') }})
+                                            أمس ({{ now()->subDay()->translatedFormat('l - Y/m/d') }})
                                         @elseif (request('date'))
-                                            {{ request('date') }}
+                                            @php
+                                                try {
+                                                    $parsedDate = \Carbon\Carbon::parse(request('date'));
+                                                    $dateLabel = $parsedDate->translatedFormat('l - Y/m/d');
+                                                } catch (\Exception $e) {
+                                                    $dateLabel = request('date');
+                                                }
+                                            @endphp
+                                            {{ $dateLabel }}
                                         @else
-                                            اليوم ({{ now()->translatedFormat('l') }})
+                                            اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
                                         @endif
                                     </span>
                                 </div>
