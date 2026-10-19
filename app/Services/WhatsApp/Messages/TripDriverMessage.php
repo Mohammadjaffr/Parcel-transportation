@@ -31,8 +31,8 @@ class TripDriverMessage implements WhatsAppMessageInterface
         // 2. استخدام $entity بدلاً من $this لجلب البيانات
         $driverName = $entity->driver->name ?? 'السائق';
         
-        // الأولوية للرابط الممرر في الدالة، وإلا نستخدم الموجود في الموديل
-        $pdfLink    = $receiptUrl ?? ($entity->driver_pdf_link ?? 'غير متوفر');
+        // الأولوية للرابط الممرر في الدالة، وإلا غير متوفر
+        $pdfLink    = $receiptUrl ?: 'غير متوفر';
 
         // 3. بناء نص الرسالة
         $msg  = "السلام عليكم ورحمة الله وبركاته 🤝\n";

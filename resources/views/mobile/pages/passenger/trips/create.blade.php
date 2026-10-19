@@ -18,12 +18,17 @@
         </div>
 
         {{-- ================= حاوية الفورم الأساسية ================= --}}
-        <div class="px-4">
+        <div class="px-4"
+            x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []), @js($brokers ?? []))">
             <div class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2">
 
-                <form action="{{ route('trips.store') }}" method="POST" 
-                    x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []), @js($brokers ?? []))">
+                <form action="{{ route('trips.store') }}" method="POST" @submit="submitTrip($event)">
                     @csrf
+
+                    {{-- إرسال الركاب المحددين كحقول مخفية لضمان وصولهم حتى لو تم البحث والتصفية --}}
+                    <template x-for="pId in selectedPassengers" :key="'submitted-p-' + pId">
+                        <input type="hidden" name="passenger_ids[]" :value="pId">
+                    </template>
 
                     {{-- ================= مكون السائق المسؤول ================= --}}
                     <div class="p-4 rounded-2xl border bg-slate-50/50 border-slate-100 dark:bg-boxdark-2/40 dark:border-boxdark-2 relative">
@@ -66,7 +71,7 @@
 
                                 <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
                                     @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                    placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    placeholder="7XXXXXXXX" :required="!selectedDriverId" inputmode="numeric" autocomplete="off"
                                     :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                     class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800 dark:text-white"
                                     :class="selectedDriverId ? 'font-bold text-primary dark:text-primary-hover' : ''">
@@ -96,7 +101,7 @@
                             </div>
 
                             <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedDriverId !== null"
-                                placeholder="اسم السائق..." required
+                                placeholder="اسم السائق..." :required="!selectedDriverId"
                                 class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none font-bold"
                                 :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700 dark:text-white'">
                         </div>
@@ -124,7 +129,7 @@
                         <div class="grid grid-cols-1 gap-3">
                             <template x-for="passenger in filteredPassengers()" :key="passenger.id">
                                 <label class="block relative cursor-pointer group">
-                                    <input type="checkbox" name="passenger_ids[]" :value="passenger.id" class="hidden peer"
+                                    <input type="checkbox" class="hidden peer"
                                         :checked="selectedPassengers.includes(passenger.id)"
                                         @change="togglePassenger(passenger.id)">
 
@@ -193,11 +198,9 @@
                     </div>
 
                     {{-- ================= شريط الإنشاء السفلي ================= --}}
-                    <div class="mt-8 mb-4 p-6 bg-white dark:bg-boxdark rounded-[2.5rem] border border-slate-50 dark:border-boxdark-2 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-center justify-between gap-6"
-                        x-data="{ isSubmitting: false }">
+                    <div class="mt-8 mb-4 p-6 bg-white dark:bg-boxdark rounded-[2.5rem] border border-slate-50 dark:border-boxdark-2 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row items-center justify-between gap-6">
 
                         <button type="submit"
-                            @click="if(selectedPassengers.length > 0 && $el.closest('form').checkValidity()) { setTimeout(() => isSubmitting = true, 50); }"
                             :disabled="selectedPassengers.length === 0 || isSubmitting" 
                             class="w-full h-14 px-8 bg-primary text-white rounded-2xl font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-3 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-boxdark-2 dark:disabled:text-gray-600 disabled:shadow-none">
 
@@ -219,193 +222,193 @@
                         </button>
                     </div>
 
-                    {{-- ================= مودال تعديل بيانات الراكب للموبايل ================= --}}
-                    <div x-show="showEditPassengerModal" x-cloak
-                        class="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm"
-                        @keydown.escape.window="showEditPassengerModal = false">
+                </form>
+
+                {{-- ================= مودال تعديل بيانات الراكب للموبايل ================= --}}
+                <div x-show="showEditPassengerModal" x-cloak
+                    class="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm"
+                    @keydown.escape.window="showEditPassengerModal = false">
+                    
+                    <div class="bg-white dark:bg-boxdark rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-lg shadow-2xl border border-slate-100 dark:border-boxdark-2 max-h-[88vh] overflow-hidden flex flex-col"
+                        @click.away="showEditPassengerModal = false">
                         
-                        <div class="bg-white dark:bg-boxdark rounded-t-[2rem] sm:rounded-[2rem] w-full max-w-lg shadow-2xl border border-slate-100 dark:border-boxdark-2 max-h-[88vh] overflow-hidden flex flex-col"
-                            @click.away="showEditPassengerModal = false">
-                            
-                            {{-- Header --}}
-                            <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 shrink-0">
-                                <div class="flex items-center gap-2.5">
-                                    <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-primary/10 text-primary">
-                                        <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-base font-black text-slate-800 dark:text-white font-headline">تعديل بيانات الراكب</h3>
-                                        <p class="text-[11px] text-gray-400 font-bold">تعديل فوري للراكب</p>
-                                    </div>
+                        {{-- Header --}}
+                        <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-primary/10 text-primary">
+                                    <span class="material-symbols-outlined text-[20px]">edit_note</span>
                                 </div>
-                                <button type="button" @click="showEditPassengerModal = false"
-                                    class="flex justify-center items-center w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 bg-slate-100 dark:bg-boxdark-2 transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">close</span>
-                                </button>
+                                <div>
+                                    <h3 class="text-base font-black text-slate-800 dark:text-white font-headline">تعديل بيانات الراكب</h3>
+                                    <p class="text-[11px] text-gray-400 font-bold">تعديل فوري للراكب</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="showEditPassengerModal = false"
+                                class="flex justify-center items-center w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 bg-slate-100 dark:bg-boxdark-2 transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">close</span>
+                            </button>
+                        </div>
+
+                        {{-- Form Body --}}
+                        <div class="p-4 overflow-y-auto space-y-3.5 custom-scrollbar text-right">
+                            {{-- Error banner --}}
+                            <div x-show="editPassengerError" x-cloak
+                                class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[17px]">error</span>
+                                <span x-html="editPassengerError"></span>
                             </div>
 
-                            {{-- Form Body --}}
-                            <div class="p-4 overflow-y-auto space-y-3.5 custom-scrollbar text-right">
-                                {{-- Error banner --}}
-                                <div x-show="editPassengerError" x-cloak
-                                    class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-[17px]">error</span>
-                                    <span x-html="editPassengerError"></span>
-                                </div>
+                            {{-- Phone number input with country selector --}}
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
+                                <div class="flex overflow-visible relative items-center h-12 bg-white rounded-xl ring-1 ring-slate-200 dark:bg-boxdark-2 dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/50" style="direction: ltr;">
+                                    <div class="relative h-full shrink-0" @click.away="editPassengerData.openCountryDropdown = false">
+                                        <button type="button" @click="editPassengerData.openCountryDropdown = !editPassengerData.openCountryDropdown"
+                                            class="flex gap-2 items-center px-3 h-full rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark dark:border-boxdark-2 text-slate-600 dark:text-gray-300">
+                                            <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden" x-html="editPassengerData.selectedCountry?.svg"></div>
+                                            <span class="text-xs font-bold" x-text="editPassengerData.selectedCountry?.dial_code"></span>
+                                        </button>
 
-                                {{-- Phone number input with country selector --}}
-                                <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
-                                    <div class="flex overflow-visible relative items-center h-12 bg-white rounded-xl ring-1 ring-slate-200 dark:bg-boxdark-2 dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/50" style="direction: ltr;">
-                                        <div class="relative h-full shrink-0" @click.away="editPassengerData.openCountryDropdown = false">
-                                            <button type="button" @click="editPassengerData.openCountryDropdown = !editPassengerData.openCountryDropdown"
-                                                class="flex gap-2 items-center px-3 h-full rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 dark:bg-boxdark dark:border-boxdark-2 text-slate-600 dark:text-gray-300">
-                                                <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden" x-html="editPassengerData.selectedCountry?.svg"></div>
-                                                <span class="text-xs font-bold" x-text="editPassengerData.selectedCountry?.dial_code"></span>
-                                            </button>
-
-                                            <div x-show="editPassengerData.openCountryDropdown" x-cloak x-transition
-                                                class="absolute top-full left-0 mt-1 w-60 max-w-[85vw] bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[70] overflow-hidden">
-                                                <div class="p-2 border-b border-slate-50 dark:border-boxdark-2">
-                                                    <input type="text" x-model="editPassengerData.searchCountryQuery" placeholder="بحث..."
-                                                        class="px-2.5 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white" dir="rtl">
-                                                </div>
-                                                <div class="overflow-y-auto max-h-44 custom-scrollbar" dir="ltr">
-                                                    <template x-for="country in editPassengerFilteredCountries" :key="country.code">
-                                                        <button type="button" @click="editPassengerData.selectedCountry = country; editPassengerData.openCountryDropdown = false"
-                                                            class="flex gap-2.5 items-center px-3 py-2 w-full text-left border-b transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200 border-slate-50 dark:border-boxdark-2 last:border-0 text-xs font-bold">
-                                                            <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden shadow-sm" x-html="country.svg"></div>
-                                                            <span class="flex-1 truncate" x-text="country.name"></span>
-                                                            <span class="font-mono text-[10px] text-slate-400" x-text="country.dial_code"></span>
-                                                        </button>
-                                                    </template>
-                                                </div>
+                                        <div x-show="editPassengerData.openCountryDropdown" x-cloak x-transition
+                                            class="absolute top-full left-0 mt-1 w-60 max-w-[85vw] bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[70] overflow-hidden">
+                                            <div class="p-2 border-b border-slate-50 dark:border-boxdark-2">
+                                                <input type="text" x-model="editPassengerData.searchCountryQuery" placeholder="بحث..."
+                                                    class="px-2.5 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 dark:bg-boxdark-2 text-slate-800 dark:text-white" dir="rtl">
+                                            </div>
+                                            <div class="overflow-y-auto max-h-44 custom-scrollbar" dir="ltr">
+                                                <template x-for="country in editPassengerFilteredCountries" :key="country.code">
+                                                    <button type="button" @click="editPassengerData.selectedCountry = country; editPassengerData.openCountryDropdown = false"
+                                                        class="flex gap-2.5 items-center px-3 py-2 w-full text-left border-b transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200 border-slate-50 dark:border-boxdark-2 last:border-0 text-xs font-bold">
+                                                        <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden shadow-sm" x-html="country.svg"></div>
+                                                        <span class="flex-1 truncate" x-text="country.name"></span>
+                                                        <span class="font-mono text-[10px] text-slate-400" x-text="country.dial_code"></span>
+                                                    </button>
+                                                </template>
                                             </div>
                                         </div>
-
-                                        <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
-                                            :maxlength="editPassengerData.selectedCountry?.code === 'YE' ? 9 : 15"
-                                            class="flex-1 px-3 w-full h-full text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-slate-800 dark:text-white">
                                     </div>
+
+                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" inputmode="numeric" autocomplete="off"
+                                        :maxlength="editPassengerData.selectedCountry?.code === 'YE' ? 9 : 15"
+                                        class="flex-1 px-3 w-full h-full text-sm text-left bg-transparent border-0 outline-none focus:ring-0 text-slate-800 dark:text-white">
                                 </div>
+                            </div>
 
-                                {{-- Grid: مكان الصعود والوجهة --}}
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
-                                        <input type="text" x-model="editPassengerData.pickup_location" placeholder="مكان الصعود" required
-                                            class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوجهة</label>
-                                        <input type="text" x-model="editPassengerData.destination" placeholder="وجهة الراكب"
-                                            class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
-                                    </div>
-                                </div>
-
-                                {{-- نوع المركبة --}}
+                            {{-- Grid: مكان الصعود والوجهة --}}
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
-                                    <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
+                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مكان الصعود"
                                         class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
                                 </div>
-
-                                {{-- Grid: عدد الركاب والعمولات --}}
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">العدد <span class="text-rose-500">*</span></label>
-                                        <input type="number" min="1" x-model="editPassengerData.count" required
-                                            class="px-2.5 w-full h-11 text-xs font-black text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة المكتب</label>
-                                        <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0"
-                                            class="px-2 w-full h-11 text-xs font-bold text-emerald-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary">
-                                    </div>
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة أخرى</label>
-                                        <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0"
-                                            class="px-2 w-full h-11 text-xs font-bold text-amber-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary">
-                                    </div>
-                                </div>
-
-                                {{-- Grid: التاريخ والوسيط --}}
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">التاريخ <span class="text-rose-500">*</span></label>
-                                        <input type="date" x-model="editPassengerData.date" required
-                                            class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
-                                    </div>
-                                    <div class="relative">
-                                        <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوسيط / المكتب</label>
-                                        <div class="relative">
-                                            <input type="text" x-model="editPassengerData.brokerSearchQuery"
-                                                @input="onBrokerInput()"
-                                                @focus="editPassengerData.showBrokerDropdown = true"
-                                                @click.away="editPassengerData.showBrokerDropdown = false"
-                                                placeholder="الوسيط..."
-                                                class="px-2.5 pr-8 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
-                                            <span class="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">handshake</span>
-                                            <button type="button" x-show="editPassengerData.brokerSearchQuery" @click="resetEditBroker()"
-                                                class="absolute left-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-rose-500">
-                                                <span class="material-symbols-outlined text-[14px]">close</span>
-                                            </button>
-                                        </div>
-                                        <div x-show="editPassengerData.showBrokerDropdown && editPassengerFilteredBrokers.length > 0" x-cloak x-transition
-                                            class="absolute top-full right-0 mt-1 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[70] overflow-hidden max-h-40 overflow-y-auto custom-scrollbar">
-                                            <template x-for="b in editPassengerFilteredBrokers" :key="b.id">
-                                                <button type="button" @click="selectEditBroker(b)"
-                                                    class="flex justify-between items-center px-3 py-2 w-full text-right border-b border-slate-50 dark:border-boxdark-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200">
-                                                    <span x-text="b.name"></span>
-                                                    <span class="material-symbols-outlined text-[14px] text-emerald-500">done</span>
-                                                </button>
-                                            </template>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Notes --}}
                                 <div>
-                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">ملاحظات</label>
-                                    <textarea x-model="editPassengerData.note" rows="2" placeholder="ملاحظات..."
-                                        class="p-2.5 w-full text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary"></textarea>
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوجهة</label>
+                                    <input type="text" x-model="editPassengerData.destination" placeholder="وجهة الراكب"
+                                        class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
                                 </div>
                             </div>
 
-                            {{-- Footer Buttons --}}
-                            <div class="p-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 flex gap-2.5 shrink-0">
-                                <button type="button" @click="showEditPassengerModal = false"
-                                    class="flex-1 h-12 text-xs font-bold text-slate-600 dark:text-gray-300 bg-white dark:bg-boxdark rounded-xl border border-slate-200 dark:border-boxdark-2 active:scale-95 transition-all">
-                                    إلغاء
-                                </button>
-                                <button type="button" @click="savePassengerEdit()" :disabled="isUpdatingPassenger"
-                                    class="flex-[2] flex justify-center items-center gap-2 h-12 text-xs font-black text-white bg-primary active:scale-95 rounded-xl shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                                    <template x-if="isUpdatingPassenger">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                                            <span>جاري الحفظ...</span>
-                                        </span>
-                                    </template>
-                                    <template x-if="!isUpdatingPassenger">
-                                        <span class="flex items-center gap-1.5">
-                                            <span class="material-symbols-outlined text-[18px]">save</span>
-                                            <span>حفظ التعديلات</span>
-                                        </span>
-                                    </template>
-                                </button>
+                            {{-- نوع المركبة --}}
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
+                                <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
+                                    class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
                             </div>
 
+                            {{-- Grid: عدد الركاب والعمولات --}}
+                            <div class="grid grid-cols-3 gap-2">
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">العدد <span class="text-rose-500">*</span></label>
+                                    <input type="number" min="1" x-model="editPassengerData.count"
+                                        class="px-2.5 w-full h-11 text-xs font-black text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة المكتب</label>
+                                    <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0"
+                                        class="px-2 w-full h-11 text-xs font-bold text-emerald-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary">
+                                </div>
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة أخرى</label>
+                                    <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0"
+                                        class="px-2 w-full h-11 text-xs font-bold text-amber-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-primary">
+                                </div>
+                            </div>
+
+                            {{-- Grid: التاريخ والوسيط --}}
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">التاريخ <span class="text-rose-500">*</span></label>
+                                    <input type="date" x-model="editPassengerData.date"
+                                        class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
+                                </div>
+                                <div class="relative">
+                                    <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوسيط / المكتب</label>
+                                    <div class="relative">
+                                        <input type="text" x-model="editPassengerData.brokerSearchQuery"
+                                            @input="onBrokerInput()"
+                                            @focus="editPassengerData.showBrokerDropdown = true"
+                                            @click.away="editPassengerData.showBrokerDropdown = false"
+                                            placeholder="الوسيط..."
+                                            class="px-2.5 pr-8 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary">
+                                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">handshake</span>
+                                        <button type="button" x-show="editPassengerData.brokerSearchQuery" @click="resetEditBroker()"
+                                            class="absolute left-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-rose-500">
+                                            <span class="material-symbols-outlined text-[14px]">close</span>
+                                        </button>
+                                    </div>
+                                    <div x-show="editPassengerData.showBrokerDropdown && editPassengerFilteredBrokers.length > 0" x-cloak x-transition
+                                        class="absolute top-full right-0 mt-1 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-xl z-[70] overflow-hidden max-h-40 overflow-y-auto custom-scrollbar">
+                                        <template x-for="b in editPassengerFilteredBrokers" :key="b.id">
+                                            <button type="button" @click="selectEditBroker(b)"
+                                                class="flex justify-between items-center px-3 py-2 w-full text-right border-b border-slate-50 dark:border-boxdark-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-boxdark-2 text-slate-700 dark:text-gray-200">
+                                                <span x-text="b.name"></span>
+                                                <span class="material-symbols-outlined text-[14px] text-emerald-500">done</span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Notes --}}
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">ملاحظات</label>
+                                <textarea x-model="editPassengerData.note" rows="2" placeholder="ملاحظات..."
+                                    class="p-2.5 w-full text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-primary"></textarea>
+                            </div>
                         </div>
-                    </div>
 
-                    {{-- Toast notification --}}
-                    <div x-show="editSuccessToast" x-cloak x-transition
-                        class="fixed bottom-20 left-4 right-4 z-[10000] bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-bold">
-                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
-                        <span x-text="editSuccessMessage"></span>
-                    </div>
+                        {{-- Footer Buttons --}}
+                        <div class="p-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 flex gap-2.5 shrink-0">
+                            <button type="button" @click="showEditPassengerModal = false"
+                                class="flex-1 h-12 text-xs font-bold text-slate-600 dark:text-gray-300 bg-white dark:bg-boxdark rounded-xl border border-slate-200 dark:border-boxdark-2 active:scale-95 transition-all">
+                                إلغاء
+                            </button>
+                            <button type="button" @click="savePassengerEdit()" :disabled="isUpdatingPassenger"
+                                class="flex-[2] flex justify-center items-center gap-2 h-12 text-xs font-black text-white bg-primary active:scale-95 rounded-xl shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                <template x-if="isUpdatingPassenger">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                        <span>جاري الحفظ...</span>
+                                    </span>
+                                </template>
+                                <template x-if="!isUpdatingPassenger">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[18px]">save</span>
+                                        <span>حفظ التعديلات</span>
+                                    </span>
+                                </template>
+                            </button>
+                        </div>
 
-                </form>
+                    </div>
+                </div>
+
+                {{-- Toast notification --}}
+                <div x-show="editSuccessToast" x-cloak x-transition
+                    class="fixed bottom-20 left-4 right-4 z-[10000] bg-emerald-600 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2 text-xs font-bold">
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    <span x-text="editSuccessMessage"></span>
+                </div>
             </div>
         </div>
     </div>
@@ -436,6 +439,7 @@
                 showDriverDropdown: false,
                 selectedDriverId: null,
                 nameInput: '',
+                isSubmitting: false,
 
                 // بيانات الركاب المتاحة
                 passengers: (initialPassengers || []).map(p => ({
@@ -522,6 +526,8 @@
                     if (country) {
                         this.selectedCountry = country;
                         this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length);
+                    } else {
+                        this.localPhoneNumber = clean;
                     }
                 },
                 resetSelection() {
@@ -529,6 +535,21 @@
                     this.nameInput = '';
                     this.localPhoneNumber = '';
                     this.showDriverDropdown = false;
+                },
+                submitTrip(event) {
+                    if (this.selectedPassengers.length === 0) {
+                        event.preventDefault();
+                        alert('يرجى اختيار راكب واحد على الأقل للرحلة.');
+                        return;
+                    }
+
+                    if (!this.selectedDriverId && (!this.nameInput.trim() || !this.localPhoneNumber.trim())) {
+                        event.preventDefault();
+                        alert('يرجى تحديد السائق أو إدخال اسمه ورقم هاتفه.');
+                        return;
+                    }
+
+                    this.isSubmitting = true;
                 },
 
                 // فلاتر وتحديد الركاب

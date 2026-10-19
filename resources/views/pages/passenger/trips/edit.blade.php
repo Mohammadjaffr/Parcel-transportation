@@ -31,12 +31,17 @@
 
     {{-- حاوية الفورم --}}
     <div class="mx-auto w-full max-w-7xl">
-        <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2">
+        <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2"
+            x-data="editTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($allPassengers), @js($selectedIds), @js($trip->driver ? ['id' => $trip->driver->id, 'name' => $trip->driver->name, 'phone' => $trip->driver->phone] : null), @js($brokers ?? []))">
 
-            <form action="{{ route('trips.update', $trip->id) }}" method="POST" 
-                x-data="editTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($allPassengers), @js($selectedIds), @js($trip->driver ? ['id' => $trip->driver->id, 'name' => $trip->driver->name, 'phone' => $trip->driver->phone] : null), @js($brokers ?? []))">
+            <form action="{{ route('trips.update', $trip->id) }}" method="POST" @submit="submitTrip($event)">
                 @csrf
                 @method('PUT')
+
+                {{-- إرسال الركاب المحددين كحقول مخفية لضمان وصولهم حتى لو تم البحث والتصفية --}}
+                <template x-for="pId in selectedPassengers" :key="'submitted-p-' + pId">
+                    <input type="hidden" name="passenger_ids[]" :value="pId">
+                </template>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     
@@ -133,9 +138,8 @@
                         </div>
 
                         {{-- أزرار الحفظ للديسكتوب --}}
-                        <div class="pt-8 mt-8 border-t border-slate-100 dark:border-boxdark-2" x-data="{ isSubmitting: false }">
+                        <div class="pt-8 mt-8 border-t border-slate-100 dark:border-boxdark-2">
                             <button type="submit"
-                                @click="if(selectedPassengers.length > 0 && $el.closest('form').checkValidity()) { setTimeout(() => isSubmitting = true, 50); }"
                                 :disabled="selectedPassengers.length === 0 || isSubmitting" 
                                 class="w-full h-14 bg-amber-500 text-white rounded-xl font-black text-sm transition-all hover:bg-amber-600 hover:shadow-lg hover:shadow-amber-500/30 active:scale-95 flex items-center justify-center gap-3 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-boxdark-2 dark:disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed group">
 
@@ -206,7 +210,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 auto-rows-max custom-scrollbar" style="max-height: 600px; overflow-y: auto; padding-right: 4px;">
                             <template x-for="passenger in filteredPassengers()" :key="passenger.id">
                                 <label class="block relative cursor-pointer group h-full">
-                                    <input type="checkbox" name="passenger_ids[]" :value="passenger.id" class="hidden peer"
+                                    <input type="checkbox" :value="passenger.id" class="hidden peer"
                                         :checked="selectedPassengers.includes(passenger.id)"
                                         @change="togglePassenger(passenger.id)">
 
@@ -280,7 +284,9 @@
 
                 </div>
 
-                {{-- ================= مودال تعديل بيانات الراكب ================= --}}
+            </form>
+
+            {{-- ================= مودال تعديل بيانات الراكب ================= --}}
                 <div x-show="showEditPassengerModal" x-cloak
                     class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
                     @keydown.escape.window="showEditPassengerModal = false">
@@ -344,7 +350,7 @@
                                         </div>
                                     </div>
 
-                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" inputmode="numeric" autocomplete="off"
                                         :maxlength="editPassengerData.selectedCountry?.code === 'YE' ? 9 : 15"
                                         class="flex-1 px-4 w-full h-full text-sm tracking-wider text-left bg-transparent border-0 outline-none focus:ring-0 text-slate-800 dark:text-white">
                                 </div>
@@ -354,7 +360,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
-                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مثلاً: جولة السفينة" required
+                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مثلاً: جولة السفينة"
                                         class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                                 </div>
                                 <div>
@@ -373,7 +379,7 @@
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
-                                    <input type="number" min="1" x-model="editPassengerData.count" required
+                                    <input type="number" min="1" x-model="editPassengerData.count"
                                         class="px-4 w-full h-12 text-sm font-black rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                                 </div>
                                 <div>
@@ -392,7 +398,7 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">تاريخ الحجز <span class="text-rose-500">*</span></label>
-                                    <input type="date" x-model="editPassengerData.date" required
+                                    <input type="date" x-model="editPassengerData.date"
                                         class="px-4 w-full h-12 text-sm rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                                 </div>
                                 <div class="relative">
@@ -463,8 +469,6 @@
                     <span class="material-symbols-outlined text-[22px]">check_circle</span>
                     <span class="text-sm font-bold" x-text="editSuccessMessage"></span>
                 </div>
-
-            </form>
         </div>
     </div>
 </div>
@@ -496,6 +500,7 @@
                 selectedDriverId: null,
                 nameInput: '',
                 initialDriver: initialDriver,
+                isSubmitting: false,
 
                 // بيانات الركاب المتاحة
                 passengers: (allPassengersList || []).map(p => ({
@@ -585,6 +590,8 @@
                     if (country) {
                         this.selectedCountry = country;
                         this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length);
+                    } else {
+                        this.localPhoneNumber = clean;
                     }
                 },
                 resetSelection() {
@@ -592,6 +599,21 @@
                     this.nameInput = '';
                     this.localPhoneNumber = '';
                     this.showDriverDropdown = false;
+                },
+                submitTrip(event) {
+                    if (this.selectedPassengers.length === 0) {
+                        event.preventDefault();
+                        alert('يرجى اختيار راكب واحد على الأقل للرحلة.');
+                        return;
+                    }
+
+                    if (!this.selectedDriverId && (!this.nameInput.trim() || !this.localPhoneNumber.trim())) {
+                        event.preventDefault();
+                        alert('يرجى تحديد السائق أو إدخال اسمه ورقم هاتفه.');
+                        return;
+                    }
+
+                    this.isSubmitting = true;
                 },
 
                 // فلاتر وتحديد الركاب

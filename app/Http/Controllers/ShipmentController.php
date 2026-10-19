@@ -138,10 +138,19 @@ class ShipmentController extends Controller
     private function getDestinationContext($user)
     {
         $currentApp = $user->app;
+        $userBranch = $user->branch;
+
+        $appName = $currentApp->name ?? 'عالم القمة';
+        $branchText = '';
+        if ($userBranch && !empty($userBranch->name)) {
+            $cleanedBranch = trim(str_replace(['فرع', 'مكتب'], '', $userBranch->name));
+            $branchText = ' فرع ' . $cleanedBranch;
+        }
 
         $currentOffice = [
-            'id'   => 'internal_' . $currentApp->id,
-            'name' => '🏠 ' . ($currentApp->name ?? 'مكتبنا الحالي'),
+            'id'     => 'internal_' . ($currentApp->id ?? ''),
+            'name'   => trim($appName . $branchText),
+            'branch' => $userBranch,
         ];
 
         $destinations = collect();
@@ -247,6 +256,7 @@ class ShipmentController extends Controller
         if ($request->filled('customer_id')) {
             $customer = Customer::findOrFail($request->customer_id);
         }
+       
 
         $viewData = [
             'currentOffice' => $currentOffice,
@@ -255,6 +265,7 @@ class ShipmentController extends Controller
             'customers'     => $customers,
             'customer'      => $customer,
             'role'          => $role,
+           
         ];
 
         // التوجيه إلى الواجهة وتمرير المتغيرات

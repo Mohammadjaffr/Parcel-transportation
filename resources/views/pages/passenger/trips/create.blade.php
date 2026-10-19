@@ -22,11 +22,16 @@
 
     {{-- حاوية الفورم --}}
     <div class="mx-auto w-full max-w-7xl">
-        <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2">
+        <div class="bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-6 md:p-10 border border-gray-100 dark:border-boxdark-2"
+            x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []), @js($brokers ?? []))">
 
-            <form action="{{ route('trips.store') }}" method="POST" 
-                x-data="createTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($pendingPassengers ?? []), @js($brokers ?? []))">
+            <form action="{{ route('trips.store') }}" method="POST" @submit="submitTrip($event)">
                 @csrf
+
+                {{-- إرسال الركاب المحددين كحقول مخفية لضمان وصولهم حتى لو تم البحث والتصفية --}}
+                <template x-for="pId in selectedPassengers" :key="'submitted-p-' + pId">
+                    <input type="hidden" name="passenger_ids[]" :value="pId">
+                </template>
 
                 <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     
@@ -78,7 +83,7 @@
 
                                     <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
                                         @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                        placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                        placeholder="7XXXXXXXX" :required="!selectedDriverId" inputmode="numeric" autocomplete="off"
                                         :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
                                         class="flex-1 px-4 w-full h-full text-base tracking-widest text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800 dark:text-white"
                                         :class="selectedDriverId ? 'font-black text-primary dark:text-primary-hover' : ''">
@@ -116,16 +121,15 @@
                             <div class="mt-4">
                                 <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">اسم السائق <span class="text-rose-500">*</span></label>
                                 <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedDriverId !== null"
-                                    placeholder="أدخل الاسم الثلاثي للسائق..." required
+                                    placeholder="أدخل الاسم الثلاثي للسائق..." :required="!selectedDriverId"
                                     class="px-4 w-full h-14 text-sm font-bold rounded-xl border transition-colors outline-none"
                                     :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-800 dark:text-white'">
                             </div>
                         </div>
 
                         {{-- زر الحفظ للديسكتوب --}}
-                        <div class="pt-8 mt-8 border-t border-slate-100 dark:border-boxdark-2" x-data="{ isSubmitting: false }">
+                        <div class="pt-8 mt-8 border-t border-slate-100 dark:border-boxdark-2">
                             <button type="submit"
-                                @click="if(selectedPassengers.length > 0 && $el.closest('form').checkValidity()) { setTimeout(() => isSubmitting = true, 50); }"
                                 :disabled="selectedPassengers.length === 0 || isSubmitting" 
                                 class="flex gap-3 justify-center items-center w-full h-14 text-sm font-black text-white rounded-xl transition-all bg-primary hover:bg-primary-hover hover:shadow-lg hover:shadow-primary/30 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400 dark:disabled:bg-boxdark-2 dark:disabled:text-gray-600 disabled:shadow-none disabled:cursor-not-allowed group">
 
@@ -192,7 +196,7 @@
                         <div class="grid grid-cols-1 auto-rows-max gap-4 md:grid-cols-2 custom-scrollbar" style="max-height: 600px; overflow-y: auto; padding-right: 4px;">
                             <template x-for="passenger in filteredPassengers()" :key="passenger.id">
                                 <label class="block relative h-full cursor-pointer group">
-                                    <input type="checkbox" name="passenger_ids[]" :value="passenger.id" class="hidden peer"
+                                    <input type="checkbox" class="hidden peer"
                                         :checked="selectedPassengers.includes(passenger.id)"
                                         @change="togglePassenger(passenger.id)">
 
@@ -274,6 +278,8 @@
 
                 </div>
 
+            </form>
+
                 {{-- ================= مودال تعديل بيانات الراكب ================= --}}
                 <div x-show="showEditPassengerModal" x-cloak
                     class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
@@ -338,7 +344,7 @@
                                         </div>
                                     </div>
 
-                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    <input type="tel" x-model="editPassengerData.localPhone" placeholder="7XXXXXXXX" inputmode="numeric" autocomplete="off"
                                         :maxlength="editPassengerData.selectedCountry?.code === 'YE' ? 9 : 15"
                                         class="flex-1 px-4 w-full h-full text-sm tracking-wider text-left bg-transparent border-0 outline-none focus:ring-0 text-slate-800 dark:text-white">
                                 </div>
@@ -348,7 +354,7 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
-                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مثلاً: جولة السفينة" required
+                                    <input type="text" x-model="editPassengerData.pickup_location" placeholder="مثلاً: جولة السفينة"
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark-2 text-slate-800 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
@@ -367,7 +373,7 @@
                                 </div>
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
-                                    <input type="number" min="1" x-model="editPassengerData.count" required
+                                    <input type="number" min="1" x-model="editPassengerData.count"
                                         class="px-4 w-full h-12 text-sm font-black bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark-2 text-slate-800 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
@@ -386,7 +392,7 @@
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label class="block mb-2 text-xs font-bold text-slate-600 dark:text-gray-300">تاريخ الحجز <span class="text-rose-500">*</span></label>
-                                    <input type="date" x-model="editPassengerData.date" required
+                                    <input type="date" x-model="editPassengerData.date"
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark-2 text-slate-800 dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div class="relative">
@@ -457,8 +463,6 @@
                     <span class="material-symbols-outlined text-[22px]">check_circle</span>
                     <span class="text-sm font-bold" x-text="editSuccessMessage"></span>
                 </div>
-
-            </form>
         </div>
     </div>
 </div>
@@ -506,6 +510,18 @@
                 searchQuery: '',
                 selectedBranch: '',
                 selectedPassengers: [],
+                isSubmitting: false,
+
+                submitTrip(e) {
+                    if (this.selectedPassengers.length === 0) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    if (!this.selectedDriverId && (!this.localPhoneNumber || !this.nameInput)) {
+                        return; // Let native browser validation highlight empty required fields
+                    }
+                    this.isSubmitting = true;
+                },
 
                 // مودال تعديل بيانات الراكب
                 showEditPassengerModal: false,
@@ -573,6 +589,8 @@
                     if (country) {
                         this.selectedCountry = country;
                         this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length);
+                    } else {
+                        this.localPhoneNumber = clean;
                     }
                 },
                 resetSelection() {

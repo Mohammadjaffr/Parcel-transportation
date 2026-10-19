@@ -242,9 +242,12 @@ class PassengersController extends Controller
         // منع تعديل البيانات إذا كانت الرحلة مكتملة مسبقاً لحماية الحسابات والعمولات (إلا إذا تم تمرير allow_completed_edit للتعديل من شاشة الرحلة)
         if ($oldStatus == 'completed' && !$request->boolean('allow_completed_edit', false)) {
             if ($request->ajax() || $request->wantsJson()) {
-                return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا يمكنك تحديث بيانات الراكب المكتمل رحلته.'
+                ], 422);
             }
-            return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+            return WebResponseClass::sendError('لا يمكنك تحديث بيانات الراكب المكتمل رحلته');
         }
 
         $validator = Validator::make($request->all(), [
@@ -264,7 +267,11 @@ class PassengersController extends Controller
 
         if ($validator->fails()) {
             if ($request->ajax() || $request->wantsJson()) {
-                return WebResponseClass::sendResponse('تم !', 'لا يمكنك تحديث بيانات الراكب المكتمل رحلتة', 'حسناً', 'passengers.index');
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors'  => $validator->errors()
+                ], 422);
             }
             return WebResponseClass::sendValidationError($validator);
         }

@@ -82,7 +82,7 @@
                                     </label>
                                     <div class="relative">
                                         <input type="text" readonly
-                                            value="{{ $currentOffice['name'] ?? '🏠 مكتبنا الحالي' }}"
+                                            value="{{ $currentOffice['name'] ?? ($currentOffice['branch']['name'] ?? 'مكتبنا الحالي') }}"
                                             class="pr-4 pl-10 w-full h-12 text-sm font-bold bg-gray-50 rounded-xl border border-gray-200 transition-all cursor-not-allowed outline-none select-none text-on-surface dark:text-white dark:bg-boxdark-2 dark:border-boxdark-2">
                                         {{-- يتم تحديث office_id تلقائياً عند اختيار الوجهة لضمان التوافق التام مع الخادم --}}
                                         <input type="hidden" name="office_id" x-model="selectedOfficeId">

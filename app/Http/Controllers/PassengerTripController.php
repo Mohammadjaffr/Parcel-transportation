@@ -21,14 +21,14 @@ class PassengerTripController extends Controller
 {
     public function index(Request $request)
     {
-        $trips = PassengerTrip::with(['driver', 'passengers'])
-            ->where('branch_id', auth()->user()->branch_id)
-            ->latest()
-            ->paginate(10);
+        $tripsQuery = PassengerTrip::with(['driver', 'passengers']);
+        if (auth()->user()->branch_id) {
+            $tripsQuery->where('branch_id', auth()->user()->branch_id);
+        }
+        $trips = $tripsQuery->latest()->paginate(10);
+
         $trips->getCollection()->transform(function ($trip) {
-
-            $trip->driver_pdf_link = WhatsAppLinkService::generate($trip, 'passengerDriver');
-
+            $trip->driver_pdf_link = WhatsAppLinkService::generate($trip, 'tripDriver');
             return $trip;
         });
         if ($request->isMobile) {
@@ -41,11 +41,13 @@ class PassengerTripController extends Controller
     public function create(Request $request)
     {
         $drivers = Driver::all();
-        $pendingPassengers = Passengers::with(['broker', 'driver'])
-            ->where('status', 'pending')
-            ->where('branch_id', auth()->user()->branch_id)
-            ->latest()
-            ->get();
+        $pendingPassengersQuery = Passengers::with(['broker', 'driver'])
+            ->where('status', 'pending');
+        if (auth()->user()->branch_id) {
+            $pendingPassengersQuery->where('branch_id', auth()->user()->branch_id);
+        }
+        $pendingPassengers = $pendingPassengersQuery->latest()->get();
+
         $brokers = Broker::select('id', 'name', 'phone')->orderBy('name')->get();
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.create', compact('drivers', 'pendingPassengers', 'brokers'));
@@ -58,8 +60,8 @@ class PassengerTripController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'driver_id'     => ['nullable', 'exists:drivers,id'],
-            'driver_phone'  => ['required_without:driver_id', 'string'],
-            'driver_name'   => ['required_without:driver_id', 'string'],
+            'driver_phone'  => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_name'   => ['required_without:driver_id', 'nullable', 'string'],
             'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
         ]);
 
@@ -77,14 +79,28 @@ class PassengerTripController extends Controller
                 );
             }
             $user = auth()->user();
+            $branchId = $user->branch_id;
+            if (!$branchId && !empty($request->passenger_ids)) {
+                $firstPassenger = Passengers::find($request->passenger_ids[0]);
+                $branchId = $firstPassenger?->branch_id;
+            }
+            $appId = $user->app_id;
+            if (!$appId) {
+                if ($branchId) {
+                    $branch = \App\Models\Branch::find($branchId);
+                    $appId = $branch?->app_id;
+                }
+                $appId = $appId ?: (\App\Models\App::first()?->id ?? 1);
+            }
+
             $trip = PassengerTrip::create([
-                'app_id'     => $user->app_id,
-                'branch_id'  => $user->branch_id,
+                'app_id'     => $appId,
+                'branch_id'  => $branchId,
                 'created_by' => $user->id,
                 'driver_id'  => $driverId,
             ]);
 
-            // تحديث ركاب الرحلة: ربطهم بالـ trip_id وتحويل حالتهم إلى "مؤكد confirmed" أو "in_transit"
+            // تحديث ركاب الرحلة: ربطهم بالـ trip_id وتحويل حالتهم إلى "مكتمل completed"
             $passengers = Passengers::whereIn('id', $request->passenger_ids)->get();
             foreach ($passengers as $passenger) {
                 $passenger->update([
@@ -94,26 +110,28 @@ class PassengerTripController extends Controller
             }
 
             DB::commit();
-          return WebResponseClass::sendResponse(
+            return WebResponseClass::sendResponse(
                 'تم الإضافة!',
                 'تم حفظ الرحلة وتحديث الصندوق المالي بنجاح.',
                 'حسناً',
                 'trips.index'
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
 
     public function show(Request $request, $id)
     {
-        $trip = PassengerTrip::with(['driver', 'passengers'])->findOrFail($id);
+        $trip = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.branch'])->findOrFail($id);
 
         // جلب قائمة الركاب قيد الانتظار في النظام لإتاحة إضافتهم
-        $pendingPassengers = Passengers::where('status', 'pending')
-            ->where('branch_id', auth()->user()->branch_id)
-            ->latest()
-            ->get();
+        $pendingPassengersQuery = Passengers::where('status', 'pending');
+        if (auth()->user()->branch_id) {
+            $pendingPassengersQuery->where('branch_id', auth()->user()->branch_id);
+        }
+        $pendingPassengers = $pendingPassengersQuery->latest()->get();
 
         if ($request->isMobile) {
             return view('mobile.pages.passenger.trips.show', compact('trip', 'pendingPassengers'));
@@ -145,7 +163,8 @@ class PassengerTripController extends Controller
                 'تم الإضافة!',
                 'تم إضافة الراكب للرحلة بنجاح.',
                 'حسناً',
-                'passenger.trips.show?id=' . $tripId
+                'trips.show',
+                ['trip' => $tripId]
             );
         } catch (Exception $e) {
             return WebResponseClass::sendExceptionError($e);
@@ -156,11 +175,12 @@ class PassengerTripController extends Controller
     {
         $trip = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.driver'])->findOrFail($id);
         $drivers = Driver::all();
-        $pendingPassengers = Passengers::with(['broker', 'driver'])
-            ->where('status', 'pending')
-            ->where('branch_id', auth()->user()->branch_id)
-            ->latest()
-            ->get();
+        $pendingPassengersQuery = Passengers::with(['broker', 'driver'])
+            ->where('status', 'pending');
+        if (auth()->user()->branch_id) {
+            $pendingPassengersQuery->where('branch_id', auth()->user()->branch_id);
+        }
+        $pendingPassengers = $pendingPassengersQuery->latest()->get();
         $brokers = Broker::select('id', 'name', 'phone')->orderBy('name')->get();
 
         if ($request->isMobile) {
@@ -176,8 +196,8 @@ class PassengerTripController extends Controller
 
         $validator = Validator::make($request->all(), [
             'driver_id'     => ['nullable', 'exists:drivers,id'],
-            'driver_phone'  => ['required_without:driver_id', 'string'],
-            'driver_name'   => ['required_without:driver_id', 'string'],
+            'driver_phone'  => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_name'   => ['required_without:driver_id', 'nullable', 'string'],
             'passenger_ids' => ['required', 'array', 'min:1'],
         ]);
 
@@ -216,10 +236,13 @@ class PassengerTripController extends Controller
             // ركاب جدد تمت إضافتهم للرحلة
             $addedIds = array_diff($newPassengerIds, $currentPassengerIds);
             if (!empty($addedIds)) {
-                Passengers::whereIn('id', $addedIds)->update([
-                    'trip_id' => $trip->id,
-                    'status' => 'completed'
-                ]);
+                $addedPassengers = Passengers::whereIn('id', $addedIds)->get();
+                foreach ($addedPassengers as $passenger) {
+                    $passenger->update([
+                        'trip_id' => $trip->id,
+                        'status' => 'completed'
+                    ]);
+                }
             }
 
             DB::commit();
@@ -230,6 +253,7 @@ class PassengerTripController extends Controller
                 'trips.index'
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -257,8 +281,14 @@ class PassengerTripController extends Controller
             return null;
         }
 
+        $rawLocal = preg_replace('/^(967|966)/', '', $phone);
         $driver = Driver::query()
-            ->where('phone', $phone)
+            ->where(function ($q) use ($phone, $rawLocal) {
+                $q->where('phone', $phone)
+                  ->orWhere('phone', $rawLocal)
+                  ->orWhere('phone', '0' . $rawLocal)
+                  ->orWhere('phone', '+' . $phone);
+            })
             ->first();
 
         if ($driver) {
@@ -277,7 +307,7 @@ class PassengerTripController extends Controller
         $driver->phone = $phone;
 
         if (Schema::hasColumn('drivers', 'app_id')) {
-            $driver->app_id = $user->app_id ?? null;
+            $driver->app_id = $user->app_id ?? \App\Models\Branch::find($user->branch_id)?->app_id ?? \App\Models\App::first()?->id ?? 1;
         }
 
         if (Schema::hasColumn('drivers', 'branch_id')) {
