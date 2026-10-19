@@ -26,12 +26,20 @@ class PassengersController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        // إعداد الفلاتر الافتراضية عند أول تحميل للصفحة (اليوم الحالي + قيد الانتظار)
+        if (!$request->has('date')) {
+            $request->merge(['date' => \Carbon\Carbon::today()->toDateString()]);
+        }
+        if (!$request->has('status') && !$request->isMobile) {
+            $request->merge(['status' => 'pending']);
+        }
+
         $query = Passengers::with(['driver', 'broker', 'branch', 'trip.driver'])
             ->where('branch_id', $user->branch_id)
             ->latest();
 
         // فلترة التاريخ (تحديد اليوم)
-        if ($request->filled('date')) {
+        if ($request->filled('date') && $request->date !== 'all') {
             $date = match ($request->date) {
                 'today' => \Carbon\Carbon::today()->toDateString(),
                 'yesterday' => \Carbon\Carbon::yesterday()->toDateString(),
@@ -41,7 +49,7 @@ class PassengersController extends Controller
         }
 
         // فلترة الحالة
-        if ($request->filled('status')) {
+        if ($request->filled('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 

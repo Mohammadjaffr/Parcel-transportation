@@ -74,7 +74,7 @@ class ShipmentController extends Controller
         }
 
         // 4. جلب البيانات مع الترقيم والاحتفاظ بكافة المتغيرات في الرابط (type, status, page)
-        $shipments = $query->latest()->paginate(15)->withQueryString();
+        $shipments = $query->latest()->paginate(20)->withQueryString();
         $shipments->getCollection()->transform(function ($shipment) {
 
             // إذا أردت رابط المرسل دائماً (مثلاً في صفحة الصادر)
@@ -114,7 +114,8 @@ class ShipmentController extends Controller
                 $query->where('status', $request->status);
             })
             ->latest()
-            ->paginate(5);
+            ->paginate(20)
+            ->withQueryString();
         $shipments->getCollection()->transform(function ($shipment) {
 
             // إذا أردت رابط المرسل دائماً (مثلاً في صفحة الصادر)
