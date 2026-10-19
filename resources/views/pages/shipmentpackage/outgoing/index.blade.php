@@ -436,7 +436,7 @@
 
                                         <div class="flex flex-col gap-1">
                                             <span class="text-sm font-black text-gray-800 dark:text-white">
-                                                {{ $package->tracking_number }}
+                                                {{ $package->tracking_number_only }}
                                             </span>
                                             <span
                                                 class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">

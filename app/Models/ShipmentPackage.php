@@ -90,7 +90,8 @@ class ShipmentPackage extends Model
         // ضمان عدم التكرار كإجراء وقائي
         while (static::withoutGlobalScopes()->where('tracking_number', $trackingNumber)
             ->when($appId, fn($q) => $q->where('app_id', $appId))
-            ->exists()) {
+            ->exists()
+        ) {
             $nextSeq++;
             $trackingNumber = "{$prefix}{$nextSeq}";
         }
@@ -134,5 +135,10 @@ class ShipmentPackage extends Model
     public function shipments()
     {
         return $this->hasMany(Shipment::class, 'shipment_package_id');
+    }
+    public function getTrackingNumberOnlyAttribute()
+    {
+        // هذه الدالة تقوم بحذف أي شيء ليس رقماً (الحروف والرموز)، وتُبقي الأرقام فقط
+        return preg_replace('/[^0-9]/', '', $this->tracking_number);
     }
 }

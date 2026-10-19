@@ -43,7 +43,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         $senderBranch = $package->senderBranch;
         $mainBranchData = null;
-        
+
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
@@ -72,7 +72,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
-        
+
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
         $paymentMethods = [
@@ -84,17 +84,21 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         $shipmentsData = [];
         $totalShipmentsCount = 0;
-        
+
         // المتغيرات الحسابية للكشف
         $totalPackageComm = 0;
         $totalHoneyComm = 0;
-        $totalExpectedCash = 0; 
+        $totalExpectedCash = 0;
+        $totalAccountantAmounts = 0;
+        $totalDeferredAmounts = 0;
         $isReceiver = false;
+        $totalPackageFee = 0;
 
         foreach ($package->shipments as $shipment) {
             if (!empty($shipment->code)) {
                 $isReceiver = true;
             }
+
             $receiverDestination = $shipment->receiverBranch?->name
                 ?? $shipment->receiverOfficeBranch?->name
                 ?? 'الوجهة غير محددة';
@@ -106,19 +110,43 @@ class ShipmentDetection implements ReceiptStrategyInterface
             // جلب البيانات المالية الأساسية للـ Format
             $totalAmount = (float) ($shipment->total_amount ?? 0);
             $paidAmount = (float) ($shipment->partial_amount ?? 0);
-            
-            // 🎯 السطر السحري: استدعاء الـ Accessor المعتمد في الموديل لحساب متبقي المستلم كاش
             $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
+            $paymentMethod = $shipment->payment_method ?? 'prepaid';
+
+            // توزيع المبالغ لمنع التكرار حسب نوع الدفع
+            $accountantAmount = 0;
+            $deferredAmount = 0;
+
+            switch ($paymentMethod) {
+                case 'customer_credit': // آجل (ذمة)
+                case 'cod': // الدفع عند الاستلام (يعتبر آجل حتى يتم تحصيله)
+                    $deferredAmount = $remainingAmount > 0 ? $remainingAmount : $totalAmount;
+                    break;
+                case 'partial_payment': // دفع جزئي
+                    $accountantAmount = $paidAmount; // ما تم دفعه يذهب للمحاسب
+                    $deferredAmount = $remainingAmount; // المتبقي يذهب للآجل
+                    break;
+                case 'prepaid': // مدفوع مقدماً
+                default:
+                    $accountantAmount = $totalAmount; // المبلغ كاملاً يذهب للمحاسب
+                    break;
+            }
 
             $totalPackageComm += (float) ($shipment->package_commission_amount ?? 0);
             $totalHoneyComm   += (float) ($shipment->honey_commission_amount ?? 0);
-            
+            $totalPackageFee  += (float) ($shipment->package_fee ?? 0);
+
             // إضافة متبقي التحصيل النقدي الحقيقي المطلوب من السائق توريده
             $totalExpectedCash += $remainingAmount;
 
+            // إجمالي المبالغ تم تصحيحه هنا
+            $totalAccountantAmounts += $accountantAmount;
+            $totalDeferredAmounts += $deferredAmount;
+
             $shipmentsData[] = [
-                'bond_number'       => $shipment->bond_number ?? $shipment->id ?? '---',
-                'tracking_code'     => $shipment->code ?? '---',
+                // ... (باقي البيانات كما هي: bond_number, tracking_code, إلخ) ...
+                'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
+                'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
                 'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
                 'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
@@ -128,22 +156,25 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'package_type'      => $shipment->package_type ?? 'طرد',
                 'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
                 'is_price_agreed'   => (bool) ($shipment->is_price_agreed ?? true),
-                'payment_key'       => $shipment->payment_method ?? 'prepaid',
+                'payment_key'       => $paymentMethod,
                 'payment_method'    => !($shipment->is_price_agreed ?? true)
                     ? 'سيتم الاتفاق عليه لاحقاً'
-                    : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
-                'total_amount'      => number_format($totalAmount, 0),
-                'partial_amount'    => number_format($paidAmount, 0),
-                'remaining_amount'  => number_format($remainingAmount, 0), // ستظهر النتيجة بناءً على دالة match تماماً
+                    : ($paymentMethods[$paymentMethod] ?? 'غير محدد'),
+
+                // التعديل السحري هنا لتمرير الحقول المجهزة مسبقاً
+                'accountant_amount' => $accountantAmount > 0 ? number_format($accountantAmount, 0) : '',
+                'deferred_amount'   => $deferredAmount > 0 ? number_format($deferredAmount, 0) : '',
+
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
+                'total_package_fee' => $totalPackageFee,
             ];
             $totalShipmentsCount++;
         }
 
         $theme = $app?->theme ?? [
-            'primary'   => '#1e3a8a', 
-            'secondary' => '#fb6514', 
+            'primary'   => '#1e3a8a',
+            'secondary' => '#fb6514',
             'bg_light'  => '#fcfcfc',
         ];
 
@@ -156,23 +187,31 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'other_phones' => $otherPhonesStr,
             ],
 
-            'title'             => $isReceiver ?'كشف استلام شحنة':'كشف تسليم شحنة ',
-            'package_number'    => $isReceiver ? $package->tracking_number ?? $package->id : $package->id ,
+            'title'             => $isReceiver ? 'كشف استلام شحنة' : 'كشف تسليم شحنة ',
+            'package_number'    => $isReceiver ? $package->tracking_number_only ?? $package->id : $package->id,
             'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
             'total_shipments'   => $totalShipmentsCount,
-            
+
+
+
+
+
             'shipments'         => $shipmentsData,
             'isReceiver' => $isReceiver,
 
             'totals' => [
+                'total_amounts'     => $totalAccountantAmounts + $totalDeferredAmounts,
+                'accountant_amount' => $totalAccountantAmounts,
+                'deferred_amount'   => $totalDeferredAmounts,
                 'package_commission' => $totalPackageComm,
-                'honey_commission'   => $totalHoneyComm,
-                'grand_commission'   => $totalPackageComm + $totalHoneyComm,
-                'expected_cash'      => $totalExpectedCash, 
+                'honey_commission'  => $totalHoneyComm,
+                'grand_commission'  => $totalPackageComm + $totalHoneyComm,
+                'expected_cash'     => $totalExpectedCash,
+                'package_fee'       => $totalPackageFee,
             ],
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),

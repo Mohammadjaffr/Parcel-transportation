@@ -107,12 +107,12 @@
                             <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
                         </a>
                         <div>
-                            <div class="flex items-center gap-2.5">
+                            <div class="flex gap-2.5 items-center">
                                 <h1 class="text-xl font-black leading-tight font-headline text-on-surface dark:text-white">
                                     تجهيز رحلة (إرسالية)
                                 </h1>
                                 @if(!empty($nextTrackingNumber))
-                                    <span class="px-2.5 py-0.5 text-xs font-mono font-black text-primary bg-primary-container dark:bg-primary/10 rounded-lg border border-primary/20" title="رقم الرحلة التلقائي">
+                                    <span class="px-2.5 py-0.5 font-mono text-xs font-black rounded-lg border text-primary bg-primary-container dark:bg-primary/10 border-primary/20" title="رقم الرحلة التلقائي">
                                         #{{ $nextTrackingNumber }}
                                     </span>
                                 @endif
@@ -429,7 +429,7 @@
                                                 <div class="flex flex-col">
                                                     <span
                                                         class="font-mono text-sm font-black tracking-tight text-on-surface dark:text-white">
-                                                        {{ $parcel->bond_number ?? $parcel->id }}
+                                                        {{ $parcel->bond_number_only ?? $parcel->id }}
                                                     </span>
                                                 </div>
                                             </div>

@@ -274,4 +274,11 @@ class Shipment extends Model
     {
         return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'sender');
     }
+
+    public function getBondNumberOnlyAttribute()
+    {
+        $parts = explode('-', $this->bond_number);
+        // إرجاع الجزء الثاني إذا كان موجوداً، وإلا إرجاع القيمة الأصلية
+        return isset($parts[1]) ? $parts[1] : $this->bond_number;
+    }
 }

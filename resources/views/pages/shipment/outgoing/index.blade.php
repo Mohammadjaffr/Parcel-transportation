@@ -445,7 +445,7 @@
 
                                         <div class="flex flex-col gap-1">
                                             <span class="text-sm font-black text-gray-800 dark:text-white">
-                                                {{ $shipment->bond_number }}
+                                                {{ $shipment->bond_number_only }}
                                             </span>
                                             <span
                                                 class="flex gap-1 items-center text-[11px] font-bold text-gray-500 dark:text-bodydark">
@@ -521,7 +521,7 @@
                                 {{-- المبلغ مع علامة الاتفاق على السعر --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex flex-col gap-1 items-center">
-                                        <div class="flex items-center justify-center gap-1.5">
+                                        <div class="flex gap-1.5 justify-center items-center">
                                             <span
                                                 class="text-sm font-black {{ $shipment->payment_method == 'prepaid' ? 'text-emerald-500' : 'text-amber-500' }}">
                                                 {{ number_format($shipment->total_amount, 0) }} ر.ي
@@ -530,12 +530,12 @@
                                             {{-- علامة الاتفاق على السعر --}}
                                             @if ($shipment->is_price_agreed)
                                                 <span title="تم الاتفاق على السعر"
-                                                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 border border-emerald-200/50">
+                                                    class="inline-flex justify-center items-center w-5 h-5 text-emerald-600 bg-emerald-50 rounded-full border dark:bg-emerald-500/15 dark:text-emerald-400 border-emerald-200/50">
                                                     <span class="material-symbols-outlined text-[13px] font-black">check</span>
                                                 </span>
                                             @else
                                                 <span title="لم يتم الاتفاق على السعر بعد"
-                                                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400 border border-amber-200/50">
+                                                    class="inline-flex justify-center items-center w-5 h-5 text-amber-600 bg-amber-50 rounded-full border dark:bg-amber-500/15 dark:text-amber-400 border-amber-200/50">
                                                     <span class="material-symbols-outlined text-[13px] font-black">schedule</span>
                                                 </span>
                                             @endif

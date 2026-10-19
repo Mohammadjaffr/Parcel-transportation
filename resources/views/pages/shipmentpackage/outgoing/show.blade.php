@@ -24,7 +24,7 @@
                 </a>
                 <div>
                     <h1 class="text-2xl font-black md:text-3xl font-headline text-on-surface dark:text-white">إرسالية
-                        #{{ $package->tracking_number }}</h1>
+                        رقم:{{ $package->tracking_number_only }}</h1>
                     <p class="mt-1 text-sm font-medium text-gray-500 dark:text-bodydark">
                         {{ $package->created_at->format('Y-m-d h:i A') }}</p>
                 </div>

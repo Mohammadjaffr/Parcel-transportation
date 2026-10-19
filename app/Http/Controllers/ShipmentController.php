@@ -280,7 +280,7 @@ class ShipmentController extends Controller
             'receiver_phone'       => 'nullable|string|max:20',
 
             'package_type'         => 'nullable|string',
-            'parcels_quantity'     => 'nullable|integer|min:1',
+            'parcels_quantity'     => 'nullable|integer|min:0',
             'weight'               => 'nullable|numeric|min:0',
 
             // --- حقول العسل ---

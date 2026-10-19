@@ -127,8 +127,8 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ],
 
             'title'             => 'سند ارسال طرد',
-            'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
-            'tracking_code'     => $shipment->bond_number ?? 'غير متوفر',
+            'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
+            'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
 
             'date'              => $shipment->created_at
                 ? $shipment->created_at->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i')
