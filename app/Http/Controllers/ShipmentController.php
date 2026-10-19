@@ -114,7 +114,7 @@ class ShipmentController extends Controller
                 $query->where('status', $request->status);
             })
             ->latest()
-            ->paginate(20)
+            ->paginate(70)
             ->withQueryString();
         $shipments->getCollection()->transform(function ($shipment) {
 
