@@ -34,6 +34,7 @@ class Shipment extends Model
         'package_fee',
         'package_commission_rate',
         'package_commission_amount',
+        'other_fee',
 
         // 5. تفاصيل العسل
         'no_gallons_honey',
@@ -62,6 +63,7 @@ class Shipment extends Model
         'is_returned' => 'boolean',
         'is_price_agreed' => 'boolean',
         'parcels_quantity' => 'integer',
+        'other_fee' => 'decimal:2',
     ];
 
     public function getParcelsCountAttribute()

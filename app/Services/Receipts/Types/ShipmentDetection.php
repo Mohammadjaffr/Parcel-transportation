@@ -93,6 +93,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
         $totalDeferredAmounts = 0;
         $isReceiver = false;
         $totalPackageFee = 0;
+        $totalOtherFee = 0;
 
         foreach ($package->shipments as $shipment) {
             if (!empty($shipment->code)) {
@@ -135,6 +136,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $totalPackageComm += (float) ($shipment->package_commission_amount ?? 0);
             $totalHoneyComm   += (float) ($shipment->honey_commission_amount ?? 0);
             $totalPackageFee  += (float) ($shipment->package_fee ?? 0);
+            $otherFee          = (float) ($shipment->other_fee ?? 0);
+            $totalOtherFee    += $otherFee;
 
             // إضافة متبقي التحصيل النقدي الحقيقي المطلوب من السائق توريده
             $totalExpectedCash += $remainingAmount;
@@ -164,6 +167,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 // التعديل السحري هنا لتمرير الحقول المجهزة مسبقاً
                 'accountant_amount' => $accountantAmount > 0 ? number_format($accountantAmount, 0) : '',
                 'deferred_amount'   => $deferredAmount > 0 ? number_format($deferredAmount, 0) : '',
+                'other_fee'         => $otherFee > 0 ? number_format($otherFee, 0) : '',
 
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
@@ -177,6 +181,26 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'secondary' => '#fb6514',
             'bg_light'  => '#fcfcfc',
         ];
+
+        $grandCommission = $totalPackageComm + $totalHoneyComm;
+        $settlementResult = $totalAccountantAmounts - $grandCommission;
+
+        if ($settlementResult > 0) {
+            $settlementStatus = 'pay_to_driver';
+            $settlementLabel  = 'صافي مستحق للسائق من المكتب';
+            $settlementAmount = abs($settlementResult);
+            $settlementColor  = '#16a34a';
+        } elseif ($settlementResult < 0) {
+            $settlementStatus = 'collect_from_driver';
+            $settlementLabel  = 'صافي مستحق للمكتب من السائق';
+            $settlementAmount = abs($settlementResult);
+            $settlementColor  = '#dc2626';
+        } else {
+            $settlementStatus = 'settled';
+            $settlementLabel  = 'خالص';
+            $settlementAmount = 0;
+            $settlementColor  = '#4b5563';
+        }
 
         return [
             'company' => [
@@ -196,26 +220,28 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
             'total_shipments'   => $totalShipmentsCount,
 
-
-
-
-
             'shipments'         => $shipmentsData,
-            'isReceiver' => $isReceiver,
+            'isReceiver'        => $isReceiver,
 
             'totals' => [
-                'total_amounts'     => $totalAccountantAmounts + $totalDeferredAmounts,
-                'accountant_amount' => $totalAccountantAmounts,
-                'deferred_amount'   => $totalDeferredAmounts,
+                'total_amounts'      => $totalAccountantAmounts + $totalDeferredAmounts,
+                'accountant_amount'  => $totalAccountantAmounts,
+                'deferred_amount'    => $totalDeferredAmounts,
                 'package_commission' => $totalPackageComm,
-                'honey_commission'  => $totalHoneyComm,
-                'grand_commission'  => $totalPackageComm + $totalHoneyComm,
-                'expected_cash'     => $totalExpectedCash,
-                'package_fee'       => $totalPackageFee,
+                'honey_commission'   => $totalHoneyComm,
+                'grand_commission'   => $grandCommission,
+                'expected_cash'      => $totalExpectedCash,
+                'package_fee'        => $totalPackageFee,
+                'other_fee'          => $totalOtherFee,
+                'settlement_result'  => $settlementResult,
+                'settlement_amount'  => $settlementAmount,
+                'settlement_status'  => $settlementStatus,
+                'settlement_label'   => $settlementLabel,
+                'settlement_color'   => $settlementColor,
             ],
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
             'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),
-            'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
+            'user_branch'       => $package->creator?->branch?->name ?? $package->senderBranch?->name ?? 'الفرع الرئيسي',
             'design' => [
                 'primary_color'   => $theme['primary'],
                 'secondary_color' => $theme['secondary'],

@@ -451,6 +451,19 @@
                     </div>
                 </div>
 
+                {{-- أجور أخرى --}}
+                @if ($shipment->other_fee !== null && $shipment->other_fee > 0)
+                    <div class="p-4 rounded-2xl border border-slate-100 bg-slate-50/80">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px] text-slate-400">payments</span>
+                                <span class="text-[10px] font-black text-slate-700 uppercase">أجور أخرى</span>
+                            </div>
+                            <span class="text-sm font-black text-slate-800 dir-ltr">{{ number_format($shipment->other_fee, 0) }} ر.ي</span>
+                        </div>
+                    </div>
+                @endif
+
                 {{-- العسل (يظهر فقط إذا كان هناك عسل) --}}
                 @if ($shipment->no_gallons_honey > 0 || $shipment->no_honey_jars > 0 || $shipment->honey_fee > 0)
                     <div class="p-4 rounded-2xl border border-amber-100/50 bg-amber-50/30">

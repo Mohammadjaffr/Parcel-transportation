@@ -506,11 +506,21 @@
                                     <span class="material-symbols-outlined text-[20px] text-purple-500">inventory_2</span>
                                     الطرد العادي
                                 </h5>
-                                <div class="text-left">
-                                    <span class="text-[10px] font-bold text-gray-400 block mb-0.5">أجرة الطرد</span>
-                                    <span
-                                        class="font-mono text-lg font-black text-gray-900 dark:text-white dir-ltr">{{ number_format($shipment->package_fee ?? 0, 0) }}
-                                        <span class="text-[10px] font-bold text-gray-500">ر.ي</span></span>
+                                <div class="flex gap-4 items-center">
+                                    @if ($shipment->other_fee !== null && $shipment->other_fee > 0)
+                                        <div class="text-left">
+                                            <span class="text-[10px] font-bold text-gray-400 block mb-0.5">أجور أخرى</span>
+                                            <span
+                                                class="font-mono text-lg font-black text-gray-700 dark:text-gray-300 dir-ltr">{{ number_format($shipment->other_fee, 0) }}
+                                                <span class="text-[10px] font-bold text-gray-500">ر.ي</span></span>
+                                        </div>
+                                    @endif
+                                    <div class="text-left">
+                                        <span class="text-[10px] font-bold text-gray-400 block mb-0.5">أجرة الطرد</span>
+                                        <span
+                                            class="font-mono text-lg font-black text-gray-900 dark:text-white dir-ltr">{{ number_format($shipment->package_fee ?? 0, 0) }}
+                                            <span class="text-[10px] font-bold text-gray-500">ر.ي</span></span>
+                                    </div>
                                 </div>
                             </div>
                             <div
@@ -526,6 +536,11 @@
                                 @if ($shipment->weight)
                                     <div class="flex gap-1.5 items-center"><span class="text-gray-400">الوزن:</span> <span
                                             class="text-gray-800 dark:text-gray-300">{{ $shipment->weight }} كجم</span>
+                                    </div>
+                                @endif
+                                @if ($shipment->other_fee !== null && $shipment->other_fee > 0)
+                                    <div class="flex gap-1.5 items-center"><span class="text-gray-400">أجور أخرى:</span> <span
+                                            class="font-black text-gray-800 dark:text-gray-300 dir-ltr">{{ number_format($shipment->other_fee, 0) }} ر.ي</span>
                                     </div>
                                 @endif
 
