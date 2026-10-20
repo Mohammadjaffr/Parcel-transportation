@@ -458,6 +458,9 @@
                             <div class="flex items-center gap-1.5">
                                 <span class="material-symbols-outlined text-[16px] text-slate-400">payments</span>
                                 <span class="text-[10px] font-black text-slate-700 uppercase">أجور أخرى</span>
+                                @if ($shipment->other_fee_description)
+                                    <span class="text-[10px] font-bold text-slate-500">({{ $shipment->other_fee_description }})</span>
+                                @endif
                             </div>
                             <span class="text-sm font-black text-slate-800 dir-ltr">{{ number_format($shipment->other_fee, 0) }} ر.ي</span>
                         </div>

@@ -167,7 +167,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 // التعديل السحري هنا لتمرير الحقول المجهزة مسبقاً
                 'accountant_amount' => $accountantAmount > 0 ? number_format($accountantAmount, 0) : '',
                 'deferred_amount'   => $deferredAmount > 0 ? number_format($deferredAmount, 0) : '',
-                'other_fee'         => $otherFee > 0 ? number_format($otherFee, 0) : '',
+                'other_fee'                 => $otherFee > 0 ? number_format($otherFee, 0) : '',
+                'other_fee_description'     => $shipment->other_fee_description,
 
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,

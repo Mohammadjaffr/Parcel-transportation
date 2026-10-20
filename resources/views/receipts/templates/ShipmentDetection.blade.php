@@ -249,6 +249,11 @@
                                 <td class="px-2 py-2 font-sans font-black text-slate-700 border-l border-slate-100 print:border-slate-200 print:text-black"
                                     dir="ltr">
                                     {{ $shipment['other_fee'] }}
+                                    @if (!empty($shipment['other_fee_description']))
+                                        <div class="text-[9px] font-normal text-slate-500 font-sans" dir="rtl">
+                                            ({{ $shipment['other_fee_description'] }})
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="px-2 py-2 font-mono font-black text-indigo-700 print:text-black" dir="ltr">
                                     {{ $shipment['bond_number'] }}</td>

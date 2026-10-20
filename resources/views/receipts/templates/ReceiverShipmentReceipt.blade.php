@@ -701,6 +701,13 @@
                         if (!empty($honey_details) && $honey_details !== '---') {
                             $shipmentFields[] = ['label' => 'تفاصيل إضافية:', 'value' => $honey_details];
                         }
+                        if (!empty($other_fee) && (float) $other_fee > 0) {
+                            $feeText = number_format((float) $other_fee, 0) . ' ر.ي';
+                            if (!empty($other_fee_description)) {
+                                $feeText .= ' (' . $other_fee_description . ')';
+                            }
+                            $shipmentFields[] = ['label' => 'أجور أخرى:', 'value' => $feeText];
+                        }
                     @endphp
 
                     @if (!empty($shipmentFields))

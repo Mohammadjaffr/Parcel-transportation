@@ -147,6 +147,8 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
             'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
             'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
+            'other_fee'         => (float) ($shipment->other_fee ?? 0),
+            'other_fee_description' => $shipment->other_fee_description,
 
             // --- معلومات النظام والتصميم ---
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',

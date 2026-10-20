@@ -169,6 +169,8 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'total_amount'      => number_format($totalAmount, 0),
             'partial_amount'    => number_format($paidAmount, 0),
             'remaining_amount'  => number_format($remainingAmount, 0),
+            'other_fee'         => (float) ($shipment->other_fee ?? 0),
+            'other_fee_description' => $shipment->other_fee_description,
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),

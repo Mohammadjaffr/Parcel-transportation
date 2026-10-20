@@ -473,10 +473,16 @@
             </div>
 
             {{-- 4. أجور أخرى --}}
-            <div class="flex flex-col col-span-2 gap-2 mt-2">
+            <div class="flex flex-col col-span-2 sm:col-span-1 gap-2 mt-2">
                 <label class="text-[11px] font-bold text-slate-400">أجور أخرى (ريال)</label>
                 <input type="number" name="other_fee" value="{{ old('other_fee', $shipment->other_fee) }}" placeholder="0" min="0" dir="ltr"
                     class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
+            </div>
+
+            <div class="flex flex-col col-span-2 sm:col-span-1 gap-2 mt-2">
+                <label class="text-[11px] font-bold text-slate-400">توضيح الأجور الأخرى</label>
+                <input type="text" name="other_fee_description" value="{{ old('other_fee_description', $shipment->other_fee_description) }}" placeholder="مثال: عتالة، توصيل، تغليف..."
+                    class="px-4 w-full h-12 text-sm font-bold rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
             </div>
 
         </div>

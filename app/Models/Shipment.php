@@ -35,6 +35,7 @@ class Shipment extends Model
         'package_commission_rate',
         'package_commission_amount',
         'other_fee',
+        'other_fee_description',
 
         // 5. تفاصيل العسل
         'no_gallons_honey',

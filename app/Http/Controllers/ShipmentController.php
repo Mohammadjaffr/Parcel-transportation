@@ -304,6 +304,7 @@ class ShipmentController extends Controller
             'honey_fee'               => 'nullable|numeric|min:0',
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
             'other_fee'               => 'nullable|numeric|min:0',
+            'other_fee_description'   => 'nullable|string|max:255',
 
             'payment_method'       => 'nullable|in:prepaid,cod,partial_payment,customer_credit', // تم تغييره إلى nullable
             'partial_amount'       => 'nullable|numeric|min:0', // تم إزالة required_if
@@ -519,6 +520,7 @@ class ShipmentController extends Controller
                 'package_fee'               => $data['package_fee'] ?? 0, // قيمة افتراضية صفر
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
                 'other_fee'                 => $data['other_fee'] ?? null,
+                'other_fee_description'     => $data['other_fee_description'] ?? null,
 
                 // العسل
                 'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
@@ -690,6 +692,7 @@ class ShipmentController extends Controller
             'honey_fee'               => 'nullable|numeric|min:0',
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
             'other_fee'               => 'nullable|numeric|min:0',
+            'other_fee_description'   => 'nullable|string|max:255',
 
             'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
             // 'total_amount'       => 'required|numeric|min:0', 👈 تم إزالته (المودل يحسبه)
@@ -899,6 +902,7 @@ class ShipmentController extends Controller
                 'package_fee'               => $data['package_fee'],
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
                 'other_fee'                 => $data['other_fee'] ?? null,
+                'other_fee_description'     => $data['other_fee_description'] ?? null,
 
                 // العسل
                 'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
