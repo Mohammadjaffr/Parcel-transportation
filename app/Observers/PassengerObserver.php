@@ -10,15 +10,13 @@ class PassengerObserver
     public function __construct(
         protected CashTransactionService $cashTransactionService
     ) {}
+
     /**
      * معالجة حدث تحديث الراكب
+     * ملاحظة: تم إزالة تسقيط العمولة الفردي — العمولة الآن تُسقط على مستوى الرحلة (PassengerTrip)
      */
     public function updated(Passengers $passenger): void
     {
-        if ($passenger->isDirty('status') && $passenger->status === 'completed' && !empty($passenger->trip_id)) {
-            $this->cashTransactionService->recordPassengerCommission($passenger);
-        }
+        // العمولة تُسقط الآن من PassengerTripController عند إنشاء/تعديل الرحلة
     }
-
-   
-}
+}

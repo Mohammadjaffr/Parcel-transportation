@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\WhatsApp\WhatsAppLinkService;
+use App\Services\CashTransactionService;
 use App\Classes\WebResponseClass;
 
 
@@ -109,6 +110,10 @@ class PassengerTripController extends Controller
                 ]);
             }
 
+            // 💰 تسقيط إجمالي عمولة جميع ركاب الرحلة في قيد واحد
+            $cashService = app(CashTransactionService::class);
+            $cashService->recordTripCommission($trip);
+
             DB::commit();
             return WebResponseClass::sendResponse(
                 'تم الإضافة!',
@@ -159,6 +164,11 @@ class PassengerTripController extends Controller
             $passenger->trip_id = $trip->id;
             $passenger->status  = 'completed';
             $passenger->save();
+
+            // 💰 تعديل قيد عمولة الرحلة بعد إضافة راكب
+            $cashService = app(CashTransactionService::class);
+            $cashService->adjustTripCommission($trip);
+
             return WebResponseClass::sendResponse(
                 'تم الإضافة!',
                 'تم إضافة الراكب للرحلة بنجاح.',
@@ -246,6 +256,11 @@ class PassengerTripController extends Controller
             }
 
             DB::commit();
+
+            // 💰 تعديل قيد عمولة الرحلة بعد إضافة/إزالة ركاب
+            $cashService = app(CashTransactionService::class);
+            $cashService->adjustTripCommission($trip);
+
             return WebResponseClass::sendResponse(
                 'تم التعديل!',
                 'تم تعديل بيانات الرحلة بنجاح.',
@@ -266,6 +281,14 @@ class PassengerTripController extends Controller
         $passenger->trip_id = null;
         $passenger->status  = 'pending';
         $passenger->save();
+
+        // 💰 تعديل قيد عمولة الرحلة بعد إزالة راكب
+        $trip = PassengerTrip::find($tripId);
+        if ($trip) {
+            $cashService = app(CashTransactionService::class);
+            $cashService->adjustTripCommission($trip);
+        }
+
         return WebResponseClass::sendResponse(
             'تم التعديل!',
             'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.',

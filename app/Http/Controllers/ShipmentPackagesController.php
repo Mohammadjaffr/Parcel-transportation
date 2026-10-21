@@ -12,8 +12,10 @@ use App\Models\ShipmentPackage;
 use App\Models\User;
 use App\Notifications\AdminManifestCreated;
 use App\Notifications\IncomingPackageNotification;
+use App\Services\CashTransactionService;
 use App\Services\ShipmentPaymentService;
 use App\Services\WhatsApp\WhatsAppLinkService;
+use App\Models\CashTransaction;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -236,6 +238,18 @@ class ShipmentPackagesController extends Controller
                     'shipment_package_id' => null
                 ]);
 
+                // 💰 حذف قيد عمولة الحمولة عند الإلغاء/الإرجاع
+                $appId = $package->app_id ?? auth()->user()?->app_id;
+                if ($appId) {
+                    CashTransaction::withoutGlobalScopes()
+                        ->where('app_id', $appId)
+                        ->where('source_type', ShipmentPackage::class)
+                        ->where('source_id', $package->id)
+                        ->where('type', 'income')
+                        ->where('notes', 'like', '%عمولة الحمولة%')
+                        ->delete();
+                }
+
                 $message = 'تم إغلاق الرحلة كمرتجعة، وتم إعادة جميع الطرود إلى المستودع (قيد الانتظار).';
             } else {
                 // تحديث حالة الطرود فقط إذا كانت الإرسالية "في الطريق"
@@ -244,6 +258,10 @@ class ShipmentPackagesController extends Controller
                     $package->shipments()->each(function (Shipment $shipment) {
                         $shipment->update(['status' => 'in_transit']);
                     });
+
+                    // 💰 تسقيط إجمالي عمولة جميع طرود الحمولة في قيد واحد
+                    $cashService = app(CashTransactionService::class);
+                    $cashService->recordPackageCommission($package);
                 }
 
                 $message = 'تم تحديث حالة الإرسالية بنجاح.';
@@ -293,10 +311,19 @@ class ShipmentPackagesController extends Controller
             DB::beginTransaction();
             $shipment = Shipment::where('id', $shipmentId)->where('shipment_package_id', $packageId)->firstOrFail();
 
+            // حفظ حالة الحمولة قبل إزالة الطرد
+            $wasInTransit = $package->status === 'in_transit';
+
             $shipment->update([
                 'shipment_package_id' => null,
                 'status'              => 'pending',
             ]);
+
+            // 💰 تعديل قيد عمولة الحمولة بعد إخراج الطرد (إذا كانت الحمولة في الطريق)
+            if ($wasInTransit) {
+                $cashService = app(CashTransactionService::class);
+                $cashService->adjustPackageCommission($package);
+            }
 
             DB::commit();
             return back()->with('success', 'تم إخراج الطرد (' . $shipment->bond_number . ') من الإرسالية بنجاح.');
@@ -340,6 +367,13 @@ class ShipmentPackagesController extends Controller
                 'shipment_package_id' => $package->id,
                 'status' => $package->status === 'in_transit' ? 'in_transit' : $shipment->status,
             ]);
+
+            // 💰 تعديل قيد عمولة الحمولة بعد إضافة الطرد (إذا كانت الحمولة في الطريق)
+            if ($package->status === 'in_transit') {
+                $cashService = app(CashTransactionService::class);
+                $cashService->adjustPackageCommission($package);
+            }
+
             DB::commit();
             return back()->with('success', 'تمت إضافة الطرد (' . $shipment->bond_number . ') إلى الإرسالية بنجاح.');
         } catch (Exception $e) {
@@ -871,8 +905,10 @@ class ShipmentPackagesController extends Controller
                 );
             }
 
-            // حفظ معرف الرحلة قبل فك الربط
+            // حفظ معرف الرحلة وحالة الحمولة قبل فك الربط
             $packageId = $shipment->shipment_package_id;
+            $package = ShipmentPackage::find($packageId);
+            $wasInTransit = $package && $package->status === 'in_transit';
 
             // حساب عدد الطرود المتبقية في الرحلة (باستثناء الطرد الحالي)
             $remainingCount = Shipment::where('shipment_package_id', $packageId)
@@ -883,6 +919,12 @@ class ShipmentPackagesController extends Controller
             $shipment->shipment_package_id = null;
             $shipment->status = 'pending';
             $shipment->save();
+
+            // 💰 تعديل قيد عمولة الحمولة بعد فك الربط (إذا كانت الحمولة في الطريق)
+            if ($wasInTransit && $package) {
+                $cashService = app(CashTransactionService::class);
+                $cashService->adjustPackageCommission($package);
+            }
 
             // تحديد الرابط للتوجيه
             $redirectUrl = $remainingCount > 0

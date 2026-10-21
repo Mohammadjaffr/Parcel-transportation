@@ -18,6 +18,7 @@ use App\Notifications\AdminShipmentStatusUpdated;
 use App\Notifications\NewShipmentNotification;
 use App\Notifications\PackageReceivedNotification;
 use App\Services\AdminLoggerService;
+use App\Services\CashTransactionService;
 use App\Services\CustomerTransactionService;
 use App\Services\ShipmentPaymentService;
 use App\Services\WhatsApp\WhatsAppLinkService;
@@ -256,7 +257,7 @@ class ShipmentController extends Controller
         if ($request->filled('customer_id')) {
             $customer = Customer::findOrFail($request->customer_id);
         }
-       
+
 
         $viewData = [
             'currentOffice' => $currentOffice,
@@ -265,7 +266,7 @@ class ShipmentController extends Controller
             'customers'     => $customers,
             'customer'      => $customer,
             'role'          => $role,
-           
+
         ];
 
         // التوجيه إلى الواجهة وتمرير المتغيرات
@@ -315,7 +316,7 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         // تحقق إضافي للدفع الجزئي والوجهة المحددة
-     // تحقق إضافي للدفع الجزئي والوجهة المحددة
+        // تحقق إضافي للدفع الجزئي والوجهة المحددة
         $validator->after(function ($validator) use ($request) {
             $user = auth()->user();
 
@@ -330,7 +331,7 @@ class ShipmentController extends Controller
 
             // 💡 التعديل هنا: نقوم بالتحقق من صحة الفروع فقط إذا تم إرسال office_id و receiver_branch_id
             if ($request->filled('office_id') && $request->filled('receiver_branch_id')) {
-                
+
                 $officeId = (string) $request->office_id;
                 $branchId = (int) $request->receiver_branch_id;
                 $officeParts = explode('_', $officeId);
@@ -667,8 +668,8 @@ class ShipmentController extends Controller
         }
 
         $rules = [
-            'office_id'             => 'required|string',
-            'receiver_branch_id'    => 'required|integer',
+            'office_id'             => 'nullable|string',
+            'receiver_branch_id'    => 'nullable|integer',
 
             'sender_customer_id'    => 'nullable|exists:customers,id',
             'sender_name'           => 'nullable|string|max:255',
@@ -679,7 +680,7 @@ class ShipmentController extends Controller
             'receiver_phone'        => 'nullable|string|max:20',
 
             'package_type'          => 'nullable|string',
-            'parcels_quantity'      => 'nullable|integer|min:1',
+            'parcels_quantity'      => 'nullable|integer|min:0',
             'weight'                => 'nullable|numeric|min:0',
 
             // --- حقول العسل ---
@@ -687,7 +688,7 @@ class ShipmentController extends Controller
             'no_honey_jars'         => 'nullable|numeric|min:0',
 
             // --- 💡 التسعير والعمولات الجديدة ---
-            'package_fee'             => 'required|numeric|min:0',
+            'package_fee'             => 'nullable|numeric|min:0',
             'package_commission_rate' => 'nullable|numeric|min:0|max:100',
             'honey_fee'               => 'nullable|numeric|min:0',
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
@@ -1624,22 +1625,40 @@ class ShipmentController extends Controller
                 // أ. حالة إلغاء الإرسال (في الطريق -> إرجاع للمستودع قبل وصوله)
                 if ($oldStatus === 'in_transit' && !$shipment->is_returned) {
                     $packageId = $shipment->shipment_package_id;
+                    $packageForCommission = $packageId ? ShipmentPackage::find($packageId) : null;
+
                     $shipment->update([
                         'status' => 'pending',
                         'shipment_package_id' => null,
                     ]);
                     $statusService->checkAndClosePackage($packageId);
+
+                    // 💰 تعديل قيد عمولة الحمولة بعد إخراج الطرد المرتجع
+                    if ($packageForCommission) {
+                        $cashCommissionService = app(CashTransactionService::class);
+                        $cashCommissionService->adjustPackageCommission($packageForCommission);
+                    }
+
                     $newStatus = 'pending';
                 }
                 // ب. المرحلة الأولى للمرتجع الحقيقي (رفض المستلم)
                 elseif (!$shipment->is_returned) {
                     $packageId = $shipment->shipment_package_id;
+                    $packageForCommission = $packageId ? ShipmentPackage::find($packageId) : null;
+
                     $shipment->update([
                         'is_returned' => true,
                         'status' => 'pending',
                         'shipment_package_id' => null,
                     ]);
                     $statusService->checkAndClosePackage($packageId);
+
+                    // 💰 تعديل قيد عمولة الحمولة بعد إخراج الطرد المرتجع
+                    if ($packageForCommission) {
+                        $cashCommissionService = app(CashTransactionService::class);
+                        $cashCommissionService->adjustPackageCommission($packageForCommission);
+                    }
+
                     $newStatus = 'pending';
                 }
                 // ج. المرحلة النهائية للمرتجع (تسليم الطرد للتاجر/المُرسل)
