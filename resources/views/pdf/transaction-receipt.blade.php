@@ -158,6 +158,13 @@
             </div>
             @endif
 
+            @if($transaction->driver_name)
+            <div class="row">
+                <div class="row-cell bold" style="width: 35%;">السائق:</div>
+                <div class="row-cell text-left">{{ $transaction->driver_name }}</div>
+            </div>
+            @endif
+
             @if($transaction->notes)
             <div class="row">
                 <div class="row-cell bold" style="width: 35%;">البيان:</div>

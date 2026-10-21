@@ -59,6 +59,16 @@
                 <span class="font-mono font-bold text-gray-700 dark:text-gray-200" x-text="details.reference_number"></span>
             </div>
             
+            <div class="flex justify-between py-1 border-b border-gray-50 dark:border-gray-800/50" x-show="details.driver_name">
+                <span class="text-xs font-bold text-gray-400">السائق:</span>
+                <span class="font-bold text-gray-700 dark:text-gray-200">
+                    <span x-text="details.driver_name"></span>
+                    <template x-if="details.driver_phone">
+                        <span class="text-xs font-mono text-gray-400 font-normal mr-1" dir="ltr" x-text="'(' + details.driver_phone + ')'"></span>
+                    </template>
+                </span>
+            </div>
+            
             <div class="py-1">
                 <span class="block mb-1.5 text-xs font-bold text-gray-400">البيان والملاحظات:</span>
                 <p class="p-3 text-xs font-medium leading-relaxed bg-gray-50 rounded-xl text-gray-700 dark:bg-gray-800/50 dark:text-gray-300" 

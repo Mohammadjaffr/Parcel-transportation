@@ -194,13 +194,13 @@
                                     class="material-symbols-outlined text-[22px]">{{ $trx->type === 'income' ? 'south_west' : 'north_east' }}</span>
                             </div>
                             <div class="flex flex-col">
+                                <p class="text-[10px] font-bold text-slate-400 mb-0.5 flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">schedule</span>
+                                    {{ $trx->transaction_date->locale('ar')->translatedFormat('l') }} {{ $trx->transaction_date->format('Y/m/d') }}
+                                </p>
                                 <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
                                     {{ $trx->receipt_number }}
                                 </h3>
-                                <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[12px]">schedule</span>
-                                    {{ $trx->transaction_date->format('Y/m/d') }}
-                                </p>
                             </div>
                         </div>
 

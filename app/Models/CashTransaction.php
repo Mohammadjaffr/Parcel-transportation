@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Facades\DB;
+use App\Models\Shipment;
+use App\Models\ShipmentPackage;
+use App\Models\PassengerTrip;
+use App\Models\Passengers;
+use App\Models\Driver;
 
 class CashTransaction extends Model
 {
@@ -109,5 +114,95 @@ class CashTransaction extends Model
         }
 
         return sprintf('%s-%s-%06d', $prefix, $year, $sequence);
+    }
+
+    /**
+     * كائن السائق المرتبط بالسند المالي إن وجد (إذا كان السند مرتبطاً بشحنة أو حمولة أو رحلة ركاب)
+     */
+    public function getDriverAttribute(): ?Driver
+    {
+        // 1. الفحص عبر العلاقة البوليمورفية المباشرة (source)
+        $source = $this->relationLoaded('source') ? $this->source : ($this->source_type && $this->source_id ? $this->source : null);
+        if ($source) {
+            $driver = $this->resolveDriverFromSource($source);
+            if ($driver) {
+                return $driver;
+            }
+        }
+
+        // 2. كاحتياطي ذكي: البحث عبر رقم المرجع (reference_number)
+        if (!empty($this->reference_number)) {
+            $ref = trim($this->reference_number);
+
+            // أ) إذا كان المرجع لحمولة طرود (يبدأ بـ PKG-)
+            if (str_starts_with($ref, 'PKG-')) {
+                $pkg = ShipmentPackage::withoutGlobalScopes()->where('tracking_number', $ref)->with('driver')->first();
+                if ($pkg?->driver) {
+                    return $pkg->driver;
+                }
+            }
+
+            // ب) إذا كان المرجع لشحنة / طرد
+            $shipment = Shipment::withoutGlobalScopes()->where('bond_number', $ref)->with('package.driver')->first();
+            if ($shipment?->package?->driver) {
+                return $shipment->package->driver;
+            }
+
+            // ج) إذا كان المرجع لرحلة ركاب
+            if (is_numeric($ref)) {
+                $trip = PassengerTrip::withoutGlobalScopes()->where('id', $ref)->with('driver')->first();
+                if ($trip?->driver) {
+                    return $trip->driver;
+                }
+            }
+
+            // د) إذا كان المرجع لراكب
+            $passenger = Passengers::withoutGlobalScopes()->where('passenger_number', $ref)->with(['driver', 'trip.driver'])->first();
+            if ($passenger) {
+                return $passenger->driver ?? $passenger->trip?->driver;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * استخراج كائن السائق من كائن المصدر
+     */
+    protected function resolveDriverFromSource($source): ?Driver
+    {
+        if ($source instanceof ShipmentPackage) {
+            return $source->driver;
+        }
+
+        if ($source instanceof Shipment) {
+            return $source->package?->driver;
+        }
+
+        if ($source instanceof PassengerTrip) {
+            return $source->driver;
+        }
+
+        if ($source instanceof Passengers) {
+            return $source->driver ?? $source->trip?->driver;
+        }
+
+        return null;
+    }
+
+    /**
+     * اسم السائق
+     */
+    public function getDriverNameAttribute(): ?string
+    {
+        return $this->driver?->name;
+    }
+
+    /**
+     * رقم هاتف السائق
+     */
+    public function getDriverPhoneAttribute(): ?string
+    {
+        return $this->driver?->phone;
     }
 }

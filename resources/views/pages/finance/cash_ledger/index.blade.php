@@ -162,8 +162,8 @@
             <table class="w-full text-sm text-right">
                 <thead class="font-bold text-gray-500 bg-gray-50 border-b border-gray-100 dark:bg-gray-800/50 dark:border-gray-800 dark:text-gray-400">
                     <tr>
-                        <th class="p-4">رقم العملية</th>
                         <th class="p-4">اليوم والتاريخ</th>
+                        <th class="p-4">رقم العملية</th>
                         @if(in_array(auth()->user()->type, ['admin', 'super_admin']))
                             <th class="p-4">الفرع</th>
                         @endif
@@ -179,11 +179,16 @@
                 <tbody class="font-medium divide-y divide-gray-100 dark:divide-gray-800">
                     @forelse($transactions as $trx)
                         <tr class="transition-colors hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
-                            <td class="p-4 font-mono font-bold text-gray-800 dark:text-gray-200">
-                                {{ $trx->receipt_number }}
+                            <td class="p-4 whitespace-nowrap">
+                                <span class="block font-bold text-gray-800 dark:text-gray-200">
+                                    {{ $trx->transaction_date->locale('ar')->translatedFormat('l') }}
+                                </span>
+                                <span class="font-mono text-xs text-gray-400">
+                                    {{ $trx->transaction_date->format('Y-m-d') }}
+                                </span>
                             </td>
-                            <td class="p-4 text-gray-500 whitespace-nowrap">
-                                {{ $trx->transaction_date->format('Y-m-d') }}
+                            <td class="p-4 font-mono font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                                {{ $trx->receipt_number }}
                             </td>
                             @if(in_array(auth()->user()->type, ['admin', 'super_admin']))
                                 <td class="p-4 text-gray-600 dark:text-gray-300">

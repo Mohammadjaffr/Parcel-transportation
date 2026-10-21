@@ -49,7 +49,19 @@ class CashTransactionController extends Controller
             $startDate = $request->filled('start_date') ? $request->start_date : null;
             $endDate = $request->filled('end_date') ? $request->end_date : null;
         }
-        $query = CashTransaction::with(['category', 'user', 'branch', 'source']);
+        $query = CashTransaction::with([
+            'category',
+            'user',
+            'branch',
+            'source' => function (\Illuminate\Database\Eloquent\Relations\MorphTo $morphTo) {
+                $morphTo->morphWith([
+                    \App\Models\ShipmentPackage::class => ['driver'],
+                    \App\Models\Shipment::class => ['package.driver'],
+                    \App\Models\PassengerTrip::class => ['driver'],
+                    \App\Models\Passengers::class => ['driver', 'trip.driver'],
+                ]);
+            }
+        ]);
 
         if ($startDate && $endDate) {
             $query->whereBetween('transaction_date', [$startDate, $endDate]);
@@ -243,6 +255,8 @@ class CashTransactionController extends Controller
                 'branch'           => $trx->branch->name ?? '-',
                 'user'             => $trx->user->name ?? '-',
                 'reference_number' => $trx->reference_number ?? '-',
+                'driver_name'      => $trx->driver_name,
+                'driver_phone'     => $trx->driver_phone,
                 'notes'            => $trx->notes ?? '-',
                 'attachment_url'   => $trx->attachment_path ? asset($trx->attachment_path) : null,
             ]
@@ -254,7 +268,7 @@ class CashTransactionController extends Controller
      */
     public function printReceipt(Request $request, $id)
     {
-        $trx = CashTransaction::with(['category', 'branch', 'user'])->findOrFail($id);
+        $trx = CashTransaction::with(['category', 'branch', 'user', 'source'])->findOrFail($id);
 
         // إذا طُلب التصدير كملف PDF صراحةً
         if ($request->get('format') === 'pdf' || $request->has('pdf')) {

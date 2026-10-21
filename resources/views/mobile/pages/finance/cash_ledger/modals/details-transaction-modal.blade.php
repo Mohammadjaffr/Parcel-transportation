@@ -97,6 +97,19 @@
                     <span class="font-mono font-black text-slate-700" x-text="details.reference_number"></span>
                 </div>
                 
+                <div class="flex justify-between items-center border-b border-dashed border-slate-200 pb-3" x-show="details.driver_name">
+                    <div class="flex items-center gap-2 text-slate-400 font-bold">
+                        <span class="material-symbols-outlined text-[16px]">badge</span>
+                        <span class="text-xs">السائق</span>
+                    </div>
+                    <div class="text-left font-black text-slate-700">
+                        <span x-text="details.driver_name"></span>
+                        <template x-if="details.driver_phone">
+                            <a :href="'tel:' + details.driver_phone" dir="ltr" class="block text-xs font-mono font-bold text-primary" x-text="details.driver_phone"></a>
+                        </template>
+                    </div>
+                </div>
+                
                 <div class="pt-2">
                     <div class="flex items-center gap-2 text-slate-400 font-bold mb-2">
                         <span class="material-symbols-outlined text-[16px]">subject</span>
