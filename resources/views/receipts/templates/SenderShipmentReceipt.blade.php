@@ -304,10 +304,10 @@
         .details-finance-section {
             display: flex;
             gap: 3.5mm;
-            margin-bottom: 2.2mm;
-            height: 33mm;
-            min-height: 33mm;
-            max-height: 33mm;
+            margin-bottom: 1.5mm;
+            height: 44mm;
+            min-height: 44mm;
+            max-height: 44mm;
         }
 
         .details-box {
@@ -319,6 +319,7 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            box-sizing: border-box;
         }
 
         .details-grid-table {
@@ -329,8 +330,8 @@
         }
 
         .details-grid-table td {
-            padding: 1mm 2mm;
-            height: 5.5mm;
+            padding: 0.8mm 2mm;
+            height: 5mm;
             vertical-align: middle;
         }
 
@@ -339,8 +340,8 @@
             border-top: 1px dashed #cbd5e1;
             background: #f8fafc;
             padding: 1.2mm 2.5mm;
-            min-height: 7.2mm;
-            max-height: 7.5mm;
+            min-height: 7.5mm;
+            max-height: 8.5mm;
             display: flex;
             align-items: flex-start;
             gap: 4px;
@@ -356,21 +357,26 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            box-sizing: border-box;
         }
 
         .finance-header {
             background:
                 {{ $primary }};
             color: #ffffff;
-            font-size: 9pt;
+            font-size: 8.5pt;
             font-weight: bold;
             text-align: center;
-            padding: 1.2mm;
-            height: 5.2mm;
-            min-height: 5.2mm;
+            padding: 0;
+            height: 5mm;
+            min-height: 5mm;
+            max-height: 5mm;
+            line-height: 5mm;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            box-sizing: border-box;
         }
 
         .finance-table {
@@ -381,12 +387,14 @@
         }
 
         .finance-table td {
-            padding: 0.20mm 2mm;
-            font-size: 8.5pt;
+            padding: 0.2mm 2mm;
+            font-size: 8pt;
+            line-height: 1.2;
             font-weight: bold;
             border-bottom: 1px solid #f1f5f9;
-            height: auto;
+            height: 4.8mm;
             vertical-align: middle;
+            box-sizing: border-box;
         }
 
         .finance-table tr:last-child td {
@@ -397,19 +405,20 @@
             margin-top: auto;
             background: #ecfdf5;
             border-top: 1px dashed {{ $primary }};
-            height: 6.2mm;
-            min-height: 6.2mm;
-            max-height: 6.2mm;
+            height: 5.8mm;
+            min-height: 5.8mm;
+            max-height: 5.8mm;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            font-size: 8.5pt;
+            font-size: 8pt;
             font-weight: bold;
             color:
                 {{ $primary }};
             padding: 0 2mm;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         /* 5. الشروط والأحكام */
@@ -742,7 +751,7 @@
 
                     {{-- خانة الملاحظات المعزولة في سطر مستقل أنيق --}}
                     <div class="details-notes-container"
-                        style="display: flex; align-items: flex-start; gap: 4px; margin-bottom: 2mm; height: auto;">
+                        style="display: flex; align-items: flex-start; gap: 4px; height: auto;">
                         <span
                             style="font-size: 8.5pt; color: #475569; font-weight: bold; white-space: nowrap; flex-shrink: 0;">
                             الملاحظات:
@@ -761,7 +770,7 @@
                         @if (!empty($show_other_fee_in_receipt))
                             <tr>
                                 <td style="color: #475569; width: 45%;">تكلفة النقل</td>
-                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
+                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9pt;"
                                     dir="ltr">
                                     {{ $transport_fee ?? '0' }}
                                 </td>
@@ -773,14 +782,14 @@
                                         <span style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
                                     @endif
                                 </td>
-                                <td style="text-align: left; color: #111827; font-weight: 800; font-size: 9pt;"
+                                <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
                                     dir="ltr">
                                     {{ number_format((float) ($other_fee ?? 0), 0) }}
                                 </td>
                             </tr>
                             <tr>
                                 <td style="color: #0f172a; font-weight: 900;">الإجمالي</td>
-                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10pt;"
+                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
                                     dir="ltr">
                                     {{ $total_amount ?? '0' }}
                                 </td>
@@ -788,7 +797,7 @@
                         @else
                             <tr>
                                 <td style="color: #475569; width: 45%;">الإجمالي</td>
-                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10pt;"
+                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
                                     dir="ltr">
                                     {{ $total_amount ?? '0' }}
                                 </td>
@@ -796,14 +805,14 @@
                         @endif
                         <tr>
                             <td style="color: #475569;">المسدد</td>
-                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 9pt;"
+                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
                                 dir="ltr">
                                 {{ $partial_amount ?? '0' }}
                             </td>
                         </tr>
                         <tr>
                             <td style="color: {{ $primary }};">المتبقي</td>
-                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 10pt;"
+                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
                                 dir="ltr">
                                 {{ $remaining_amount ?? '0' }}
                             </td>
