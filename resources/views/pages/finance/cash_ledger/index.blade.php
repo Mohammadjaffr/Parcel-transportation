@@ -162,12 +162,12 @@
             <table class="w-full text-sm text-right">
                 <thead class="font-bold text-gray-500 bg-gray-50 border-b border-gray-100 dark:bg-gray-800/50 dark:border-gray-800 dark:text-gray-400">
                     <tr>
-                        <th class="p-4">رقم السند</th>
-                        <th class="p-4">التاريخ</th>
+                        <th class="p-4">رقم العملية</th>
+                        <th class="p-4">اليوم والتاريخ</th>
                         @if(in_array(auth()->user()->type, ['admin', 'super_admin']))
                             <th class="p-4">الفرع</th>
                         @endif
-                        <th class="p-4">التصنيف / البيان</th>
+                        <th class="p-4">نوع العمولة ورقمها</th>
                         <th class="p-4">طريقة الدفع</th>
                         <th class="p-4">الوارد </th>
                         <th class="p-4">المنصرف </th>
