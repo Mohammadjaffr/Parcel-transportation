@@ -280,7 +280,7 @@ class ShipmentController extends Controller
     public function outgoingStore(Request $request)
     {
         $rules = [
-            'office_id'            => 'nullable|string', // تم تغييره إلى nullable
+            'office_id'            => 'nullable|string',
             'receiver_branch_id'   => 'nullable|integer',
 
             'sender_customer_id'   => 'nullable|exists:customers,id',
@@ -299,16 +299,17 @@ class ShipmentController extends Controller
             'no_gallons_honey'     => 'nullable|numeric|min:0',
             'no_honey_jars'        => 'nullable|numeric|min:0',
 
-            // --- 💡 التسعير والعمولات الجديدة ---
-            'package_fee'             => 'nullable|numeric|min:0', // تم تغييره إلى nullable
+            // --- التسعير والعمولات ---
+            'package_fee'             => 'nullable|numeric|min:0',
             'package_commission_rate' => 'nullable|numeric|min:0|max:100',
             'honey_fee'               => 'nullable|numeric|min:0',
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
             'other_fee'               => 'nullable|numeric|min:0',
             'other_fee_description'   => 'nullable|string|max:255',
+            'show_other_fee_in_receipt' => ['nullable', 'boolean'],
 
-            'payment_method'       => 'nullable|in:prepaid,cod,partial_payment,customer_credit', // تم تغييره إلى nullable
-            'partial_amount'       => 'nullable|numeric|min:0', // تم إزالة required_if
+            'payment_method'       => 'nullable|in:prepaid,cod,partial_payment,customer_credit',
+            'partial_amount'       => 'nullable|numeric|min:0',
             'is_price_agreed'      => ['nullable', 'boolean'],
             'notes'                => 'nullable|string',
         ];
@@ -316,12 +317,10 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), $rules);
 
         // تحقق إضافي للدفع الجزئي والوجهة المحددة
-        // تحقق إضافي للدفع الجزئي والوجهة المحددة
         $validator->after(function ($validator) use ($request) {
             $user = auth()->user();
 
             if ($request->payment_method === 'partial_payment') {
-                // نحسب الإجمالي مؤقتاً هنا للتحقق فقط
                 $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
                 $partial = (float) $request->partial_amount;
                 if ($total > 0 && $partial >= $total) {
@@ -329,7 +328,7 @@ class ShipmentController extends Controller
                 }
             }
 
-            // 💡 التعديل هنا: نقوم بالتحقق من صحة الفروع فقط إذا تم إرسال office_id و receiver_branch_id
+            // التحقق من صحة الفروع فقط إذا تم إرسال office_id و receiver_branch_id
             if ($request->filled('office_id') && $request->filled('receiver_branch_id')) {
 
                 $officeId = (string) $request->office_id;
@@ -392,11 +391,9 @@ class ShipmentController extends Controller
 
             $senderBranchId = $user->branch_id;
 
-            // ========================================================
             // اللوجيك الذكي: تحديد مسار الفرع الوجهة
-            // ========================================================
             $officeIdParts = explode('_', $data['office_id'] ?? '');
-            $officeType = $officeIdParts[0] ?? null; // (internal, trusted, untrusted)
+            $officeType = $officeIdParts[0] ?? null;
 
             $finalReceiverBranchId = null;
             $finalReceiverOfficeBranchId = null;
@@ -408,7 +405,7 @@ class ShipmentController extends Controller
             }
 
             // ========================================================
-            // معالجة العملاء الصامتة (إنشاء إذا لم يكن موجوداً)
+            // معالجة العملاء
             // ========================================================
 
             // 1. المرسل
@@ -499,8 +496,8 @@ class ShipmentController extends Controller
                 }
             }
 
-            // تحديد طريقة الدفع (إذا لم تُرسل نضع 'prepaid' كقيمة افتراضية حتى لا يحدث خطأ في قاعدة البيانات)
-            $paymentMethod = $data['payment_method'] ?? 'prepaid';
+            // 💡 التعديل الأول: السماح لطريقة الدفع بأن تكون null
+            $paymentMethod = $data['payment_method'] ?? null;
 
             // ========================================================
             // إنشاء الشحنة (الطرد)
@@ -518,10 +515,11 @@ class ShipmentController extends Controller
                 'package_type'              => $data['package_type'] ?? null,
                 'parcels_quantity'          => $data['parcels_quantity'] ?? 1,
                 'weight'                    => $data['weight'] ?? null,
-                'package_fee'               => $data['package_fee'] ?? 0, // قيمة افتراضية صفر
+                'package_fee'               => $data['package_fee'] ?? 0,
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
                 'other_fee'                 => $data['other_fee'] ?? null,
                 'other_fee_description'     => $data['other_fee_description'] ?? null,
+                'show_other_fee_in_receipt' => $request->boolean('show_other_fee_in_receipt'),
 
                 // العسل
                 'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
@@ -529,7 +527,7 @@ class ShipmentController extends Controller
                 'honey_fee'                 => $data['honey_fee'] ?? 0,
                 'honey_commission_rate'     => $data['honey_commission_rate'] ?? 0,
 
-                // المالية (الـ Observer سيقوم بحساب total_amount و total_commission)
+                // المالية
                 'is_price_agreed'           => $request->boolean('is_price_agreed'),
                 'payment_method'            => $paymentMethod,
                 'partial_amount'            => ($paymentMethod === 'partial_payment') ? ($data['partial_amount'] ?? 0) : 0,
@@ -541,9 +539,11 @@ class ShipmentController extends Controller
             ]);
 
             // ========================================================
-            // 💰 الحركات المالية (FinTech Ledger) عبر الـ Service 
+            // 💡 التعديل الثاني: تسجيل الحركات المالية فقط إذا تم تحديد طريقة دفع فعلاً
             // ========================================================
-            (new CustomerTransactionService())->recordInitialShipment($shipment);
+            if (!empty($shipment->payment_method)) {
+                (new CustomerTransactionService())->recordInitialShipment($shipment);
+            }
 
             // ========================================================
             // إشعار الإدارة (Admins Notification)
@@ -694,10 +694,11 @@ class ShipmentController extends Controller
             'honey_commission_rate'   => 'nullable|numeric|min:0|max:100',
             'other_fee'               => 'nullable|numeric|min:0',
             'other_fee_description'   => 'nullable|string|max:255',
+            'show_other_fee_in_receipt' => ['nullable', 'boolean'],
 
-            'payment_method'        => 'required|in:prepaid,cod,partial_payment,customer_credit',
+            'payment_method'        => 'nullable|in:prepaid,cod,partial_payment,customer_credit',
             // 'total_amount'       => 'required|numeric|min:0', 👈 تم إزالته (المودل يحسبه)
-            'partial_amount'        => 'required_if:payment_method,partial_payment|nullable|numeric|min:0',
+            'partial_amount'        => 'nullable|numeric|min:0',
             'is_price_agreed'       => ['nullable', 'boolean'],
             'notes'                 => 'nullable|string',
         ];
@@ -712,56 +713,58 @@ class ShipmentController extends Controller
                 $total = ((float) $request->package_fee) + ((float) $request->honey_fee);
                 $partial = (float) $request->partial_amount;
 
-                if ($partial >= $total) {
+                if ($total > 0 && $partial >= $total) {
                     $validator->errors()->add('partial_amount', 'المبلغ المدفوع جزئياً يجب أن يكون أقل من الإجمالي (' . $total . ' ريال).');
                 }
             }
 
-            // التحقق الأمني المتقدم من صحة الوجهة وصلاحياتها
-            $officeId = (string) $request->office_id;
-            $branchId = (int) $request->receiver_branch_id;
-            $officeParts = explode('_', $officeId);
-            $officeType = $officeParts[0] ?? '';
-            $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
+            // 💡 التحقق من صحة الفروع فقط إذا تم إرسال office_id و receiver_branch_id (نفس منطق الكرييت)
+            if ($request->filled('office_id') && $request->filled('receiver_branch_id')) {
+                $officeId = (string) $request->office_id;
+                $branchId = (int) $request->receiver_branch_id;
+                $officeParts = explode('_', $officeId);
+                $officeType = $officeParts[0] ?? '';
+                $targetId = isset($officeParts[1]) ? (int) $officeParts[1] : 0;
 
-            if ($officeType === 'internal') {
-                if ($targetId !== (int) $user->app_id) {
-                    $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
-                }
-                if ($branchId === (int) $user->branch_id) {
-                    $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
-                }
-                $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
-                if (!$branchExists) {
-                    $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
-                }
-            } elseif ($officeType === 'trusted') {
-                $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
-                    || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
-                if (!$isTrusted) {
-                    $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
-                }
-                $trustedBranchExists = Branch::withoutGlobalScope('app_id')
-                    ->where('app_id', $targetId)
-                    ->where('id', $branchId)
-                    ->exists();
-                if (!$trustedBranchExists) {
-                    $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
-                }
-            } elseif ($officeType === 'untrusted') {
-                $office = Office::where('app_id', $user->app_id)->find($targetId);
-                if (!$office) {
-                    $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
-                } else {
-                    $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                if ($officeType === 'internal') {
+                    if ($targetId !== (int) $user->app_id) {
+                        $validator->errors()->add('office_id', 'المكتب الداخلي المحدد غير صالح.');
+                    }
+                    if ($branchId === (int) $user->branch_id) {
+                        $validator->errors()->add('receiver_branch_id', 'لا يمكن اختيار نفس فرع الإرسال كفرع استلام.');
+                    }
+                    $branchExists = Branch::where('app_id', $user->app_id)->where('id', $branchId)->exists();
+                    if (!$branchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'الفرع الداخلي المختار غير موجود.');
+                    }
+                } elseif ($officeType === 'trusted') {
+                    $isTrusted = $user->app->sentConnections()->where('receiver_app_id', $targetId)->where('status', 'accepted')->exists()
+                        || $user->app->receivedConnections()->where('sender_app_id', $targetId)->where('status', 'accepted')->exists();
+                    if (!$isTrusted) {
+                        $validator->errors()->add('office_id', 'المكتب الموثوق المختار غير مرتبط أو غير معتمد.');
+                    }
+                    $trustedBranchExists = Branch::withoutGlobalScope('app_id')
+                        ->where('app_id', $targetId)
                         ->where('id', $branchId)
                         ->exists();
-                    if (!$officeBranchExists) {
-                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                    if (!$trustedBranchExists) {
+                        $validator->errors()->add('receiver_branch_id', 'فرع المكتب الموثوق المختار غير موجود.');
                     }
+                } elseif ($officeType === 'untrusted') {
+                    $office = Office::where('app_id', $user->app_id)->find($targetId);
+                    if (!$office) {
+                        $validator->errors()->add('office_id', 'المكتب الخارجي المختار غير صالح.');
+                    } else {
+                        $officeBranchExists = OfficeBranch::where('office_id', $targetId)
+                            ->where('id', $branchId)
+                            ->exists();
+                        if (!$officeBranchExists) {
+                            $validator->errors()->add('receiver_branch_id', 'فرع المكتب الخارجي المختار غير صالح.');
+                        }
+                    }
+                } else {
+                    $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
                 }
-            } else {
-                $validator->errors()->add('office_id', 'نوع الوجهة المحددة غير معروف.');
             }
         });
 
@@ -785,7 +788,7 @@ class ShipmentController extends Controller
                     $senderCustomer = Customer::firstOrCreate(
                         ['phone' => $data['sender_phone'], 'app_id' => $user->app_id],
                         [
-                            'name'       => $data['sender_name'],
+                            'name'       => $data['sender_name'] ?? 'غير معروف',
                             'branch_id'  => $user->branch_id,
                             'created_by' => $user->id,
                         ]
@@ -834,7 +837,7 @@ class ShipmentController extends Controller
                     $receiverCustomer = Customer::firstOrCreate(
                         ['phone' => $data['receiver_phone'], 'app_id' => $user->app_id],
                         [
-                            'name'       => $data['receiver_name'],
+                            'name'       => $data['receiver_name'] ?? 'غير معروف',
                             'branch_id'  => $user->branch_id,
                             'created_by' => $user->id,
                         ]
@@ -876,17 +879,20 @@ class ShipmentController extends Controller
                 }
             }
 
-            $officeIdParts = explode('_', (string) $data['office_id']);
-            $officeType = $officeIdParts[0] ?? '';
+            // مسار الفرع الوجهة (نفس المنطق المتبع في الكرييت)
+            $officeIdParts = explode('_', $data['office_id'] ?? '');
+            $officeType = $officeIdParts[0] ?? null;
 
             $finalReceiverBranchId = null;
             $finalReceiverOfficeBranchId = null;
 
             if ($officeType === 'untrusted') {
-                $finalReceiverOfficeBranchId = (int) $data['receiver_branch_id'];
-            } else {
-                $finalReceiverBranchId = (int) $data['receiver_branch_id'];
+                $finalReceiverOfficeBranchId = !empty($data['receiver_branch_id']) ? (int) $data['receiver_branch_id'] : null;
+            } elseif (!empty($officeType)) {
+                $finalReceiverBranchId = !empty($data['receiver_branch_id']) ? (int) $data['receiver_branch_id'] : null;
             }
+
+           $paymentMethod = $data['payment_method'] ?? ($shipment->payment_method ?? 'null');
 
             // 💡 تحديث البيانات
             $shipment->update([
@@ -897,13 +903,14 @@ class ShipmentController extends Controller
                 'receiver_customer_id'      => $receiverCustomerId,
 
                 // الطرد العادي
-                'package_type'              => $data['package_type'],
+                'package_type'              => $data['package_type'] ?? null,
                 'parcels_quantity'          => $data['parcels_quantity'] ?? 1,
                 'weight' => (filled($data['weight'] ?? null) && (float)$data['weight'] != 0) ? $data['weight'] : null,
-                'package_fee'               => $data['package_fee'],
+                'package_fee'               => $data['package_fee'] ?? 0,
                 'package_commission_rate'   => $data['package_commission_rate'] ?? 0,
                 'other_fee'                 => $data['other_fee'] ?? null,
                 'other_fee_description'     => $data['other_fee_description'] ?? null,
+                'show_other_fee_in_receipt' => $request->boolean('show_other_fee_in_receipt'),
 
                 // العسل
                 'no_gallons_honey'          => $data['no_gallons_honey'] ?? null,
@@ -913,14 +920,14 @@ class ShipmentController extends Controller
 
                 // المالية (الـ total_amount و total_commission سيتم حسابها تلقائياً بفضل الـ Boot Method في المودل)
                 'is_price_agreed'           => $request->boolean('is_price_agreed'),
-                'payment_method'            => $data['payment_method'],
-                'partial_amount'            => ($data['payment_method'] === 'partial_payment')
+                'payment_method'            => $paymentMethod,
+                'partial_amount'            => ($paymentMethod === 'partial_payment')
                     ? ($data['partial_amount'] ?? 0)
                     : 0,
 
                 'notes'                     => $data['notes'] ?? null,
 
-                'customer_debt_status'      => ($data['payment_method'] === 'customer_credit')
+                'customer_debt_status'      => ($paymentMethod === 'customer_credit')
                     ? ($shipment->customer_debt_status ?? 'pending')
                     : null,
             ]);

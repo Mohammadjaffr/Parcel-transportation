@@ -36,6 +36,7 @@ class Shipment extends Model
         'package_commission_amount',
         'other_fee',
         'other_fee_description',
+        'show_other_fee_in_receipt',
 
         // 5. تفاصيل العسل
         'no_gallons_honey',
@@ -63,6 +64,7 @@ class Shipment extends Model
     protected $casts = [
         'is_returned' => 'boolean',
         'is_price_agreed' => 'boolean',
+        'show_other_fee_in_receipt' => 'boolean',
         'parcels_quantity' => 'integer',
         'other_fee' => 'decimal:2',
     ];

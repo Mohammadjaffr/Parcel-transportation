@@ -498,6 +498,26 @@
                             class="px-4 w-full h-12 text-sm font-bold rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
                     </div>
 
+                    {{-- مفتاح إظهار الأجور الأخرى في السند --}}
+                    <div class="flex items-center justify-between col-span-2 p-3 mt-1 rounded-2xl border border-slate-100 bg-slate-50/70 dark:bg-boxdark-2 dark:border-boxdark">
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 shrink-0">
+                                <span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                            </div>
+                            <div>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-200 block">إظهار الأجور الأخرى في السند</span>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">عرض الأجور وتوضيحها في جدول تفاصيل المبلغ بالسند</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0 mr-2">
+                            <input type="hidden" name="show_other_fee_in_receipt" value="0">
+                            <input type="checkbox" name="show_other_fee_in_receipt" value="1"
+                                class="sr-only peer"
+                                {{ old('show_other_fee_in_receipt') == '1' ? 'checked' : '' }}>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        </label>
+                    </div>
+
                 </div>
 
                 {{-- ================= منطقة بيانات العسل ================= --}}
@@ -781,11 +801,8 @@
                 updateValidity() {
                     this.$nextTick(() => {
                         if (this.$refs.destinationInput) {
-                            if (!this.selectedBranchId) {
-                                this.$refs.destinationInput.setCustomValidity('يرجى اختيار الفرع أو الوجهة المستلمة من القائمة');
-                            } else {
-                                this.$refs.destinationInput.setCustomValidity('');
-                            }
+                            // تفريغ رسالة التحقق ليتمكن من الحفظ بدون إجبار
+                            this.$refs.destinationInput.setCustomValidity('');
                         }
                     });
                 },

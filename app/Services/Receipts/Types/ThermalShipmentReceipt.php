@@ -100,7 +100,24 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'bg_light'  => '#fffaf5',
         ];
 
-        // 7. إرجاع البيانات المنظمة
+        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع (العمليات السابقة كما هي)
+        $totalAmount = (float) ($shipment->total_amount ?? 0);
+        $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
+
+        $paidAmount = match ($shipment->payment_method) {
+            'prepaid'         => $totalAmount,
+            'partial_payment' => (float) ($shipment->partial_amount ?? 0),
+            'cod'             => 0,
+            default           => 0,
+        };
+
+        // الأجور الأخرى والإجمالي الجامع للصف فقط
+        $otherFee = (float) ($shipment->other_fee ?? 0);
+        $showOtherFee = (bool) ($shipment->show_other_fee_in_receipt ?? false) && $otherFee > 0;
+        $transportFee = $totalAmount;
+        $grandTotal = $showOtherFee ? ($transportFee + $otherFee) : $totalAmount;
+
+        // 8. إرجاع البيانات المنظمة
         return [
             // --- معلومات الشركة والفرع ---
             'company' => [
@@ -144,11 +161,13 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'payment_method'    => !($shipment->is_price_agreed ?? true)
                 ? 'سيتم الاتفاق عليه لاحقاً'
                 : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
-            'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-            'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
-            'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
-            'other_fee'         => (float) ($shipment->other_fee ?? 0),
+            'transport_fee'     => number_format($transportFee, 0),
+            'total_amount'      => number_format($grandTotal, 0),
+            'partial_amount'    => number_format($paidAmount, 0),
+            'remaining_amount'  => number_format($remainingAmount, 0),
+            'other_fee'         => $otherFee,
             'other_fee_description' => $shipment->other_fee_description,
+            'show_other_fee_in_receipt' => $showOtherFee,
 
             // --- معلومات النظام والتصميم ---
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
