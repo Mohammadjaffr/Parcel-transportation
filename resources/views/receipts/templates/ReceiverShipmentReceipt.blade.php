@@ -710,9 +710,9 @@
                         if (!empty($honey_details) && $honey_details !== '---') {
                             $shipmentFields[] = ['label' => 'تفاصيل إضافية:', 'value' => $honey_details];
                         }
-                        if (!empty($show_other_fee_in_receipt) && !empty($other_fee) && (float) $other_fee > 0) {
+                        if (!empty($other_fee) && (float) $other_fee > 0) {
                             $feeText = number_format((float) $other_fee, 0) . ' ر.ي';
-                            if (!empty($other_fee_description)) {
+                            if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description)) {
                                 $feeText .= ' (' . $other_fee_description . ')';
                             }
                             $shipmentFields[] = ['label' => 'أجور أخرى:', 'value' => $feeText];
@@ -757,7 +757,7 @@
                 <div class="finance-box">
                     <div class="finance-header">تفاصيل المبلغ</div>
                     <table class="finance-table">
-                        @if (!empty($show_other_fee_in_receipt))
+                        @if (!empty($other_fee) && (float) $other_fee > 0)
                             <tr>
                                 <td style="color: #475569; width: 45%;">تكلفة النقل</td>
                                 <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9pt;"
@@ -768,7 +768,7 @@
                             <tr>
                                 <td style="color: #475569;">
                                     أجور أخرى
-                                    @if (!empty($other_fee_description))
+                                    @if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description))
                                         <span style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
                                     @endif
                                 </td>

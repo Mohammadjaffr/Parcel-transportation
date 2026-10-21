@@ -120,13 +120,13 @@
                 <span class="text-slate-500">طريقة الدفع</span>
                 <span class="font-bold {{ (isset($is_price_agreed) && !$is_price_agreed) ? 'text-amber-600' : 'text-slate-800' }}">{{ $payment_method ?? '---' }}</span>
             </div>
-            @if(!empty($show_other_fee_in_receipt) && !empty($other_fee) && (float)$other_fee > 0)
+            @if(!empty($other_fee) && (float)$other_fee > 0)
             <div class="flex justify-between">
                 <span class="text-slate-500">تكلفة النقل</span>
                 <span class="font-bold text-slate-800" dir="ltr">{{ $transport_fee ?? 0 }} ر.ي</span>
             </div>
             <div class="flex justify-between">
-                <span class="text-slate-500">أجور أخرى @if(!empty($other_fee_description)) ({{ $other_fee_description }}) @endif</span>
+                <span class="text-slate-500">أجور أخرى @if(!empty($show_other_fee_in_receipt) && !empty($other_fee_description)) ({{ $other_fee_description }}) @endif</span>
                 <span class="font-bold text-slate-800" dir="ltr">{{ number_format((float)$other_fee, 0) }} ر.ي</span>
             </div>
             @endif

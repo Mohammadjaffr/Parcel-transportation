@@ -117,9 +117,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
 
         // الأجور الأخرى والإجمالي الجامع للصف فقط
         $otherFee = (float) ($shipment->other_fee ?? 0);
-        $showOtherFee = (bool) ($shipment->show_other_fee_in_receipt ?? false) && $otherFee > 0;
+        $showOtherFee = (bool) ($shipment->show_other_fee_in_receipt ?? false);
         $transportFee = $totalAmount;
-        $grandTotal = $showOtherFee ? ($transportFee + $otherFee) : $totalAmount;
+        $grandTotal = $otherFee > 0 ? ($transportFee + $otherFee) : $totalAmount;
 
         // 8. إرجاع البيانات المنظمة
         return [

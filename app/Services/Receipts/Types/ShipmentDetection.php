@@ -169,6 +169,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'deferred_amount'   => $deferredAmount > 0 ? number_format($deferredAmount, 0) : '',
                 'other_fee'                 => $otherFee > 0 ? number_format($otherFee, 0) : '',
                 'other_fee_description'     => $shipment->other_fee_description,
+                'show_other_fee_in_receipt' => (bool) ($shipment->show_other_fee_in_receipt ?? false),
 
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
