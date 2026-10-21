@@ -90,27 +90,17 @@ class CashTransactionService
             return null;
         }
 
-        // جلب أو إنشاء فئة عمولة الشحنات لهذا المستأجر
-        $category = CashCategory::withoutGlobalScopes()
-            ->where('app_id', $appId)
-            ->where('name', 'عمولة شحنة')
-            ->first();
-
-        if (!$category) {
-            $category = CashCategory::withoutGlobalScopes()
-                ->where('app_id', $appId)
-                ->where('type', 'income')
-                ->first();
-        }
-
-        if (!$category) {
-            $category = CashCategory::create([
-                'app_id'    => $appId,
-                'name'      => 'عمولة شحنة',
+        // جلب أو إنشاء فئة عمولة الشحنات لهذا المستأجر (بدون fallback عشوائي)
+        $category = CashCategory::withoutGlobalScopes()->firstOrCreate(
+            [
+                'app_id' => $appId,
+                'name'   => 'عمولة شحنة',
+            ],
+            [
                 'type'      => 'income',
                 'is_active' => true,
-            ]);
-        }
+            ]
+        );
 
         return $this->recordIncome([
             'app_id'           => $appId,
@@ -289,27 +279,17 @@ class CashTransactionService
             return null;
         }
 
-        // جلب أو إنشاء فئة عمولة الشحنات
-        $category = CashCategory::withoutGlobalScopes()
-            ->where('app_id', $appId)
-            ->where('name', 'عمولة شحنة')
-            ->first();
-
-        if (!$category) {
-            $category = CashCategory::withoutGlobalScopes()
-                ->where('app_id', $appId)
-                ->where('type', 'income')
-                ->first();
-        }
-
-        if (!$category) {
-            $category = CashCategory::create([
-                'app_id'    => $appId,
-                'name'      => 'عمولة شحنة',
+        // جلب أو إنشاء فئة عمولة الشحنات (بدون fallback عشوائي لتجنب خلط التصنيفات)
+        $category = CashCategory::withoutGlobalScopes()->firstOrCreate(
+            [
+                'app_id' => $appId,
+                'name'   => 'عمولة شحنة',
+            ],
+            [
                 'type'      => 'income',
                 'is_active' => true,
-            ]);
-        }
+            ]
+        );
 
         return $this->recordIncome([
             'app_id'           => $appId,
@@ -360,8 +340,10 @@ class CashTransactionService
                 } else {
                     $transaction->update(['amount' => $newTotal]);
                 }
+            } elseif ($newTotal > 0) {
+                // إذا لم يكن هناك قيد موجود (تم حذفه سابقاً لوصول العمولة لصفر)، ننشئ قيداً جديداً
+                $this->recordPackageCommission($package);
             }
-            // لا ننشئ قيد جديد هنا — القيد يُنشأ فقط عند recordPackageCommission
         });
     }
 
@@ -470,8 +452,10 @@ class CashTransactionService
                 } else {
                     $transaction->update(['amount' => $newTotal]);
                 }
+            } elseif ($newTotal > 0) {
+                // إذا لم يكن هناك قيد موجود (تم حذفه سابقاً لوصول العمولة لصفر)، ننشئ قيداً جديداً
+                $this->recordTripCommission($trip);
             }
-            // لا ننشئ قيد جديد هنا — القيد يُنشأ فقط عند recordTripCommission
         });
     }
 }

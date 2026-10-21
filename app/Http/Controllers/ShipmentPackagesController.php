@@ -321,6 +321,7 @@ class ShipmentPackagesController extends Controller
 
             // 💰 تعديل قيد عمولة الحمولة بعد إخراج الطرد (إذا كانت الحمولة في الطريق)
             if ($wasInTransit) {
+                $package->refresh();
                 $cashService = app(CashTransactionService::class);
                 $cashService->adjustPackageCommission($package);
             }
@@ -370,6 +371,7 @@ class ShipmentPackagesController extends Controller
 
             // 💰 تعديل قيد عمولة الحمولة بعد إضافة الطرد (إذا كانت الحمولة في الطريق)
             if ($package->status === 'in_transit') {
+                $package->refresh();
                 $cashService = app(CashTransactionService::class);
                 $cashService->adjustPackageCommission($package);
             }
@@ -797,9 +799,35 @@ class ShipmentPackagesController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+
+            $user = auth()->user();
+            $firstShipment = Shipment::whereIn('id', $request->selected_ids)->first();
+            $senderBranchId = $user?->branch_id ?? $firstShipment?->sender_branch_id;
+            $appId = $user?->app_id ?? $firstShipment?->senderBranch?->app_id ?? (\App\Models\App::first()?->id ?? 1);
+            $createdBy = $user?->id ?? $firstShipment?->created_by ?? 1;
+
+            $driverId = null;
+            if ($request->filled('driver_phone')) {
+                $driver = Driver::firstOrCreate(
+                    [
+                        'phone'  => $request->driver_phone,
+                        'app_id' => $appId,
+                    ],
+                    [
+                        'name'       => $request->driver_name,
+                        'branch_id'  => $senderBranchId,
+                        'created_by' => $createdBy,
+                    ]
+                );
+                $driverId = $driver->id;
+            }
+
             $package = ShipmentPackage::create([
-                'driver_name' => $request->driver_name,
-                'driver_phone' => $request->driver_phone,
+                'app_id'           => $appId,
+                'created_by'       => $createdBy,
+                'sender_branch_id' => $senderBranchId,
+                'driver_id'        => $driverId,
             ]);
 
             Shipment::whereIn('id', $request->selected_ids)
@@ -808,16 +836,24 @@ class ShipmentPackagesController extends Controller
                     'status' => 'in_transit',
                 ]);
 
-            // استخراج الفروع المستقبلة من الطرود وربطها بالحزمة
-            $receiverBranches = Shipment::whereIn('id', $request->selected_ids)
-                ->pluck('receiver_branch_code')
-                ->unique()
-                ->filter() // إزالة القيم الفارغة
-                ->toArray();
+            // 💰 تسقيط إجمالي عمولة الحمولة عند الإنشاء مباشرة (لأن الطرود تنتقل لـ in_transit)
+            $cashService = app(CashTransactionService::class);
+            $cashService->recordPackageCommission($package);
 
-            if (!empty($receiverBranches)) {
-                // ربط الحزمة بالفروع المستقبلة
-                foreach ($receiverBranches as $branchCode) {
+            // استخراج الفروع المستقبلة من الطرود وربطها بالحزمة
+            $receiverBranchIds = Shipment::whereIn('id', $request->selected_ids)
+                ->pluck('receiver_branch_id')
+                ->filter()
+                ->unique();
+
+            if ($receiverBranchIds->isNotEmpty()) {
+                $receiverBranchCodes = Branch::whereIn('id', $receiverBranchIds)
+                    ->pluck('code')
+                    ->filter()
+                    ->unique()
+                    ->toArray();
+
+                foreach ($receiverBranchCodes as $branchCode) {
                     $package->receiverBranches()->attach($branchCode, [
                         'status' => 'pending',
                         'arrival_date' => null,
@@ -826,6 +862,8 @@ class ShipmentPackagesController extends Controller
                 }
             }
 
+            DB::commit();
+
             return WebResponseClass::sendResponse(
                 'تمت الرحلة!',
                 'تم إنشاء رحلة الشحن وربط الطرود بنجاح.',
@@ -833,6 +871,7 @@ class ShipmentPackagesController extends Controller
                 'shipmentpackage.index'
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -885,6 +924,8 @@ class ShipmentPackagesController extends Controller
     public function unlinkFromPackage(Request $request, $shipmentId)
     {
         try {
+            DB::beginTransaction();
+
             $shipment = Shipment::findOrFail($shipmentId);
 
             // التحقق من أن الطرد مرتبط برحلة
@@ -922,9 +963,12 @@ class ShipmentPackagesController extends Controller
 
             // 💰 تعديل قيد عمولة الحمولة بعد فك الربط (إذا كانت الحمولة في الطريق)
             if ($wasInTransit && $package) {
+                $package->refresh();
                 $cashService = app(CashTransactionService::class);
                 $cashService->adjustPackageCommission($package);
             }
+
+            DB::commit();
 
             // تحديد الرابط للتوجيه
             $redirectUrl = $remainingCount > 0
@@ -938,6 +982,7 @@ class ShipmentPackagesController extends Controller
                 $redirectUrl
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }

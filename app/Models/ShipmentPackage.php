@@ -141,4 +141,11 @@ class ShipmentPackage extends Model
         // هذه الدالة تقوم بحذف أي شيء ليس رقماً (الحروف والرموز)، وتُبقي الأرقام فقط
         return preg_replace('/[^0-9]/', '', $this->tracking_number);
     }
+
+    public function receiverBranches()
+    {
+        return $this->belongsToMany(Branch::class, 'branch_shipment_package', 'shipment_package_id', 'branch_code', 'id', 'code')
+            ->withPivot(['status', 'arrival_date', 'notes'])
+            ->withTimestamps();
+    }
 }

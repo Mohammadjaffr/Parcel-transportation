@@ -157,6 +157,8 @@ class PassengerTripController extends Controller
         }
 
         try {
+            DB::beginTransaction();
+
             $trip = PassengerTrip::findOrFail($tripId);
             $passenger = Passengers::findOrFail($request->passenger_id);
 
@@ -166,8 +168,11 @@ class PassengerTripController extends Controller
             $passenger->save();
 
             // 💰 تعديل قيد عمولة الرحلة بعد إضافة راكب
+            $trip->refresh();
             $cashService = app(CashTransactionService::class);
             $cashService->adjustTripCommission($trip);
+
+            DB::commit();
 
             return WebResponseClass::sendResponse(
                 'تم الإضافة!',
@@ -177,6 +182,7 @@ class PassengerTripController extends Controller
                 ['trip' => $tripId]
             );
         } catch (Exception $e) {
+            DB::rollBack();
             return WebResponseClass::sendExceptionError($e);
         }
     }
@@ -255,11 +261,12 @@ class PassengerTripController extends Controller
                 }
             }
 
-            DB::commit();
-
             // 💰 تعديل قيد عمولة الرحلة بعد إضافة/إزالة ركاب
+            $trip->refresh();
             $cashService = app(CashTransactionService::class);
             $cashService->adjustTripCommission($trip);
+
+            DB::commit();
 
             return WebResponseClass::sendResponse(
                 'تم التعديل!',
@@ -274,27 +281,37 @@ class PassengerTripController extends Controller
     }
     public function removePassenger($tripId, $passengerId)
     {
-        $passenger = Passengers::findOrFail($passengerId);
-        if ($passenger->trip_id != $tripId) {
-            return  WebResponseClass::sendExceptionError('error', 'الراكب غير مرتبط بهذه الرحلة بالأساس.');
-        }
-        $passenger->trip_id = null;
-        $passenger->status  = 'pending';
-        $passenger->save();
+        try {
+            DB::beginTransaction();
 
-        // 💰 تعديل قيد عمولة الرحلة بعد إزالة راكب
-        $trip = PassengerTrip::find($tripId);
-        if ($trip) {
-            $cashService = app(CashTransactionService::class);
-            $cashService->adjustTripCommission($trip);
-        }
+            $passenger = Passengers::findOrFail($passengerId);
+            if ($passenger->trip_id != $tripId) {
+                return  WebResponseClass::sendExceptionError('error', 'الراكب غير مرتبط بهذه الرحلة بالأساس.');
+            }
+            $passenger->trip_id = null;
+            $passenger->status  = 'pending';
+            $passenger->save();
 
-        return WebResponseClass::sendResponse(
-            'تم التعديل!',
-            'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.',
-            'حسناً',
-            'trips.index'
-        );
+            // 💰 تعديل قيد عمولة الرحلة بعد إزالة راكب
+            $trip = PassengerTrip::find($tripId);
+            if ($trip) {
+                $trip->refresh();
+                $cashService = app(CashTransactionService::class);
+                $cashService->adjustTripCommission($trip);
+            }
+
+            DB::commit();
+
+            return WebResponseClass::sendResponse(
+                'تم التعديل!',
+                'تم فك ارتباط الراكب بنجاح وإعادته إلى قائمة الانتظار.',
+                'حسناً',
+                'trips.index'
+            );
+        } catch (Exception $e) {
+            DB::rollBack();
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
     private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int
     {

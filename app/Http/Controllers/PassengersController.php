@@ -317,15 +317,8 @@ class PassengersController extends Controller
             // تحديث سجل الراكب ببياناته الجديدة والوسيط الجديد
             $passenger->update($data);
 
-            // 💰 تسقيط العمولة تلقائياً عند تغيير الحالة إلى مكتمل
-            if (
-                isset($data['status']) &&
-                $data['status'] === 'completed' &&
-                $oldStatus !== 'completed'
-            ) {
-                $passenger->refresh(); // تحديث الموديل لضمان جلب علاقة branch
-                $this->cashTransactionService->recordPassengerCommission($passenger);
-            }
+            // ⚠️ العمولة تُسقط الآن على مستوى الرحلة (PassengerTrip) من PassengerTripController
+            // لا يتم تسقيط عمولة فردية هنا لتجنب التكرار المالي
 
             DB::commit();
 
@@ -402,14 +395,8 @@ class PassengersController extends Controller
             $passenger->refresh(); // تحديث الموديل لضمان وجود بيانات الفرع والوسيط
             $passenger->load(['broker', 'branch']);
 
-            if ($newStatus === 'completed' && $oldStatus !== 'completed') {
-                \Log::info('[CONTROLLER] استدعاء recordPassengerCommission من updateStatus', [
-                    'passenger_id' => $passenger->id,
-                    'old_status'   => $oldStatus,
-                    'new_status'   => $newStatus,
-                ]);
-                $this->cashTransactionService->recordPassengerCommission($passenger);
-            }
+            // ⚠️ العمولة تُسقط الآن على مستوى الرحلة (PassengerTrip) من PassengerTripController
+            // لا يتم تسقيط عمولة فردية هنا لتجنب التكرار المالي
 
             DB::commit();
 
