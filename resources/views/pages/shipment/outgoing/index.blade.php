@@ -43,8 +43,8 @@
         <div class="grid grid-cols-1 gap-2 mx-auto max-w-7xl xl:grid-cols-4 md:gap-6">
 
             {{-- إجمالي الطرود --}}
-            <a href="{{ $statusUrl(null) }}"
-                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md {{ !$currentStatus ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2' }}">
+            <a href="{{ $statusUrl('all') }}"
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border shadow-sm transition-all cursor-pointer dark:bg-boxdark hover:shadow-md {{ (!$currentStatus || $currentStatus === 'all') ? 'border-primary ring-2 ring-primary/20' : 'border-gray-100 hover:border-primary/50 dark:border-boxdark-2' }}">
 
                 <div
                     class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
@@ -123,26 +123,182 @@
         <div
             class="bg-white dark:bg-boxdark my-4 rounded-[2rem] border border-gray-100 dark:border-boxdark-2 shadow-sm overflow-visible transition-colors max-w-7xl mx-auto">
 
-            {{-- Search --}}
+            {{-- Search & Filters Toolbar --}}
             <div class="p-5 w-full border-b border-gray-100 md:p-6 dark:border-boxdark-2">
-                <div
-                    class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-96 dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                <form method="GET" action="{{ route('shipment.outgoing.index') }}" id="shipmentFilterForm"
+                    class="flex flex-col gap-4 justify-between items-stretch lg:flex-row lg:items-center">
+                    
+                    <div class="flex flex-wrap flex-1 gap-3 items-center">
+                        {{-- البحث النصي --}}
+                        <div
+                            class="relative flex flex-row items-center px-3 w-full sm:w-[260px] lg:w-[280px] gap-3 rounded-2xl border border-gray-200 transition-all dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                            <input type="text" name="search" value="{{ request('search') }}" x-model="searchQuery"
+                                @input.debounce.300ms="updateVisibility()"
+                                placeholder="ابحث برقم السند، العميل، الهاتف..."
+                                class="flex-1 px-3 w-full h-12 text-sm text-right text-gray-600 bg-transparent border-0 outline-none focus:ring-0 font-body dark:text-gray-300">
+                            <div
+                                class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors pointer-events-none group-focus-within:text-primary">
+                                <span class="material-symbols-outlined text-[22px]">search</span>
+                            </div>
+                            <button type="button" x-show="searchQuery.length > 0"
+                                @click="searchQuery = ''; if('{{ request('search') }}') { $nextTick(() => $el.closest('form').submit()); } else { updateVisibility(); }"
+                                x-cloak
+                                class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
+                                <span class="text-[18px] material-symbols-outlined">close</span>
+                            </button>
+                        </div>
 
-                    <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
-                        placeholder="ابحث برقم السند، اسم العميل، أو رقم الهاتف..."
-                        class="pr-12 pl-12 w-full h-12 text-sm font-medium placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
+                        {{-- قائمة اختيار التاريخ واليوم --}}
+                        <div class="relative w-full sm:w-72" x-data="{ openDateMenu: false }" @click.away="openDateMenu = false">
+                            {{-- الزر الرئيسي لعرض القائمة --}}
+                            <button type="button" @click="openDateMenu = !openDateMenu"
+                                class="flex justify-between items-center px-3.5 w-full h-12 text-sm font-bold text-gray-700 rounded-2xl border border-gray-200 transition-all dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-gray-200">
+                                <div class="flex gap-2 items-center min-w-0">
+                                    <span class="material-symbols-outlined text-[20px] text-primary shrink-0">calendar_today</span>
+                                    <span class="truncate">
+                                        @if (request('date') === 'all')
+                                            كل الأيام
+                                        @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')))
+                                            اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
+                                        @elseif (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
+                                            أمس ({{ now()->subDay()->translatedFormat('l - Y/m/d') }})
+                                        @elseif (request('date'))
+                                            @php
+                                                try {
+                                                    $parsedDate = \Carbon\Carbon::parse(request('date'));
+                                                    $dateLabel = $parsedDate->translatedFormat('l - Y/m/d');
+                                                } catch (\Exception $e) {
+                                                    $dateLabel = request('date');
+                                                }
+                                            @endphp
+                                            {{ $dateLabel }}
+                                        @else
+                                            اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
+                                        @endif
+                                    </span>
+                                </div>
+                                <div class="flex gap-1 items-center shrink-0">
+                                    @if (request('date') && request('date') !== 'all')
+                                        <a href="{{ route('shipment.outgoing.index', array_merge(request()->except('page'), ['date' => 'all'])) }}"
+                                            @click.stop
+                                            title="عرض كل الأيام"
+                                            class="flex justify-center items-center w-5 h-5 text-gray-400 rounded-full transition-colors hover:text-error hover:bg-gray-100 dark:hover:bg-boxdark-2">
+                                            <span class="material-symbols-outlined text-[15px]">close</span>
+                                        </a>
+                                    @endif
+                                    <span class="material-symbols-outlined text-[20px] text-gray-400 transition-transform duration-200"
+                                        :class="openDateMenu ? 'rotate-180 text-primary' : ''">expand_more</span>
+                                </div>
+                            </button>
 
-                    <div
-                        class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
-                        <span class="material-symbols-outlined text-[22px]">search</span>
+                            {{-- القائمة المنسدلة --}}
+                            <div x-show="openDateMenu" x-cloak x-transition:enter="transition ease-out duration-150"
+                                x-transition:enter-start="opacity-0 translate-y-1 scale-95"
+                                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave="transition ease-in duration-100"
+                                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                x-transition:leave-end="opacity-0 translate-y-1 scale-95"
+                                class="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-boxdark rounded-2xl shadow-xl border border-gray-100 dark:border-boxdark-2 z-[80] p-2 space-y-1">
+                                
+                                {{-- خيار كل الأيام --}}
+                                <button type="button"
+                                    @click="dateFilter = 'all'; const f = document.getElementById('filter_date'); if(f) f.value = 'all'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === 'all' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">calendar_view_day</span>
+                                        <span>كل الأيام</span>
+                                    </div>
+                                    @if (request('date') === 'all')
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                {{-- خيار اليوم --}}
+                                <button type="button"
+                                    @click="dateFilter = '{{ now()->format('Y-m-d') }}'; const f = document.getElementById('filter_date'); if(f) f.value = '{{ now()->format('Y-m-d') }}'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')) ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">today</span>
+                                        <span>اليوم ({{ now()->translatedFormat('l - Y/m/d') }})</span>
+                                    </div>
+                                    @if (request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')))
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                {{-- خيار أمس --}}
+                                <button type="button"
+                                    @click="dateFilter = '{{ now()->subDay()->format('Y-m-d') }}'; const f = document.getElementById('filter_date'); if(f) f.value = '{{ now()->subDay()->format('Y-m-d') }}'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    <div class="flex gap-2.5 items-center">
+                                        <span class="material-symbols-outlined text-[18px]">history</span>
+                                        <span>أمس ({{ now()->subDay()->translatedFormat('l - Y/m/d') }})</span>
+                                    </div>
+                                    @if (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
+                                        <span class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                    @endif
+                                </button>
+
+                                <div class="my-1.5 border-t border-gray-100 dark:border-boxdark-2"></div>
+
+                                {{-- تحديد يوم مخصص بالتقويم --}}
+                                <div class="p-2.5 rounded-xl border border-gray-100 bg-gray-50/80 dark:bg-boxdark-2/70 dark:border-boxdark-2">
+                                    <label class="block text-[11px] font-black text-gray-600 dark:text-gray-300 mb-1.5">
+                                        تحديد يوم مخصص بالتقويم:
+                                    </label>
+                                    <div class="relative">
+                                        <input type="hidden" name="date" id="filter_date" value="{{ request('date', now()->format('Y-m-d')) }}">
+                                        <input type="date" id="filter_date_picker"
+                                            value="{{ in_array(request('date'), ['all', 'today', 'yesterday', '']) ? (request('date') === 'today' ? now()->format('Y-m-d') : (request('date') === 'yesterday' ? now()->subDay()->format('Y-m-d') : '')) : request('date', now()->format('Y-m-d')) }}"
+                                            @change="const f = document.getElementById('filter_date'); if(f) f.value = $el.value; dateFilter = $el.value; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                                            onclick="try { this.showPicker(); } catch(e) {}"
+                                            class="px-3 w-full h-10 text-xs font-bold text-gray-700 bg-white rounded-xl border border-gray-200 cursor-pointer outline-none dark:bg-boxdark dark:border-boxdark focus:ring-2 focus:ring-primary/30 dark:text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- فلتر الحالة --}}
+                        <div
+                            class="relative w-full rounded-2xl border border-gray-200 transition-all sm:w-48 dark:border-boxdark-2 bg-surface dark:bg-boxdark-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+                            <select name="status" x-model="statusFilter" @change="updateVisibility(); $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                                class="pr-10 pl-9 w-full h-12 text-sm font-bold text-gray-600 bg-transparent rounded-2xl border-none appearance-none cursor-pointer outline-none focus:ring-0 dark:text-gray-300 font-body">
+                                <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>كل الحالات</option>
+                                <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>قيد التجهيز</option>
+                                <option value="in_transit" {{ request('status') === 'in_transit' ? 'selected' : '' }}>في الطريق</option>
+                                <option value="received_at_branch" {{ request('status') === 'received_at_branch' ? 'selected' : '' }}>في الفرع</option>
+                                <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>تم التسليم</option>
+                                <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>مرتجع</option>
+                                <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>ملغي</option>
+                            </select>
+                            <div
+                                class="flex absolute inset-y-0 right-0 items-center pr-3.5 text-gray-400 pointer-events-none">
+                                <span class="material-symbols-outlined text-[20px]">tune</span>
+                            </div>
+                            <div class="flex absolute inset-y-0 left-0 items-center pl-3 text-gray-400 pointer-events-none">
+                                <span class="material-symbols-outlined text-[20px]">expand_more</span>
+                            </div>
+                        </div>
+
+                        {{-- زر إعادة التعيين إذا تم تغيير الفلتر عن الوضع الافتراضي --}}
+                        @if (request('search') || (request()->has('date') && request('date') !== now()->format('Y-m-d') && request('date') !== 'today') || (request()->has('status') && request('status') !== 'all' && request('status') !== ''))
+                            <a href="{{ route('shipment.outgoing.index') }}"
+                                class="inline-flex gap-1 items-center px-3 h-12 text-xs font-bold text-gray-500 rounded-2xl border border-gray-300 border-dashed transition-all hover:text-error dark:border-gray-700 hover:border-error"
+                                title="إعادة تعيين كافة الفلاتر للوضع الافتراضي">
+                                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                                <span>إعادة تعيين</span>
+                            </a>
+                        @endif
                     </div>
 
-                    <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''; updateVisibility()"
-                        x-cloak
-                        class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-gray-100 rounded-xl transition-all -translate-y-1/2 dark:bg-boxdark hover:text-error active:scale-95">
-                        <span class="text-[18px] material-symbols-outlined">close</span>
-                    </button>
-                </div>
+                    <div class="flex gap-2 items-center text-xs font-bold text-gray-500 dark:text-bodydark font-body shrink-0">
+                        <span class="inline-flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
+                            <span class="material-symbols-outlined text-[18px]">filter_alt</span>
+                        </span>
+                        <span>النتائج المعروضة: <span class="font-bold text-primary" x-text="visibleCount"></span> من
+                            <span>{{ $shipments->count() }}</span></span>
+                    </div>
+                </form>
             </div>
 
             {{-- ====================== Mobile View ====================== --}}
@@ -696,7 +852,9 @@
     <script>
         function outgoingShipmentsRegistry() {
             return {
-                searchQuery: '',
+                searchQuery: '{{ request('search', '') }}',
+                statusFilter: '{{ request('status', 'all') }}',
+                dateFilter: '{{ request('date', now()->format('Y-m-d')) }}',
                 visibleCount: {{ $shipments->count() }},
 
                 showRow(id, senderName, senderPhone, receiverName, receiverPhone, destination) {

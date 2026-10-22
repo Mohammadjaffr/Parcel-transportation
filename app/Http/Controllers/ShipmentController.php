@@ -101,8 +101,13 @@ class ShipmentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        // إعداد الفلاتر الافتراضية عند أول تحميل للصفحة (اليوم الحالي للديسكتوب)
+        if (!$request->has('date') && !$request->isMobile) {
+            $request->merge(['date' => \Carbon\Carbon::today()->toDateString()]);
+        }
+
         // جلب الطرود المرسلة من فرع المستخدم
-        $shipments = Shipment::with([
+        $query = Shipment::with([
             'receiverBranch.app',
             'receiverOfficeBranch.office',
             'receiverCustomer',
@@ -111,12 +116,41 @@ class ShipmentController extends Controller
             'senderOfficeBranch.office'
         ])
             ->where('sender_branch_id', $user->branch_id)
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->latest()
-            ->paginate(70)
-            ->withQueryString();
+            ->latest();
+
+        // فلترة التاريخ (تحديد اليوم)
+        if ($request->filled('date') && $request->date !== 'all') {
+            $date = match ($request->date) {
+                'today' => \Carbon\Carbon::today()->toDateString(),
+                'yesterday' => \Carbon\Carbon::yesterday()->toDateString(),
+                default => $request->date,
+            };
+            $query->whereDate('created_at', $date);
+        }
+
+        // فلترة الحالة
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // البحث النصي في السيرفر
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('bond_number', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhereHas('senderCustomer', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('receiverCustomer', function ($cq) use ($search) {
+                        $cq->where('name', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $shipments = $query->paginate(70)->withQueryString();
         $shipments->getCollection()->transform(function ($shipment) {
 
             // إذا أردت رابط المرسل دائماً (مثلاً في صفحة الصادر)
