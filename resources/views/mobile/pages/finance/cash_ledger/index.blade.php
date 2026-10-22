@@ -275,12 +275,26 @@
 
                             <div
                                 class="flex flex-col gap-2.5 p-3 w-1/2 rounded-xl border bg-slate-50/70 border-slate-100/80 min-h-[80px]">
-                                <div class="flex flex-col">
-                                    <span class="text-[9px] text-slate-400 font-bold mb-1">البيان / ملاحظات:</span>
-                                    <span class="text-[10px] font-bold text-slate-600 line-clamp-3 leading-relaxed">
-                                        {{ $trx->notes ?? 'لا يوجد' }}
-                                    </span>
-                                </div>
+                                @if($trx->driver_name)
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-slate-400 font-bold mb-1">السائق:</span>
+                                        <span class="text-[11px] font-bold text-slate-800 line-clamp-1">
+                                            {{ $trx->driver_name }}
+                                        </span>
+                                        @if($trx->driver_phone)
+                                            <span class="text-[10px] font-mono text-slate-500 mt-0.5" dir="ltr">
+                                                {{ $trx->driver_phone }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="flex flex-col">
+                                        <span class="text-[9px] text-slate-400 font-bold mb-1">البيان / ملاحظات:</span>
+                                        <span class="text-[10px] font-bold text-slate-600 line-clamp-3 leading-relaxed">
+                                            {{ $trx->notes ?: 'لا يوجد' }}
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
 

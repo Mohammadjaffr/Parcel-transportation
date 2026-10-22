@@ -167,12 +167,12 @@
                         @if(in_array(auth()->user()->type, ['admin', 'super_admin']))
                             <th class="p-4">الفرع</th>
                         @endif
-                        <th class="p-4">نوع العمولة ورقمها</th>
+                        <th class="p-4">نوع العمليه ورقمها</th>
                         <th class="p-4">طريقة الدفع</th>
                         <th class="p-4">الوارد </th>
                         <th class="p-4">المنصرف </th>
                         <th class="p-4">المسؤول</th>
-                        <th class="p-4">ملاحظات</th>
+                        <th class="p-4">السائق / الملاحظات</th>
                         <th class="p-4 text-center">الإجراءات</th>
                     </tr>
                 </thead>
@@ -217,8 +217,23 @@
                             <td class="p-4 text-gray-600 whitespace-nowrap dark:text-gray-400">
                                 {{ $trx->user->name ?? '-' }}
                             </td>
-                            <td class="p-4 text-xs text-gray-500 max-w-[200px] truncate">
-                                {{ $trx->notes ?? '-' }}
+                            <td class="p-4">
+                                @if($trx->driver_name)
+                                    <div class="whitespace-nowrap">
+                                        <span class="block font-bold text-gray-800 dark:text-gray-200">
+                                            {{ $trx->driver_name }}
+                                        </span>
+                                        @if($trx->driver_phone)
+                                            <span class="block font-mono text-xs text-gray-400 dark:text-gray-500" dir="ltr">
+                                                {{ $trx->driver_phone }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <span class="block text-xs text-gray-500 max-w-[200px] truncate dark:text-gray-400" title="{{ $trx->notes }}">
+                                        {{ $trx->notes ?: '-' }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="p-4 text-center whitespace-nowrap">
                                 <div class="flex gap-2 justify-center items-center">
