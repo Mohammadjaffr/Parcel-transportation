@@ -7,11 +7,13 @@
     <div x-data="{
         showCreateModal: false,
         showEditModal: false,
-        showDeleteModal: false, // مودل الحذف الجديد
+        showDeleteModal: false,
+        showBanModal: false,
         searchQuery: '',
     
         editDriverData: { id: '', name: '', phone: '', url: '' },
-        deleteDriverData: { id: '', name: '', url: '' }, // بيانات السائق المراد حذفه
+        deleteDriverData: { id: '', name: '', url: '' },
+        banDriverData: { id: '', name: '', is_banned: false, url: '' },
     
         openEditModal(id, name, phone) {
             this.editDriverData = {
@@ -31,11 +33,22 @@
             };
             this.showDeleteModal = true;
         },
+
+        openBanModal(id, name, isBanned) {
+            this.banDriverData = {
+                id: id,
+                name: name,
+                is_banned: Boolean(isBanned),
+                url: '{{ route('drivers.index') }}/' + id + '/toggle-ban'
+            };
+            this.showBanModal = true;
+        },
     
         closeModals() {
             this.showCreateModal = false;
             this.showEditModal = false;
-            this.showDeleteModal = false; // إغلاق مودل الحذف
+            this.showDeleteModal = false;
+            this.showBanModal = false;
         }
     }" class="flex relative flex-col gap-6 pb-24 min-h-screen">
 
@@ -86,8 +99,21 @@
                             @endphp
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="mb-1.5 text-base font-bold leading-none truncate font-headline text-slate-800">
-                                {{ $driver->name }}</h3>
+                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                <h3 class="text-base font-bold leading-none truncate font-headline text-slate-800">
+                                    {{ $driver->name }}</h3>
+                                @if ($driver->is_banned)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60">
+                                        <span class="w-1.5 h-1.5 bg-rose-500 rounded-full"></span>
+                                        محظور
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                        نشط
+                                    </span>
+                                @endif
+                            </div>
 
                             <div class="flex gap-2 items-center text-slate-500">
                                 <span class="material-symbols-outlined text-[16px] text-primary/60">phone_iphone</span>
@@ -97,11 +123,22 @@
 
                             </div>
                         </div>
-                        <button type="button"
-                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
-                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
-                            <span class="text-xl material-symbols-outlined">edit_square</span>
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button"
+                                @click="openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"
+                                title="{{ $driver->is_banned ? 'إلغاء حظر السائق' : 'حظر السائق' }}"
+                                class="flex justify-center items-center w-10 h-10 rounded-xl transition-all active:scale-90 {{ $driver->is_banned ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-rose-50 text-rose-500 hover:bg-rose-100' }}">
+                                <span class="text-xl material-symbols-outlined">
+                                    {{ $driver->is_banned ? 'lock_open' : 'block' }}
+                                </span>
+                            </button>
+
+                            <button type="button"
+                                @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
+                                class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
+                                <span class="text-xl material-symbols-outlined">edit_square</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Divider -->
@@ -467,6 +504,60 @@
                     <button type="submit"
                         class="flex-1 py-4 text-sm font-bold text-white bg-red-500 rounded-2xl shadow-lg transition-all hover:bg-red-600 shadow-red-500/30 active:scale-95 font-headline">
                         نعم، احذف
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Ban / Unban Confirmation Bottom Sheet -->
+        <div x-show="showBanModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 translate-y-full"
+            class="fixed inset-0 z-[99999] flex items-end justify-center pointer-events-none">
+
+            <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] pointer-events-auto" @click="closeModals()">
+            </div>
+
+            <div
+                class="relative w-full bg-white rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-6 pb-12 max-w-xl mx-auto border-t border-white/20 pointer-events-auto text-center">
+                <!-- Handle Bar -->
+                <div @click="closeModals()"
+                    class="mx-auto mb-8 w-12 h-1.5 rounded-full transition-transform cursor-pointer bg-slate-200 active:scale-90">
+                </div>
+
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 rounded-[1.5rem] transition-colors"
+                    :class="banDriverData.is_banned ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-500'">
+                    <span class="text-4xl material-symbols-outlined"
+                        x-text="banDriverData.is_banned ? 'lock_open' : 'block'"></span>
+                </div>
+
+                <h3 class="mb-3 text-2xl font-black font-headline text-slate-800"
+                    x-text="banDriverData.is_banned ? 'تأكيد إلغاء الحظر' : 'تأكيد حظر السائق'"></h3>
+
+                <p class="mb-8 text-sm font-semibold leading-relaxed text-slate-500">
+                    <span x-text="banDriverData.is_banned ? 'هل أنت متأكد من إلغاء حظر السائق ' : 'هل أنت متأكد من حظر السائق '"></span><br>
+                    <span class="text-base font-bold text-slate-800 font-headline"
+                        x-text="banDriverData.name"></span>؟<br>
+                    <span class="inline-block mt-2 font-medium"
+                        :class="banDriverData.is_banned ? 'text-emerald-600' : 'text-rose-500'"
+                        x-text="banDriverData.is_banned ? 'سيتمكن النظام من تعيين السائق في الشحنات والرحلات مجدداً.' : 'لن يظهر هذا السائق في خيارات إضافة الشحنات أو الرحلات الجديدة.'">
+                    </span>
+                </p>
+
+                <form :action="banDriverData.url" method="POST" class="flex gap-3 px-2">
+                    @csrf
+
+                    <button type="button" @click="closeModals()"
+                        class="flex-1 py-4 text-sm font-bold rounded-2xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 font-headline">
+                        تراجع
+                    </button>
+
+                    <button type="submit"
+                        class="flex-1 py-4 text-sm font-bold text-white rounded-2xl shadow-lg transition-all active:scale-95 font-headline"
+                        :class="banDriverData.is_banned ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/30' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30'"
+                        x-text="banDriverData.is_banned ? 'نعم، فك الحظر' : 'نعم، احظر السائق'">
                     </button>
                 </form>
             </div>

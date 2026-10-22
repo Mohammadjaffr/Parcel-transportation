@@ -14,10 +14,26 @@ class Driver extends Model
     protected $fillable = [
         'name',
         'phone',
+        'is_banned',
         'app_id',
         'branch_id',
         'created_by'
     ];
+
+    protected $casts = [
+        'is_banned' => 'boolean',
+    ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_banned', false);
+    }
+
+    public function scopeBanned($query)
+    {
+        return $query->where('is_banned', true);
+    }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');

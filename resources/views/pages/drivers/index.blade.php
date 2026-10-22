@@ -28,19 +28,48 @@
                 </button>
             </div>
         </div>
-        <div class="mb-6">
+        <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-7xl mx-auto">
             {{-- إجمالي السائقين --}}
             <div
-                class="flex relative flex-col justify-between items-start p-5 max-w-sm bg-white rounded-2xl ring-2 shadow-sm border-primary ring-primary/20 dark:bg-boxdark">
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-primary ring-primary/20 dark:bg-boxdark">
                 <div
                     class="flex justify-center items-center w-12 h-12 rounded-xl bg-primary-container dark:bg-primary/10 text-primary">
                     <span class="material-symbols-outlined text-[24px]">group</span>
                 </div>
                 <div class="mt-4">
-                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">إجمالي
-                        السائقين</span>
+                    <span class="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-bodydark">إجمالي السائقين</span>
                     <h4 class="mt-1 text-2xl font-black text-on-surface dark:text-white">
                         {{ $totalCount }}
+                    </h4>
+                </div>
+            </div>
+
+            {{-- السائقين النشطين --}}
+            <div
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-emerald-500 ring-emerald-500/20 dark:bg-boxdark">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    <span class="material-symbols-outlined text-[24px]">person_check</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-emerald-600 uppercase dark:text-emerald-400">السائقين النشطين</span>
+                    <h4 class="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                        {{ $activeCount ?? $drivers->where('is_banned', false)->count() }}
+                    </h4>
+                </div>
+            </div>
+
+            {{-- السائقين المحظورين --}}
+            <div
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-rose-500 ring-rose-500/20 dark:bg-boxdark">
+                <div
+                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500">
+                    <span class="material-symbols-outlined text-[24px]">person_off</span>
+                </div>
+                <div class="mt-4">
+                    <span class="text-xs font-bold tracking-widest text-rose-500 uppercase dark:text-rose-400">السائقين المحظورين</span>
+                    <h4 class="mt-1 text-2xl font-black text-rose-500 dark:text-rose-400">
+                        {{ $bannedCount ?? $drivers->where('is_banned', true)->count() }}
                     </h4>
                 </div>
             </div>
@@ -55,7 +84,7 @@
 
                     {{-- Search Input --}}
                     <div
-                        class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[420px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
+                        class="relative w-full rounded-2xl border border-gray-200 transition-all md:w-[380px] dark:border-boxdark-2 group focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 bg-surface dark:bg-boxdark-2">
                         <input type="text" x-model="searchQuery" @input.debounce.300ms="updateVisibility()"
                             placeholder="ابحث باسم السائق أو رقم الهاتف..."
                             class="pr-12 pl-12 w-full h-12 text-sm font-bold placeholder-gray-400 bg-transparent rounded-2xl border-none transition-all outline-none focus:ring-0 text-on-surface dark:text-white">
@@ -69,6 +98,27 @@
                             x-cloak
                             class="flex absolute left-2 top-1/2 justify-center items-center w-8 h-8 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm transition-all -translate-y-1/2 dark:bg-boxdark dark:border-boxdark-2 hover:text-error active:scale-95">
                             <span class="text-[18px] material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+
+                    {{-- Status Filter Tabs --}}
+                    <div class="flex items-center gap-1.5 p-1 bg-surface dark:bg-boxdark-2 rounded-2xl border border-gray-100 dark:border-boxdark self-start md:self-auto">
+                        <button type="button" @click="filterStatus = 'all'; updateVisibility()"
+                            :class="filterStatus === 'all' ? 'bg-white dark:bg-boxdark text-primary shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
+                            class="px-3.5 py-2 text-xs rounded-xl transition-all">
+                            الكل
+                        </button>
+                        <button type="button" @click="filterStatus = 'active'; updateVisibility()"
+                            :class="filterStatus === 'active' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
+                            class="flex items-center gap-1.5 px-3.5 py-2 text-xs rounded-xl transition-all">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            النشطين
+                        </button>
+                        <button type="button" @click="filterStatus = 'banned'; updateVisibility()"
+                            :class="filterStatus === 'banned' ? 'bg-white dark:bg-boxdark text-rose-600 shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
+                            class="flex items-center gap-1.5 px-3.5 py-2 text-xs rounded-xl transition-all">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            المحظورين
                         </button>
                     </div>
 
@@ -92,7 +142,7 @@
             {{-- ================= Mobile View ================= --}}
             <div class="flex flex-col gap-4 p-5 lg:hidden">
                 @forelse ($drivers as $driver)
-                    <div x-show="showRow(@js($driver->name), @js($driver->phone))" x-transition
+                    <div x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }})" x-transition
                         class="overflow-hidden relative p-5 rounded-2xl border border-gray-100 shadow-sm transition-all driver-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm">
 
                         <div class="flex justify-between items-start">
@@ -107,9 +157,23 @@
                                 </div>
 
                                 <div class="flex flex-col gap-1 min-w-0">
-                                    <h3 class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
-                                        {{ $driver->name }}
-                                    </h3>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <h3 class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
+                                            {{ $driver->name }}
+                                        </h3>
+
+                                        @if ($driver->is_banned)
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
+                                                <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
+                                                محظور
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                                                <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                                نشط
+                                            </span>
+                                        @endif
+                                    </div>
 
                                     <x-phone-number :value="$driver->phone"
                                         class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
@@ -139,6 +203,16 @@
                                     </a>
 
                                     <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
+
+                                    {{-- حظر / إلغاء حظر --}}
+                                    <button type="button"
+                                        @click="menuOpen = false; openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"
+                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold transition-colors {{ $driver->is_banned ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10' : 'text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10' }}">
+                                        <span class="material-symbols-outlined text-[18px]">
+                                            {{ $driver->is_banned ? 'lock_open' : 'block' }}
+                                        </span>
+                                        {{ $driver->is_banned ? 'إلغاء الحظر' : 'حظر السائق' }}
+                                    </button>
 
                                     <button type="button"
                                         @click="menuOpen = false; openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
@@ -225,6 +299,7 @@
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">السائق</th>
                             <th class="px-6 py-4 text-center">رقم الهاتف</th>
+                            <th class="px-6 py-4 text-center">الحالة</th>
                             <th class="px-6 py-4 text-center">تواصل سريع</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
@@ -232,7 +307,7 @@
 
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                         @forelse ($drivers as $driver)
-                            <tr x-show="showRow(@js($driver->name), @js($driver->phone))" x-transition
+                            <tr x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }})" x-transition
                                 class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group driver-row">
 
                                 {{-- Driver --}}
@@ -261,6 +336,21 @@
                                     </div>
                                 </td>
 
+                                {{-- Status --}}
+                                <td class="px-6 py-4 text-center">
+                                    @if ($driver->is_banned)
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
+                                            <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
+                                            محظور
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                                            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                            نشط
+                                        </span>
+                                    @endif
+                                </td>
+
                                 {{-- Quick Contact --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex gap-3 justify-center items-center">
@@ -284,53 +374,38 @@
 
                                 {{-- Actions --}}
                                 <td class="relative px-6 py-4 text-center">
-                                    <div x-data="{ open: false }" class="inline-block relative text-right"
-                                        @click.away="open = false">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        {{-- زر الحظر / فك الحظر --}}
+                                        <button type="button"
+                                            @click="openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"
+                                            title="{{ $driver->is_banned ? 'إلغاء حظر السائق' : 'حظر السائق' }}"
+                                            class="flex justify-center items-center w-9 h-9 rounded-xl transition-all active:scale-90 {{ $driver->is_banned ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-rose-50 text-rose-500 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400' }}">
+                                            <span class="text-[19px] material-symbols-outlined">
+                                                {{ $driver->is_banned ? 'lock_open' : 'block' }}
+                                            </span>
+                                        </button>
 
-                                        {{-- <button @click="open = !open" type="button" title="خيارات"
-                                            class="inline-flex justify-center items-center w-9 h-9 text-gray-400 bg-white rounded-lg border border-gray-100 shadow-sm transition-all hover:bg-gray-100 hover:text-gray-600 hover:border-gray-200 dark:bg-boxdark dark:border-boxdark-2 dark:hover:bg-boxdark-2 dark:hover:text-gray-300 active:scale-95">
-                                            <span class="material-symbols-outlined text-[20px]">more_vert</span>
-                                        </button> --}}
-
-                                        {{-- <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-100"
-                                            x-transition:enter-start="transform opacity-0 scale-95"
-                                            x-transition:enter-end="transform opacity-100 scale-100"
-                                            x-transition:leave="transition ease-in duration-75"
-                                            x-transition:leave-start="transform opacity-100 scale-100"
-                                            x-transition:leave-end="transform opacity-0 scale-95"
-                                            class="absolute left-0 top-full mt-2 z-[999] w-52 bg-white/95 backdrop-blur-md rounded-xl border border-gray-100 shadow-xl dark:bg-boxdark/95 dark:border-boxdark-2 focus:outline-none origin-top-left overflow-hidden"
-                                            style="display: none;">
-
-                                            <div class="py-1" role="menu">
-                                                <button type="button"
-                                                    @click="open = false; openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark-2 dark:hover:text-primary">
-                                                    <span class="material-symbols-outlined text-[18px]">edit</span>
-                                                    تعديل البيانات
-                                                </button>
-
-                                                <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
-
-                                                <button type="button"
-                                                    @click="open = false; openDeleteModal({{ $driver->id }}, {{ json_encode($driver->name) }})"
-                                                    class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                                                    حذف السائق
-                                                </button>
-                                            </div>
-                                        </div> --}}
+                                        {{-- زر تعديل البيانات --}}
                                         <button type="button"
                                             @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
-                                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
-                                            <span class="text-xl material-symbols-outlined">edit_square</span>
+                                            title="تعديل بيانات السائق"
+                                            class="flex justify-center items-center w-9 h-9 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90 dark:bg-boxdark-2 dark:hover:bg-boxdark">
+                                            <span class="text-[19px] material-symbols-outlined">edit_square</span>
+                                        </button>
 
+                                        {{-- زر حذف السائق --}}
+                                        <button type="button"
+                                            @click="openDeleteModal({{ $driver->id }}, {{ json_encode($driver->name) }})"
+                                            title="حذف السائق"
+                                            class="flex justify-center items-center w-9 h-9 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 active:scale-90 dark:bg-boxdark-2 dark:hover:bg-rose-500/10">
+                                            <span class="text-[19px] material-symbols-outlined">delete</span>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="py-24 text-center">
+                                <td colspan="5" class="py-24 text-center">
                                     <div class="flex flex-col gap-4 justify-center items-center">
                                         <div
                                             class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -353,7 +428,7 @@
                         @endforelse
 
                         <tr x-show="visibleCount === 0 && {{ $drivers->count() }} > 0" x-cloak>
-                            <td colspan="4" class="py-24 text-center">
+                            <td colspan="5" class="py-24 text-center">
                                 <div class="flex flex-col gap-4 justify-center items-center">
                                     <div
                                         class="flex justify-center items-center w-16 h-16 bg-gray-50 rounded-2xl border border-gray-100 dark:bg-boxdark-2 dark:border-boxdark">
@@ -749,6 +824,56 @@
                 </form>
             </div>
         </div>
+        {{-- 4. Ban / Unban Confirmation Modal --}}
+        <div x-show="showBanModal" x-cloak x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+            x-transition:leave-end="opacity-0 scale-95"
+            class="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+
+            <div class="fixed inset-0 backdrop-blur-sm pointer-events-auto bg-slate-900/60 dark:bg-black/80"
+                @click="closeModals()"></div>
+
+            <div
+                class="relative w-full max-w-md bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-8 text-center pointer-events-auto flex flex-col">
+
+                <div
+                    class="flex justify-center items-center mx-auto mb-6 w-20 h-20 rounded-[1.5rem] shadow-sm transition-colors"
+                    :class="banDriverData.is_banned ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600' : 'bg-rose-50 dark:bg-rose-500/10 text-rose-500'">
+                    <span class="text-4xl material-symbols-outlined"
+                        x-text="banDriverData.is_banned ? 'lock_open' : 'block'"></span>
+                </div>
+
+                <h3 class="mb-3 text-2xl font-black font-headline text-on-surface dark:text-white"
+                    x-text="banDriverData.is_banned ? 'تأكيد إلغاء حظر السائق' : 'تأكيد حظر السائق'">
+                </h3>
+
+                <p class="mb-8 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                    <span x-text="banDriverData.is_banned ? 'هل أنت متأكد من إلغاء حظر السائق ' : 'هل أنت متأكد من حظر السائق '"></span><br>
+                    <span class="text-base font-bold text-on-surface dark:text-white font-headline"
+                        x-text="banDriverData.name"></span>؟<br>
+                    <span class="inline-block mt-2 font-medium"
+                        :class="banDriverData.is_banned ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'"
+                        x-text="banDriverData.is_banned ? 'عند فك الحظر، سيظهر السائق مجدداً في خيارات إضافة الشحنات والرحلات.' : 'عند حظر السائق، لن يظهر في خيارات إضافة الشحنات أو الرحلات الجديدة.'">
+                    </span>
+                </p>
+
+                <form :action="banDriverData.url" method="POST" class="flex gap-3 w-full">
+                    @csrf
+
+                    <button type="button" @click="closeModals()"
+                        class="flex-1 h-12 text-sm font-bold text-gray-600 rounded-xl transition-all bg-surface dark:bg-boxdark-2 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-boxdark font-headline active:scale-95">
+                        تراجع
+                    </button>
+
+                    <button type="submit"
+                        class="flex-1 h-12 text-sm font-bold text-white rounded-xl shadow-lg transition-all active:scale-95 font-headline"
+                        :class="banDriverData.is_banned ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/30' : 'bg-rose-600 hover:bg-rose-500 shadow-rose-600/30'"
+                        x-text="banDriverData.is_banned ? 'نعم، فك الحظر' : 'نعم، احظر السائق'">
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -759,8 +884,9 @@
                 showCreateModal: false,
                 showEditModal: false,
                 showDeleteModal: false,
+                showBanModal: false,
                 searchQuery: '',
-                filterStatus: 'all', // تمت إضافة متغير الفلترة هنا
+                filterStatus: 'all',
                 visibleCount: {{ $drivers->count() }},
 
                 editDriverData: {
@@ -774,19 +900,25 @@
                     name: '',
                     url: ''
                 },
+                banDriverData: {
+                    id: '',
+                    name: '',
+                    is_banned: false,
+                    url: ''
+                },
 
                 init() {
                     this.updateVisibility();
                 },
 
-                // تحديث الدالة لتستقبل الحالة (status)
-                showRow(name, phone, status) {
-                    // 1. فحص الفلتر (الكل / نشط / غير نشط)
-                    if (this.filterStatus !== 'all' && this.filterStatus !== status) {
+                showRow(name, phone, isBanned) {
+                    if (this.filterStatus === 'active' && isBanned) {
+                        return false;
+                    }
+                    if (this.filterStatus === 'banned' && !isBanned) {
                         return false;
                     }
 
-                    // 2. فحص شريط البحث
                     const query = this.searchQuery.toLowerCase().trim();
                     if (!query) {
                         return true;
@@ -798,8 +930,6 @@
 
                 updateVisibility() {
                     this.$nextTick(() => {
-                        // ملاحظة: بما أن لديك عرض للموبايل وعرض للديسك توب، قد يكون العدد مضاعفاً،
-                        // لذلك نعد فقط العناصر المرئية فعلياً في الشاشة.
                         const visibleRows = Array.from(document.querySelectorAll('.driver-row')).filter(el => {
                             return el.style.display !== 'none' && el.offsetParent !== null;
                         });
@@ -808,7 +938,6 @@
                 },
 
                 openEditModal(id, name, phone) {
-                    /* الكود كما هو */
                     this.editDriverData = {
                         id: id,
                         name: name,
@@ -819,7 +948,6 @@
                 },
 
                 openDeleteModal(id, name) {
-                    /* الكود كما هو */
                     this.deleteDriverData = {
                         id: id,
                         name: name,
@@ -828,10 +956,21 @@
                     this.showDeleteModal = true;
                 },
 
+                openBanModal(id, name, isBanned) {
+                    this.banDriverData = {
+                        id: id,
+                        name: name,
+                        is_banned: Boolean(isBanned),
+                        url: '{{ route('drivers.index') }}/' + id + '/toggle-ban'
+                    };
+                    this.showBanModal = true;
+                },
+
                 closeModals() {
                     this.showCreateModal = false;
                     this.showEditModal = false;
                     this.showDeleteModal = false;
+                    this.showBanModal = false;
                 }
             }
         }

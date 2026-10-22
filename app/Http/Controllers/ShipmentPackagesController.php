@@ -61,7 +61,7 @@ class ShipmentPackagesController extends Controller
     public function sentCreate(Request $request)
     {
         $user = auth()->user();
-        $drivers = Driver::get();
+        $drivers = Driver::where('is_banned', false)->get();
         $nextTrackingNumber = ShipmentPackage::generateNextTrackingNumber($user->branch_id, null, $user->app_id);
 
         $pendingParcels = Shipment::with(['receiverCustomer', 'receiverBranch'])
@@ -97,7 +97,19 @@ class ShipmentPackagesController extends Controller
             DB::beginTransaction();
 
             $driverId = $request->driver_id;
-            if (!$driverId && $request->driver_phone) {
+            if ($driverId) {
+                $selectedDriver = Driver::find($driverId);
+                if ($selectedDriver && $selectedDriver->is_banned) {
+                    return back()->withInput()->with('error', 'السائق المحدد محظور في النظام ولا يمكن تعيينه للشحنة.');
+                }
+            } elseif ($request->driver_phone) {
+                $existingDriver = Driver::where('phone', $request->driver_phone)
+                    ->where('app_id', $user->app_id)
+                    ->first();
+                if ($existingDriver && $existingDriver->is_banned) {
+                    return back()->withInput()->with('error', 'هذا السائق محظور في النظام ولا يمكن اختياره.');
+                }
+
                 $driver = Driver::firstOrCreate(
                     [
                         'phone'  => $request->driver_phone,
@@ -421,6 +433,7 @@ class ShipmentPackagesController extends Controller
         $customers = Customer::get(['id', 'name', 'phone']);
 
         $drivers = Driver::where('app_id', $user->app_id)
+            ->where('is_banned', false)
             ->get(['id', 'name', 'phone']);
 
         // 3. توجيه المستخدم للواجهة المناسبة
@@ -443,7 +456,14 @@ class ShipmentPackagesController extends Controller
 
         $offices = Office::with('branches')->get();
         $customers = Customer::get(['id', 'name', 'phone']);
-        $drivers = Driver::where('app_id', $user->app_id)->get(['id', 'name', 'phone']);
+        $drivers = Driver::where('app_id', $user->app_id)
+            ->where(function ($q) use ($package) {
+                $q->where('is_banned', false);
+                if ($package->driver_id) {
+                    $q->orWhere('id', $package->driver_id);
+                }
+            })
+            ->get(['id', 'name', 'phone']);
 
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.incoming.edit', compact('package', 'offices', 'drivers', 'customers'));
@@ -483,9 +503,18 @@ class ShipmentPackagesController extends Controller
             // 1. معالجة السائق (مع إزالة كود الدولة عند التخزين)
             // ==========================================
             $driverId = $request->driver_id;
-            if (!$driverId && $request->driver_phone) {
+            if ($driverId) {
+                $selectedDriver = Driver::find($driverId);
+                if ($selectedDriver && $selectedDriver->is_banned && $selectedDriver->id != $package->driver_id) {
+                    return back()->withInput()->with('error', 'السائق المحدد محظور في النظام ولا يمكن اختياره.');
+                }
+            } elseif ($request->driver_phone) {
                 // إزالة كود الدولة (مثل +967 أو 00967) لضمان التخزين بدونه
                 $cleanDriverPhone = preg_replace('/^(\+|00)[1-9]\d{1,2}/', '', $request->driver_phone);
+                $existingDriver = Driver::where('phone', $cleanDriverPhone)->where('app_id', $user->app_id)->first();
+                if ($existingDriver && $existingDriver->is_banned && $existingDriver->id != $package->driver_id) {
+                    return back()->withInput()->with('error', 'هذا السائق محظور في النظام ولا يمكن اختياره.');
+                }
 
                 $driver = Driver::firstOrCreate(
                     ['phone' => $cleanDriverPhone, 'app_id' => $user->app_id],
@@ -614,8 +643,17 @@ class ShipmentPackagesController extends Controller
             // ==========================================
             $driverId = $request->driver_id;
 
-            // إذا لم يتم تحديد سائق موجود، نقوم بإنشاء سائق جديد
-            if (!$driverId && $request->driver_phone) {
+            if ($driverId) {
+                $selectedDriver = Driver::find($driverId);
+                if ($selectedDriver && $selectedDriver->is_banned) {
+                    return back()->withInput()->with('error', 'السائق المحدد محظور في النظام ولا يمكن تعيينه للشحنة.');
+                }
+            } elseif ($request->driver_phone) {
+                $existingDriver = Driver::where('phone', $request->driver_phone)->where('app_id', $user->app_id)->first();
+                if ($existingDriver && $existingDriver->is_banned) {
+                    return back()->withInput()->with('error', 'هذا السائق محظور في النظام ولا يمكن اختياره.');
+                }
+
                 $driver = Driver::firstOrCreate(
                     ['phone' => $request->driver_phone, 'app_id' => $user->app_id], // الشرط: البحث برقم الهاتف والشركة
                     ['name' => $request->driver_name, 'created_by' => $user->id]     // البيانات الإضافية في حال الإنشاء
@@ -809,6 +847,10 @@ class ShipmentPackagesController extends Controller
 
             $driverId = null;
             if ($request->filled('driver_phone')) {
+                $existingDriver = Driver::where('phone', $request->driver_phone)->where('app_id', $appId)->first();
+                if ($existingDriver && $existingDriver->is_banned) {
+                    return back()->withInput()->with('error', 'هذا السائق محظور في النظام ولا يمكن اختياره.');
+                }
                 $driver = Driver::firstOrCreate(
                     [
                         'phone'  => $request->driver_phone,

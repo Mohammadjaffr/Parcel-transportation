@@ -86,7 +86,7 @@ class PassengersController extends Controller
 
             return $passenger;
         });
-        $drivers = Driver::orderBy('name')->get();
+        $drivers = Driver::where('is_banned', false)->orderBy('name')->get();
         $brokers = Broker::select('id', 'name', 'phone')->get();
 
         if ($request->isMobile) {
@@ -106,7 +106,7 @@ class PassengersController extends Controller
 
     public function create(Request $request)
     {
-        $drivers = Driver::orderBy('name')->get();
+        $drivers = Driver::where('is_banned', false)->orderBy('name')->get();
         $brokers = Broker::select('id', 'name', 'phone')->get();
         if ($request->isMobile) {
             return view('mobile.pages.passenger.passengers.create', compact(
@@ -207,7 +207,12 @@ class PassengersController extends Controller
     public function edit($id)
     {
         $passenger = Passengers::with(['driver', 'broker', 'branch'])->findOrFail($id);
-        $drivers = Driver::orderBy('name')->get();
+        $drivers = Driver::where('is_banned', false)
+            ->when($passenger->driver_id, function ($q) use ($passenger) {
+                $q->orWhere('id', $passenger->driver_id);
+            })
+            ->orderBy('name')
+            ->get();
         $brokers = Broker::select('id', 'name', 'phone')->get();
         $branches = Branch::orderBy('name')->get();
 

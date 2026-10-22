@@ -41,7 +41,7 @@ class PassengerTripController extends Controller
 
     public function create(Request $request)
     {
-        $drivers = Driver::all();
+        $drivers = Driver::where('is_banned', false)->get();
         $pendingPassengersQuery = Passengers::with(['broker', 'driver'])
             ->where('status', 'pending');
         if (auth()->user()->branch_id) {
@@ -73,7 +73,12 @@ class PassengerTripController extends Controller
         try {
             DB::beginTransaction();
             $driverId = $request->driver_id;
-            if (empty($driverId)) {
+            if ($driverId) {
+                $selectedDriver = Driver::find($driverId);
+                if ($selectedDriver && $selectedDriver->is_banned) {
+                    return WebResponseClass::sendValidationError(Validator::make([], ['driver_id' => 'required'], ['driver_id.required' => 'السائق المحدد محظور ولا يمكن تعيينه لرحلة جديدة.']));
+                }
+            } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
                     $request->driver_name
@@ -190,7 +195,11 @@ class PassengerTripController extends Controller
     public function edit(Request $request, $id)
     {
         $trip = PassengerTrip::with(['driver', 'passengers.broker', 'passengers.driver'])->findOrFail($id);
-        $drivers = Driver::all();
+        $drivers = Driver::where('is_banned', false)
+            ->when($trip->driver_id, function ($q) use ($trip) {
+                $q->orWhere('id', $trip->driver_id);
+            })
+            ->get();
         $pendingPassengersQuery = Passengers::with(['broker', 'driver'])
             ->where('status', 'pending');
         if (auth()->user()->branch_id) {
@@ -225,7 +234,12 @@ class PassengerTripController extends Controller
             DB::beginTransaction();
 
             $driverId = $request->driver_id;
-            if (empty($driverId)) {
+            if ($driverId) {
+                $selectedDriver = Driver::find($driverId);
+                if ($selectedDriver && $selectedDriver->is_banned && $selectedDriver->id != $trip->driver_id) {
+                    return WebResponseClass::sendValidationError(Validator::make([], ['driver_id' => 'required'], ['driver_id.required' => 'السائق المحدد محظور ولا يمكن اختياره للرحلة.']));
+                }
+            } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
                     $request->driver_name
@@ -332,6 +346,10 @@ class PassengerTripController extends Controller
             ->first();
 
         if ($driver) {
+            if ($driver->is_banned) {
+                throw new Exception("السائق صاحب هذا الهاتف ({$driver->phone}) محظور في النظام ولا يمكن تعيينه للرحلة.");
+            }
+
             if ($name && $driver->name !== $name) {
                 $driver->name = $name;
                 $driver->save();

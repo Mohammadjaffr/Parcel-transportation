@@ -23,7 +23,7 @@ class ReceiptHeaderController extends Controller
     public function create()
     {
         $branches = Branch::where('code','!=',auth()->user()->branch_code)->get();
-        $drivers  = Driver::all();
+        $drivers  = Driver::where('is_banned', false)->get();
 
         return view('pages.receipts.create', compact('branches', 'drivers'));
     }
@@ -75,6 +75,13 @@ class ReceiptHeaderController extends Controller
 
         if ($validator->fails()) {
             return WebResponseClass::sendValidationError($validator);
+        }
+
+        if ($request->filled('driver_id')) {
+            $selectedDriver = Driver::find($request->driver_id);
+            if ($selectedDriver && $selectedDriver->is_banned) {
+                return WebResponseClass::sendValidationError(Validator::make([], ['driver_id' => 'required'], ['driver_id.required' => 'السائق المحدد محظور في النظام ولا يمكن تعيينه لبيان الاستلام.']));
+            }
         }
 
         try {
@@ -190,7 +197,11 @@ class ReceiptHeaderController extends Controller
     {
         $receipt = ReceiptHeader::with('items', 'driver')->findOrFail($id);
         $branches = Branch::where('code', '!=', auth()->user()->branch_code)->get();
-        $drivers = Driver::all();
+        $drivers = Driver::where('is_banned', false)
+            ->when($receipt->driver_id, function ($q) use ($receipt) {
+                $q->orWhere('id', $receipt->driver_id);
+            })
+            ->get();
 
         return view('pages.receipts.edit', compact('receipt', 'branches', 'drivers'));
     }

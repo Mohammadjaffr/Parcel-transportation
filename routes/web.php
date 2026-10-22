@@ -188,6 +188,7 @@ Route::middleware('auth')->group(function () {
 
         // 3. السائقين (محمية بـ Drivers)
         Route::resource('drivers', DriverController::class)->middleware('check.service:Drivers');
+        Route::post('/drivers/{id}/toggle-ban', [DriverController::class, 'toggleBan'])->name('drivers.toggle-ban')->middleware('check.service:Drivers');
         Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])->name('drivers.shipments')->middleware('check.service:Drivers');
         Route::get('/drivers/{id}/shipments/print', [DriverController::class, 'printShipments'])->name('drivers.shipments.print')->middleware('check.service:Drivers');
 

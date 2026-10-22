@@ -13,30 +13,41 @@ use Illuminate\Support\Facades\Validator;
 class DriverController extends Controller
 {
     /* ========== 1- عرض جميع السائقين مع البحث والفلترة ========== */
-  public function index(Request $request)
-{
-    // حساب الإجمالي فقط
-    $totalCount = Driver::count();
+    public function index(Request $request)
+    {
+        // حساب الإجماليات
+        $totalCount  = Driver::count();
+        $activeCount = Driver::where('is_banned', false)->count();
+        $bannedCount = Driver::where('is_banned', true)->count();
 
-    $query = Driver::latest();
+        $query = Driver::latest();
 
-    // البحث بالاسم ورقم الهاتف
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('phone', 'like', "%{$search}%");
-        });
+        // الفلترة حسب الحالة
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_banned', false);
+            } elseif ($request->status === 'banned') {
+                $query->where('is_banned', true);
+            }
+        }
+
+        // البحث بالاسم ورقم الهاتف
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+
+        $drivers = $query->paginate(10)->withQueryString();
+
+        if ($request->isMobile) {
+            return view('mobile.pages.people.drivers.index', compact('drivers', 'totalCount', 'activeCount', 'bannedCount'));
+        }
+
+        return view('pages.drivers.index', compact('drivers', 'totalCount', 'activeCount', 'bannedCount'));
     }
-
-    $drivers = $query->paginate(10)->withQueryString();
-
-    if ($request->isMobile) {
-        return view('mobile.pages.people.drivers.index', compact('drivers', 'totalCount'));
-    }
-
-    return view('pages.drivers.index', compact('drivers', 'totalCount'));
-}
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
     {
@@ -142,6 +153,51 @@ class DriverController extends Controller
                 'drivers.index'
             );
         } catch (\Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    /* ========== 7.1- حظر / فك حظر سائق ========== */
+    public function toggleBan($id)
+    {
+        try {
+            $driver = Driver::findOrFail($id);
+            $driver->is_banned = !$driver->is_banned;
+            $driver->save();
+
+            $actionText = $driver->is_banned ? 'حظر سائق' : 'إلغاء حظر سائق';
+            $details = $driver->is_banned ? "تم حظر السائق {$driver->name}" : "تم إلغاء حظر السائق {$driver->name}";
+
+            AdminLoggerService::log(
+                $actionText,
+                'Driver',
+                $driver->id,
+                $details
+            );
+
+            $message = $driver->is_banned ? 'تم حظر السائق بنجاح.' : 'تم إلغاء حظر السائق بنجاح.';
+
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success'   => true,
+                    'is_banned' => (bool) $driver->is_banned,
+                    'message'   => $message,
+                ]);
+            }
+
+            return WebResponseClass::sendResponse(
+                'تمت العملية بنجاح!',
+                $message,
+                'حسناً',
+                'drivers.index'
+            );
+        } catch (\Exception $e) {
+            if (request()->wantsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
             return WebResponseClass::sendExceptionError($e);
         }
     }
