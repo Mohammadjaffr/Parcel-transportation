@@ -188,7 +188,7 @@
                                 </span>
                             </td>
                             <td class="p-4 font-mono font-bold text-gray-800 dark:text-gray-200 whitespace-nowrap">
-                                {{ $trx->receipt_number }}
+                                <span dir="ltr">{{ $trx->formatted_receipt_number }}</span>
                             </td>
                             @if(in_array(auth()->user()->type, ['admin', 'super_admin']))
                                 <td class="p-4 text-gray-600 dark:text-gray-300">

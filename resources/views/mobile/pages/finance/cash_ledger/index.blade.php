@@ -198,8 +198,8 @@
                                     <span class="material-symbols-outlined text-[12px]">schedule</span>
                                     {{ $trx->transaction_date->locale('ar')->translatedFormat('l') }} {{ $trx->transaction_date->format('Y/m/d') }}
                                 </p>
-                                <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline">
-                                    {{ $trx->receipt_number }}
+                                <h3 class="text-sm font-black tracking-tight text-slate-900 font-headline" dir="ltr">
+                                    {{ $trx->formatted_receipt_number }}
                                 </h3>
                             </div>
                         </div>

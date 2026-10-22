@@ -117,6 +117,14 @@ class CashTransaction extends Model
     }
 
     /**
+     * رقم السند المالي بدون البادئة (عرض السنة والرقم المتسلسل فقط، مثل 2026-000001)
+     */
+    public function getFormattedReceiptNumberAttribute(): string
+    {
+        return preg_replace('/^[A-Za-z]+-/', '', (string) $this->receipt_number);
+    }
+
+    /**
      * كائن السائق المرتبط بالسند المالي إن وجد (إذا كان السند مرتبطاً بشحنة أو حمولة أو رحلة ركاب)
      */
     public function getDriverAttribute(): ?Driver
