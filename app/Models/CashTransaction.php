@@ -117,11 +117,24 @@ class CashTransaction extends Model
     }
 
     /**
-     * رقم السند المالي بدون البادئة (عرض السنة والرقم المتسلسل فقط، مثل 2026-000001)
+     * رقم السند المالي بدون البادئة والأصفار (عرض السنة والرقم فقط، مثل 2026-1 أو 2026-8)
      */
     public function getFormattedReceiptNumberAttribute(): string
     {
-        return preg_replace('/^[A-Za-z]+-/', '', (string) $this->receipt_number);
+        if (empty($this->receipt_number)) {
+            return '';
+        }
+
+        $parts = explode('-', $this->receipt_number);
+        if (count($parts) >= 3) {
+            return $parts[1] . '-' . intval(end($parts));
+        }
+
+        if (count($parts) === 2) {
+            return $parts[0] . '-' . intval($parts[1]);
+        }
+
+        return (string) $this->receipt_number;
     }
 
     /**
