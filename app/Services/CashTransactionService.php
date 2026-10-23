@@ -458,4 +458,33 @@ class CashTransactionService
             }
         });
     }
+
+    /**
+     * تحديث سند مالي يدوي بأمان داخل معاملة قاعدة بيانات
+     */
+    public function updateTransaction(CashTransaction $trx, array $data): CashTransaction
+    {
+        return DB::transaction(function () use ($trx, $data) {
+            $updateData = [
+                'cash_category_id' => $data['cash_category_id'],
+                'amount'           => $data['amount'],
+                'payment_method'   => $data['payment_method'],
+                'transaction_date' => $data['transaction_date'],
+                'reference_number' => $data['reference_number'] ?? null,
+                'notes'            => $data['notes'] ?? null,
+            ];
+
+            if (array_key_exists('branch_id', $data) && !empty($data['branch_id'])) {
+                $updateData['branch_id'] = $data['branch_id'];
+            }
+
+            if (isset($data['attachment_path'])) {
+                $updateData['attachment_path'] = $data['attachment_path'];
+            }
+
+            $trx->update($updateData);
+
+            return $trx->fresh();
+        });
+    }
 }

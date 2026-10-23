@@ -79,17 +79,18 @@ class PassengerTripController extends Controller
                 if ($selectedDriver && $selectedDriver->is_banned) {
                     return WebResponseClass::sendValidationError(Validator::make([], ['driver_id' => 'required'], ['driver_id.required' => 'السائق المحدد محظور ولا يمكن تعيينه لرحلة جديدة.']));
                 }
+                if ($request->filled('driver_vehicle_type')) {
+                    $existingDriver = Driver::find($driverId);
+                    if ($existingDriver && !$existingDriver->vehicle_type) {
+                        $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                    }
+                }
             } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
                     $request->driver_name,
                     $request->driver_vehicle_type
                 );
-            } elseif ($request->filled('driver_vehicle_type')) {
-                $existingDriver = Driver::find($driverId);
-                if ($existingDriver && !$existingDriver->vehicle_type) {
-                    $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
-                }
             }
             $user = auth()->user();
             $branchId = $user->branch_id;
@@ -247,17 +248,18 @@ class PassengerTripController extends Controller
                 if ($selectedDriver && $selectedDriver->is_banned && $selectedDriver->id != $trip->driver_id) {
                     return WebResponseClass::sendValidationError(Validator::make([], ['driver_id' => 'required'], ['driver_id.required' => 'السائق المحدد محظور ولا يمكن اختياره للرحلة.']));
                 }
+                if ($request->filled('driver_vehicle_type')) {
+                    $existingDriver = Driver::find($driverId);
+                    if ($existingDriver && !$existingDriver->vehicle_type) {
+                        $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                    }
+                }
             } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
                     $request->driver_name,
                     $request->driver_vehicle_type
                 );
-            } elseif ($request->filled('driver_vehicle_type')) {
-                $existingDriver = Driver::find($driverId);
-                if ($existingDriver && !$existingDriver->vehicle_type) {
-                    $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
-                }
             }
 
             $trip->update([

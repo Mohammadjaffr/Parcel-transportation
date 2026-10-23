@@ -441,7 +441,6 @@ class ShipmentPackagesController extends Controller
         $drivers = Driver::where('app_id', $user->app_id)
 
             ->where('is_banned', false)
-            ->get(['id', 'name', 'phone']);
             ->get(['id', 'name', 'phone', 'vehicle_type']);
 
 

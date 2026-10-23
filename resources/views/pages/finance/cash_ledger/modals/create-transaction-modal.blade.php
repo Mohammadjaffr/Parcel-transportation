@@ -8,25 +8,29 @@
 
         <div class="flex items-center justify-between pb-3 mb-4 border-b border-gray-100 dark:border-gray-800">
             <h3 class="text-base font-bold text-gray-900 dark:text-white"
-                x-text="createType === 'income' ? 'تسجيل سند قبض جديد (وارد للصندوق)' : 'تسجيل سند صرف جديد (منصرف من الصندوق)'">
+                x-text="isEditMode 
+                    ? (createType === 'income' ? 'تعديل سند قبض (وارد للصندوق)' : 'تعديل سند صرف (منصرف من الصندوق)')
+                    : (createType === 'income' ? 'تسجيل سند قبض جديد (وارد للصندوق)' : 'تسجيل سند صرف جديد (منصرف من الصندوق)')">
             </h3>
             <button @click="showCreateModal = false" class="text-gray-400 hover:text-gray-600">✕</button>
         </div>
 
-        <form method="POST" action="{{ route('cash.ledger.store') }}" enctype="multipart/form-data" class="space-y-4">
+        <form method="POST" :action="formActionUrl" enctype="multipart/form-data" class="space-y-4">
             @csrf
+            <template x-if="isEditMode">
+                <input type="hidden" name="_method" value="PUT">
+            </template>
             <input type="hidden" name="type" :value="createType">
 
             {{-- اختيار الفرع للمدير فقط في حال الإيداع لفرع معين --}}
-            @if (auth()->user()->type === 'admin' && $branches->isNotEmpty())
+            @if (in_array(auth()->user()->type, ['admin', 'super_admin']) && $branches->isNotEmpty())
                 <div>
                     <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">الفرع المسجل عليه
                         الحركة *</label>
-                    <select name="branch_id"
+                    <select name="branch_id" x-model="formData.branch_id"
                         class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         @foreach ($branches as $branch)
-                            <option value="{{ $branch->id }}"
-                                {{ auth()->user()->branch_id == $branch->id ? 'selected' : '' }}>
+                            <option value="{{ $branch->id }}">
                                 {{ $branch->name }}
                             </option>
                         @endforeach
@@ -111,11 +115,11 @@
                             <li>
                                 <button type="button" @click="selectCategory(cat)"
                                     class="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold rounded-lg transition-colors text-right"
-                                    :class="selectedCategoryId === cat.id ?
+                                    :class="selectedCategoryId == cat.id ?
                                         'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white font-bold' :
                                         'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'">
                                     <span x-text="cat.name"></span>
-                                    <span x-show="selectedCategoryId === cat.id"
+                                    <span x-show="selectedCategoryId == cat.id"
                                         class="material-symbols-outlined text-[16px] text-primary">
                                         check
                                     </span>
@@ -138,7 +142,7 @@
                     <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">المبلغ الإجمالي
                         *</label>
                     <div class="relative">
-                        <input type="number" step="0.01" min="0.01" name="amount" required placeholder="0.00"
+                        <input type="number" step="0.01" min="0.01" name="amount" x-model="formData.amount" required placeholder="0.00"
                             class="w-full text-sm font-bold border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <span class="absolute text-xs font-bold text-gray-400 left-3 top-2.5">ر.ي</span>
                     </div>
@@ -146,7 +150,7 @@
                 <div>
                     <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">طريقة الاستلام / الصرف
                         *</label>
-                    <select name="payment_method" required
+                    <select name="payment_method" x-model="formData.payment_method" required
                         class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                         <option value="cash">نقداً (كاش الخزينة)</option>
                         <option value="bank_transfer">تحويل بنكي / حوالة</option>
@@ -159,13 +163,13 @@
                 <div>
                     <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">تاريخ المعاملة
                         *</label>
-                    <input type="date" name="transaction_date" value="{{ now()->toDateString() }}" required
+                    <input type="date" name="transaction_date" x-model="formData.transaction_date" required
                         class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                 </div>
                 <div>
                     <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">رقم المرجع / الإيداع
                         (اختياري)</label>
-                    <input type="text" name="reference_number" placeholder="مثلاً: 98741"
+                    <input type="text" name="reference_number" x-model="formData.reference_number" placeholder="مثلاً: 98741"
                         class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
                 </div>
             </div>
@@ -173,8 +177,20 @@
             {{-- المرفق --}}
             <div x-data="{ fileName: '' }">
                 <label class="block mb-2 text-xs font-bold text-gray-600 dark:text-gray-300">
-                    إرفاق مستند أو صورة السند (اختياري)
+                    <span x-text="isEditMode ? 'تغيير المرفق أو صورة السند (اختياري)' : 'إرفاق مستند أو صورة السند (اختياري)'"></span>
                 </label>
+
+                <template x-if="isEditMode && formData.attachment_path && !fileName">
+                    <div class="mb-2 flex items-center justify-between p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 text-xs">
+                        <span class="text-gray-600 dark:text-gray-300 font-bold flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[18px] text-emerald-600">attach_file</span>
+                            يوجد مستند/مرفق حالي محفوظ للسند
+                        </span>
+                        <a :href="'/' + formData.attachment_path" target="_blank" class="px-2.5 py-1 text-xs font-bold text-primary bg-primary/10 rounded-lg hover:bg-primary hover:text-white transition-colors">
+                            معاينة
+                        </a>
+                    </div>
+                </template>
 
                 <div class="relative w-full">
                     <label for="file-upload"
@@ -227,7 +243,7 @@
             <div>
                 <label class="block mb-1 text-xs font-bold text-gray-600 dark:text-gray-300">البيان / تفاصيل
                     السند</label>
-                <textarea name="notes" rows="2" placeholder="اكتب وصفاً مختصراً للعملية..."
+                <textarea name="notes" x-model="formData.notes" rows="2" placeholder="اكتب وصفاً مختصراً للعملية..."
                     class="w-full text-sm border-gray-200 rounded-xl bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-white"></textarea>
             </div>
 
@@ -235,8 +251,8 @@
             <div class="flex gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
                 <button type="submit"
                     class="flex-1 py-2.5 text-sm font-bold text-white rounded-xl shadow-sm transition-colors"
-                    :class="createType === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'">
-                    تأكيد وحفظ السند
+                    :class="createType === 'income' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'"
+                    x-text="isEditMode ? 'حفظ التعديلات' : 'تأكيد وحفظ السند'">
                 </button>
                 <button type="button" @click="showCreateModal = false"
                     class="px-5 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">

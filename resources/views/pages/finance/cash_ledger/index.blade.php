@@ -237,6 +237,28 @@
                             </td>
                             <td class="p-4 text-center whitespace-nowrap">
                                 <div class="flex gap-2 justify-center items-center">
+                                    @if(is_null($trx->source_id) && is_null($trx->source_type))
+                                        <button type="button" 
+                                            @click="openEditModal(@js([
+                                                'id' => $trx->id,
+                                                'type' => $trx->type,
+                                                'branch_id' => $trx->branch_id,
+                                                'cash_category_id' => $trx->cash_category_id,
+                                                'category_name' => $trx->category?->name,
+                                                'amount' => (float) $trx->amount,
+                                                'payment_method' => $trx->payment_method,
+                                                'transaction_date' => $trx->transaction_date->format('Y-m-d'),
+                                                'reference_number' => $trx->reference_number ?? '',
+                                                'notes' => $trx->notes ?? '',
+                                                'attachment_path' => $trx->attachment_path,
+                                            ]))" 
+                                            class="px-3 py-1.5 text-xs font-bold text-amber-700 bg-amber-50 rounded-lg transition-colors hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 inline-flex items-center gap-1"
+                                            title="تعديل السند">
+                                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                                            <span>تعديل</span>
+                                        </button>
+                                    @endif
+
                                     <button type="button" @click="viewDetails({{ $trx->id }})" class="px-3 py-1.5 text-xs font-bold text-gray-700 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
                                         تفاصيل
                                     </button>
@@ -288,11 +310,31 @@ function cashLedgerHandler() {
         rawCategories: @js($categories),
         details: {},
 
+        // حالة وضع التعديل
+        isEditMode: false,
+        editId: null,
+        formData: {
+            branch_id: '{{ auth()->user()->branch_id }}',
+            amount: '',
+            payment_method: 'cash',
+            transaction_date: '{{ now()->toDateString() }}',
+            reference_number: '',
+            notes: '',
+            attachment_path: null
+        },
+
         // حالة القائمة المنسدلة القابلة للبحث
         categoryDropdownOpen: false,
         categorySearchText: '',
         selectedCategoryId: '',
         selectedCategoryName: '',
+
+        get formActionUrl() {
+            if (this.isEditMode && this.editId) {
+                return `{{ url('finance/cash-ledger') }}/${this.editId}`;
+            }
+            return `{{ route('cash.ledger.store') }}`;
+        },
 
         get availableCategories() {
             return this.rawCategories.filter(c => c.type === this.createType);
@@ -330,9 +372,44 @@ function cashLedgerHandler() {
         },
 
         openCreateModal(type) {
+            this.isEditMode = false;
+            this.editId = null;
             this.createType = type;
+            this.formData = {
+                branch_id: '{{ auth()->user()->branch_id }}',
+                amount: '',
+                payment_method: 'cash',
+                transaction_date: '{{ now()->toDateString() }}',
+                reference_number: '',
+                notes: '',
+                attachment_path: null
+            };
             this.selectedCategoryId = '';
             this.selectedCategoryName = '';
+            this.categorySearchText = '';
+            this.categoryDropdownOpen = false;
+            this.showCreateModal = true;
+        },
+
+        openEditModal(item) {
+            this.isEditMode = true;
+            this.editId = item.id;
+            this.createType = item.type;
+            this.formData = {
+                branch_id: item.branch_id,
+                amount: item.amount,
+                payment_method: item.payment_method,
+                transaction_date: item.transaction_date,
+                reference_number: item.reference_number || '',
+                notes: item.notes || '',
+                attachment_path: item.attachment_path || null
+            };
+            this.selectedCategoryId = item.cash_category_id;
+            this.selectedCategoryName = item.category_name || '';
+            if (!this.selectedCategoryName && this.selectedCategoryId) {
+                const found = this.rawCategories.find(c => c.id == this.selectedCategoryId);
+                if (found) this.selectedCategoryName = found.name;
+            }
             this.categorySearchText = '';
             this.categoryDropdownOpen = false;
             this.showCreateModal = true;

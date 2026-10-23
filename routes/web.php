@@ -115,6 +115,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('finance/cash-ledger')->name('cash.ledger.')->group(function () {
             Route::get('/', [CashTransactionController::class, 'index'])->name('index');
             Route::post('/store', [CashTransactionController::class, 'store'])->name('store');
+            Route::put('/{id}', [CashTransactionController::class, 'update'])->name('update');
             Route::get('/{id}/details', [CashTransactionController::class, 'showDetails'])->name('details');
             Route::get('/{id}/receipt', [CashTransactionController::class, 'printReceipt'])->name('receipt');
             Route::get('/export', [CashTransactionController::class, 'export'])->name('export');

@@ -27,7 +27,9 @@
             <div class="absolute inset-x-0 bottom-0 h-0.5" :class="createType === 'income' ? 'bg-emerald-500' : 'bg-rose-500'"></div>
             <h3 class="text-lg font-black text-slate-800 font-headline flex items-center gap-2">
                 <span class="material-symbols-outlined" :class="createType === 'income' ? 'text-emerald-500' : 'text-rose-500'" x-text="createType === 'income' ? 'south_west' : 'north_east'"></span>
-                <span x-text="createType === 'income' ? 'تسجيل سند قبض (وارد)' : 'تسجيل سند صرف (منصرف)'"></span>
+                <span x-text="isEditMode 
+                    ? (createType === 'income' ? 'تعديل سند قبض (وارد)' : 'تعديل سند صرف (منصرف)') 
+                    : (createType === 'income' ? 'تسجيل سند قبض (وارد)' : 'تسجيل سند صرف (منصرف)')"></span>
             </h3>
             <button @click="showCreateModal = false" type="button" class="flex justify-center items-center w-8 h-8 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors">
                 <span class="material-symbols-outlined text-[18px]">close</span>
@@ -36,17 +38,20 @@
 
         {{-- المحتوى القابل للتمرير --}}
         <div class="overflow-y-auto px-6 py-5 custom-scrollbar">
-            <form method="POST" action="{{ route('cash.ledger.store') }}" enctype="multipart/form-data" class="space-y-5 pb-6">
+            <form method="POST" :action="formActionUrl" enctype="multipart/form-data" class="space-y-5 pb-6">
                 @csrf
+                <template x-if="isEditMode">
+                    <input type="hidden" name="_method" value="PUT">
+                </template>
                 <input type="hidden" name="type" :value="createType">
 
                 {{-- اختيار الفرع للمدير فقط --}}
-                @if (auth()->user()->type === 'admin' && isset($branches) && $branches->isNotEmpty())
+                @if (in_array(auth()->user()->type, ['admin', 'super_admin']) && isset($branches) && $branches->isNotEmpty())
                     <div>
                         <label class="block mb-1.5 text-xs font-bold text-slate-600">الفرع المسجل عليه الحركة *</label>
-                        <select name="branch_id" class="w-full h-14 text-sm bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-800 px-4 font-bold">
+                        <select name="branch_id" x-model="formData.branch_id" class="w-full h-14 text-sm bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 text-slate-800 px-4 font-bold">
                             @foreach ($branches as $branch)
-                                <option value="{{ $branch->id }}" {{ auth()->user()->branch_id == $branch->id ? 'selected' : '' }}>
+                                <option value="{{ $branch->id }}">
                                     {{ $branch->name }}
                                 </option>
                             @endforeach
@@ -101,9 +106,9 @@
                                 <li>
                                     <button type="button" @click="selectCategory(cat)"
                                         class="flex items-center justify-between w-full px-4 py-2.5 text-xs font-bold rounded-xl transition-colors text-right"
-                                        :class="selectedCategoryId === cat.id ? 'bg-primary/10 text-primary' : 'text-slate-700 hover:bg-slate-50'">
+                                        :class="selectedCategoryId == cat.id ? 'bg-primary/10 text-primary' : 'text-slate-700 hover:bg-slate-50'">
                                         <span x-text="cat.name"></span>
-                                        <span x-show="selectedCategoryId === cat.id" class="material-symbols-outlined text-[18px]">check</span>
+                                        <span x-show="selectedCategoryId == cat.id" class="material-symbols-outlined text-[18px]">check</span>
                                     </button>
                                 </li>
                             </template>
@@ -117,38 +122,45 @@
                     <div>
                         <label class="block mb-1.5 text-xs font-bold text-slate-600">المبلغ *</label>
                         <div class="relative">
-                            <input type="number" step="0.01" min="0.01" name="amount" required placeholder="0.00"
+                            <input type="number" step="0.01" min="0.01" name="amount" x-model="formData.amount" required placeholder="0.00"
                                 class="w-full h-14 text-lg font-black font-headline border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 text-left pl-10 pr-4" dir="ltr">
                             <span class="absolute text-xs font-bold text-slate-400 left-4 top-1/2 -translate-y-1/2">ر.ي</span>
                         </div>
                     </div>
                     <div>
                         <label class="block mb-1.5 text-xs font-bold text-slate-600">طريقة الدفع *</label>
-                        <select name="payment_method" required class="w-full h-14 text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 px-4">
+                        <select name="payment_method" x-model="formData.payment_method" required class="w-full h-14 text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 px-4">
                             <option value="cash">نقداً (كاش)</option>
                             <option value="bank_transfer">حوالة بنكية</option>
                         </select>
                     </div>
                 </div>
 
-                {{-- التاريخ والبيان --}}
-                <div>
-                    <label class="block mb-1.5 text-xs font-bold text-slate-600">تاريخ المعاملة *</label>
-                    <input type="date" name="transaction_date" value="{{ now()->toDateString() }}" required
-                        class="w-full h-14 text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 px-4">
+                {{-- التاريخ ورقم المرجع --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1.5 text-xs font-bold text-slate-600">تاريخ المعاملة *</label>
+                        <input type="date" name="transaction_date" x-model="formData.transaction_date" required
+                            class="w-full h-14 text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 px-4">
+                    </div>
+                    <div>
+                        <label class="block mb-1.5 text-xs font-bold text-slate-600">رقم المرجع (اختياري)</label>
+                        <input type="text" name="reference_number" x-model="formData.reference_number" placeholder="مثلاً: 98741"
+                            class="w-full h-14 text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 px-4">
+                    </div>
                 </div>
 
                 <div>
                     <label class="block mb-1.5 text-xs font-bold text-slate-600">البيان / الملاحظات</label>
-                    <textarea name="notes" rows="2" placeholder="تفاصيل إضافية عن العملية..."
+                    <textarea name="notes" x-model="formData.notes" rows="2" placeholder="تفاصيل إضافية عن العملية..."
                         class="w-full text-sm font-bold border-none rounded-2xl bg-slate-50 focus:ring-2 focus:ring-primary/20 text-slate-800 p-4 resize-none"></textarea>
                 </div>
 
                 {{-- أزرار التحكم --}}
                 <div class="pt-2 flex gap-3">
                     <button type="submit" class="flex-1 h-14 text-white rounded-2xl font-black text-sm shadow-[0_8px_20px_rgb(0,0,0,0.15)] active:scale-95 transition-all"
-                        :class="createType === 'income' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-rose-500 shadow-rose-500/30'">
-                        تأكيد وحفظ
+                        :class="createType === 'income' ? 'bg-emerald-500 shadow-emerald-500/30' : 'bg-rose-500 shadow-rose-500/30'"
+                        x-text="isEditMode ? 'حفظ التعديلات' : 'تأكيد وحفظ'">
                     </button>
                     <button type="button" @click="showCreateModal = false" class="px-8 h-14 text-slate-600 bg-slate-100 rounded-2xl font-bold text-sm active:scale-95 transition-all">
                         إلغاء

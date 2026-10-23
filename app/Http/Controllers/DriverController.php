@@ -32,12 +32,13 @@ class DriverController extends Controller
             }
         }
 
-        // البحث بالاسم ورقم الهاتف
+        // البحث بالاسم ورقم الهاتف ونوع المركبة
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('vehicle_type', 'like', "%{$search}%");
             });
         }
 
@@ -48,16 +49,6 @@ class DriverController extends Controller
         }
 
         return view('pages.drivers.index', compact('drivers', 'totalCount', 'activeCount', 'bannedCount'));
-
-    // البحث بالاسم ورقم الهاتف ونوع المركبة
-    if ($request->filled('search')) {
-        $search = $request->search;
-        $query->where(function($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('phone', 'like', "%{$search}%")
-              ->orWhere('vehicle_type', 'like', "%{$search}%");
-        });
-
     }
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()

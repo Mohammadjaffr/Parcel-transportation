@@ -111,10 +111,10 @@ class CashTransactionController extends Controller
             COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense
         ")->first();
 
-        $totalIncome = (float) $analytics->total_income;
-        $totalExpense = (float) $analytics->total_expense;
+        $totalIncome = (float) ($analytics->total_income ?? 0);
+        $totalExpense = (float) ($analytics->total_expense ?? 0);
         $netPeriod = $totalIncome - $totalExpense;
-        $totalCount = (int) $analytics->total_count;
+        $totalCount = (int) ($analytics->total_count ?? 0);
 
         $transactions = $query->orderByDesc('transaction_date')
             ->orderByDesc('id')
@@ -222,6 +222,92 @@ class CashTransactionController extends Controller
                 $this->cashService->recordExpense($data);
                 $message = 'تم تسجيل سند الصرف وخصمه من الصندوق بنجاح.';
             }
+
+            if ($request->isMobile) {
+                return WebResponseClass::sendResponse('تم بنجاح', $message, 'العودة لدفتر الصندوق', 'cash.ledger.index');
+            }
+
+            return WebResponseClass::sendResponse('تم بنجاح', $message);
+        } catch (Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
+    }
+
+    /**
+     * تحديث سند مالي يدوي
+     */
+    public function update(Request $request, $id)
+    {
+        $trx = CashTransaction::findOrFail($id);
+
+        // التحقق أولاً من أن السند يدوي فقط وليس مرتبطاً بمصدر آلي
+        if (!is_null($trx->source_id) || !is_null($trx->source_type)) {
+            return WebResponseClass::sendError('عذراً، لا يمكن تعديل الحركات المالية الصادرة تلقائياً من النظام.');
+        }
+
+        $user = auth()->user();
+        $isAdminOrSuper = in_array($user->type, ['admin', 'super_admin']);
+
+        $rules = [
+            'cash_category_id' => 'required|exists:cash_categories,id',
+            'amount'           => 'required|numeric|min:0.01',
+            'payment_method'   => 'required|in:cash,bank_transfer',
+            'transaction_date' => 'required|date',
+            'reference_number' => 'nullable|string|max:100',
+            'attachment'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
+            'notes'            => 'nullable|string|max:1000',
+        ];
+
+        if ($isAdminOrSuper) {
+            $rules['branch_id'] = 'required|exists:branches,id';
+        }
+
+        $messages = [
+            'cash_category_id.required' => 'التصنيف المالي مطلوب.',
+            'cash_category_id.exists'   => 'التصنيف غير صالح.',
+            'amount.required'           => 'المبلغ مطلوب.',
+            'amount.min'                => 'يجب أن يكون المبلغ أكبر من صفر.',
+            'payment_method.required'   => 'طريقة الدفع مطلوبة.',
+            'transaction_date.required' => 'تاريخ السند مطلوب.',
+            'attachment.max'            => 'الحد الأقصى لحجم المرفق هو 3 ميجابايت.',
+            'branch_id.required'        => 'الفرع مطلوب.',
+            'branch_id.exists'          => 'الفرع المحدد غير موجود.',
+        ];
+
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            return WebResponseClass::sendValidationError($validator);
+        }
+
+        try {
+            $data = $validator->validated();
+
+            // تأكد من أن CashCategory المختار يطابق نفس نوع السند الأصلي ($trx->type)
+            $category = CashCategory::findOrFail($data['cash_category_id']);
+            if ($category->type !== $trx->type) {
+                return WebResponseClass::sendError('التصنيف المختار لا يطابق نوع السند المحدد (وارد / منصرف).');
+            }
+
+            if ($isAdminOrSuper && isset($data['branch_id'])) {
+                $data['branch_id'] = (int) $data['branch_id'];
+            } else {
+                $data['branch_id'] = $trx->branch_id;
+            }
+
+            // إذا تم رفع مرفق جديد (attachment)، احفظه عبر ImageService وحدّث attachment_path
+            if ($request->hasFile('attachment')) {
+                if ($trx->attachment_path) {
+                    $this->imageService->deleteImage($trx->attachment_path);
+                }
+                $data['attachment_path'] = $this->imageService->saveImage($request->file('attachment'), 'cash_attachments');
+            }
+
+            $this->cashService->updateTransaction($trx, $data);
+
+            $message = $trx->type === 'income'
+                ? 'تم تعديل سند القبض بنجاح.'
+                : 'تم تعديل سند الصرف بنجاح.';
 
             if ($request->isMobile) {
                 return WebResponseClass::sendResponse('تم بنجاح', $message, 'العودة لدفتر الصندوق', 'cash.ledger.index');
