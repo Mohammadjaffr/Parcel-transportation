@@ -55,9 +55,17 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <span class="block mb-0.5 text-xs font-bold text-gray-400">السائق المسؤول</span>
-                        <h3 class="text-base font-black truncate text-slate-800 dark:text-white">
-                            {{ $trip->driver->name ?? 'سائق غير معين' }}
-                        </h3>
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <h3 class="text-base font-black truncate text-slate-800 dark:text-white">
+                                {{ $trip->driver->name ?? 'سائق غير معين' }}
+                            </h3>
+                            @if ($trip->driver?->vehicle_type)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                    <span class="material-symbols-outlined text-[12px] ml-0.5">directions_car</span>
+                                    {{ $trip->driver->vehicle_type }}
+                                </span>
+                            @endif
+                        </div>
                         @if($trip->driver?->phone)
                             <a href="tel:{{ $trip->driver->phone }}" class="inline-block mt-1.5" style="direction: ltr;">
                                 <div class="px-2.5 py-1 rounded-xl border bg-primary/5 border-primary/10">

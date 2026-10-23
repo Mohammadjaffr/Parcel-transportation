@@ -27,6 +27,7 @@ class PassengerBookingMessage implements WhatsAppMessageInterface
             return "بيانات الراكب غير صالحة.";
         }
 
+        $passengerName = $entity->passenger_name ? trim($entity->passenger_name) : '';
         $date        = $entity->date ? $entity->date->format('Y-m-d') : '---';
         $dayName     = $entity->date ? $entity->date->translatedFormat('l') : '';
         $pickup      = $entity->pickup_location ?? '---';
@@ -35,10 +36,16 @@ class PassengerBookingMessage implements WhatsAppMessageInterface
         $note        = $entity->note ?: '';
         $branchName  = $entity->branch->name ?? '';
 
-        $msg  = "السلام عليكم ورحمة الله وبركاته\n\n";
-        $msg .= "تم تأكيد حجزك بنجاح ✅\n\n";
+        $msg  = "السلام عليكم ورحمة الله وبركاته\n";
+        if ($passengerName) {
+            $msg .= "أهلاً بك : *{$passengerName}*\n";
+        }
+        $msg .= "\nتم تأكيد حجزك بنجاح ✅\n\n";
         $msg .= "*تفاصيل الحجز:*\n";
         $msg .= "━━━━━━━━━━━━━━━━━━\n";
+        if ($passengerName) {
+            $msg .= "👤 اسم الراكب: {$passengerName}\n";
+        }
         $msg .= "📅 التاريخ: {$date}";
         if ($dayName) {
             $msg .= " ({$dayName})";

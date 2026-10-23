@@ -14,7 +14,11 @@ class Driver extends Model
     protected $fillable = [
         'name',
         'phone',
+
         'is_banned',
+
+        'vehicle_type',
+
         'app_id',
         'branch_id',
         'created_by'

@@ -171,6 +171,8 @@
                                     </th>
                                     <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">اليوم
                                     </th>
+                                    <th class="px-2 py-3 w-28 font-black border-l text-slate-500 border-slate-200">اسم
+                                        الراكب</th>
                                     <th class="px-2 py-3 w-28 font-black border-l text-slate-500 border-slate-200">رقم
                                         الراكب</th>
                                     <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">نوع المركبة
@@ -195,6 +197,9 @@
                                         <td
                                             class="px-2 py-2 font-bold border-l text-indigo-600 border-slate-100 print:border-slate-200">
                                             {{ $passenger['day'] }}</td>
+                                        <td
+                                            class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">
+                                            {{ $passenger['passenger_name'] ?? '---' }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-800 border-slate-100 print:border-slate-200"
                                             dir="ltr">{{ $passenger['passenger_number'] }}</td>
                                         <td

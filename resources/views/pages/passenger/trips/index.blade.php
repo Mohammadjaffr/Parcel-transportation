@@ -125,9 +125,16 @@
                                             {{ $avatarLetters }}
                                         </div>
                                         <div class="flex flex-col gap-1">
-                                            <span class="text-sm font-bold text-gray-800 font-body dark:text-white">
-                                                {{ $driverName }}
-                                            </span>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <span class="text-sm font-bold text-gray-800 font-body dark:text-white">
+                                                    {{ $driverName }}
+                                                </span>
+                                                @if ($trip->driver?->vehicle_type)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                                        {{ $trip->driver->vehicle_type }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                             @if ($driverPhone)
                                                 <span
                                                     class="block mt-0.5 font-mono text-xs text-right text-gray-500 font-body dark:text-gray-400 dir-ltr"

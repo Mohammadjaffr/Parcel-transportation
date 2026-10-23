@@ -62,9 +62,16 @@
                                 <span class="material-symbols-outlined text-[26px]">local_taxi</span>
                             </div>
                             <div>
-                                <h3 class="text-sm font-black text-slate-800 dark:text-white">
-                                    {{ $trip->driver->name ?? 'سائق غير معين بعد' }}
-                                </h3>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <h3 class="text-sm font-black text-slate-800 dark:text-white">
+                                        {{ $trip->driver->name ?? 'سائق غير معين بعد' }}
+                                    </h3>
+                                    @if ($trip->driver?->vehicle_type)
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                            {{ $trip->driver->vehicle_type }}
+                                        </span>
+                                    @endif
+                                </div>
                                 @if ($trip->driver?->phone)
                                     <span class="text-xs text-gray-400 font-mono block text-right mt-0.5"
                                         style="direction: ltr;"> <x-phone-number :value="$trip->driver->phone"

@@ -8,6 +8,7 @@
     <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" dir="rtl" x-data="tripDetailsForm(@js($trip->passengers->map(function ($p) {
         return [
             'id' => $p->id,
+            'passenger_name' => $p->passenger_name ?? '',
             'passenger_number' => $p->passenger_number,
             'count' => $p->count ?? 1,
             'destination' => $p->destination ?? ' '
@@ -80,9 +81,17 @@
                                 <span class="material-symbols-outlined text-[32px]">local_taxi</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <h3 class="text-lg font-black truncate text-slate-800 dark:text-white">
-                                    {{ $trip->driver->name ?? 'سائق غير معين' }}
-                                </h3>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h3 class="text-lg font-black truncate text-slate-800 dark:text-white">
+                                        {{ $trip->driver->name ?? 'سائق غير معين' }}
+                                    </h3>
+                                    @if ($trip->driver?->vehicle_type)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                            <span class="material-symbols-outlined text-[13px] ml-1">directions_car</span>
+                                            {{ $trip->driver->vehicle_type }}
+                                        </span>
+                                    @endif
+                                </div>
                                 @if($trip->driver?->phone)
                                     <a href="tel:{{ $trip->driver->phone }}" class="inline-block mt-1.5"
                                         style="direction: ltr;">
@@ -152,7 +161,7 @@
                             style="max-height: 500px;">
                             @forelse($trip->passengers as $passenger)
                                 <div class="flex gap-4 justify-between items-center p-4 rounded-2xl border transition-colors bg-slate-50/50 dark:bg-boxdark-2/50 border-slate-100 dark:border-boxdark-2 hover:border-primary/30"
-                                    x-show="searchQuery === '' || String(@js($passenger->passenger_number)).includes(searchQuery)">
+                                    x-show="searchQuery === '' || String(@js($passenger->passenger_number)).includes(searchQuery) || String(@js($passenger->passenger_name ?? '')).toLowerCase().includes(searchQuery.toLowerCase())">
 
                                     <div class="flex flex-1 gap-4 items-center min-w-0">
                                         <div
@@ -161,11 +170,16 @@
                                             <span class="text-[9px] font-bold mt-0.5">ركاب</span>
                                         </div>
                                         <div class="flex-1 min-w-0">
+                                            @if($passenger->passenger_name)
+                                                <span class="block text-sm font-black text-slate-800 dark:text-white truncate">
+                                                    {{ $passenger->passenger_name }}
+                                                </span>
+                                            @endif
                                             <span
-                                                class="block mb-1 text-base font-black tracking-tight truncate font-headline text-slate-800 dark:text-white"
+                                                class="block mb-1 text-sm font-bold tracking-tight truncate font-headline text-slate-700 dark:text-gray-200"
                                                 style="direction: ltr; text-align: right;">
                                                 <x-phone-number :value="$passenger->passenger_number"
-                                                    class="text-base text-slate-800 dark:text-white !justify-start" />
+                                                    class="text-sm text-slate-700 dark:text-gray-200 !justify-start" />
                                             </span>
                                             <div class="flex flex-wrap gap-2 items-center">
                                                 @if($passenger->vehicle_type)
@@ -187,6 +201,7 @@
                                         {{-- زر فك الارتباط (موجود مسبقاً) --}}
                                      <button type="button" @click="
                                         deleteShipmentData = { 
+                                            passenger_name: '{{ addslashes($passenger->passenger_name ?? '') }}',
                                             bond_number: '{{ $passenger->passenger_number }}', 
                                             url: '{{ route('trip.removePassenger', ['trip' => $trip->id, 'passenger' => $passenger->id]) }}' 
                                         }; 
@@ -266,7 +281,7 @@
                             <option value="">-- اختر راكب من قائمة الانتظار --</option>
                             @forelse($pendingPassengers ?? [] as $pending)
                                 <option value="{{ $pending->id }}">
-                                    {{ $pending->passenger_number }} - {{ $pending->vehicle_type ? '(' . $pending->vehicle_type . ') - ' : '' }}(العدد: {{ $pending->count ?? 1 }}) - {{ $pending->destination }}
+                                    {{ $pending->passenger_name ? $pending->passenger_name . ' - ' : '' }}{{ $pending->passenger_number }} - {{ $pending->vehicle_type ? '(' . $pending->vehicle_type . ') - ' : '' }}(العدد: {{ $pending->count ?? 1 }}) - {{ $pending->destination }}
                                 </option>
                             @empty
                                 <option value="" disabled>لا يوجد ركاب في قائمة الانتظار حالياً</option>
@@ -314,7 +329,10 @@
         <h3 class="mb-2 text-lg font-black font-headline text-slate-800 dark:text-white">تأكيد فك ارتباط الراكب</h3>
 
         <p class="mb-8 text-sm font-medium leading-relaxed text-slate-500 dark:text-gray-400">
-            هل أنت متأكد من فك ارتباط الراكب ذو الرقم 
+            هل أنت متأكد من فك ارتباط الراكب
+            <template x-if="deleteShipmentData.passenger_name">
+                <span class="block font-black text-slate-800 dark:text-white text-base mt-1" x-text="deleteShipmentData.passenger_name"></span>
+            </template>
             <span class="inline-block px-2 py-0.5 mt-1 font-black rounded-md text-slate-700 bg-slate-100 dark:bg-boxdark-2 dark:text-slate-200" x-text="deleteShipmentData.bond_number" style="direction: ltr;"></span>
             <br>وإعادته إلى قائمة الانتظار؟
         </p>
@@ -349,6 +367,7 @@
                 addModalOpen: false, // التحكم في إظهار وإخفاء نافذة الإضافة
                 showDeleteModal: false, // التحكم في نافذة فك الارتباط (الحذف)
                 deleteShipmentData: { 
+                    passenger_name: '',
                     bond_number: '', 
                     url: '' 
                 }, // تخزين بيانات الراكب المراد فك ارتباطه
@@ -356,8 +375,9 @@
                 get countVisible() {
                     if (this.searchQuery === '') return {{ $trip->passengers->count() }};
                     let count = 0;
+                    const q = this.searchQuery.toLowerCase();
                     @foreach($trip->passengers as $passenger)
-                        if (String(@js($passenger->passenger_number)).includes(this.searchQuery)) count++;
+                        if (String(@js($passenger->passenger_number)).includes(this.searchQuery) || String(@js($passenger->passenger_name ?? '')).toLowerCase().includes(q)) count++;
                     @endforeach
                     return count;
                 }

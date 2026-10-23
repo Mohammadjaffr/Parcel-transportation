@@ -189,7 +189,13 @@
                                 <button type="button" @click="selectDriver(driver)"
                                     class="flex justify-between items-center px-4 py-3 w-full text-right border-b transition-colors hover:bg-slate-50 border-slate-50">
                                     <div class="flex flex-col gap-0.5">
-                                        <span class="text-sm font-bold text-slate-800" x-text="driver.name"></span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="text-sm font-bold text-slate-800" x-text="driver.name"></span>
+                                            <template x-if="driver.vehicle_type">
+                                                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-primary/10 text-primary"
+                                                    x-text="driver.vehicle_type"></span>
+                                            </template>
+                                        </div>
                                         <span class="text-xs text-right text-slate-500 dir-ltr"
                                             x-text="driver.phone"></span>
                                     </div>
@@ -205,6 +211,13 @@
                             placeholder="اسم السائق..." required
                             class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
                             :class="selectedDriverId ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
+
+                        <input type="text" name="driver_vehicle_type" x-model="vehicleTypeInput"
+                            :readonly="selectedDriverId !== null && !!vehicleTypeInput"
+                            list="mobile_outgoing_package_vehicle_types"
+                            placeholder="نوع المركبة (مثلاً: صالون، باص...)"
+                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
+                            :class="selectedDriverId && vehicleTypeInput ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
                     </div>
                 </div>
             </div>
@@ -561,6 +574,7 @@
             searchCountryQuery: '',
             localPhoneNumber: '',
             nameInput: '',
+            vehicleTypeInput: '',
             selectedDriverId: null,
             showDriverDropdown: false,
 
@@ -582,6 +596,7 @@
             searchDriver() {
                 this.selectedDriverId = null;
                 this.nameInput = '';
+                this.vehicleTypeInput = '';
                 if (this.localPhoneNumber.length === 0) {
                     this.filteredDrivers = [];
                     return;
@@ -595,6 +610,7 @@
             selectDriver(driver) {
                 this.selectedDriverId = driver.id;
                 this.nameInput = driver.name;
+                this.vehicleTypeInput = driver.vehicle_type || '';
                 let phone = driver.phone;
                 let matchedCountry = this.countries.find(c => phone.startsWith(c.dial_code));
                 if (matchedCountry) {
@@ -609,6 +625,7 @@
             resetSelection() {
                 this.selectedDriverId = null;
                 this.nameInput = '';
+                this.vehicleTypeInput = '';
                 this.localPhoneNumber = '';
                 this.filteredDrivers = [];
                 setTimeout(() => this.$el.querySelector('input[type="tel"]').focus(), 50);
@@ -616,4 +633,15 @@
         }));
     });
 </script>
+
+<datalist id="mobile_outgoing_package_vehicle_types">
+    <option value="باص">
+    <option value="صالون">
+    <option value="دينا">
+    <option value="شاص">
+    <option value="هايلوكس">
+    <option value="حبة وربع">
+    <option value="نوها">
+    <option value="خصوصي">
+</datalist>
 @endsection

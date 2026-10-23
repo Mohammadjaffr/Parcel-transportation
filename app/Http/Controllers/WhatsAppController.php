@@ -676,4 +676,111 @@ class WhatsAppController extends Controller
             ]);
         }
     }
+
+    /**
+     * إرسال إشعار تأكيد / إعادة حجز الراكب للوسيط مباشرة عبر واتساب
+     */
+    public function sendPassengerRebook($id)
+    {
+        try {
+            $passenger = Passengers::with(['broker', 'driver', 'branch.app'])->findOrFail($id);
+
+            $fallbackLink = WhatsAppLinkService::generate($passenger, 'passengerRebook');
+
+            $branch = $passenger->branch ?? auth()->user()?->branch;
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            $phone = $passenger->broker?->phone;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف أو واتساب الوسيط غير متوفر.',
+                ], 422);
+            }
+
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                $checkLive = $this->whatsAppService->getStatus();
+                if (!empty($checkLive['data']['Connected'])) {
+                    $serviceStatus = 'online';
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                } else {
+                    return response()->json([
+                        'success'       => false,
+                        'fallback'      => true,
+                        'whatsapp_link' => $fallbackLink,
+                        'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                    ]);
+                }
+            }
+
+            $rebookMessage = new \App\Services\WhatsApp\Messages\PassengerRebookMessage();
+            $message = $rebookMessage->getMessageBody($passenger);
+
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                
+                $serverStatus = $this->whatsAppService->getStatus();
+                $isServerOnline = !empty($serverStatus['data']['Connected']);
+
+                if (!$isServerOnline) {
+                    Cache::put($cacheKey, 'offline', now()->addMinute());
+                    $userMessage = 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+                } else {
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                    $userMessage = 'رقم هاتف الوسيط غير مسجل في الواتساب أو غير صحيح، جاري فتح الواتساب للإرسال اليدوي...';
+                }
+
+                Log::warning("WhatsApp sendText (passengerRebook) failed for passenger #{$id}: " . $errorMsg);
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار تأكيد الحجز للوسيط بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendPassengerRebook Error for passenger #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($passenger) ? WhatsAppLinkService::generate($passenger, 'passengerRebook') : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
 }
+

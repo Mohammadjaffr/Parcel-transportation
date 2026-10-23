@@ -194,6 +194,7 @@ public function fetchData(string $referenceId): array
 
             $passengersData[] = [
                 'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
+                'passenger_name'          => $p->passenger_name ?? '---',
                 'passenger_number'        => $pNum,
                 'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
                 'branch_name'             => $p->branch?->name ?? '---',
@@ -208,7 +209,8 @@ public function fetchData(string $referenceId): array
                 'note'                    => $p->note,
             ];
 
-            $msg .= "{$i}. الراكب: {$pNum}\n";
+            $nameInfo = $p->passenger_name ? " ({$p->passenger_name})" : "";
+            $msg .= "{$i}. الراكب: {$pNum}{$nameInfo}\n";
             $msg .= "📍 مكان الراكب: {$pPickup}\n";
             $msg .= "🏁 الوجهة: {$pDest}\n";
             if (!empty($p->vehicle_type)) {
@@ -245,6 +247,7 @@ public function fetchData(string $referenceId): array
             'driver_id'                     => $trip->driver_id ?: 'unassigned',
             'driver_name'                   => $driverName,
             'driver_phone'                  => $driverPhone ?: '---',
+            'driver_vehicle_type'           => $trip->driver?->vehicle_type ?? '---',
             'passengers'                    => $passengersData,
             'total_passengers_count'        => count($passengersData),
             'total_count'                   => $tripTotalCount,

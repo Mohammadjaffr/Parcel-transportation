@@ -57,7 +57,12 @@
                 <div class="flex justify-between items-center p-4 rounded-2xl border border-indigo-100 bg-indigo-50/30">
                     <div>
                         <span class="block mb-1 text-xs font-bold text-slate-500">اسم صاحب الباص (السائق)</span>
-                        <span class="text-lg font-black text-slate-800">{{ $driver_name ?? '---' }}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg font-black text-slate-800">{{ $driver_name ?? '---' }}</span>
+                            @if(!empty($driver_vehicle_type) && $driver_vehicle_type !== '---')
+                                <span class="px-2 py-0.5 text-xs font-bold rounded-lg bg-indigo-100 text-indigo-700">{{ $driver_vehicle_type }}</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="text-left">
                         <span class="block mb-1 text-xs font-bold text-slate-500">رقم التواصل</span>

@@ -140,8 +140,15 @@
                             <span class="material-symbols-outlined text-[32px]">person</span>
                         </div>
                         <div class="flex-1 pt-1">
-                            <div class="text-lg font-black truncate text-on-surface dark:text-white">
-                                {{ $package->driver->name ?? 'غير محدد' }}</div>
+                            <div class="flex items-center gap-2">
+                                <div class="text-lg font-black truncate text-on-surface dark:text-white">
+                                    {{ $package->driver->name ?? 'غير محدد' }}</div>
+                                @if ($package->driver?->vehicle_type)
+                                    <span class="px-2 py-0.5 text-xs font-bold rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-hover">
+                                        {{ $package->driver->vehicle_type }}
+                                    </span>
+                                @endif
+                            </div>
                             <div
                                 class="text-[13px] font-bold text-gray-500 dark:text-gray-400 mt-1 dir-ltr text-right truncate">
                                 <x-phone-number :value="$package->driver->phone ?? '---'" />

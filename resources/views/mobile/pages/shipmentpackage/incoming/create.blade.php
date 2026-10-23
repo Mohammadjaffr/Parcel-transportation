@@ -46,6 +46,7 @@
                             {{-- ========== Driver Combobox ========== --}}
                             driver_id: '{{ old('driver_id', '') }}',
                             driver_name: '{{ old('driver_name', '') }}',
+                            driver_vehicle_type: '{{ old('driver_vehicle_type', '') }}',
                             localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : '' }}',
                             selectedCountry: null,
                             countryOpen: false,
@@ -59,7 +60,7 @@
                                 return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
                             },
                             driverOpen: false,
-                            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
+                            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone, 'vehicle_type' => $d->vehicle_type])),
                             get filteredDrivers() {
                                 if (this.localPhoneNumber.trim() === '') return this.drivers;
                                 const s = this.localPhoneNumber.trim();
@@ -68,6 +69,7 @@
                             selectDriver(driver) {
                                 this.driver_id = driver.id;
                                 this.driver_name = driver.name;
+                                this.driver_vehicle_type = driver.vehicle_type || '';
                                 let p = driver.phone || '';
                                 const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
                                 for (const code of codes) {
@@ -83,6 +85,7 @@
                             onPhoneInput() {
                                 this.driver_id = null;
                                 this.driver_name = '';
+                                this.driver_vehicle_type = '';
                                 this.driverOpen = true;
                             },
 
@@ -296,8 +299,13 @@
                                             <template x-for="driver in filteredDrivers" :key="driver.id">
                                                 <button type="button" @click="selectDriver(driver)"
                                                     class="flex justify-between items-center px-4 py-3 w-full text-right rounded-lg border-b border-gray-50 transition-colors dark:border-boxdark hover:bg-surface dark:hover:bg-boxdark last:border-0">
-                                                    <span class="text-xs font-black text-on-surface dark:text-white"
-                                                        x-text="driver.name"></span>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="text-xs font-black text-on-surface dark:text-white"
+                                                            x-text="driver.name"></span>
+                                                        <span x-show="driver.vehicle_type"
+                                                            class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800"
+                                                            x-text="driver.vehicle_type"></span>
+                                                    </div>
                                                     <span
                                                         class="font-mono text-[10px] font-bold text-gray-400 dir-ltr text-right"
                                                         x-text="driver.phone || '—'"></span>
@@ -326,6 +334,26 @@
                                                     'bg-white dark:bg-boxdark focus:bg-white dark:focus:bg-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white'"
                                         class="px-4 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all outline-none dark:border-boxdark-2">
                                     @error('driver_name')
+                                        <p class="mt-2 text-xs font-bold text-error">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">نوع المركبة <span class="text-xs font-normal text-gray-400">(اختياري)</span></label>
+                                    <input type="text" name="driver_vehicle_type" list="mobile_pkg_in_driver_vehicle_types" x-model="driver_vehicle_type"
+                                        placeholder="مثال: صالون، باص، دينا..."
+                                        class="px-4 w-full h-12 text-sm font-bold rounded-xl border border-gray-200 transition-all outline-none bg-white dark:bg-boxdark dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/20 text-on-surface dark:text-white">
+                                    <datalist id="mobile_pkg_in_driver_vehicle_types">
+                                        <option value="صالون"></option>
+                                        <option value="باص"></option>
+                                        <option value="دينا"></option>
+                                        <option value="شاص"></option>
+                                        <option value="هايلوكس"></option>
+                                        <option value="حبة وربع"></option>
+                                        <option value="نوها"></option>
+                                        <option value="خصوصي"></option>
+                                    </datalist>
+                                    @error('driver_vehicle_type')
                                         <p class="mt-2 text-xs font-bold text-error">{{ $message }}</p>
                                     @enderror
                                 </div>

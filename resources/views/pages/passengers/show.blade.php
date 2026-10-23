@@ -20,7 +20,7 @@
         $driverInitial = mb_substr($driverName, 0, 1, 'UTF-8');
     @endphp
 
-    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" x-data="{ showStatusModal: false, showDeleteModal: false, isSubmitting: false }" dir="rtl">
+    <div class="pb-24 space-y-6 min-h-screen font-body lg:pb-12" x-data="{ showStatusModal: false, showRebookModal: false, showDeleteModal: false, isSubmitting: false }" dir="rtl">
 
         {{-- ================= Header ================= --}}
         <div class="mx-auto w-full max-w-7xl">
@@ -60,7 +60,12 @@
                         </div>
 
                         <h1 class="text-2xl font-black tracking-tight md:text-3xl text-on-surface dark:text-white">
-                            الراكب #{{ $passenger->id }}
+                            @if ($passenger->passenger_name)
+                                {{ $passenger->passenger_name }}
+                                <span class="text-base font-normal text-gray-400 dark:text-gray-500">#{{ $passenger->id }}</span>
+                            @else
+                                الراكب #{{ $passenger->id }}
+                            @endif
                         </h1>
 
                         <div class="flex flex-wrap gap-3 items-center mt-2">
@@ -113,9 +118,26 @@
                     @endif
 
                     @if ($statusKey == 'cancel')
+                        <button type="button" @click="showRebookModal = true"
+                            class="flex gap-2.5 items-center px-4 py-2.5 bg-emerald-600 text-white rounded-2xl text-xs font-black shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 hover:shadow-md active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">history</span>
+                            <span>إعادة الحجز</span>
+                        </button>
+
                         @php
+                            $whatsappRebookUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerRebook');
                             $whatsappCancelUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
                         @endphp
+
+                        @if ($whatsappRebookUrl)
+                            <button type="button"
+                                onclick="sendPassengerRebookDirect({{ $passenger->id }}, this, '{{ $whatsappRebookUrl }}')"
+                                class="flex gap-2.5 items-center px-4 py-2.5 bg-emerald-50 border border-emerald-100 rounded-2xl text-xs font-black text-emerald-600 shadow-sm transition-all hover:bg-emerald-100/50 hover:shadow-md dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/20 active:scale-95">
+                                <span class="material-symbols-outlined text-[18px]">send</span>
+                                <span>إرسال إعادة الحجز للوسيط (واتساب)</span>
+                            </button>
+                        @endif
+
                         @if ($whatsappCancelUrl)
                             <button type="button"
                                 onclick="sendPassengerCancelDirect({{ $passenger->id }}, this, '{{ $whatsappCancelUrl }}')"
@@ -252,6 +274,26 @@
 
                     <div class="p-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            @if ($passenger->passenger_name)
+                                <div
+                                    class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                                    <div
+                                        class="flex justify-center items-center w-12 h-12 text-violet-500 bg-violet-50 rounded-xl dark:bg-violet-500/10 shrink-0">
+                                        <span class="material-symbols-outlined">person</span>
+                                    </div>
+
+                                    <div class="min-w-0">
+                                        <span class="block mb-1 text-[11px] font-black text-gray-400 dark:text-gray-500">
+                                            اسم الراكب
+                                        </span>
+
+                                        <span class="block text-sm font-black truncate text-on-surface dark:text-white">
+                                            {{ $passenger->passenger_name }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
 
                             <div
                                 class="flex gap-4 p-4 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
@@ -747,6 +789,113 @@
             </div>
         </template>
 
+        {{-- ====================== Rebook Modal (Restore / Confirm Booking) ====================== --}}
+        <template x-teleport="body">
+            <div x-show="showRebookModal" x-cloak
+                class="fixed inset-0 z-[99999] flex justify-center items-center p-4 sm:p-0 font-body"
+                dir="rtl">
+
+                {{-- الخلفية المظللة --}}
+                <div x-show="showRebookModal" x-transition.opacity.duration.300ms
+                    class="absolute inset-0 backdrop-blur-sm bg-gray-900/60 dark:bg-black/70"
+                    @click="showRebookModal = false"></div>
+
+                {{-- المودال نفسه --}}
+                <div x-show="showRebookModal"
+                    x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transform transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                    class="relative bg-white dark:bg-boxdark w-full max-w-md rounded-[2rem] shadow-2xl p-8 text-center border border-gray-100 dark:border-boxdark-2">
+
+                    {{-- الأيقونة --}}
+                    <div
+                        class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-[1.5rem] border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
+                        <span class="text-4xl material-symbols-outlined">history</span>
+                    </div>
+
+                    <h3 class="mb-3 text-2xl font-black font-headline text-on-surface dark:text-white">
+                        تأكيد إعادة الحجز</h3>
+
+                    <p class="mb-4 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                        هل أنت متأكد من إعادة حجز الراكب <br>
+                        <span class="text-base font-black text-on-surface dark:text-white font-headline">
+                            {{ $passenger->passenger_name ? $passenger->passenger_name . ' (' . $passenger->passenger_number . ')' : $passenger->passenger_number }}
+                        </span>؟<br>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">سيتم تغيير حالة الراكب إلى قيد الانتظار وإلغاء الإلغاء.</span>
+                    </p>
+
+                    @if ($passenger->broker)
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                            <span class="material-symbols-outlined text-[16px]">handshake</span>
+                            <span>الوسيط:</span>
+                            <span>{{ $passenger->broker->name }}</span>
+                        </div>
+                    @endif
+
+                    {{-- فورم الإرسال --}}
+                    <form action="{{ route('passengers.updateStatus', $passenger->id) }}" method="POST" @submit="isSubmitting = true"
+                        class="space-y-4">
+                        @csrf
+                        <input type="hidden" name="status" value="pending">
+                        <input type="hidden" name="is_rebook" value="1">
+
+                        {{-- حقل رقم هاتف الوسيط (واتساب) --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>رقم هاتف الوسيط (واتساب)</span>
+                                <span class="text-xs font-normal text-gray-400">(لإرسال إشعار إعادة الحجز عبر الواتساب)</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-[18px] text-gray-400">call</span>
+                                <input type="text" name="broker_phone" value="{{ $passenger->broker?->phone }}"
+                                    placeholder="أدخل رقم الوسيط (مثال: 771234567)"
+                                    dir="ltr"
+                                    class="p-3.5 pr-10 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-body placeholder:text-gray-400 text-right">
+                            </div>
+                        </div>
+
+                        {{-- حقل ملاحظات --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>ملاحظات</span>
+                                <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                            </label>
+                            <textarea name="note" rows="2"
+                                placeholder="أي ملاحظات حول إعادة الحجز..."
+                                class="p-3.5 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-body placeholder:text-gray-400">{{ $passenger->note }}</textarea>
+                        </div>
+
+                        {{-- خيار إرسال واتساب للوسيط --}}
+                        <div class="flex items-center gap-2.5 p-3 text-right bg-emerald-50/70 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                            <input type="checkbox" id="send_whatsapp_rebook_show" name="send_whatsapp" value="1" 
+                                checked
+                                class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer">
+                            <label for="send_whatsapp_rebook_show" class="text-xs font-bold text-gray-700 dark:text-gray-200 cursor-pointer select-none flex-1">
+                                إرسال إشعار تأكيد الحجز للوسيط عبر واتساب 💬
+                            </label>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="button" @click="showRebookModal = false"
+                                class="flex-1 py-3.5 text-sm font-black rounded-xl transition-all text-gray-600 bg-gray-100 hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                تراجع
+                            </button>
+
+                            <button type="submit" :disabled="isSubmitting"
+                                class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-emerald-600 rounded-xl shadow-lg transition-all hover:bg-emerald-700 shadow-emerald-600/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                <span x-show="!isSubmitting">نعم، تأكيد إعادة الحجز</span>
+                                <span x-show="isSubmitting"
+                                    class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
         {{-- ====================== Delete Modal ====================== --}}
         <template x-teleport="body">
             <div x-show="showDeleteModal" x-cloak
@@ -970,6 +1119,76 @@
                 }
             } catch (error) {
                 console.error('WhatsApp direct cancel send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendPassengerRebookDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerRebook', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار إعادة الحجز للوسيط بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct rebook send error:', error);
                 if (fallbackLink) {
                     window.open(fallbackLink, '_blank');
                     showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');

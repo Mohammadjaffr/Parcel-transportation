@@ -16,6 +16,7 @@ use App\Models\PassengerTrip;
 use App\Services\WhatsApp\Messages\TripDriverMessage;
 use App\Services\WhatsApp\Messages\PriceAgreementMessage;
 use App\Services\WhatsApp\Messages\PassengerCancelMessage;
+use App\Services\WhatsApp\Messages\PassengerRebookMessage;
 
 
 class WhatsAppLinkService
@@ -35,6 +36,7 @@ class WhatsAppLinkService
             'tripDriver' => new TripDriverMessage(),
             'passengerBooking' => new PassengerBookingMessage(),
             'passengerCancel' => new PassengerCancelMessage(),
+            'passengerRebook' => new PassengerRebookMessage(),
             default    => null,
         };
 

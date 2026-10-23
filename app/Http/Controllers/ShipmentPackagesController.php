@@ -116,12 +116,18 @@ class ShipmentPackagesController extends Controller
                         'app_id' => $user->app_id
                     ],
                     [
-                        'name'       => $request->driver_name,
-                        'branch_id'  => $user->branch_id,
-                        'created_by' => $user->id,
+                        'name'         => $request->driver_name,
+                        'vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type,
+                        'branch_id'    => $user->branch_id,
+                        'created_by'   => $user->id,
                     ]
                 );
                 $driverId = $driver->id;
+            } elseif ($driverId && ($request->filled('driver_vehicle_type') || $request->filled('vehicle_type'))) {
+                $driver = Driver::find($driverId);
+                if ($driver && empty($driver->vehicle_type)) {
+                    $driver->update(['vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type]);
+                }
             }
             $package = ShipmentPackage::create([
                 'app_id'             => $user->app_id,
@@ -433,8 +439,11 @@ class ShipmentPackagesController extends Controller
         $customers = Customer::get(['id', 'name', 'phone']);
 
         $drivers = Driver::where('app_id', $user->app_id)
+
             ->where('is_banned', false)
             ->get(['id', 'name', 'phone']);
+            ->get(['id', 'name', 'phone', 'vehicle_type']);
+
 
         // 3. توجيه المستخدم للواجهة المناسبة
         if ($request->isMobile) {
@@ -456,6 +465,7 @@ class ShipmentPackagesController extends Controller
 
         $offices = Office::with('branches')->get();
         $customers = Customer::get(['id', 'name', 'phone']);
+
         $drivers = Driver::where('app_id', $user->app_id)
             ->where(function ($q) use ($package) {
                 $q->where('is_banned', false);
@@ -464,6 +474,9 @@ class ShipmentPackagesController extends Controller
                 }
             })
             ->get(['id', 'name', 'phone']);
+
+        $drivers = Driver::where('app_id', $user->app_id)->get(['id', 'name', 'phone', 'vehicle_type']);
+
 
         if ($request->isMobile) {
             return view('mobile.pages.shipmentpackage.incoming.edit', compact('package', 'offices', 'drivers', 'customers'));
@@ -518,9 +531,18 @@ class ShipmentPackagesController extends Controller
 
                 $driver = Driver::firstOrCreate(
                     ['phone' => $cleanDriverPhone, 'app_id' => $user->app_id],
-                    ['name' => $request->driver_name, 'created_by' => $user->id]
+                    [
+                        'name' => $request->driver_name,
+                        'vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type,
+                        'created_by' => $user->id
+                    ]
                 );
                 $driverId = $driver->id;
+            } elseif ($driverId && ($request->filled('driver_vehicle_type') || $request->filled('vehicle_type'))) {
+                $driver = Driver::find($driverId);
+                if ($driver && empty($driver->vehicle_type)) {
+                    $driver->update(['vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type]);
+                }
             }
 
             // ==========================================
@@ -656,9 +678,18 @@ class ShipmentPackagesController extends Controller
 
                 $driver = Driver::firstOrCreate(
                     ['phone' => $request->driver_phone, 'app_id' => $user->app_id], // الشرط: البحث برقم الهاتف والشركة
-                    ['name' => $request->driver_name, 'created_by' => $user->id]     // البيانات الإضافية في حال الإنشاء
+                    [
+                        'name' => $request->driver_name,
+                        'vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type,
+                        'created_by' => $user->id
+                    ]     // البيانات الإضافية في حال الإنشاء
                 );
                 $driverId = $driver->id;
+            } elseif ($driverId && ($request->filled('driver_vehicle_type') || $request->filled('vehicle_type'))) {
+                $driver = Driver::find($driverId);
+                if ($driver && empty($driver->vehicle_type)) {
+                    $driver->update(['vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type]);
+                }
             }
 
             // ==========================================
@@ -857,12 +888,18 @@ class ShipmentPackagesController extends Controller
                         'app_id' => $appId,
                     ],
                     [
-                        'name'       => $request->driver_name,
-                        'branch_id'  => $senderBranchId,
-                        'created_by' => $createdBy,
+                        'name'         => $request->driver_name,
+                        'vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type,
+                        'branch_id'    => $senderBranchId,
+                        'created_by'   => $createdBy,
                     ]
                 );
                 $driverId = $driver->id;
+            } elseif ($driverId && ($request->filled('driver_vehicle_type') || $request->filled('vehicle_type'))) {
+                $driver = Driver::find($driverId);
+                if ($driver && empty($driver->vehicle_type)) {
+                    $driver->update(['vehicle_type' => $request->driver_vehicle_type ?? $request->vehicle_type]);
+                }
             }
 
             $package = ShipmentPackage::create([

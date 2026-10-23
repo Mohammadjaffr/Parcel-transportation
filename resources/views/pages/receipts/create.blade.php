@@ -39,6 +39,7 @@
             {{-- ========== Driver Combobox ========== --}}
             driver_id: '{{ old('driver_id', '') }}',
             driver_name: '{{ old('driver_name', '') }}',
+            driver_vehicle_type: '{{ old('driver_vehicle_type', '') }}',
             localPhoneNumber: '{{ old('driver_phone') ? preg_replace('/^967/', '', old('driver_phone')) : '' }}',
             selectedCountry: { name: 'اليمن', code: 'YE', dial_code: '+967' },
             countryOpen: false,
@@ -56,7 +57,7 @@
                 return this.selectedCountry.dial_code.replace('+', '') + this.localPhoneNumber;
             },
             driverOpen: false,
-            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
+            drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone, 'vehicle_type' => $d->vehicle_type])),
             get filteredDrivers() {
                 if (this.localPhoneNumber.trim() === '') return this.drivers;
                 const s = this.localPhoneNumber.trim();
@@ -65,6 +66,7 @@
             selectDriver(driver) {
                 this.driver_id = driver.id;
                 this.driver_name = driver.name;
+                this.driver_vehicle_type = driver.vehicle_type || '';
                 let p = driver.phone || '';
                 const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
                 for (const code of codes) {
@@ -80,6 +82,7 @@
             onPhoneInput() {
                 this.driver_id = null;
                 this.driver_name = '';
+                this.driver_vehicle_type = '';
                 this.driverOpen = true;
             },
         
@@ -118,7 +121,7 @@
 
                     <input type="hidden" name="driver_id" :value="driver_id">
 
-                    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                    <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
                         {{-- رقم الهاتف --}}
                         <div class="relative">
                             <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">
@@ -172,7 +175,10 @@
                                 class="overflow-y-auto absolute z-30 mt-1 w-full max-h-56 bg-white rounded-xl border border-gray-100 shadow-lg dark:bg-gray-800 dark:border-gray-700 custom-scrollbar" style="top: 100%;">
                                 <template x-for="driver in filteredDrivers" :key="driver.id">
                                     <button type="button" @click="selectDriver(driver)" class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-gray-50 transition-colors hover:bg-primary/5 dark:hover:bg-gray-700 last:border-0 dark:border-gray-700/50">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white" x-text="driver.name"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white" x-text="driver.name"></span>
+                                            <span x-show="driver.vehicle_type" class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
+                                        </div>
                                         <span class="font-mono text-xs text-gray-500 dir-ltr" x-text="driver.phone || '—'"></span>
                                     </button>
                                 </template>
@@ -194,6 +200,26 @@
                                 :class="driver_id ? 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 cursor-not-allowed border-gray-200 dark:border-gray-700' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white'"
                                 class="px-4 w-full h-12 text-sm rounded-xl transition-all outline-none">
                             @error('driver_name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- نوع المركبة --}}
+                        <div>
+                            <label class="block mb-1.5 text-xs font-bold text-gray-700 dark:text-gray-400">
+                                نوع المركبة <span class="text-xs text-gray-400 font-normal">(اختياري)</span>
+                            </label>
+                            <input type="text" name="driver_vehicle_type" list="driver_vehicle_types_receipt" x-model="driver_vehicle_type" placeholder="مثال: صالون، باص، دينا..."
+                                class="px-4 w-full h-12 text-sm rounded-xl transition-all outline-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white">
+                            <datalist id="driver_vehicle_types_receipt">
+                                <option value="صالون"></option>
+                                <option value="باص"></option>
+                                <option value="دينا"></option>
+                                <option value="شاص"></option>
+                                <option value="هايلوكس"></option>
+                                <option value="حبة وربع"></option>
+                                <option value="نوها"></option>
+                                <option value="خصوصي"></option>
+                            </datalist>
+                            @error('driver_vehicle_type') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </div>

@@ -38,11 +38,12 @@ class ReceiptHeaderController extends Controller
             'number'             => ['required', 'string', 'max:255', Rule::unique('receipt_headers')->where(function ($query) use ($request) {
                 return $query->where('source_branch_code', $request->source_branch_code);
             })],
-            'source_branch_code' => ['required', 'exists:branches,code'],
-            'driver_id'          => ['nullable', 'exists:drivers,id'],
-            'driver_name'        => ['required', 'string', 'max:255'],
-            'driver_phone'       => ['nullable', 'string', 'max:20'],
-            'general_notes'      => ['nullable', 'string', 'max:1000'],
+            'source_branch_code'  => ['required', 'exists:branches,code'],
+            'driver_id'           => ['nullable', 'exists:drivers,id'],
+            'driver_name'         => ['required', 'string', 'max:255'],
+            'driver_phone'        => ['nullable', 'string', 'max:20'],
+            'driver_vehicle_type' => ['nullable', 'string', 'max:100'],
+            'general_notes'       => ['nullable', 'string', 'max:1000'],
 
             // Items
             'items'                  => ['required', 'array', 'min:1'],
@@ -89,10 +90,17 @@ class ReceiptHeaderController extends Controller
                 // Resolve driver: existing selection or auto-create
                 if ($request->filled('driver_id')) {
                     $driverId = $request->driver_id;
+                    if ($request->filled('driver_vehicle_type')) {
+                        $existingDriver = Driver::find($driverId);
+                        if ($existingDriver && !$existingDriver->vehicle_type) {
+                            $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                        }
+                    }
                 } else {
                     $driver = Driver::create([
-                        'name'  => $request->driver_name,
-                        'phone' => $request->driver_phone,
+                        'name'         => $request->driver_name,
+                        'phone'        => $request->driver_phone,
+                        'vehicle_type' => $request->driver_vehicle_type,
                     ]);
                     $driverId = $driver->id;
                 }
@@ -215,11 +223,12 @@ class ReceiptHeaderController extends Controller
             'number'             => ['required', 'string', 'max:255', Rule::unique('receipt_headers')->ignore($id)->where(function ($query) use ($request) {
                 return $query->where('source_branch_code', $request->source_branch_code);
             })],
-            'source_branch_code' => ['required', 'exists:branches,code'],
-            'driver_id'          => ['nullable', 'exists:drivers,id'],
-            'driver_name'        => ['required', 'string', 'max:255'],
-            'driver_phone'       => ['nullable', 'string', 'max:20','min:10'],
-            'general_notes'      => ['nullable', 'string', 'max:1000'],
+            'source_branch_code'  => ['required', 'exists:branches,code'],
+            'driver_id'           => ['nullable', 'exists:drivers,id'],
+            'driver_name'         => ['required', 'string', 'max:255'],
+            'driver_phone'        => ['nullable', 'string', 'max:20','min:10'],
+            'driver_vehicle_type' => ['nullable', 'string', 'max:100'],
+            'general_notes'       => ['nullable', 'string', 'max:1000'],
 
             'items'                  => ['required', 'array', 'min:1'],
             'items.*.number'         => ['required', 'string', 'max:255', 'distinct'],
@@ -257,10 +266,17 @@ class ReceiptHeaderController extends Controller
                 // Resolve driver
                 if ($request->filled('driver_id')) {
                     $driverId = $request->driver_id;
+                    if ($request->filled('driver_vehicle_type')) {
+                        $existingDriver = Driver::find($driverId);
+                        if ($existingDriver && !$existingDriver->vehicle_type) {
+                            $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                        }
+                    }
                 } else {
                     $driver = Driver::create([
-                        'name'  => $request->driver_name,
-                        'phone' => $request->driver_phone,
+                        'name'         => $request->driver_name,
+                        'phone'        => $request->driver_phone,
+                        'vehicle_type' => $request->driver_vehicle_type,
                     ]);
                     $driverId = $driver->id;
                 }

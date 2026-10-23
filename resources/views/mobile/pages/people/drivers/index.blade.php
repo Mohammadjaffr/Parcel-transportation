@@ -11,15 +11,21 @@
         showBanModal: false,
         searchQuery: '',
     
+
         editDriverData: { id: '', name: '', phone: '', url: '' },
         deleteDriverData: { id: '', name: '', url: '' },
         banDriverData: { id: '', name: '', is_banned: false, url: '' },
+
+        editDriverData: { id: '', name: '', phone: '', vehicle_type: '', url: '' },
+        deleteDriverData: { id: '', name: '', url: '' }, // بيانات السائق المراد حذفه
+
     
-        openEditModal(id, name, phone) {
+        openEditModal(id, name, phone, vehicleType) {
             this.editDriverData = {
                 id: id,
                 name: name,
                 phone: phone,
+                vehicle_type: vehicleType || '',
                 url: '{{ route('drivers.index') }}/' + id
             };
             this.showEditModal = true;
@@ -99,7 +105,7 @@
                             @endphp
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <div class="flex flex-wrap gap-2 items-center mb-1.5">
                                 <h3 class="text-base font-bold leading-none truncate font-headline text-slate-800">
                                     {{ $driver->name }}</h3>
                                 @if ($driver->is_banned)
@@ -122,8 +128,16 @@
                                 <x-phone-number :value="$driver->phone" class="font-mono text-xs font-bold tracking-wider" />
 
                             </div>
+
+                            @if ($driver->vehicle_type)
+                                <div class="flex gap-1.5 items-center mt-1 text-xs font-bold text-primary">
+                                    <span class="material-symbols-outlined text-[14px]">directions_car</span>
+                                    <span>{{ $driver->vehicle_type }}</span>
+                                </div>
+                            @endif
                         </div>
-                        <div class="flex items-center gap-1.5">
+
+                        <div class="flex gap-1.5 items-center">
                             <button type="button"
                                 @click="openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"
                                 title="{{ $driver->is_banned ? 'إلغاء حظر السائق' : 'حظر السائق' }}"
@@ -139,6 +153,13 @@
                                 <span class="text-xl material-symbols-outlined">edit_square</span>
                             </button>
                         </div>
+
+                        <button type="button"
+                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }}, {{ json_encode($driver->vehicle_type) }})"
+                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
+                            <span class="text-xl material-symbols-outlined">edit_square</span>
+                        </button>
+
                     </div>
 
                     <!-- Divider -->
@@ -307,6 +328,15 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">نوع المركبة</label>
+                        <div class="relative">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">directions_car</span>
+                            <input type="text" name="vehicle_type" list="mobile_driver_vehicle_types" placeholder="مثلاً: صالون، باص، دينا، شاص..."
+                                class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+                    </div>
+
                     <button type="submit"
                         class="flex gap-2 justify-center items-center mt-6 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95">
                         <span class="material-symbols-outlined">save</span>
@@ -451,6 +481,15 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block px-1 mb-2 text-sm font-bold text-slate-600 font-headline">نوع المركبة</label>
+                        <div class="relative">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">directions_car</span>
+                            <input type="text" name="vehicle_type" x-model="editDriverData.vehicle_type" list="mobile_driver_vehicle_types" placeholder="مثلاً: صالون، باص، دينا، شاص..."
+                                class="pr-12 pl-4 w-full h-14 text-sm rounded-2xl border-none ring-1 transition-all outline-none bg-slate-50 focus:bg-white ring-slate-100 focus:ring-2 focus:ring-primary/20 font-headline">
+                        </div>
+                    </div>
+
                     <button type="submit"
                         class="flex gap-2 justify-center items-center mt-4 w-full h-14 font-black text-white rounded-2xl shadow-lg transition-all bg-primary font-headline shadow-primary/30 active:scale-95">
                         <span class="material-symbols-outlined">update</span>
@@ -509,6 +548,7 @@
             </div>
         </div>
 
+
         <!-- Ban / Unban Confirmation Bottom Sheet -->
         <div x-show="showBanModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 translate-y-full" x-transition:enter-end="opacity-100 translate-y-0"
@@ -562,6 +602,18 @@
                 </form>
             </div>
         </div>
+
+
+        <datalist id="mobile_driver_vehicle_types">
+            <option value="باص">
+            <option value="صالون">
+            <option value="دينا">
+            <option value="شاص">
+            <option value="هايلوكس">
+            <option value="حبة وربع">
+            <option value="نوها">
+            <option value="خصوصي">
+        </datalist>
 
     </div>
 @endsection

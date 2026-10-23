@@ -165,7 +165,10 @@
                             </div>
                             <div class="flex items-center gap-1 text-[11px] font-medium text-gray-500">
                                 <span class="material-symbols-outlined text-[14px]">directions_car</span>
-                                {{ Str::limit($receipt->driver->name ?? '—', 15) }}
+                                <span>{{ Str::limit($receipt->driver->name ?? '—', 15) }}</span>
+                                @if ($receipt->driver?->vehicle_type)
+                                    <span class="text-[10px] text-amber-600 dark:text-amber-400 font-bold">({{ $receipt->driver->vehicle_type }})</span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -217,7 +220,14 @@
                                 {{-- السائق --}}
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $receipt->driver->name ?? '—' }}</span>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span class="text-sm font-bold text-gray-900 dark:text-white">{{ $receipt->driver->name ?? '—' }}</span>
+                                            @if ($receipt->driver?->vehicle_type)
+                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                                    {{ $receipt->driver->vehicle_type }}
+                                                </span>
+                                            @endif
+                                        </div>
                                         <span class="text-[11px] font-medium text-gray-500 dir-ltr text-right">{{ $receipt->driver->phone ?? '' }}</span>
                                     </div>
                                 </td>

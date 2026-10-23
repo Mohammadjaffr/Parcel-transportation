@@ -40,6 +40,32 @@
                 </div>
             </div>
 
+            {{-- بيانات السائق --}}
+            @if ($receipt->driver)
+            <div
+                class="flex-1 relative flex flex-col items-start justify-between rounded-2xl bg-white p-5 dark:bg-white/[0.03] border border-gray-100 dark:border-gray-800 transition-all hover:shadow-md shadow-theme-sm">
+                <div
+                    class="flex justify-center items-center w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-500">
+                    <span class="material-symbols-outlined text-[22px]">person</span>
+                </div>
+                <div class="mt-3 space-y-1 w-full">
+                    <span class="font-bold tracking-widest text-gray-500 uppercase text-theme-xs dark:text-gray-400">
+                        السائق</span>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <h4 class="text-base font-black text-gray-800 dark:text-gray-200">{{ $receipt->driver->name }}</h4>
+                        @if ($receipt->driver->vehicle_type)
+                            <span class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                                {{ $receipt->driver->vehicle_type }}
+                            </span>
+                        @endif
+                    </div>
+                    @if ($receipt->driver->phone)
+                        <span class="text-xs text-gray-400 font-mono dir-ltr block">{{ $receipt->driver->phone }}</span>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             {{-- إجمالي الطرود --}}
             <div @click="filter = 'all'"
                 :class="filter === 'all' ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-gray-100 dark:border-gray-800'"

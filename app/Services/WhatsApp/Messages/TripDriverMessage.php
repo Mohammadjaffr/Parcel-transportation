@@ -44,6 +44,7 @@ class TripDriverMessage implements WhatsAppMessageInterface
         $tripTotalCount = 0;
 
         foreach ($entity->passengers as $p) {
+            $pName   = $p->passenger_name ? trim($p->passenger_name) : '';
             $pNum    = $p->passenger_number ?? '---';
             $pPickup = $p->pickup_location ?? '---';
             $pDest   = $p->destination ?? '---';
@@ -52,7 +53,11 @@ class TripDriverMessage implements WhatsAppMessageInterface
 
             $tripTotalCount += $pCnt;
 
-            $msg .= "👤 *الراكب ({$i}):* {$pNum}\n";
+            if ($pName) {
+                $msg .= "👤 *الراكب ({$i}):* {$pName} ({$pNum})\n";
+            } else {
+                $msg .= "👤 *الراكب ({$i}):* {$pNum}\n";
+            }
             $msg .= "📍 *من:* {$pPickup}\n";
             $msg .= "🏁 *إلى:* {$pDest}\n";
             if (!empty($p->vehicle_type)) {

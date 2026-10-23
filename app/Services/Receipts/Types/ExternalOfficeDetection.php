@@ -187,6 +187,7 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
             'driver_phone'      => $package->driver?->phone ?? '---',
+            'driver_vehicle_type' => $package->driver?->vehicle_type ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
             'package_receiver_office' => $officeBranch ? 'مكتب ' . ($officeBranch->office->name ?? '') . ' - ' . $officeBranch->name : 'غير محدد',
             'package_receiver_phone' => $officeBranch->phone ?? '---',

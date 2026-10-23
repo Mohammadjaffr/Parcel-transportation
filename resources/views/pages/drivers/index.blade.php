@@ -28,7 +28,7 @@
                 </button>
             </div>
         </div>
-        <div class="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 gap-4 mx-auto mb-6 max-w-7xl sm:grid-cols-3">
             {{-- إجمالي السائقين --}}
             <div
                 class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-primary ring-primary/20 dark:bg-boxdark">
@@ -46,9 +46,9 @@
 
             {{-- السائقين النشطين --}}
             <div
-                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-emerald-500 ring-emerald-500/20 dark:bg-boxdark">
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border-emerald-500 ring-2 shadow-sm ring-emerald-500/20 dark:bg-boxdark">
                 <div
-                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                    class="flex justify-center items-center w-12 h-12 text-emerald-600 bg-emerald-50 rounded-xl dark:bg-emerald-500/10 dark:text-emerald-400">
                     <span class="material-symbols-outlined text-[24px]">person_check</span>
                 </div>
                 <div class="mt-4">
@@ -61,9 +61,9 @@
 
             {{-- السائقين المحظورين --}}
             <div
-                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl ring-2 shadow-sm border-rose-500 ring-rose-500/20 dark:bg-boxdark">
+                class="flex relative flex-col justify-between items-start p-5 bg-white rounded-2xl border-rose-500 ring-2 shadow-sm ring-rose-500/20 dark:bg-boxdark">
                 <div
-                    class="flex justify-center items-center w-12 h-12 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500">
+                    class="flex justify-center items-center w-12 h-12 text-rose-500 bg-rose-50 rounded-xl dark:bg-rose-500/10">
                     <span class="material-symbols-outlined text-[24px]">person_off</span>
                 </div>
                 <div class="mt-4">
@@ -102,7 +102,7 @@
                     </div>
 
                     {{-- Status Filter Tabs --}}
-                    <div class="flex items-center gap-1.5 p-1 bg-surface dark:bg-boxdark-2 rounded-2xl border border-gray-100 dark:border-boxdark self-start md:self-auto">
+                    <div class="flex gap-1.5 items-center self-start p-1 rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark md:self-auto">
                         <button type="button" @click="filterStatus = 'all'; updateVisibility()"
                             :class="filterStatus === 'all' ? 'bg-white dark:bg-boxdark text-primary shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
                             class="px-3.5 py-2 text-xs rounded-xl transition-all">
@@ -110,14 +110,14 @@
                         </button>
                         <button type="button" @click="filterStatus = 'active'; updateVisibility()"
                             :class="filterStatus === 'active' ? 'bg-white dark:bg-boxdark text-emerald-600 shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
-                            class="flex items-center gap-1.5 px-3.5 py-2 text-xs rounded-xl transition-all">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            class="flex gap-1.5 items-center px-3.5 py-2 text-xs rounded-xl transition-all">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
                             النشطين
                         </button>
                         <button type="button" @click="filterStatus = 'banned'; updateVisibility()"
                             :class="filterStatus === 'banned' ? 'bg-white dark:bg-boxdark text-rose-600 shadow-sm font-black' : 'text-gray-500 hover:text-gray-800 dark:text-bodydark font-bold'"
-                            class="flex items-center gap-1.5 px-3.5 py-2 text-xs rounded-xl transition-all">
-                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            class="flex gap-1.5 items-center px-3.5 py-2 text-xs rounded-xl transition-all">
+                            <span class="w-2 h-2 bg-rose-500 rounded-full"></span>
                             المحظورين
                         </button>
                     </div>
@@ -157,7 +157,7 @@
                                 </div>
 
                                 <div class="flex flex-col gap-1 min-w-0">
-                                    <div class="flex flex-wrap items-center gap-2">
+                                    <div class="flex flex-wrap gap-2 items-center">
                                         <h3 class="text-sm font-black truncate text-on-surface dark:text-white font-headline">
                                             {{ $driver->name }}
                                         </h3>
@@ -177,6 +177,13 @@
 
                                     <x-phone-number :value="$driver->phone"
                                         class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />
+
+                                    @if ($driver->vehicle_type)
+                                        <span class="inline-flex items-center gap-1 text-[11px] font-bold text-primary dark:text-primary-hover">
+                                            <span class="material-symbols-outlined text-[13px]">directions_car</span>
+                                            {{ $driver->vehicle_type }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -215,7 +222,7 @@
                                     </button>
 
                                     <button type="button"
-                                        @click="menuOpen = false; openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
+                                        @click="menuOpen = false; openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }}, {{ json_encode($driver->vehicle_type) }})"
                                         class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-gray-700 transition-colors dark:text-gray-200 hover:bg-primary/10 hover:text-primary dark:hover:bg-boxdark">
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
                                         تعديل البيانات
@@ -298,6 +305,7 @@
                         <tr
                             class="text-[11px] font-black text-gray-500 uppercase tracking-[0.1em] bg-gray-50/80 dark:bg-boxdark-2 dark:text-bodydark border-b border-gray-100 dark:border-boxdark-2">
                             <th class="px-6 py-4">السائق</th>
+                            <th class="px-6 py-4 text-center">نوع المركبة</th>
                             <th class="px-6 py-4 text-center">رقم الهاتف</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
                             <th class="px-6 py-4 text-center">تواصل سريع</th>
@@ -328,6 +336,18 @@
                                     </div>
                                 </td>
 
+                                {{-- Vehicle Type --}}
+                                <td class="px-6 py-4 text-center">
+                                    @if ($driver->vehicle_type)
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-bold rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-hover">
+                                            <span class="material-symbols-outlined text-[15px]">directions_car</span>
+                                            {{ $driver->vehicle_type }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">غير محدد</span>
+                                    @endif
+                                </td>
+
                                 {{-- Phone --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="inline-flex justify-center">
@@ -339,12 +359,12 @@
                                 {{-- Status --}}
                                 <td class="px-6 py-4 text-center">
                                     @if ($driver->is_banned)
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-rose-50 text-rose-600 border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-black text-rose-600 bg-rose-50 rounded-full border border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20">
                                             <span class="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span>
                                             محظور
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
+                                        <span class="inline-flex gap-1.5 items-center px-3 py-1 text-xs font-black text-emerald-600 bg-emerald-50 rounded-full border border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
                                             <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                                             نشط
                                         </span>
@@ -374,7 +394,7 @@
 
                                 {{-- Actions --}}
                                 <td class="relative px-6 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-1.5">
+                                    <div class="flex gap-1.5 justify-center items-center">
                                         {{-- زر الحظر / فك الحظر --}}
                                         <button type="button"
                                             @click="openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"
@@ -387,11 +407,16 @@
 
                                         {{-- زر تعديل البيانات --}}
                                         <button type="button"
+
                                             @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
                                             title="تعديل بيانات السائق"
                                             class="flex justify-center items-center w-9 h-9 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90 dark:bg-boxdark-2 dark:hover:bg-boxdark">
                                             <span class="text-[19px] material-symbols-outlined">edit_square</span>
                                         </button>
+
+                                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }}, {{ json_encode($driver->vehicle_type) }})"
+                                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
+                                            <span class="text-xl material-symbols-outlined">edit_square</span>
 
                                         {{-- زر حذف السائق --}}
                                         <button type="button"
@@ -584,6 +609,22 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                            نوع المركبة
+                        </label>
+
+                        <div class="relative">
+                            <span
+                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
+                                directions_car
+                            </span>
+
+                            <input type="text" name="vehicle_type" list="driver_vehicle_types" placeholder="مثلاً: صالون، باص، دينا، شاص، هايلوكس..."
+                                class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                        </div>
+                    </div>
+
                     <button type="submit" :disabled="isSubmitting"
                         :class="isSubmitting ? 'opacity-80 cursor-wait' : 'active:scale-95 hover:shadow-xl'"
                         class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all duration-300 bg-primary shadow-primary/30">
@@ -768,6 +809,22 @@
                         </div>
                     </div>
 
+                    <div>
+                        <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">
+                            نوع المركبة
+                        </label>
+
+                        <div class="relative">
+                            <span
+                                class="absolute right-4 top-1/2 text-gray-400 -translate-y-1/2 material-symbols-outlined dark:text-gray-500">
+                                directions_car
+                            </span>
+
+                            <input type="text" name="vehicle_type" x-model="editDriverData.vehicle_type" list="driver_vehicle_types" placeholder="مثلاً: صالون، باص، دينا، شاص، هايلوكس..."
+                                class="pr-12 pl-4 w-full h-14 text-sm rounded-xl border-none ring-1 ring-gray-200 transition-all outline-none bg-surface dark:bg-boxdark-2 text-on-surface dark:text-white focus:bg-white dark:focus:bg-boxdark dark:ring-boxdark-2 focus:ring-2 focus:ring-primary/40">
+                        </div>
+                    </div>
+
                     <button type="submit"
                         class="flex gap-2 justify-center items-center mt-8 w-full h-14 font-black text-white rounded-xl shadow-lg transition-all bg-primary shadow-primary/30 active:scale-95">
                         <span class="material-symbols-outlined">update</span>
@@ -824,6 +881,7 @@
                 </form>
             </div>
         </div>
+
         {{-- 4. Ban / Unban Confirmation Modal --}}
         <div x-show="showBanModal" x-cloak x-transition:enter="transition ease-out duration-300"
             x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
@@ -874,6 +932,19 @@
                 </form>
             </div>
         </div>
+
+
+        <datalist id="driver_vehicle_types">
+            <option value="باص">
+            <option value="صالون">
+            <option value="دينا">
+            <option value="شاص">
+            <option value="هايلوكس">
+            <option value="حبة وربع">
+            <option value="نوها">
+            <option value="خصوصي">
+        </datalist>
+
     </div>
 @endsection
 
@@ -893,6 +964,7 @@
                     id: '',
                     name: '',
                     phone: '',
+                    vehicle_type: '',
                     url: ''
                 },
                 deleteDriverData: {
@@ -911,11 +983,18 @@
                     this.updateVisibility();
                 },
 
+
                 showRow(name, phone, isBanned) {
                     if (this.filterStatus === 'active' && isBanned) {
                         return false;
                     }
                     if (this.filterStatus === 'banned' && !isBanned) {
+
+                // تحديث الدالة لتستقبل الحالة (status) ونوع المركبة
+                showRow(name, phone, vehicleType, status) {
+                    // 1. فحص الفلتر (الكل / نشط / غير نشط)
+                    if (this.filterStatus !== 'all' && this.filterStatus !== status) {
+
                         return false;
                     }
 
@@ -925,7 +1004,8 @@
                     }
 
                     return String(name || '').toLowerCase().includes(query) ||
-                        String(phone || '').toLowerCase().includes(query);
+                        String(phone || '').toLowerCase().includes(query) ||
+                        String(vehicleType || '').toLowerCase().includes(query);
                 },
 
                 updateVisibility() {
@@ -937,11 +1017,16 @@
                     });
                 },
 
+
                 openEditModal(id, name, phone) {
+
+                openEditModal(id, name, phone, vehicleType) {
+
                     this.editDriverData = {
                         id: id,
                         name: name,
                         phone: phone,
+                        vehicle_type: vehicleType || '',
                         url: '{{ route('drivers.index') }}/' + id
                     };
                     this.showEditModal = true;

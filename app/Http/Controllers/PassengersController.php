@@ -58,6 +58,7 @@ class PassengersController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('passenger_number', 'like', "%{$search}%")
+                    ->orWhere('passenger_name', 'like', "%{$search}%")
                     ->orWhere('pickup_location', 'like', "%{$search}%")
                     ->orWhere('destination', 'like', "%{$search}%")
                     ->orWhere('note', 'like', "%{$search}%")
@@ -128,6 +129,7 @@ class PassengersController extends Controller
             'date' => ['required', 'date'],
             'pickup_location' => 'required|string|max:255', // مكان الصعود الجديد
             'destination' => 'nullable|string|max:255',
+            'passenger_name' => ['nullable', 'string', 'max:255'],
             'passenger_number' => ['required', 'string', 'max:255'],
 
             // 👈 التعديل الجديد: إزالة حقول العملاء وإضافة حقول الوسيط المتوافقة مع المودال
@@ -257,6 +259,7 @@ class PassengersController extends Controller
 
         $validator = Validator::make($request->all(), [
             'date'                    => ['required', 'date'],
+            'passenger_name'          => ['nullable', 'string', 'max:255'],
             'passenger_number'        => ['required', 'string', 'max:255'],
             'destination'             => ['nullable', 'string', 'max:255'],      // الوجهة
             'pickup_location'         => ['required', 'string', 'max:255'],
@@ -349,11 +352,13 @@ class PassengersController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status'        => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
-            'note'          => ['nullable', 'string', 'max:1000'],
-            'cancel_reason' => ['nullable', 'string', 'max:1000'],
-            'broker_phone'  => ['nullable', 'string', 'max:25'],
-            'send_whatsapp' => ['nullable'],
+            'status'                 => ['required', 'string', 'in:pending,confirmed,completed,cancel'],
+            'note'                   => ['nullable', 'string', 'max:1000'],
+            'cancel_reason'          => ['nullable', 'string', 'max:1000'],
+            'broker_phone'           => ['nullable', 'string', 'max:25'],
+            'send_whatsapp'          => ['nullable'],
+            'allow_completed_cancel' => ['nullable'],
+            'is_rebook'              => ['nullable'],
         ]);
 
         try {
@@ -363,13 +368,20 @@ class PassengersController extends Controller
             $oldStatus = $passenger->status;
             $newStatus = $request->status;
 
-            if ($oldStatus === 'completed') {
+            if ($oldStatus === 'completed' && !$request->boolean('allow_completed_cancel', false)) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'لا يمكنك تحديث حالة الراكب المكتمل رحلته.'
+                    ], 422);
+                }
                 return back()->with('error', 'لا يمكنك تحديث حالة الراكب المكتمل رحلته.');
             }
 
             $updateData = ['status' => $newStatus];
 
             if ($newStatus === 'cancel') {
+                $updateData['trip_id'] = null; // إزالة الراكب من أي رحلة مرتبطة
                 if ($request->has('cancel_reason')) {
                     $updateData['cancel_reason'] = $request->cancel_reason;
                 }
@@ -387,12 +399,33 @@ class PassengersController extends Controller
                     }
                 }
             } else {
+                if ($oldStatus === 'cancel' || $request->boolean('is_rebook')) {
+                    $updateData['cancel_reason'] = null; // إعادة تعيين سبب الإلغاء عند إعادة الحجز
+                    if ($request->filled('broker_phone')) {
+                        $cleanBrokerPhone = $this->normalizePhone($request->broker_phone);
+                        if ($passenger->broker) {
+                            $passenger->broker->update(['phone' => $cleanBrokerPhone]);
+                        } else if ($cleanBrokerPhone) {
+                            $broker = Broker::firstOrCreate(
+                                ['name' => 'وسيط'],
+                                ['phone' => $cleanBrokerPhone]
+                            );
+                            $updateData['broker_id'] = $broker->id;
+                        }
+                    }
+                }
                 if ($request->has('note')) {
                     $updateData['note'] = $request->note;
                 }
             }
 
             if ($oldStatus === $newStatus && !isset($updateData['cancel_reason']) && !isset($updateData['note']) && !$request->filled('broker_phone')) {
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'لم يطرأ أي تغيير على الحالة.'
+                    ]);
+                }
                 return back();
             }
 
@@ -405,9 +438,11 @@ class PassengersController extends Controller
 
             DB::commit();
 
+            $whatsappUrl = null;
+            $sentDirectly = false;
+
             if ($newStatus === 'cancel' && ($request->boolean('send_whatsapp') || $request->filled('send_whatsapp'))) {
                 $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
-                $sentDirectly = false;
 
                 if (!empty($passenger->broker?->phone)) {
                     try {
@@ -448,18 +483,76 @@ class PassengersController extends Controller
                 if (!$sentDirectly && $whatsappUrl) {
                     session()->flash('whatsapp_redirect_url', $whatsappUrl);
                 }
+            } elseif ($newStatus === 'pending' && ($oldStatus === 'cancel' || $request->boolean('is_rebook')) && ($request->boolean('send_whatsapp') || $request->filled('send_whatsapp'))) {
+                $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerRebook');
+
+                if (!empty($passenger->broker?->phone)) {
+                    try {
+                        $whatsAppService = app(\App\Services\WhatsAppService::class);
+                        $branch = $passenger->branch ?? auth()->user()?->branch;
+                        if (!$branch) {
+                            $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')->where('whatsapp_api_key', '!=', '')->first();
+                        }
+                        if ($branch) {
+                            $whatsAppService->loadBranchConfig($branch);
+                        }
+                        $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+                        $isOnline = \Illuminate\Support\Facades\Cache::get($cacheKey, 'online') === 'online';
+
+                        if (!$isOnline) {
+                            $checkLive = $whatsAppService->getStatus();
+                            if (!empty($checkLive['data']['Connected'])) {
+                                $isOnline = true;
+                                \Illuminate\Support\Facades\Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                            }
+                        }
+
+                        if ($whatsAppService->isConfigured() && $isOnline) {
+                            $rebookMsg = new \App\Services\WhatsApp\Messages\PassengerRebookMessage();
+                            $body = $rebookMsg->getMessageBody($passenger);
+                            $result = $whatsAppService->sendText($passenger->broker->phone, $body);
+
+                            if (!isset($result['error']) || !$result['error']) {
+                                \Illuminate\Support\Facades\Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                                $sentDirectly = true;
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::warning("Direct WhatsApp rebook sending error: " . $e->getMessage());
+                    }
+                }
+
+                if (!$sentDirectly && $whatsappUrl) {
+                    session()->flash('whatsapp_redirect_url', $whatsappUrl);
+                }
             }
 
             $successMessages = [
                 'confirmed' => 'تم تأكيد الحجز ✅',
                 'completed' => 'تم إكمال الرحلة وتسجيل العمولة ✅',
                 'cancel'    => (!empty($sentDirectly)) ? 'تم إلغاء الحجز وإرسال إشعار الواتساب للوسيط بنجاح ✅' : 'تم إلغاء الحجز 🚫',
-                'pending'   => 'تم إعادة الراكب لقيد الانتظار 🔄',
+                'pending'   => (!empty($sentDirectly)) ? 'تمت إعادة الحجز وإرسال إشعار الواتساب للوسيط بنجاح ✅' : (($oldStatus === 'cancel' || $request->boolean('is_rebook')) ? 'تمت إعادة الحجز بنجاح 🔄' : 'تم إعادة الراكب لقيد الانتظار 🔄'),
             ];
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success'       => true,
+                    'message'       => $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح',
+                    'passenger'     => $passenger,
+                    'whatsapp_url'  => $whatsappUrl,
+                    'sent_directly' => $sentDirectly
+                ]);
+            }
 
             return WebResponseClass::sendResponse('تم التحديث!', $successMessages[$newStatus] ?? 'تم تحديث الحالة بنجاح', 'حسناً', 'passengers.index');
         } catch (Exception $e) {
             DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 500);
+            }
             return WebResponseClass::sendExceptionError($e);
         }
     }

@@ -59,6 +59,12 @@
                         <span class="text-sm text-right text-slate-500">الهاتف</span>
                         <span class="font-bold text-slate-800" >: {{ $driver_phone ?? '---' }}</span>
                     </div>
+                    @if (!empty($driver_vehicle_type) && $driver_vehicle_type !== '---')
+                    <div>
+                        <span class="text-sm text-right text-slate-500">نوع المركبة</span>
+                        <span class="font-bold text-slate-800">: {{ $driver_vehicle_type }}</span>
+                    </div>
+                    @endif
                 </div>
             </div>
 

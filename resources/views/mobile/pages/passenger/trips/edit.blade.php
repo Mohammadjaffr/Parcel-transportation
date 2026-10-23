@@ -28,7 +28,7 @@
 
     {{-- Content --}}
     <div class="px-4"
-        x-data="editTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($allPassengers), @js($selectedIds), @js($trip->driver ? ['id' => $trip->driver->id, 'name' => $trip->driver->name, 'phone' => $trip->driver->phone] : null), @js($brokers ?? []))">
+        x-data="editTripForm(@js($drivers ?? []), @js(array_values(config('countries', []))), @js($allPassengers), @js($selectedIds), @js($trip->driver ? ['id' => $trip->driver->id, 'name' => $trip->driver->name, 'phone' => $trip->driver->phone, 'vehicle_type' => $trip->driver->vehicle_type] : null), @js($brokers ?? []))">
         
         <form action="{{ route('trips.update', $trip->id) }}" method="POST" @submit="submitTrip($event)">
             @csrf
@@ -102,7 +102,10 @@
                                 <button type="button" @click="selectDriver(driver)"
                                     class="flex justify-between items-center px-4 py-3 w-full text-right border-b transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 border-slate-50 dark:border-boxdark-2">
                                     <div class="flex flex-col gap-0.5">
-                                        <span class="text-sm font-bold text-slate-800 dark:text-white" x-text="driver.name"></span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm font-bold text-slate-800 dark:text-white" x-text="driver.name"></span>
+                                            <span x-show="driver.vehicle_type" class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
+                                        </div>
                                         <span class="text-xs text-slate-500 font-mono dir-ltr text-right" x-text="driver.phone"></span>
                                     </div>
                                     <span class="material-symbols-outlined text-slate-300 text-[18px]">arrow_back_ios</span>
@@ -117,6 +120,20 @@
                             placeholder="اسم السائق..." required
                             class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none font-bold"
                             :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark dark:border-boxdark-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 text-slate-700 dark:text-white'">
+
+                        <input type="text" name="driver_vehicle_type" list="mobile_trip_driver_vehicle_types_edit" x-model="vehicleTypeInput"
+                            placeholder="نوع المركبة (اختياري)..."
+                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none font-bold bg-white border-slate-200 dark:bg-boxdark dark:border-boxdark-2 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/10 text-slate-700 dark:text-white">
+                        <datalist id="mobile_trip_driver_vehicle_types_edit">
+                            <option value="صالون"></option>
+                            <option value="باص"></option>
+                            <option value="دينا"></option>
+                            <option value="شاص"></option>
+                            <option value="هايلوكس"></option>
+                            <option value="حبة وربع"></option>
+                            <option value="نوها"></option>
+                            <option value="خصوصي"></option>
+                        </datalist>
                     </div>
                 </div>
             </div>
@@ -184,8 +201,14 @@
                                     </div>
                                 </div>
 
-                                {{-- أزرار التحكم: زر التعديل والتشيك --}}
+                                {{-- أزرار التحكم: زر الإلغاء والتعديل والتشيك --}}
                                 <div class="flex items-center gap-2 shrink-0">
+                                    <button type="button" @click.stop.prevent="openStatusModal(passenger)"
+                                        title="إلغاء حجز الراكب"
+                                        class="flex justify-center items-center w-8 h-8 rounded-full border border-slate-200 dark:border-boxdark-2 text-slate-400 hover:text-amber-600 hover:border-amber-300 hover:bg-amber-50 dark:hover:bg-amber-900/20 active:scale-90 transition-all shadow-sm">
+                                        <span class="material-symbols-outlined text-[17px]">block</span>
+                                    </button>
+
                                     <button type="button" @click.stop.prevent="openEditPassenger(passenger)"
                                         title="تعديل الراكب"
                                         class="flex justify-center items-center w-8 h-8 rounded-full border border-slate-200 dark:border-boxdark-2 text-slate-400 hover:text-amber-500 hover:border-amber-500/40 active:scale-90 transition-all shadow-sm">
@@ -274,7 +297,28 @@
                             <span x-html="editPassengerError"></span>
                         </div>
 
-                        {{-- Phone number input with country selector --}}
+                        {{-- 1. التاريخ ومكان الصعود والوجهة --}}
+                        <div class="space-y-2">
+                            <div>
+                                <label class="block mb-1 text-xs font-bold text-slate-600 dark:text-gray-300">تاريخ الحجز <span class="text-rose-500">*</span></label>
+                                <input type="date" x-model="editPassengerData.date" required
+                                    class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark dark:text-white outline-none focus:border-amber-500">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block mb-1 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
+                                    <input type="text" x-model="editPassengerData.pickup_location" required placeholder="مكان الصعود"
+                                        class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark dark:text-white outline-none focus:border-amber-500">
+                                </div>
+                                <div>
+                                    <label class="block mb-1 text-xs font-bold text-slate-600 dark:text-gray-300">الوجهة</label>
+                                    <input type="text" x-model="editPassengerData.destination" placeholder="وجهة الراكب"
+                                        class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark dark:text-white outline-none focus:border-amber-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 2. رقم جوال الراكب --}}
                         <div>
                             <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
                             <div class="flex overflow-visible relative items-center h-12 bg-white rounded-xl ring-1 ring-slate-200 dark:bg-boxdark-2 dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-amber-500/50" style="direction: ltr;">
@@ -310,65 +354,24 @@
                             </div>
                         </div>
 
-                        {{-- Grid: مكان الصعود والوجهة --}}
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
-                                <input type="text" x-model="editPassengerData.pickup_location" placeholder="مكان الصعود"
-                                    class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوجهة</label>
-                                <input type="text" x-model="editPassengerData.destination" placeholder="وجهة الراكب"
-                                    class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                            </div>
-                        </div>
-
-                        {{-- نوع المركبة --}}
-                        <div>
-                            <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
-                            <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
-                                class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                        </div>
-
-                        {{-- Grid: عدد الركاب والعمولات --}}
-                        <div class="grid grid-cols-3 gap-2">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">العدد <span class="text-rose-500">*</span></label>
-                                <input type="number" min="1" x-model="editPassengerData.count"
-                                    class="px-2.5 w-full h-11 text-xs font-black text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة المكتب</label>
-                                <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0"
-                                    class="px-2 w-full h-11 text-xs font-bold text-emerald-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة أخرى</label>
-                                <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0"
-                                    class="px-2 w-full h-11 text-xs font-bold text-amber-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-amber-500">
-                            </div>
-                        </div>
-
-                        {{-- Grid: التاريخ والوسيط --}}
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">التاريخ <span class="text-rose-500">*</span></label>
-                                <input type="date" x-model="editPassengerData.date"
-                                    class="px-2.5 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                            </div>
+                        {{-- 3. بطاقة بيانات الوسيط: اسم الوسيط ورقم هاتف الوسيط (واتساب) --}}
+                        <div class="p-3 space-y-2.5 rounded-xl border border-slate-100 bg-slate-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                             <div class="relative">
-                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">الوسيط / المكتب</label>
-                                <div class="relative">
+                                <label class="block mb-1 text-xs font-bold text-slate-600 dark:text-gray-300">اسم الوسيط أو المكتب <span class="text-rose-500">*</span></label>
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-slate-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-amber-500/40"
+                                    :class="editPassengerData.broker_id ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''">
+                                    <span class="absolute right-2.5 material-symbols-outlined text-[18px]"
+                                        :class="editPassengerData.broker_id ? 'text-emerald-500' : 'text-slate-400'">handshake</span>
                                     <input type="text" x-model="editPassengerData.brokerSearchQuery"
                                         @input="onBrokerInput()"
                                         @focus="editPassengerData.showBrokerDropdown = true"
                                         @click.away="editPassengerData.showBrokerDropdown = false"
-                                        placeholder="الوسيط..."
-                                        class="px-2.5 pr-8 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
-                                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[16px]">handshake</span>
-                                    <button type="button" x-show="editPassengerData.brokerSearchQuery" @click="resetEditBroker()"
-                                        class="absolute left-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-rose-500">
+                                        placeholder="اكتب اسم الوسيط..."
+                                        autocomplete="off"
+                                        class="px-3 pr-9 w-full h-11 text-xs font-bold bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-white"
+                                        :class="editPassengerData.broker_id ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''">
+                                    <button type="button" x-show="editPassengerData.brokerSearchQuery.length > 0" @click="resetEditBroker()"
+                                        class="absolute left-2 p-1 text-slate-400 rounded-full hover:text-rose-500">
                                         <span class="material-symbols-outlined text-[14px]">close</span>
                                     </button>
                                 </div>
@@ -383,41 +386,186 @@
                                     </template>
                                 </div>
                             </div>
+
+                            <div>
+                                <label class="block mb-1 text-xs font-bold text-slate-600 dark:text-gray-300">رقم هاتف الوسيط (واتساب) <span class="text-[10px] text-slate-400 font-normal">(اختياري)</span></label>
+                                <div class="flex relative items-center bg-white rounded-xl ring-1 ring-slate-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-amber-500/40">
+                                    <span class="absolute right-2.5 text-slate-400 material-symbols-outlined text-[18px]">call</span>
+                                    <input type="text" x-model="editPassengerData.broker_phone"
+                                        placeholder="77xxxxxxxx"
+                                        dir="ltr"
+                                        autocomplete="off"
+                                        class="px-3 pr-9 w-full h-11 text-xs font-bold bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-white text-right">
+                                </div>
+                            </div>
                         </div>
 
-                        {{-- Notes --}}
+                        {{-- 4. نوع المركبة، عدد الركاب والعمولات --}}
                         <div>
-                            <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">ملاحظات</label>
-                            <textarea x-model="editPassengerData.note" rows="2" placeholder="ملاحظات..."
+                            <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
+                            <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
+                                class="px-3 w-full h-11 text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">العدد <span class="text-rose-500">*</span></label>
+                                <input type="number" min="1" x-model="editPassengerData.count" required
+                                    class="px-2.5 w-full h-11 text-xs font-black text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة المكتب <span class="text-rose-500">*</span></label>
+                                <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0"
+                                    class="px-2 w-full h-11 text-xs font-bold text-emerald-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300 truncate">عمولة أخرى <span class="text-rose-500">*</span></label>
+                                <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0"
+                                    class="px-2 w-full h-11 text-xs font-bold text-amber-600 text-center rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+
+                        {{-- 5. ملاحظات إضافية --}}
+                        <div>
+                            <label class="block mb-1.5 text-xs font-bold text-slate-600 dark:text-gray-300">ملاحظات إضافية</label>
+                            <textarea x-model="editPassengerData.note" rows="2" placeholder="أي ملاحظات..."
                                 class="p-2.5 w-full text-xs rounded-xl border border-slate-200 dark:border-boxdark-2 bg-white dark:bg-boxdark-2 text-slate-800 dark:text-white outline-none focus:border-amber-500"></textarea>
                         </div>
                     </div>
 
                     {{-- Footer Buttons --}}
-                    <div class="p-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 flex gap-2.5 shrink-0">
-                        <button type="button" @click="showEditPassengerModal = false"
-                            class="flex-1 h-12 text-xs font-bold text-slate-600 dark:text-gray-300 bg-white dark:bg-boxdark rounded-xl border border-slate-200 dark:border-boxdark-2 active:scale-95 transition-all">
-                            إلغاء
-                        </button>
-                        <button type="button" @click="savePassengerEdit()" :disabled="isUpdatingPassenger"
-                            class="flex-[2] flex justify-center items-center gap-2 h-12 text-xs font-black text-white bg-amber-500 hover:bg-amber-600 active:scale-95 rounded-xl shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                            <template x-if="isUpdatingPassenger">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                                    <span>جاري الحفظ...</span>
-                                </span>
-                            </template>
-                            <template x-if="!isUpdatingPassenger">
-                                <span class="flex items-center gap-1.5">
-                                    <span class="material-symbols-outlined text-[18px]">save</span>
-                                    <span>حفظ التعديلات</span>
-                                </span>
-                            </template>
+                    <div class="p-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50 flex flex-col gap-2 shrink-0">
+                        <div class="flex gap-2.5">
+                            <button type="button" @click="showEditPassengerModal = false"
+                                class="flex-1 h-12 text-xs font-bold text-slate-600 dark:text-gray-300 bg-white dark:bg-boxdark rounded-xl border border-slate-200 dark:border-boxdark-2 active:scale-95 transition-all">
+                                إغلاق
+                            </button>
+                            <button type="button" @click="savePassengerEdit()" :disabled="isUpdatingPassenger"
+                                class="flex-[2] flex justify-center items-center gap-2 h-12 text-xs font-black text-white bg-amber-500 hover:bg-amber-600 active:scale-95 rounded-xl shadow-md transition-all disabled:opacity-60 disabled:cursor-not-allowed">
+                                <template x-if="isUpdatingPassenger">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                        <span>جاري الحفظ...</span>
+                                    </span>
+                                </template>
+                                <template x-if="!isUpdatingPassenger">
+                                    <span class="flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-[18px]">save</span>
+                                        <span>حفظ التعديلات</span>
+                                    </span>
+                                </template>
+                            </button>
+                        </div>
+                        <button type="button" @click="openCancelModalFromEdit()"
+                            class="w-full h-11 flex items-center justify-center gap-2 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 rounded-xl transition-all border border-amber-200 dark:border-amber-500/20 active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">block</span>
+                            <span>إلغاء حجز الراكب وإزالته</span>
                         </button>
                     </div>
 
                 </div>
             </div>
+
+            {{-- ====================== Status Modal (Cancel Only) للموبايل ====================== --}}
+            <template x-teleport="body">
+                <div x-show="showStatusModal" x-cloak
+                    class="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center p-0 sm:p-4 font-body"
+                    dir="rtl">
+
+                    {{-- الخلفية المظللة --}}
+                    <div x-show="showStatusModal" x-transition.opacity.duration.300ms
+                        class="absolute inset-0 backdrop-blur-sm bg-gray-900/60 dark:bg-black/70"
+                        @click="showStatusModal = false"></div>
+
+                    {{-- المودال نفسه --}}
+                    <div x-show="showStatusModal"
+                        x-transition:enter="transform transition ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-full sm:scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave="transform transition ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-full sm:scale-95"
+                        class="relative bg-white dark:bg-boxdark w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl p-6 sm:p-8 text-center border border-gray-100 dark:border-boxdark-2 max-h-[90vh] overflow-y-auto">
+
+                        {{-- الأيقونة --}}
+                        <div
+                            class="flex justify-center items-center mx-auto mb-4 w-16 h-16 bg-amber-50 dark:bg-amber-500/10 text-amber-500 rounded-2xl border border-amber-100 dark:border-amber-500/20">
+                            <span class="text-3xl material-symbols-outlined">block</span>
+                        </div>
+
+                        <h3 class="mb-2 text-xl font-black font-headline text-on-surface dark:text-white">
+                            تأكيد إلغاء الراكب</h3>
+
+                        <p class="mb-4 text-xs font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                            هل أنت متأكد من إلغاء الراكب رقم <br>
+                            <span class="text-sm font-black text-on-surface dark:text-white font-headline"
+                                x-text="statusPassengerData.passenger_number"></span>؟<br>
+                            <span class="text-amber-500/80">سيتم تغيير حالة الراكب إلى ملغي وإزالته من القائمة.</span>
+                        </p>
+
+                        {{-- شارة الوسيط --}}
+                        <template x-if="statusPassengerData.broker_name">
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                                <span class="material-symbols-outlined text-[15px]">handshake</span>
+                                <span>الوسيط:</span>
+                                <span x-text="statusPassengerData.broker_name"></span>
+                            </div>
+                        </template>
+
+                        {{-- فورم الإرسال --}}
+                        <form @submit.prevent="submitCancelPassenger()" class="space-y-3.5">
+                            {{-- حقل رقم هاتف الوسيط (واتساب) --}}
+                            <div class="text-right">
+                                <label class="block mb-1 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    <span>رقم هاتف الوسيط (واتساب)</span>
+                                </label>
+                                <div class="relative">
+                                    <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-[18px] text-gray-400">call</span>
+                                    <input type="text" name="broker_phone" x-model="statusPassengerData.broker_phone"
+                                        placeholder="أدخل رقم الوسيط (مثال: 771234567)"
+                                        dir="ltr"
+                                        class="p-3 pr-10 w-full text-xs font-bold text-gray-700 bg-gray-50 rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400 text-right">
+                                </div>
+                            </div>
+
+                            {{-- حقل سبب الإلغاء --}}
+                            <div class="text-right">
+                                <label class="block mb-1 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                    <span>سبب الإلغاء</span>
+                                    <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                                </label>
+                                <textarea name="cancel_reason" x-model="statusPassengerData.cancel_reason" rows="2"
+                                    placeholder="اكتب سبب إلغاء الحجز..."
+                                    class="p-3 w-full text-xs font-bold text-gray-700 bg-gray-50 rounded-xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400"></textarea>
+                            </div>
+
+                            {{-- خيار إرسال واتساب للوسيط --}}
+                            <div class="flex items-center gap-2 p-2.5 text-right bg-emerald-50/70 dark:bg-emerald-500/10 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
+                                <input type="checkbox" id="send_whatsapp_cancel_mobile" name="send_whatsapp" value="1" 
+                                    x-model="statusPassengerData.send_whatsapp"
+                                    class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer">
+                                <label for="send_whatsapp_cancel_mobile" class="text-xs font-bold text-gray-700 dark:text-gray-200 cursor-pointer select-none flex-1">
+                                    إرسال إشعار الإلغاء للوسيط عبر واتساب 💬
+                                </label>
+                            </div>
+
+                            <div class="flex gap-2.5 pt-2">
+                                <button type="button" @click="showStatusModal = false"
+                                    class="flex-1 py-3 text-xs font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                    تراجع
+                                </button>
+
+                                <button type="button" @click="submitCancelPassenger()" :disabled="isCancellingPassenger"
+                                    class="flex flex-1 gap-1.5 justify-center items-center py-3 text-xs font-black text-white bg-amber-500 rounded-xl shadow-lg transition-all hover:bg-amber-600 shadow-amber-500/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                    <span x-show="!isCancellingPassenger">نعم، إلغاء الراكب</span>
+                                    <span x-show="isCancellingPassenger"
+                                        class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </template>
 
             {{-- Toast notification --}}
             <div x-show="editSuccessToast" x-cloak x-transition
@@ -454,6 +602,7 @@
                 showDriverDropdown: false,
                 selectedDriverId: null,
                 nameInput: '',
+                vehicleTypeInput: initialDriver ? (initialDriver.vehicle_type || '') : '',
                 initialDriver: initialDriver,
                 isSubmitting: false,
 
@@ -468,6 +617,7 @@
                     pickup_location: p.pickup_location || '',
                     broker_id: p.broker_id || '',
                     broker_name: p.broker ? p.broker.name : (p.broker_name || ''),
+                    broker_phone: p.broker ? (p.broker.phone || '') : (p.broker_phone || ''),
                     office_commission: p.office_commission || 0,
                     other_office_commission: p.other_office_commission || 0,
                     note: p.note || ''
@@ -482,6 +632,18 @@
                 editPassengerError: '',
                 editSuccessToast: false,
                 editSuccessMessage: '',
+
+                // مودال إلغاء الراكب
+                showStatusModal: false,
+                isCancellingPassenger: false,
+                statusPassengerData: {
+                    id: null,
+                    passenger_number: '',
+                    broker_name: '',
+                    broker_phone: '',
+                    cancel_reason: '',
+                    send_whatsapp: true
+                },
 
                 editPassengerData: {
                     id: null,
@@ -498,6 +660,7 @@
                     other_office_commission: 0,
                     broker_id: '',
                     broker_name: '',
+                    broker_phone: '',
                     brokerSearchQuery: '',
                     showBrokerDropdown: false,
                     note: ''
@@ -537,6 +700,7 @@
                 selectDriver(driver) {
                     this.selectedDriverId = driver.id;
                     this.nameInput = driver.name;
+                    this.vehicleTypeInput = driver.vehicle_type || '';
                     this.showDriverDropdown = false;
                     
                     const clean = String(driver.phone || '').replace(/[^\d]/g, '');
@@ -552,6 +716,7 @@
                 resetSelection() {
                     this.selectedDriverId = null;
                     this.nameInput = '';
+                    this.vehicleTypeInput = '';
                     this.localPhoneNumber = '';
                     this.showDriverDropdown = false;
                 },
@@ -638,6 +803,7 @@
                 },
                 openEditPassenger(passenger) {
                     const phoneDetails = this.getPassengerPhoneDetails(passenger.passenger_number);
+                    const brokerObj = this.brokers.find(b => b.id == passenger.broker_id);
                     this.editPassengerData = {
                         id: passenger.id,
                         vehicle_type: passenger.vehicle_type || '',
@@ -653,6 +819,7 @@
                         other_office_commission: passenger.other_office_commission || 0,
                         broker_id: passenger.broker_id || '',
                         broker_name: passenger.broker_name || '',
+                        broker_phone: passenger.broker_phone || (brokerObj ? brokerObj.phone : '') || '',
                         brokerSearchQuery: passenger.broker_name || '',
                         showBrokerDropdown: false,
                         note: passenger.note || ''
@@ -660,9 +827,84 @@
                     this.editPassengerError = '';
                     this.showEditPassengerModal = true;
                 },
+                openStatusModal(passenger) {
+                    this.statusPassengerData = {
+                        id: passenger.id,
+                        passenger_number: passenger.passenger_number || '',
+                        broker_name: passenger.broker_name || (passenger.broker ? passenger.broker.name : '') || '',
+                        broker_phone: passenger.broker_phone || (passenger.broker ? passenger.broker.phone : '') || '',
+                        cancel_reason: '',
+                        send_whatsapp: true
+                    };
+                    this.showStatusModal = true;
+                },
+                openCancelModalFromEdit() {
+                    const brokerObj = this.brokers.find(b => b.id == this.editPassengerData.broker_id);
+                    this.statusPassengerData = {
+                        id: this.editPassengerData.id,
+                        passenger_number: this.editPassengerFullPhone || this.editPassengerData.localPhone,
+                        broker_name: this.editPassengerData.broker_name || (brokerObj ? brokerObj.name : '') || '',
+                        broker_phone: (brokerObj ? brokerObj.phone : '') || this.editPassengerData.broker_phone || '',
+                        cancel_reason: '',
+                        send_whatsapp: true
+                    };
+                    this.showEditPassengerModal = false;
+                    this.showStatusModal = true;
+                },
+                async submitCancelPassenger() {
+                    if (!this.statusPassengerData.id) return;
+
+                    this.isCancellingPassenger = true;
+                    try {
+                        const payload = {
+                            status: 'cancel',
+                            broker_phone: this.statusPassengerData.broker_phone || '',
+                            cancel_reason: this.statusPassengerData.cancel_reason || '',
+                            send_whatsapp: this.statusPassengerData.send_whatsapp ? 1 : 0,
+                            allow_completed_cancel: true
+                        };
+
+                        const response = await fetch(`/passengers/${this.statusPassengerData.id}/status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const data = await response.json();
+
+                        if (response.ok && (data.success !== false)) {
+                            const removedId = this.statusPassengerData.id;
+                            // إزالة الراكب من القائمة فوراً
+                            this.passengers = this.passengers.filter(p => p.id != removedId);
+                            this.selectedPassengers = this.selectedPassengers.filter(id => id != removedId);
+
+                            this.showStatusModal = false;
+                            this.showToast(data.message || 'تم إلغاء حجز الراكب وإزالته من الرحلة بنجاح');
+
+                            if (data.whatsapp_url && !data.sent_directly) {
+                                setTimeout(() => {
+                                    window.open(data.whatsapp_url, '_blank');
+                                }, 500);
+                            }
+                        } else {
+                            alert(data.message || 'حدث خطأ أثناء إلغاء الراكب.');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert('تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً.');
+                    } finally {
+                        this.isCancellingPassenger = false;
+                    }
+                },
                 selectEditBroker(broker) {
                     this.editPassengerData.broker_id = broker.id;
                     this.editPassengerData.broker_name = broker.name;
+                    this.editPassengerData.broker_phone = broker.phone || '';
                     this.editPassengerData.brokerSearchQuery = broker.name;
                     this.editPassengerData.showBrokerDropdown = false;
                 },
@@ -674,6 +916,7 @@
                 resetEditBroker() {
                     this.editPassengerData.broker_id = '';
                     this.editPassengerData.broker_name = '';
+                    this.editPassengerData.broker_phone = '';
                     this.editPassengerData.brokerSearchQuery = '';
                     this.editPassengerData.showBrokerDropdown = false;
                 },
@@ -705,6 +948,7 @@
                             count: parseInt(this.editPassengerData.count) || 1,
                             broker_id: this.editPassengerData.broker_id || null,
                             broker_name: this.editPassengerData.broker_name || 'مباشر',
+                            broker_phone: this.editPassengerData.broker_phone || null,
                             office_commission: parseFloat(this.editPassengerData.office_commission) || 0,
                             other_office_commission: parseFloat(this.editPassengerData.other_office_commission) || 0,
                             note: this.editPassengerData.note || '',
@@ -737,6 +981,7 @@
                                 this.passengers[index].count = parseInt(this.editPassengerData.count) || 1;
                                 this.passengers[index].broker_id = this.editPassengerData.broker_id;
                                 this.passengers[index].broker_name = this.editPassengerData.broker_name;
+                                this.passengers[index].broker_phone = this.editPassengerData.broker_phone || '';
                                 this.passengers[index].office_commission = this.editPassengerData.office_commission;
                                 this.passengers[index].other_office_commission = this.editPassengerData.other_office_commission;
                                 this.passengers[index].note = this.editPassengerData.note;

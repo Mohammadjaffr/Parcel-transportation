@@ -197,6 +197,7 @@
                                     <th class="px-2 py-3 w-10 font-black border-l text-slate-500 border-slate-200">#</th>
                                     <th class="px-2 py-3 w-28 font-black border-l text-slate-500 border-slate-200">التاريخ
                                     </th>
+                                    <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200">اسم الراكب</th>
                                     <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200">رقم الراكب
                                         (الهاتف)</th>
                                     <th class="px-2 py-3 font-black border-l text-slate-500 border-slate-200">الوسيط</th>
@@ -223,6 +224,9 @@
                                             {{ $globalPassengerIndex++ }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200"
                                             dir="ltr">{{ $passenger['date'] }}</td>
+                                        <td
+                                            class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">
+                                            {{ $passenger['passenger_name'] ?? '---' }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200"
                                             dir="ltr">{{ $passenger['passenger_number'] }}</td>
                                         <td

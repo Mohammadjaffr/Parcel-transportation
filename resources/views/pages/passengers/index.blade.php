@@ -278,7 +278,7 @@
                         <tr class="border-b border-gray-100 bg-gray-50/80 dark:bg-boxdark-2 dark:border-boxdark-2">
                             <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">التاريخ
                                 واليوم</th>
-                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">رقم الراكب
+                            <th class="px-6 py-4 text-sm font-black text-gray-600 font-headline dark:text-gray-300">الراكب
                             </th>
                             <th
                                 class="px-6 py-4 text-sm font-black text-center text-gray-600 font-headline dark:text-gray-300">
@@ -332,7 +332,7 @@
                             @endphp
 
                             <tr class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group passenger-row"
-                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->pickup_location), @js($passenger->trip?->driver?->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey), @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''))">
+                                x-show="showRow(@js($passenger->passenger_number), @js($passenger->passenger_name ?? ''), @js($passenger->pickup_location), @js($passenger->trip?->driver?->name ?? ''), @js($passenger->broker->name ?? ''), @js($statusKey), @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''))">
 
                                 {{-- التاريخ واليوم --}}
                                 <td class="px-6 py-4 align-top">
@@ -357,11 +357,13 @@
                                 {{-- الراكب --}}
                                 <td class="px-6 py-4 align-top">
                                     <div class="flex gap-3 items-center">
-                                        {{-- <div
-                                            class="flex justify-center items-center w-11 h-11 font-bold rounded-full shadow-sm bg-primary/10 text-primary shrink-0">
-                                            {{ $avatarLetters }}
-                                        </div> --}}
                                         <div class="flex flex-col gap-1">
+                                            @if($passenger->passenger_name)
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="material-symbols-outlined text-[16px] text-primary">person</span>
+                                                    <span class="text-sm font-black text-gray-900 dark:text-white font-headline">{{ $passenger->passenger_name }}</span>
+                                                </div>
+                                            @endif
                                             <span
                                                 class="text-sm font-bold text-right text-gray-800 font-body dark:text-white dir-ltr">
                                                 <x-phone-number :value="$passenger->passenger_number" class="font-bold text-primary" />
@@ -458,7 +460,32 @@
 
                                 {{-- الإجراءات --}}
                                 <td class="px-6 py-4 text-center align-middle" x-data="{ openOptions: false }">
-                                    <div class="flex relative justify-center items-center">
+                                    <div class="flex relative justify-center items-center gap-1.5">
+                                        @if ($statusKey == 'cancel')
+                                            <button type="button"
+                                                @click="openRebookModal({
+                                                    id: {{ $passenger->id }},
+                                                    date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                    status: 'pending',
+                                                    passenger_name: @js($passenger->passenger_name),
+                                                    passenger_number: @js($passenger->passenger_number),
+                                                    pickup_location: @js($passenger->pickup_location),
+                                                    destination: @js($passenger->destination),
+                                                    vehicle_type: @js($passenger->vehicle_type),
+                                                    count: @js($passenger->count),
+                                                    office_commission: @js($passenger->office_commission),
+                                                    other_office_commission: @js($passenger->other_office_commission),
+                                                    broker_name: @js($passenger->broker->name ?? ''),
+                                                    broker_phone: @js($passenger->broker->phone ?? ''),
+                                                    driver_phone: @js($passenger->driver->phone ?? ''),
+                                                    driver_name: @js($passenger->driver->name ?? ''),
+                                                    note: @js($passenger->note)
+                                                })"
+                                                title="إعادة الحجز"
+                                                class="flex justify-center items-center w-8 h-8 text-emerald-600 bg-emerald-50 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm">
+                                                <span class="material-symbols-outlined text-[18px]">history</span>
+                                            </button>
+                                        @endif
                                         <button @click="openOptions = !openOptions" @click.away="openOptions = false"
                                             class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-lg transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-boxdark-2 dark:hover:text-gray-300">
                                             <span class="material-symbols-outlined text-[20px]">more_vert</span>
@@ -478,6 +505,7 @@
                                                     @click="openEditModal({
                                                     id: {{ $passenger->id }},
                                                     date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                    passenger_name: @js($passenger->passenger_name),
                                                     passenger_number: @js($passenger->passenger_number),
                                                     status: @js($statusKey),
                                                     pickup_location: @js($passenger->pickup_location),
@@ -514,6 +542,30 @@
                                                 @endif
 
                                                 @if ($statusKey == 'cancel')
+                                                    <button type="button"
+                                                        @click="openRebookModal({
+                                                            id: {{ $passenger->id }},
+                                                            date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
+                                                            status: 'pending',
+                                                            passenger_name: @js($passenger->passenger_name),
+                                                            passenger_number: @js($passenger->passenger_number),
+                                                            pickup_location: @js($passenger->pickup_location),
+                                                            destination: @js($passenger->destination),
+                                                            vehicle_type: @js($passenger->vehicle_type),
+                                                            count: @js($passenger->count),
+                                                            office_commission: @js($passenger->office_commission),
+                                                            other_office_commission: @js($passenger->other_office_commission),
+                                                            broker_name: @js($passenger->broker->name ?? ''),
+                                                            broker_phone: @js($passenger->broker->phone ?? ''),
+                                                            driver_phone: @js($passenger->driver->phone ?? ''),
+                                                            driver_name: @js($passenger->driver->name ?? ''),
+                                                            note: @js($passenger->note)
+                                                        }); openOptions = false"
+                                                        class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-emerald-600 transition-colors hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-500/10">
+                                                        <span class="material-symbols-outlined text-[18px]">history</span>
+                                                        إعادة الحجز
+                                                    </button>
+
                                                     @php
                                                         $whatsappCancelUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
                                                     @endphp
@@ -533,6 +585,7 @@
                                                     id: {{ $passenger->id }},
                                                     date: @js($passenger->date ? date('Y-m-d', strtotime($passenger->date)) : ''),
                                                     status: 'cancel',
+                                                    passenger_name: @js($passenger->passenger_name),
                                                     passenger_number: @js($passenger->passenger_number),
                                                     pickup_location: @js($passenger->pickup_location),
                                                     destination: @js($passenger->destination),
@@ -557,7 +610,7 @@
                                             <div class="my-1 border-t border-gray-50 dark:border-boxdark-2"></div>
                                             @if ($statusKey != 'completed')
                                                 <button type="button"
-                                                    @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number)); openOptions = false"
+                                                    @click="openDeleteModal({{ $passenger->id }}, @js($passenger->passenger_number), @js($passenger->passenger_name)); openOptions = false"
                                                     class="flex gap-3 items-center px-4 py-2.5 w-full text-sm font-bold text-right text-gray-600 transition-colors hover:bg-error/10 hover:text-error dark:text-gray-300 dark:hover:bg-error/20">
                                                     <span class="material-symbols-outlined text-[18px]">delete</span>
                                                     حذف الراكب
@@ -657,7 +710,17 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم الراكب <span class="text-xs text-gray-400 font-normal">(اختياري)</span></label>
+                                <div class="relative flex items-center">
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px] text-gray-400">person</span>
+                                    <input type="text" name="passenger_name" placeholder="اسم الراكب الكامل..."
+                                        autocomplete="off"
+                                        class="px-4 pr-10 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 text-sm font-bold">
+                                </div>
+                            </div>
+
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
                                     <span class="text-error">*</span></label>
@@ -991,7 +1054,17 @@
                             </div> --}}
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-1">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم الراكب <span class="text-xs text-gray-400 font-normal">(اختياري)</span></label>
+                                <div class="relative flex items-center">
+                                    <span class="absolute right-3 material-symbols-outlined text-[20px] text-gray-400">person</span>
+                                    <input type="text" name="passenger_name" x-model="editPassengerData.passenger_name" placeholder="اسم الراكب الكامل..."
+                                        autocomplete="off"
+                                        class="px-4 pr-10 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40 text-sm font-bold">
+                                </div>
+                            </div>
+
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
                                 x-effect="loadInitial(editPassengerData.passenger_number)">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب
@@ -1309,9 +1382,15 @@
                         تأكيد إلغاء الراكب</h3>
 
                     <p class="mb-4 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
-                        هل أنت متأكد من إلغاء الراكب رقم <br>
-                        <span class="text-base font-black text-on-surface dark:text-white font-headline"
-                            x-text="statusPassengerData.passenger_number"></span>؟<br>
+                        هل أنت متأكد من إلغاء الراكب <br>
+                        <template x-if="statusPassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="statusPassengerData.passenger_name + ' (' + statusPassengerData.passenger_number + ')'"></span>
+                        </template>
+                        <template x-if="!statusPassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="statusPassengerData.passenger_number"></span>
+                        </template>؟<br>
                         <span class="text-amber-500/80">سيتم تغيير حالة الراكب إلى ملغي.</span>
                     </p>
 
@@ -1384,6 +1463,119 @@
             </div>
         </template>
 
+        {{-- ====================== Rebook Modal (Restore / Confirm Booking) ====================== --}}
+        <template x-teleport="body">
+            <div x-show="showRebookModal" x-cloak
+                class="fixed inset-0 z-[99999] flex justify-center items-center p-4 sm:p-0 font-body"
+                dir="rtl">
+
+                {{-- الخلفية المظللة --}}
+                <div x-show="showRebookModal" x-transition.opacity.duration.300ms
+                    class="absolute inset-0 backdrop-blur-sm bg-gray-900/60 dark:bg-black/70"
+                    @click="showRebookModal = false"></div>
+
+                {{-- المودال نفسه --}}
+                <div x-show="showRebookModal"
+                    x-transition:enter="transform transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                    x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave="transform transition ease-in duration-200"
+                    x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                    x-transition:leave-end="opacity-0 scale-95 translate-y-4"
+                    class="relative bg-white dark:bg-boxdark w-full max-w-md rounded-[2rem] shadow-2xl p-8 text-center border border-gray-100 dark:border-boxdark-2">
+
+                    {{-- الأيقونة --}}
+                    <div
+                        class="flex justify-center items-center mx-auto mb-6 w-20 h-20 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-[1.5rem] border border-emerald-100 dark:border-emerald-500/20 shadow-sm">
+                        <span class="text-4xl material-symbols-outlined">history</span>
+                    </div>
+
+                    <h3 class="mb-3 text-2xl font-black font-headline text-on-surface dark:text-white">
+                        تأكيد إعادة الحجز</h3>
+
+                    <p class="mb-4 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
+                        هل أنت متأكد من إعادة حجز الراكب <br>
+                        <template x-if="rebookPassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="rebookPassengerData.passenger_name + ' (' + rebookPassengerData.passenger_number + ')'"></span>
+                        </template>
+                        <template x-if="!rebookPassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="rebookPassengerData.passenger_number"></span>
+                        </template>؟<br>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-bold">سيتم تغيير حالة الراكب إلى قيد الانتظار وإلغاء الإلغاء.</span>
+                    </p>
+
+                    {{-- شارة الوسيط --}}
+                    <template x-if="rebookPassengerData.broker_name">
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                            <span class="material-symbols-outlined text-[16px]">handshake</span>
+                            <span>الوسيط:</span>
+                            <span x-text="rebookPassengerData.broker_name"></span>
+                        </div>
+                    </template>
+
+                    {{-- فورم الإرسال --}}
+                    <form :action="rebookPassengerData.url" method="POST" @submit="isSubmitting = true"
+                        class="space-y-4">
+                        @csrf
+                        <input type="hidden" name="status" value="pending">
+                        <input type="hidden" name="is_rebook" value="1">
+
+                        {{-- حقل رقم هاتف الوسيط (واتساب) --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>رقم هاتف الوسيط (واتساب)</span>
+                                <span class="text-xs font-normal text-gray-400">(لإرسال إشعار إعادة الحجز عبر الواتساب)</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-[18px] text-gray-400">call</span>
+                                <input type="text" name="broker_phone" x-model="rebookPassengerData.broker_phone"
+                                    placeholder="أدخل رقم الوسيط (مثال: 771234567)"
+                                    dir="ltr"
+                                    class="p-3.5 pr-10 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-body placeholder:text-gray-400 text-right">
+                            </div>
+                        </div>
+
+                        {{-- حقل ملاحظات --}}
+                        <div class="text-right">
+                            <label class="block mb-2 text-xs font-bold text-gray-700 dark:text-gray-300">
+                                <span>ملاحظات</span>
+                                <span class="text-xs font-normal text-gray-400">(اختياري)</span>
+                            </label>
+                            <textarea name="note" x-model="rebookPassengerData.note" rows="2"
+                                placeholder="أي ملاحظات حول إعادة الحجز..."
+                                class="p-3.5 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 font-body placeholder:text-gray-400"></textarea>
+                        </div>
+
+                        {{-- خيار إرسال واتساب للوسيط --}}
+                        <div class="flex items-center gap-2.5 p-3 text-right bg-emerald-50/70 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                            <input type="checkbox" id="send_whatsapp_rebook" name="send_whatsapp" value="1" 
+                                x-model="rebookPassengerData.send_whatsapp"
+                                class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer">
+                            <label for="send_whatsapp_rebook" class="text-xs font-bold text-gray-700 dark:text-gray-200 cursor-pointer select-none flex-1">
+                                إرسال إشعار تأكيد الحجز للوسيط عبر واتساب 💬
+                            </label>
+                        </div>
+
+                        <div class="flex gap-3">
+                            <button type="button" @click="showRebookModal = false"
+                                class="flex-1 py-3.5 text-sm font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95 font-headline">
+                                تراجع
+                            </button>
+
+                            <button type="submit" :disabled="isSubmitting"
+                                class="flex flex-1 gap-2 justify-center items-center py-3.5 text-sm font-black text-white bg-emerald-600 rounded-xl shadow-lg transition-all hover:bg-emerald-700 shadow-emerald-600/30 active:scale-95 font-headline disabled:opacity-70 disabled:cursor-not-allowed">
+                                <span x-show="!isSubmitting">نعم، تأكيد إعادة الحجز</span>
+                                <span x-show="isSubmitting"
+                                    class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </template>
+
         {{-- ====================== Delete Modal ====================== --}}
         <template x-teleport="body">
             <div x-show="showDeleteModal" x-cloak
@@ -1415,9 +1607,15 @@
                         تأكيد الحذف</h3>
 
                     <p class="mb-8 text-sm font-semibold leading-relaxed text-gray-500 dark:text-gray-400">
-                        هل أنت متأكد من حذف الراكب رقم <br>
-                        <span class="text-base font-black text-on-surface dark:text-white font-headline"
-                            x-text="deletePassengerData.passenger_number"></span>؟<br>
+                        هل أنت متأكد من حذف الراكب <br>
+                        <template x-if="deletePassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="deletePassengerData.passenger_name + ' (' + deletePassengerData.passenger_number + ')'"></span>
+                        </template>
+                        <template x-if="!deletePassengerData.passenger_name">
+                            <span class="text-base font-black text-on-surface dark:text-white font-headline"
+                                x-text="deletePassengerData.passenger_number"></span>
+                        </template>؟<br>
                         <span class="text-rose-500/80">لا يمكن التراجع عن هذا الإجراء.</span>
                     </p>
 
@@ -1462,6 +1660,7 @@
                 showEditModal: false,
                 showDeleteModal: false,
                 showStatusModal: false,
+                showRebookModal: false,
                 isSubmitting: false,
 
                 searchQuery: '{{ request('search', '') }}',
@@ -1484,6 +1683,7 @@
                 editPassengerData: {
                     id: '',
                     date: '',
+                    passenger_name: '',
                     passenger_number: '',
                     status: 'pending',
                     pickup_location: '',
@@ -1503,6 +1703,7 @@
                 },
                 deletePassengerData: {
                     id: '',
+                    passenger_name: '',
                     passenger_number: '',
                     url: ''
                 },
@@ -1511,6 +1712,7 @@
                     status: 'pending',
                     url: '',
                     date: '',
+                    passenger_name: '',
                     passenger_number: '',
                     pickup_location: '',
                     destination: '',
@@ -1525,6 +1727,25 @@
                     cancel_reason: '',
                     note: ''
                 },
+                rebookPassengerData: {
+                    id: '',
+                    status: 'pending',
+                    url: '',
+                    date: '',
+                    passenger_name: '',
+                    passenger_number: '',
+                    pickup_location: '',
+                    destination: '',
+                    count: 1,
+                    office_commission: 0,
+                    other_office_commission: 0,
+                    broker_name: '',
+                    broker_phone: '',
+                    send_whatsapp: true,
+                    driver_phone: '',
+                    driver_name: '',
+                    note: ''
+                },
 
                 init() {
                     this.updateVisibility();
@@ -1537,6 +1758,7 @@
                 openEditModal(passenger) {
                     this.editPassengerData = {
                         ...passenger,
+                        passenger_name: passenger.passenger_name || '',
                         broker_id: passenger.broker_id || '',
                         broker_name: passenger.broker_name || '',
                         broker_phone: passenger.broker_phone || '',
@@ -1545,9 +1767,10 @@
                     this.showEditModal = true;
                 },
 
-                openDeleteModal(id, passengerNumber) {
+                openDeleteModal(id, passengerNumber, passengerName = '') {
                     this.deletePassengerData = {
                         id: id,
+                        passenger_name: passengerName || '',
                         passenger_number: passengerNumber,
                         url: '{{ route('passengers.index') }}/' + id
                     };
@@ -1557,6 +1780,7 @@
                 openStatusModal(passenger) {
                     this.statusPassengerData = {
                         ...passenger,
+                        passenger_name: passenger.passenger_name || '',
                         cancel_reason: passenger.cancel_reason || '',
                         note: passenger.note || '',
                         broker_name: passenger.broker_name || '',
@@ -1567,14 +1791,28 @@
                     this.showStatusModal = true;
                 },
 
+                openRebookModal(passenger) {
+                    this.rebookPassengerData = {
+                        ...passenger,
+                        passenger_name: passenger.passenger_name || '',
+                        note: passenger.note || '',
+                        broker_name: passenger.broker_name || '',
+                        broker_phone: passenger.broker_phone || '',
+                        send_whatsapp: true,
+                        url: '{{ route('passengers.index') }}/' + passenger.id + '/status'
+                    };
+                    this.showRebookModal = true;
+                },
+
                 closeModals() {
                     this.showCreateModal = false;
                     this.showEditModal = false;
                     this.showDeleteModal = false;
                     this.showStatusModal = false;
+                    this.showRebookModal = false;
                 },
 
-                showRow(passengerNumber, location, driverName, brokerName, statusKey, passengerDate) {
+                showRow(passengerNumber, passengerName, location, driverName, brokerName, statusKey, passengerDate) {
                     const query = this.searchQuery.toLowerCase().trim();
                     const cleanQuery = query.replace(/^(\+967|967|00967|0)/, '');
 
@@ -1591,7 +1829,7 @@
                     };
                     const arabicStatus = statusMap[statusKey] || statusKey;
 
-                    const matchesSearch = !query || check(passengerNumber) || check(location) || check(driverName) || check(
+                    const matchesSearch = !query || check(passengerNumber) || check(passengerName) || check(location) || check(driverName) || check(
                         brokerName) || check(arabicStatus);
                     const matchesStatus = !this.statusFilter || this.statusFilter === 'all' || String(statusKey || '') === this.statusFilter;
                     const matchesDate = !this.dateFilter || this.dateFilter === 'all' || String(passengerDate || '') === this.dateFilter || (this.dateFilter === 'today' && passengerDate === '{{ now()->format('Y-m-d') }}');
@@ -1871,6 +2109,76 @@
                 }
             } catch (error) {
                 console.error('WhatsApp direct cancel send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        async function sendPassengerRebookDirect(passengerId, btn, fallbackLink = '') {
+            if (!passengerId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.passengerRebook', ':id') }}".replace(':id', passengerId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار إعادة الحجز للوسيط بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp direct rebook send error:', error);
                 if (fallbackLink) {
                     window.open(fallbackLink, '_blank');
                     showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');

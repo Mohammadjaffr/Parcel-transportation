@@ -14,6 +14,7 @@ class Passengers extends Model
         'uuid',
         'date',
         'broker_id',
+        'passenger_name',
         'passenger_number',
         'pickup_location',
         'destination',
@@ -28,6 +29,11 @@ class Passengers extends Model
         'status',
         'trip_id'
     ];
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->passenger_name;
+    }
 
     public function uniqueIds(): array
     {
@@ -64,6 +70,11 @@ class Passengers extends Model
     public function getCancelWhatsappLinkAttribute(): ?string
     {
         return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'passengerCancel');
+    }
+
+    public function getRebookWhatsappLinkAttribute(): ?string
+    {
+        return \App\Services\WhatsApp\WhatsAppLinkService::generate($this, 'passengerRebook');
     }
 
 

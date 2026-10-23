@@ -203,8 +203,15 @@
                         <span class="text-[10px] font-black text-primary/60 mb-1 block">السائق </span>
                         <div class="flex justify-between items-center">
                             <div>
-                                <span
-                                    class="block text-sm font-black text-primary">{{ $package->driver->name ?? 'غير محدد' }}</span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span
+                                        class="block text-sm font-black text-primary">{{ $package->driver->name ?? 'غير محدد' }}</span>
+                                    @if($package->driver && $package->driver->vehicle_type)
+                                        <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800">
+                                            {{ $package->driver->vehicle_type }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <span
                                     class="block mt-0.5 text-xs font-medium text-right text-primary/70 dir-ltr">{{ $package->driver->phone }}</span>
                             </div>

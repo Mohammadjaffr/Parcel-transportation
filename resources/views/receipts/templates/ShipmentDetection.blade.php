@@ -177,6 +177,14 @@
                             <span class="font-sans font-bold text-slate-800 print:text-black"
                                 dir="ltr">{{ $driver_phone ?? '---' }}</span>
                         </div>
+                        @if (!empty($driver_vehicle_type) && $driver_vehicle_type !== '---')
+                            <div
+                                class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200 print:text-[10px]">
+                                <span class="font-semibold text-slate-500 print:text-black">نوع المركبة</span>
+
+                                <span class="font-bold text-slate-800 print:text-black">{{ $driver_vehicle_type }}</span>
+                            </div>
+                        @endif
                         <div
                             class="flex justify-between items-center pb-1.5 mb-1.5 text-xs border-b border-dashed border-slate-200 print:text-[10px]">
                             <span class="font-semibold text-slate-500 print:text-black">رقم الكشف</span>

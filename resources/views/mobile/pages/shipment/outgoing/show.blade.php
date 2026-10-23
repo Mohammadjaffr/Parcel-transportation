@@ -364,8 +364,16 @@
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 mb-0.5 uppercase tracking-wider">السائق
                                     المسؤول</p>
-                                <p class="text-xs font-black text-slate-800">
-                                    {{ $shipment->package->driver->name ?? 'غير محدد' }}</p>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <p class="text-xs font-black text-slate-800">
+                                        {{ $shipment->package->driver->name ?? 'غير محدد' }}
+                                    </p>
+                                    @if ($shipment->package?->driver?->vehicle_type)
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                            {{ $shipment->package->driver->vehicle_type }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <p class="text-[10px] font-bold text-slate-500 dir-ltr text-right mt-0.5">
                                     <x-phone-number :value="$shipment->package->driver->phone ?? '---'" class="text-[11px] font-bold" />
                                 </p>

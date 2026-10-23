@@ -127,6 +127,7 @@ class PassangersDetection implements ReceiptStrategyInterface
 
                 $passengersData[] = [
                     'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
+                    'passenger_name'          => $p->passenger_name ?? '---',
                     'passenger_number'        => $pNum,
                     'broker_name'             => $p->broker?->name ?? 'بدون وسيط',
                     'pickup_location'         => $pLoc,
@@ -139,7 +140,8 @@ class PassangersDetection implements ReceiptStrategyInterface
                     'note'                    => $p->note,
                 ];
 
-                $msg .= "{$i}. الراكب: {$pNum}\n";
+                $nameInfo = $p->passenger_name ? " ({$p->passenger_name})" : "";
+                $msg .= "{$i}. الراكب: {$pNum}{$nameInfo}\n";
                 if (!empty($p->vehicle_type)) {
                     $msg .= "🚗 نوع المركبة: {$p->vehicle_type}\n";
                 }

@@ -60,10 +60,11 @@ class PassengerTripController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'driver_id'     => ['nullable', 'exists:drivers,id'],
-            'driver_phone'  => ['required_without:driver_id', 'nullable', 'string'],
-            'driver_name'   => ['required_without:driver_id', 'nullable', 'string'],
-            'passenger_ids' => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
+            'driver_id'           => ['nullable', 'exists:drivers,id'],
+            'driver_phone'        => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_name'         => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_vehicle_type' => ['nullable', 'string', 'max:100'],
+            'passenger_ids'       => ['required', 'array', 'min:1'], // يجب اختيار راكب واحد على الأقل للرحلة
         ]);
 
         if ($validator->fails()) {
@@ -81,8 +82,14 @@ class PassengerTripController extends Controller
             } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
-                    $request->driver_name
+                    $request->driver_name,
+                    $request->driver_vehicle_type
                 );
+            } elseif ($request->filled('driver_vehicle_type')) {
+                $existingDriver = Driver::find($driverId);
+                if ($existingDriver && !$existingDriver->vehicle_type) {
+                    $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                }
             }
             $user = auth()->user();
             $branchId = $user->branch_id;
@@ -220,10 +227,11 @@ class PassengerTripController extends Controller
         $trip = PassengerTrip::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'driver_id'     => ['nullable', 'exists:drivers,id'],
-            'driver_phone'  => ['required_without:driver_id', 'nullable', 'string'],
-            'driver_name'   => ['required_without:driver_id', 'nullable', 'string'],
-            'passenger_ids' => ['required', 'array', 'min:1'],
+            'driver_id'           => ['nullable', 'exists:drivers,id'],
+            'driver_phone'        => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_name'         => ['required_without:driver_id', 'nullable', 'string'],
+            'driver_vehicle_type' => ['nullable', 'string', 'max:100'],
+            'passenger_ids'       => ['required', 'array', 'min:1'],
         ]);
 
         if ($validator->fails()) {
@@ -242,8 +250,14 @@ class PassengerTripController extends Controller
             } else {
                 $driverId = $this->resolvePassengerDriver(
                     $this->normalizePhone($request->driver_phone),
-                    $request->driver_name
+                    $request->driver_name,
+                    $request->driver_vehicle_type
                 );
+            } elseif ($request->filled('driver_vehicle_type')) {
+                $existingDriver = Driver::find($driverId);
+                if ($existingDriver && !$existingDriver->vehicle_type) {
+                    $existingDriver->update(['vehicle_type' => $request->driver_vehicle_type]);
+                }
             }
 
             $trip->update([
@@ -327,7 +341,7 @@ class PassengerTripController extends Controller
             return WebResponseClass::sendExceptionError($e);
         }
     }
-    private function resolvePassengerDriver(?string $phone, ?string $name = null): ?int
+    private function resolvePassengerDriver(?string $phone, ?string $name = null, ?string $vehicleType = null): ?int
     {
         $phone = $this->normalizePhone($phone);
 
@@ -346,12 +360,23 @@ class PassengerTripController extends Controller
             ->first();
 
         if ($driver) {
+
             if ($driver->is_banned) {
                 throw new Exception("السائق صاحب هذا الهاتف ({$driver->phone}) محظور في النظام ولا يمكن تعيينه للرحلة.");
             }
 
+
+            $changed = false;
+
             if ($name && $driver->name !== $name) {
                 $driver->name = $name;
+                $changed = true;
+            }
+            if ($vehicleType && !$driver->vehicle_type) {
+                $driver->vehicle_type = $vehicleType;
+                $changed = true;
+            }
+            if ($changed) {
                 $driver->save();
             }
 
@@ -363,6 +388,7 @@ class PassengerTripController extends Controller
         $driver = new Driver();
         $driver->name = $name ?: 'سائق ' . $phone;
         $driver->phone = $phone;
+        $driver->vehicle_type = $vehicleType;
 
         if (Schema::hasColumn('drivers', 'app_id')) {
             $driver->app_id = $user->app_id ?? \App\Models\Branch::find($user->branch_id)?->app_id ?? \App\Models\App::first()?->id ?? 1;

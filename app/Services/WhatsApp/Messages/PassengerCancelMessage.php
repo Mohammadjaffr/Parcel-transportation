@@ -28,6 +28,7 @@ class PassengerCancelMessage implements WhatsAppMessageInterface
         }
 
         $brokerName  = $entity->broker->name ?? 'الوسيط';
+        $passengerName = $entity->passenger_name ? trim($entity->passenger_name) : '';
         $passengerNo = $entity->passenger_number ?? '---';
         $date        = $entity->date ? $entity->date->format('Y-m-d') : '---';
         $dayName     = $entity->date ? $entity->date->translatedFormat('l') : '';
@@ -43,7 +44,12 @@ class PassengerCancelMessage implements WhatsAppMessageInterface
         $msg .= "نود إشعاركم بأنه تم *إلغاء حجز الراكب* 🚫\n\n";
         $msg .= "*تفاصيل الحجز الملغي:*\n";
         $msg .= "━━━━━━━━━━━━━━━━━━\n";
-        $msg .= "👤 رقم الراكب: {$passengerNo}\n";
+        if ($passengerName) {
+            $msg .= "👤 اسم الراكب: {$passengerName}\n";
+            $msg .= "📱 رقم الراكب: {$passengerNo}\n";
+        } else {
+            $msg .= "👤 رقم الراكب: {$passengerNo}\n";
+        }
         $msg .= "📅 التاريخ: {$date}";
         if ($dayName) {
             $msg .= " ({$dayName})";

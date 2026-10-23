@@ -143,9 +143,14 @@
                         </div>
 
                         <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                            <div class="flex gap-1.5 items-center text-slate-500">
+                            <div class="flex gap-1.5 items-center text-slate-500 flex-wrap">
                                 <span class="material-symbols-outlined text-[16px]">local_shipping</span>
                                 <span class="text-[11px] font-bold truncate max-w-[120px]">{{ $package->driver->name ?? 'سائق غير محدد' }}</span>
+                                @if ($package->driver?->vehicle_type)
+                                    <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                        {{ $package->driver->vehicle_type }}
+                                    </span>
+                                @endif
                             </div>
 
                             <div class="flex gap-1 items-center px-2.5 py-1 text-white rounded-lg shadow-sm bg-slate-800">

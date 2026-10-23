@@ -14,6 +14,7 @@
         {{-- ========== Driver Combobox ========== --}}
         driver_id: '{{ $receipt->driver_id }}',
         driver_name: '{{ $receipt->driver->name ?? '' }}',
+        driver_vehicle_type: '{{ $receipt->driver->vehicle_type ?? '' }}',
         localPhoneNumber: '{{ preg_replace('/^(967|966)/', '', $receipt->driver->phone ?? '') }}',
         selectedCountry: null,
         countryOpen: false,
@@ -40,7 +41,7 @@
         },
         
         driverOpen: false,
-        drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone])),
+        drivers: @js($drivers->map(fn($d) => ['id' => $d->id, 'name' => $d->name, 'phone' => $d->phone, 'vehicle_type' => $d->vehicle_type])),
         
         get filteredDrivers() {
             if (this.localPhoneNumber.trim() === '') return this.drivers;
@@ -51,6 +52,7 @@
         selectDriver(driver) {
             this.driver_id = driver.id;
             this.driver_name = driver.name;
+            this.driver_vehicle_type = driver.vehicle_type || '';
             let p = driver.phone || '';
             const codes = this.countries.map(c => c.dial_code.replace('+', '')).sort((a, b) => b.length - a.length);
             for (const code of codes) {
@@ -67,6 +69,7 @@
         onPhoneInput() {
             this.driver_id = null;
             this.driver_name = '';
+            this.driver_vehicle_type = '';
             this.driverOpen = true;
         },
 
@@ -112,6 +115,7 @@
                         driver_id: this.driver_id,
                         driver_name: this.driver_name,
                         driver_phone: this.fullPhone,
+                        driver_vehicle_type: this.driver_vehicle_type,
                         number: this.receipt_number,
                         source_branch_code: this.source_branch_code,
                         general_notes: this.general_notes,
@@ -162,7 +166,7 @@
                             السائق <span class="text-error-500">*</span>
                         </label>
 
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
 
                             {{-- رقم الهاتف --}}
                             <div class="relative">
@@ -221,7 +225,10 @@
                                     <template x-for="driver in filteredDrivers" :key="driver.id">
                                         <div @click="selectDriver(driver)"
                                             class="flex justify-between items-center px-4 py-2.5 transition-colors cursor-pointer hover:bg-primary-50 dark:hover:bg-gray-700">
-                                            <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="driver.name"></span>
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="driver.name"></span>
+                                                <span x-show="driver.vehicle_type" class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
+                                            </div>
                                             <span class="font-mono text-xs text-gray-400" dir="ltr" x-text="driver.phone || '—'"></span>
                                         </div>
                                     </template>
@@ -246,6 +253,26 @@
                                     :class="driver_id ? 'bg-gray-100 dark:bg-gray-900/60 cursor-not-allowed' : ''"
                                     class="px-4 py-2.5 w-full h-11 text-sm rounded-2xl border border-gray-200 transition-all outline-none dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
                                 <p x-show="errors.driver_name" x-text="errors.driver_name ? errors.driver_name[0] : ''" class="mt-1 text-xs text-error-500"></p>
+                            </div>
+
+                            {{-- نوع المركبة --}}
+                            <div>
+                                <label class="block mb-1 text-xs font-semibold text-gray-600 dark:text-gray-400">
+                                    نوع المركبة <span class="text-xs text-gray-400 font-normal">(اختياري)</span>
+                                </label>
+                                <input type="text" list="driver_vehicle_types_receipt_edit" x-model="driver_vehicle_type" placeholder="نوع المركبة"
+                                    class="px-4 py-2.5 w-full h-11 text-sm rounded-2xl border border-gray-200 transition-all outline-none dark:border-gray-600 dark:text-gray-200 dark:bg-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                                <datalist id="driver_vehicle_types_receipt_edit">
+                                    <option value="صالون"></option>
+                                    <option value="باص"></option>
+                                    <option value="دينا"></option>
+                                    <option value="شاص"></option>
+                                    <option value="هايلوكس"></option>
+                                    <option value="حبة وربع"></option>
+                                    <option value="نوها"></option>
+                                    <option value="خصوصي"></option>
+                                </datalist>
+                                <p x-show="errors.driver_vehicle_type" x-text="errors.driver_vehicle_type ? errors.driver_vehicle_type[0] : ''" class="mt-1 text-xs text-error-500"></p>
                             </div>
                         </div>
 

@@ -240,9 +240,15 @@
                                             <button type="button" @click="selectDriver(driver)"
                                                 class="flex justify-between items-center px-4 py-2.5 w-full text-right border-b border-gray-50 transition-colors hover:bg-surface dark:hover:bg-boxdark-2 dark:border-boxdark">
                                                 <div class="flex flex-col gap-0.5">
-                                                    <span
-                                                        class="text-xs font-bold text-gray-800 dark:text-white font-headline"
-                                                        x-text="driver.name"></span>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span
+                                                            class="text-xs font-bold text-gray-800 dark:text-white font-headline"
+                                                            x-text="driver.name"></span>
+                                                        <template x-if="driver.vehicle_type">
+                                                            <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-hover"
+                                                                x-text="driver.vehicle_type"></span>
+                                                        </template>
+                                                    </div>
                                                     <span
                                                         class="text-[10px] text-gray-500 dark:text-bodydark dir-ltr text-right font-mono"
                                                         x-text="driver.phone"></span>
@@ -267,6 +273,21 @@
                                         :readonly="selectedDriverId !== null" placeholder="اسم السائق..." required
                                         class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all outline-none focus:outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
                                         :class="selectedDriverId ?
+                                            'bg-surface dark:bg-boxdark text-gray-500 dark:text-gray-400 cursor-not-allowed border-transparent opacity-80' :
+                                            'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'">
+                                </div>
+
+                                {{-- نوع المركبة --}}
+                                <div>
+                                    <label class="block mb-1.5 text-xs font-bold text-gray-600 dark:text-gray-300">
+                                        نوع المركبة
+                                    </label>
+                                    <input type="text" name="driver_vehicle_type" x-model="vehicleTypeInput"
+                                        list="outgoing_package_vehicle_types"
+                                        :readonly="selectedDriverId !== null && !!vehicleTypeInput"
+                                        placeholder="مثلاً: صالون، باص، دينا..."
+                                        class="px-3 w-full h-12 text-sm rounded-xl border border-gray-200 transition-all outline-none focus:outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white"
+                                        :class="selectedDriverId && vehicleTypeInput ?
                                             'bg-surface dark:bg-boxdark text-gray-500 dark:text-gray-400 cursor-not-allowed border-transparent opacity-80' :
                                             'bg-white focus:border-primary focus:ring-2 focus:ring-primary/20'">
                                 </div>
@@ -790,6 +811,7 @@
                 searchCountryQuery: '',
                 localPhoneNumber: '',
                 nameInput: '',
+                vehicleTypeInput: '',
                 selectedDriverId: null,
                 showDriverDropdown: false,
 
@@ -814,6 +836,7 @@
                 searchDriver() {
                     this.selectedDriverId = null;
                     this.nameInput = '';
+                    this.vehicleTypeInput = '';
                     if (this.localPhoneNumber.length === 0) {
                         this.filteredDrivers = [];
                         return;
@@ -828,6 +851,7 @@
                 selectDriver(driver) {
                     this.selectedDriverId = driver.id;
                     this.nameInput = driver.name;
+                    this.vehicleTypeInput = driver.vehicle_type || '';
                     let phone = driver.phone;
                     let matchedCountry = this.countries.find(c => phone.startsWith(c.dial_code));
                     if (matchedCountry) {
@@ -842,6 +866,7 @@
                 resetSelection() {
                     this.selectedDriverId = null;
                     this.nameInput = '';
+                    this.vehicleTypeInput = '';
                     this.localPhoneNumber = '';
                     this.filteredDrivers = [];
                     setTimeout(() => this.$el.querySelector('input[type="tel"]').focus(), 50);
@@ -849,4 +874,15 @@
             }));
         });
     </script>
+
+    <datalist id="outgoing_package_vehicle_types">
+        <option value="باص">
+        <option value="صالون">
+        <option value="دينا">
+        <option value="شاص">
+        <option value="هايلوكس">
+        <option value="حبة وربع">
+        <option value="نوها">
+        <option value="خصوصي">
+    </datalist>
 @endsection

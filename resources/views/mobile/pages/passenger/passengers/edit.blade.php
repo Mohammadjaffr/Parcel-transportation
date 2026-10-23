@@ -62,8 +62,13 @@
 
                         </div>
 
-                        {{-- ================= رقم الراكب ================= --}}
-                        <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        {{-- ================= رقم وبيانات الراكب ================= --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">اسم الراكب <span class="text-xs text-gray-400 font-normal">(اختياري)</span></label>
+                                <input type="text" name="passenger_name" value="{{ old('passenger_name', $passenger->passenger_name) }}" placeholder="الاسم الرباعي أو اللقب"
+                                    class="px-4 w-full h-12 bg-white rounded-xl border-none ring-1 ring-gray-200 transition-all dark:bg-boxdark dark:text-white focus:ring-2 focus:ring-primary/40">
+                            </div>
                             <div class="relative" x-data="passengerPhonePicker(@js(array_values(config('countries', []))))"
                                 x-init="loadInitial('{{ $passenger->passenger_number }}')">
                                 <label class="block mb-2 text-sm font-bold text-gray-600 dark:text-gray-300">رقم الراكب

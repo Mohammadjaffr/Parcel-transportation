@@ -30,6 +30,7 @@ class PassengerDriverMessage implements WhatsAppMessageInterface
 
         // 2. استخدام $entity بدلاً من $this لجلب البيانات
         $driverName = $entity->driver->name ?? 'السائق';
+        $passengerName = $entity->passenger_name ? trim($entity->passenger_name) : '';
         $pNum       = $entity->passenger_number ?? '---';
         $pLoc       = $entity->location ?? '---';
         $pCnt       = $entity->count ?? 0;
@@ -44,7 +45,12 @@ class PassengerDriverMessage implements WhatsAppMessageInterface
         $msg .= "تم تكليفك بنقل الراكب التالي:\n\n";
         $msg .= "*تفاصيل الراكب:*\n";
         $msg .= "------------------------------------------\n";
-        $msg .= "الراكب: {$pNum}\n";
+        if ($passengerName) {
+            $msg .= "👤 الراكب: {$passengerName}\n";
+            $msg .= "📱 الهاتف: {$pNum}\n";
+        } else {
+            $msg .= "👤 الراكب: {$pNum}\n";
+        }
         $msg .= "📍 المكان: {$pLoc}\n";
         if (!empty($entity->vehicle_type)) {
             $msg .= "🚗 نوع المركبة: {$entity->vehicle_type}\n";

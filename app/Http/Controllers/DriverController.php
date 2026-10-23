@@ -22,6 +22,7 @@ class DriverController extends Controller
 
         $query = Driver::latest();
 
+
         // الفلترة حسب الحالة
         if ($request->filled('status')) {
             if ($request->status === 'active') {
@@ -47,6 +48,16 @@ class DriverController extends Controller
         }
 
         return view('pages.drivers.index', compact('drivers', 'totalCount', 'activeCount', 'bannedCount'));
+
+    // البحث بالاسم ورقم الهاتف ونوع المركبة
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+              ->orWhere('phone', 'like', "%{$search}%")
+              ->orWhere('vehicle_type', 'like', "%{$search}%");
+        });
+
     }
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
@@ -58,8 +69,9 @@ class DriverController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'   => ['required', 'string', 'max:255'],
-            'phone'  => ['nullable', 'string', 'max:20'],
+            'name'         => ['required', 'string', 'max:255'],
+            'phone'        => ['nullable', 'string', 'max:20'],
+            'vehicle_type' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()){
@@ -103,8 +115,9 @@ class DriverController extends Controller
         $driver = Driver::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'name'   => ['required', 'string', 'max:255'],
-            'phone'  => ['nullable', 'string', 'max:20'],
+            'name'         => ['required', 'string', 'max:255'],
+            'phone'        => ['nullable', 'string', 'max:20'],
+            'vehicle_type' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()){

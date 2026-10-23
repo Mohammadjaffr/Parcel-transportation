@@ -103,6 +103,7 @@ class PassangerDetection implements ReceiptStrategyInterface
                 $passengersData[] = [
                     'date'             => $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : '---',
                     'day'              => $p->date ? \Carbon\Carbon::parse($p->date)->locale('ar')->translatedFormat('l') : '---',
+                    'passenger_name'   => $p->passenger_name ?? '---',
                     'passenger_number' => $displayPhone,
                     'pickup_location'  => $p->pickup_location ?? '---',
                     'destination'      => $p->destination ?? '---',

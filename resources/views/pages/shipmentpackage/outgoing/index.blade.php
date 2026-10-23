@@ -329,9 +329,16 @@
 
                             <div class="flex flex-col gap-1">
                                 <span class="text-[10px] font-black text-gray-400 dark:text-gray-500">السائق</span>
-                                <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
-                                    {{ $package->driver->name ?? 'غير محدد' }}
-                                </span>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-xs font-bold text-gray-700 dark:text-gray-300">
+                                        {{ $package->driver->name ?? 'غير محدد' }}
+                                    </span>
+                                    @if ($package->driver?->vehicle_type)
+                                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                            {{ $package->driver->vehicle_type }}
+                                        </span>
+                                    @endif
+                                </div>
                                 <x-phone-number :value="$package->driver?->phone ?? '---'"
                                     class="text-[10px] font-bold text-gray-500 dark:text-bodydark" />
                             </div>
@@ -478,10 +485,17 @@
                                 {{-- بيانات الحمولة --}}
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col gap-1">
-                                        <span
-                                            class="text-sm font-black text-gray-800 dark:text-white truncate max-w-[170px]">
-                                            {{ $package->driver->name ?? 'غير محدد' }}
-                                        </span>
+                                        <div class="flex items-center gap-1.5 flex-wrap">
+                                            <span
+                                                class="text-sm font-black text-gray-800 dark:text-white truncate max-w-[170px]">
+                                                {{ $package->driver->name ?? 'غير محدد' }}
+                                            </span>
+                                            @if ($package->driver?->vehicle_type)
+                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                                    {{ $package->driver->vehicle_type }}
+                                                </span>
+                                            @endif
+                                        </div>
 
                                         <x-phone-number :value="$package->driver?->phone ?? '---'"
                                             class="text-[11px] font-bold text-gray-500 dark:text-bodydark" />

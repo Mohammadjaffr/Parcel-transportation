@@ -263,7 +263,12 @@
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-base font-black text-slate-800">السائق: {{ $driver['driver_name'] }}</h3>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-black text-slate-800">السائق: {{ $driver['driver_name'] }}</h3>
+                                    @if (!empty($driver['driver_vehicle_type']) && $driver['driver_vehicle_type'] !== '---')
+                                        <span class="px-2 py-0.5 text-xs font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">{{ $driver['driver_vehicle_type'] }}</span>
+                                    @endif
+                                </div>
                                 <div class="flex gap-2 items-center mt-0.5">
                                     <span class="text-xs font-bold text-slate-600"
                                         dir="ltr">{{ $driver['driver_phone'] }}</span>
@@ -287,7 +292,7 @@
                                 <tr>
                                     <th class="w-10 text-center font-black text-slate-800">#</th>
                                     <th class="w-28 font-black text-slate-800">التاريخ</th>
-
+                                    <th class="w-32 text-right font-black text-slate-800">اسم الراكب</th>
                                     <th class="font-black text-slate-800">رقم الراكب (الهاتف)</th>
 
                                     <th class="w-32 text-right font-black text-slate-800">مكان الراكب</th>
@@ -303,6 +308,7 @@
                                     <tr class="transition-colors hover:bg-slate-50">
                                         <td class="font-bold text-center text-slate-800">{{ $globalPassengerIndex++ }}</td>
                                         <td class="font-bold text-slate-900" dir="ltr">{{ $passenger['date'] }}</td>
+                                        <td class="font-bold text-slate-900">{{ $passenger['passenger_name'] ?? '---' }}</td>
                                         <td class="font-black text-slate-900" dir="ltr">
                                             {{ $passenger['passenger_number'] }}</td>
                                         <td class="font-bold text-slate-900">{{ $passenger['pickup_location'] }}
