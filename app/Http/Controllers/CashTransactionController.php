@@ -96,6 +96,10 @@ class CashTransactionController extends Controller
                         ->orWhere('receipt_number', 'like', "%{$search}%")
                         ->orWhere('reference_number', 'like', "{$search}%")
                         ->orWhere('reference_number', 'like', "%{$search}%");
+
+                    if (is_numeric($search)) {
+                        $q->orWhere('source_id', (int) $search);
+                    }
                 } else {
                     $q->where('receipt_number', 'like', "%{$search}%")
                         ->orWhere('reference_number', 'like', "%{$search}%")
@@ -340,7 +344,7 @@ class CashTransactionController extends Controller
                 'created_at'       => $trx->created_at->format('Y-m-d h:i A'),
                 'branch'           => $trx->branch->name ?? '-',
                 'user'             => $trx->user->name ?? '-',
-                'reference_number' => $trx->reference_number ?? '-',
+                'reference_number' => $trx->related_entity ? $trx->related_entity['label'] : ($trx->reference_number ?? '-'),
                 'driver_name'      => $trx->driver_name,
                 'driver_phone'     => $trx->driver_phone,
                 'notes'            => $trx->notes ?? '-',

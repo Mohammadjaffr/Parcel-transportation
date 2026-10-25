@@ -284,7 +284,26 @@
                                         <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">المسؤول</p>
                                         <p class="text-xs font-bold text-slate-800">{{ $trx->user->name ?? '-' }}</p>
                                     </div>
-                                    @if ($trx->reference_number)
+                                    @if ($trx->related_entity)
+                                        <div>
+                                            <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">المرجع</p>
+                                            @if ($trx->related_entity['url'])
+                                                <a href="{{ $trx->related_entity['url'] }}" class="text-[10px] font-mono font-bold text-primary hover:underline flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[13px]">
+                                                        {{ $trx->related_entity['type'] === 'trip' ? 'explore' : ($trx->related_entity['type'] === 'shipment' ? 'package_2' : 'tag') }}
+                                                    </span>
+                                                    <span>{{ $trx->related_entity['label'] }}</span>
+                                                </a>
+                                            @else
+                                                <p class="text-[10px] font-mono font-bold text-slate-800 flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[13px] text-gray-400">
+                                                        {{ $trx->related_entity['type'] === 'trip' ? 'explore' : ($trx->related_entity['type'] === 'shipment' ? 'package_2' : 'tag') }}
+                                                    </span>
+                                                    <span>{{ $trx->related_entity['label'] }}</span>
+                                                </p>
+                                            @endif
+                                        </div>
+                                    @elseif ($trx->reference_number)
                                         <div>
                                             <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">المرجع</p>
                                             <p class="text-[10px] font-mono text-slate-800">{{ $trx->reference_number }}

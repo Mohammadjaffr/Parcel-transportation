@@ -197,8 +197,26 @@
                             @endif
                             <td class="p-4">
                                 <span class="font-bold text-gray-900 dark:text-white">{{ $trx->category->name }}</span>
-                                @if($trx->reference_number)
-                                    <span class="block font-mono text-xs text-gray-400">مرجع: {{ $trx->reference_number }}</span>
+                                @if($trx->related_entity)
+                                    @if($trx->related_entity['url'])
+                                        <a href="{{ $trx->related_entity['url'] }}" target="_blank"
+                                            class="inline-flex items-center gap-1 mt-1 font-mono text-xs font-bold text-primary hover:underline hover:text-primary-hover dark:text-primary-hover"
+                                            title="عرض التفاصيل">
+                                            <span class="material-symbols-outlined text-[14px]">
+                                                {{ $trx->related_entity['type'] === 'trip' ? 'explore' : ($trx->related_entity['type'] === 'shipment' ? 'package_2' : 'tag') }}
+                                            </span>
+                                            <span>{{ $trx->related_entity['label'] }}</span>
+                                        </a>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 mt-1 font-mono text-xs font-bold text-gray-600 dark:text-gray-400">
+                                            <span class="material-symbols-outlined text-[14px] text-gray-400">
+                                                {{ $trx->related_entity['type'] === 'trip' ? 'explore' : ($trx->related_entity['type'] === 'shipment' ? 'package_2' : 'tag') }}
+                                            </span>
+                                            <span>{{ $trx->related_entity['label'] }}</span>
+                                        </span>
+                                    @endif
+                                @elseif($trx->reference_number)
+                                    <span class="block mt-1 font-mono text-xs text-gray-400">مرجع: {{ $trx->reference_number }}</span>
                                 @endif
                             </td>
                             <td class="p-4 whitespace-nowrap">

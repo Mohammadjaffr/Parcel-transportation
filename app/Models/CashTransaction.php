@@ -226,4 +226,100 @@ class CashTransaction extends Model
     {
         return $this->driver?->phone;
     }
+
+    /**
+     * معلومات الكيان المرتبط بالسند (شحنة، رحلة، راكب، أو مرجع عام)
+     * يُرجع مصفوفة تحتوي على: type, id, label, url
+     */
+    public function getRelatedEntityAttribute(): ?array
+    {
+        $source = $this->relationLoaded('source') ? $this->source : ($this->source_type && $this->source_id ? $this->source : null);
+        $sourceType = $this->source_type ?? ($source ? get_class($source) : null);
+        $sourceId = $this->source_id ?? $source?->id;
+        $ref = $this->reference_number ? trim($this->reference_number) : null;
+        $notes = $this->notes ? (string) $this->notes : '';
+
+        // 1. رحلة ركاب (PassengerTrip)
+        if ($source instanceof PassengerTrip || $sourceType === PassengerTrip::class || str_contains($notes, 'عمولة الرحلة')) {
+            $tripId = $sourceId ?? ($source?->id ?? ($ref && is_numeric($ref) ? (int) $ref : null));
+            if (!$tripId && preg_match('/الرحلة\s*(?:رقم\s*)?(\d+)/u', $notes, $matches)) {
+                $tripId = (int) $matches[1];
+            }
+            if ($tripId) {
+                return [
+                    'type'   => 'trip',
+                    'id'     => $tripId,
+                    'label'  => 'رحلة رقم ' . $tripId,
+                    'url'    => \Illuminate\Support\Facades\Route::has('trips.show') ? route('trips.show', $tripId) : null,
+                ];
+            }
+        }
+
+        // 2. إرسالية / حمولة طرود (ShipmentPackage)
+        if ($source instanceof ShipmentPackage || $sourceType === ShipmentPackage::class || str_contains($notes, 'عمولة الحمولة') || ($ref && str_starts_with($ref, 'PKG-'))) {
+            $packageId = $sourceId ?? $source?->id;
+            if (!$packageId && $ref) {
+                $parts = explode('-', $ref);
+                $lastPart = end($parts);
+                if (is_numeric($lastPart)) {
+                    $packageId = (int) $lastPart;
+                }
+            }
+            if (!$packageId && preg_match('/الحمولة\s*(?:رقم\s*)?PKG-[A-Za-z0-9]+-(\d+)/u', $notes, $matches)) {
+                $packageId = (int) $matches[1];
+            }
+            if ($packageId) {
+                return [
+                    'type'   => 'shipment',
+                    'id'     => $packageId,
+                    'label'  => 'شحنة رقم ' . $packageId,
+                    'url'    => \Illuminate\Support\Facades\Route::has('shipmentpackage.outgoing.show')
+                                ? route('shipmentpackage.outgoing.show', $packageId)
+                                : (\Illuminate\Support\Facades\Route::has('shipmentpackage.show') ? route('shipmentpackage.show', $packageId) : null),
+                ];
+            }
+        }
+
+        // 3. شحنة فردية (Shipment)
+        if ($source instanceof Shipment || $sourceType === Shipment::class || str_contains($notes, 'عمولة الشحنة') || str_contains($notes, 'قيمة الشحنة')) {
+            $shipmentNumber = $source?->bond_number_only ?? ($source?->bond_number ?? $sourceId ?? $ref);
+            if (!$shipmentNumber && preg_match('/الشحنة\s*(?:رقم\s*)?([A-Za-z0-9\-]+)/u', $notes, $matches)) {
+                $shipmentNumber = $matches[1];
+            }
+            if ($shipmentNumber) {
+                $shipmentId = $source?->id ?? $sourceId;
+                return [
+                    'type'   => 'shipment',
+                    'id'     => $shipmentNumber,
+                    'label'  => 'شحنة رقم ' . $shipmentNumber,
+                    'url'    => $shipmentId && \Illuminate\Support\Facades\Route::has('shipments.show') ? route('shipments.show', $shipmentId) : null,
+                ];
+            }
+        }
+
+        // 4. راكب (Passengers)
+        if ($source instanceof Passengers || $sourceType === Passengers::class || str_contains($notes, 'عمولة الراكب')) {
+            $passengerNumber = $source?->passenger_number ?? $ref ?? $sourceId;
+            if ($passengerNumber) {
+                return [
+                    'type'   => 'passenger',
+                    'id'     => $passengerNumber,
+                    'label'  => 'راكب رقم ' . $passengerNumber,
+                    'url'    => null,
+                ];
+            }
+        }
+
+        // 5. مرجع عام
+        if ($ref) {
+            return [
+                'type'   => 'reference',
+                'id'     => $ref,
+                'label'  => 'مرجع: ' . $ref,
+                'url'    => null,
+            ];
+        }
+
+        return null;
+    }
 }
