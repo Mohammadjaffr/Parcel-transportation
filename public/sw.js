@@ -31,6 +31,11 @@ self.addEventListener('activate', (event) => {
 
 // محاولة جلب الطلب من السيرفر، وإذا تعذر وكان طلباً لصفحة ويب، يتم إرجاع صفحة الأوفلاين
 self.addEventListener('fetch', (event) => {
+    // تجاهل الطلبات التي لا تتبع بروتوكول http أو https (مثل إضافات المتصفح)
+    if (!event.request.url.startsWith('http')) {
+        return;
+    }
+
     if (event.request.mode === 'navigate') {
         event.respondWith(
             fetch(event.request).catch(async () => {
@@ -38,8 +43,6 @@ self.addEventListener('fetch', (event) => {
                 return await cache.match(OFFLINE_URL);
             })
         );
-    } else {
-        // باقي الطلبات (صور، خطوط، سكربتات) تمر بشكل طبيعي للسيرفر
-        event.respondWith(fetch(event.request));
     }
+    // باقي الطلبات تمر بشكل طبيعي إلى المتصفح والسيرفر دون اعتراض لتجنب أخطاء Failed to fetch
 });

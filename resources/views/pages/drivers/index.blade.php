@@ -142,7 +142,7 @@
             {{-- ================= Mobile View ================= --}}
             <div class="flex flex-col gap-4 p-5 lg:hidden">
                 @forelse ($drivers as $driver)
-                    <div x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }})" x-transition
+                    <div x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }}, @js($driver->vehicle_type ?? ''))" x-transition
                         class="overflow-hidden relative p-5 rounded-2xl border border-gray-100 shadow-sm transition-all driver-row bg-surface dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 hover:shadow-sm">
 
                         <div class="flex justify-between items-start">
@@ -315,7 +315,7 @@
 
                     <tbody class="divide-y divide-gray-100 dark:divide-boxdark-2">
                         @forelse ($drivers as $driver)
-                            <tr x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }})" x-transition
+                            <tr x-show="showRow(@js($driver->name), @js($driver->phone), {{ $driver->is_banned ? 'true' : 'false' }}, @js($driver->vehicle_type ?? ''))" x-transition
                                 class="transition-colors hover:bg-gray-50/80 dark:hover:bg-boxdark-2/50 group driver-row">
 
                                 {{-- Driver --}}
@@ -407,16 +407,11 @@
 
                                         {{-- زر تعديل البيانات --}}
                                         <button type="button"
-
-                                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }})"
+                                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }}, {{ json_encode($driver->vehicle_type) }})"
                                             title="تعديل بيانات السائق"
                                             class="flex justify-center items-center w-9 h-9 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90 dark:bg-boxdark-2 dark:hover:bg-boxdark">
                                             <span class="text-[19px] material-symbols-outlined">edit_square</span>
                                         </button>
-
-                                            @click="openEditModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ json_encode($driver->phone) }}, {{ json_encode($driver->vehicle_type) }})"
-                                            class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-50 text-slate-400 hover:bg-primary/5 hover:text-primary active:scale-90">
-                                            <span class="text-xl material-symbols-outlined">edit_square</span>
 
                                         {{-- زر حذف السائق --}}
                                         <button type="button"
@@ -984,17 +979,11 @@
                 },
 
 
-                showRow(name, phone, isBanned) {
+                showRow(name, phone, isBanned, vehicleType = '') {
                     if (this.filterStatus === 'active' && isBanned) {
                         return false;
                     }
                     if (this.filterStatus === 'banned' && !isBanned) {
-
-                // تحديث الدالة لتستقبل الحالة (status) ونوع المركبة
-                showRow(name, phone, vehicleType, status) {
-                    // 1. فحص الفلتر (الكل / نشط / غير نشط)
-                    if (this.filterStatus !== 'all' && this.filterStatus !== status) {
-
                         return false;
                     }
 
@@ -1017,11 +1006,7 @@
                     });
                 },
 
-
-                openEditModal(id, name, phone) {
-
-                openEditModal(id, name, phone, vehicleType) {
-
+                openEditModal(id, name, phone, vehicleType = '') {
                     this.editDriverData = {
                         id: id,
                         name: name,
