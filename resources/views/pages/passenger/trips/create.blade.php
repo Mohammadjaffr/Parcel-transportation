@@ -81,14 +81,15 @@
                                         </div>
                                     </div>
 
-                                    <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
+                                    <input type="text" x-model="localPhoneNumber" @input="searchDriver"
                                         @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                        placeholder="7XXXXXXXX" :required="!selectedDriverId" inputmode="numeric" autocomplete="off"
-                                        :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                        placeholder="7XXXXXXXX أو اسم السائق..." :required="!selectedDriverId" autocomplete="off"
+                                        :maxlength="selectedDriverId ? (selectedCountry?.code === 'YE' ? 9 : 15) : 50"
                                         class="flex-1 px-4 w-full h-full text-base tracking-widest text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800 dark:text-white"
                                         :class="selectedDriverId ? 'font-black text-primary dark:text-primary-hover' : ''">
 
                                     <button type="button" x-show="selectedDriverId" @click="resetSelection" x-cloak
+                                        title="إلغاء اختيار السائق"
                                         class="absolute right-4 z-10 p-1 bg-white rounded-full border shadow-sm transition-colors dark:bg-boxdark text-slate-400 hover:text-red-500 hover:bg-red-50 border-slate-100 dark:border-boxdark-2">
                                         <span class="material-symbols-outlined text-[18px]">close</span>
                                     </button>
@@ -97,15 +98,15 @@
                                 {{-- نتائج البحث المنسدلة للسائقين --}}
                                 <div x-show="showDriverDropdown && localPhoneNumber.length > 0 && !selectedDriverId" x-transition x-cloak
                                     class="absolute top-[4.5rem] right-0 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl overflow-hidden max-h-60 overflow-y-auto z-50">
-                                    <template x-for="driver in filteredDrivers" :key="driver.id">
+                                    <template x-for="driver in filteredDrivers" :key="'phone-driver-' + driver.id">
                                         <button type="button" @click="selectDriver(driver)"
                                             class="flex justify-between items-center px-5 py-3.5 w-full text-right border-b transition-colors hover:bg-primary/5 dark:hover:bg-boxdark-2 border-slate-50 dark:border-boxdark-2 group">
                                             <div class="flex flex-col gap-1">
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex gap-2 items-center">
                                                     <span class="text-sm font-black transition-colors text-slate-800 dark:text-white group-hover:text-primary" x-text="driver.name"></span>
-                                                    <span x-show="driver.vehicle_type" class="px-2 py-0.5 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
+                                                    <span x-show="driver.vehicle_type" class="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded-md border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
                                                 </div>
-                                                <span class="font-mono text-xs text-right text-slate-500 dir-ltr" x-text="driver.phone"></span>
+                                                <span class="font-mono text-xs text-right text-slate-500 dir-ltr" x-text="formatDriverPhone(driver.phone)"></span>
                                             </div>
                                             <span class="material-symbols-outlined text-slate-300 text-[20px] group-hover:text-primary transition-colors transform group-hover:-translate-x-1">arrow_back</span>
                                         </button>
@@ -120,21 +121,59 @@
                                 </div>
                             </div>
 
-                            {{-- إدخال اسم السائق --}}
-                            <div class="mt-4">
+                            {{-- إدخال اسم السائق مع إمكانية البحث بالاسم --}}
+                            <div class="relative mt-4">
                                 <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">اسم السائق <span class="text-rose-500">*</span></label>
-                                <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedDriverId !== null"
-                                    placeholder="أدخل الاسم الثلاثي للسائق..." :required="!selectedDriverId"
-                                    class="px-4 w-full h-14 text-sm font-bold rounded-xl border transition-colors outline-none"
-                                    :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-800 dark:text-white'">
+                                <div class="relative">
+                                    <input type="text" name="driver_name" x-model="nameInput"
+                                        @input="onDriverNameInput"
+                                        @focus="showDriverNameDropdown = true"
+                                        @click.away="showDriverNameDropdown = false"
+                                        :readonly="selectedDriverId !== null"
+                                        placeholder="أدخل الاسم الثلاثي للسائق أو ابحث بالاسم..." :required="!selectedDriverId"
+                                        autocomplete="off"
+                                        class="px-4 w-full h-14 text-sm font-bold rounded-xl border transition-colors outline-none"
+                                        :class="selectedDriverId ? 'bg-slate-50 border-transparent text-emerald-600 dark:text-emerald-400 dark:bg-boxdark-2/60 cursor-not-allowed' : 'bg-white border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-800 dark:text-white'">
+
+                                    <button type="button" x-show="selectedDriverId" @click="resetSelection" x-cloak
+                                        title="إلغاء اختيار السائق"
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 z-10 p-1 bg-white rounded-full border shadow-sm transition-colors dark:bg-boxdark text-slate-400 hover:text-red-500 hover:bg-red-50 border-slate-100 dark:border-boxdark-2">
+                                        <span class="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
+                                </div>
+
+                                {{-- نتائج البحث المنسدلة لاسم السائق --}}
+                                <div x-show="showDriverNameDropdown && nameInput.trim().length > 0 && !selectedDriverId" x-transition x-cloak
+                                    class="absolute top-full right-0 mt-1.5 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-2xl shadow-xl overflow-hidden max-h-60 overflow-y-auto z-50">
+                                    <template x-for="driver in filteredDriversByName" :key="'name-driver-' + driver.id">
+                                        <button type="button" @click="selectDriver(driver)"
+                                            class="flex justify-between items-center px-5 py-3.5 w-full text-right border-b transition-colors hover:bg-primary/5 dark:hover:bg-boxdark-2 border-slate-50 dark:border-boxdark-2 group">
+                                            <div class="flex flex-col gap-1">
+                                                <div class="flex gap-2 items-center">
+                                                    <span class="text-sm font-black transition-colors text-slate-800 dark:text-white group-hover:text-primary" x-text="driver.name"></span>
+                                                    <span x-show="driver.vehicle_type" class="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded-md border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800" x-text="driver.vehicle_type"></span>
+                                                </div>
+                                                <span class="font-mono text-xs text-right text-slate-500 dir-ltr" x-text="formatDriverPhone(driver.phone)"></span>
+                                            </div>
+                                            <span class="material-symbols-outlined text-slate-300 text-[20px] group-hover:text-primary transition-colors transform group-hover:-translate-x-1">arrow_back</span>
+                                        </button>
+                                    </template>
+                                    <div x-show="filteredDriversByName.length === 0" class="px-5 py-4 text-center bg-slate-50/50 dark:bg-boxdark-2/30">
+                                        <div class="flex justify-center items-center mx-auto mb-2 w-10 h-10 text-blue-500 bg-blue-50 rounded-full dark:bg-blue-500/10">
+                                            <span class="material-symbols-outlined text-[20px]">person_add</span>
+                                        </div>
+                                        <span class="text-sm font-bold text-slate-600 dark:text-gray-300">سائق جديد</span>
+                                        <p class="mt-1 text-xs text-slate-400">سيتم حفظ السائق بهذا الاسم تلقائياً.</p>
+                                    </div>
+                                </div>
                             </div>
 
                             {{-- إدخال نوع المركبة --}}
                             <div class="mt-4">
-                                <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">نوع المركبة <span class="text-xs text-gray-400 font-normal">(اختياري)</span></label>
+                                <label class="block mb-2 text-xs font-bold text-slate-500 dark:text-gray-400">نوع المركبة <span class="text-xs font-normal text-gray-400">(اختياري)</span></label>
                                 <input type="text" name="driver_vehicle_type" list="driver_vehicle_types_trip" x-model="vehicleTypeInput"
                                     placeholder="مثال: صالون، باص، دينا..."
-                                    class="px-4 w-full h-14 text-sm font-bold rounded-xl border transition-colors outline-none bg-white border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-800 dark:text-white">
+                                    class="px-4 w-full h-14 text-sm font-bold bg-white rounded-xl border transition-colors outline-none border-slate-200 dark:bg-boxdark-2 dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-800 dark:text-white">
                                 <datalist id="driver_vehicle_types_trip">
                                     <option value="صالون"></option>
                                     <option value="باص"></option>
@@ -162,13 +201,19 @@
                                 </template>
 
                                 <template x-if="!isSubmitting">
-                                    <div class="flex gap-3 justify-between items-center px-6 w-full">
+                                    <div class="flex gap-3 justify-between items-center px-5 w-full">
                                         <div class="flex gap-2 items-center">
                                             <span class="material-symbols-outlined text-[22px] transform group-hover:-translate-y-1 transition-transform">flight_takeoff</span>
                                             <span>إنشاء وتسيير الرحلة</span>
                                         </div>
-                                        <div class="flex justify-center items-center w-8 h-8 font-mono text-sm rounded-lg bg-white/20" title="إجمالي الركاب المحددين">
-                                            <span x-text="selectedPassengers.length">0</span>
+                                        <div class="flex items-center gap-2 px-3 py-1 font-mono rounded-lg bg-white/20 text-white shadow-inner" title="إجمالي الركاب والحجوزات">
+                                            <div class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[16px]">groups</span>
+                                                <span class="text-sm font-black" x-text="selectedPassengersCount">0</span>
+                                                <span class="text-[11px] font-bold opacity-90" x-text="selectedPassengersCount == 1 ? 'راكب' : (selectedPassengersCount == 2 ? 'راكبان' : 'ركاب')"></span>
+                                            </div>
+                                            <span class="opacity-40 text-xs font-normal">|</span>
+                                            <div class="text-[11px] font-bold opacity-90" x-text="selectedPassengers.length + (selectedPassengers.length == 1 ? ' حجز' : (selectedPassengers.length == 2 ? ' حجزين' : ' حجوزات'))"></div>
                                         </div>
                                     </div>
                                 </template>
@@ -186,10 +231,28 @@
                         
                         <div class="flex flex-col gap-4 md:flex-row md:justify-between md:items-end">
                             <div>
-                                <h3 class="flex gap-3 items-center text-lg font-black text-slate-800 dark:text-white font-headline">
-                                    الركاب قيد الانتظار 
-                                    <span class="flex justify-center items-center px-3 py-1 text-sm font-bold rounded-lg bg-primary/10 text-primary" x-text="selectedPassengers.length + ' محددين'">0</span>
-                                </h3>
+                                <div class="flex flex-wrap items-center gap-2.5">
+                                    <h3 class="text-lg font-black text-slate-800 dark:text-white font-headline">
+                                        الركاب قيد الانتظار
+                                    </h3>
+                                    
+                                    {{-- شارة إجمالي عدد الركاب (الأفراد) --}}
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black rounded-xl bg-primary text-white shadow-sm shadow-primary/25"
+                                          title="إجمالي عدد الركاب (الأفراد) المحددين">
+                                        <span class="material-symbols-outlined text-[16px]">groups</span>
+                                        <span>إجمالي الركاب:</span>
+                                        <span class="font-headline text-sm font-black" x-text="selectedPassengersCount">0</span>
+                                        <span class="text-[11px] font-bold" x-text="selectedPassengersCount == 1 ? 'راكب' : (selectedPassengersCount == 2 ? 'راكبان' : 'ركاب')"></span>
+                                    </span>
+
+                                    {{-- شارة عدد الحجوزات/البطاقات --}}
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-xl bg-slate-100 dark:bg-boxdark-2 text-slate-600 dark:text-gray-300 border border-slate-200/60 dark:border-boxdark"
+                                          title="عدد السندات أو الحجوزات المحددة">
+                                        <span class="material-symbols-outlined text-[15px] text-slate-400">confirmation_number</span>
+                                        <span class="font-mono" x-text="selectedPassengers.length">0</span>
+                                        <span x-text="selectedPassengers.length == 1 ? 'حجز' : (selectedPassengers.length == 2 ? 'حجزين' : 'حجوزات')"></span>
+                                    </span>
+                                </div>
                                 <p class="mt-1 text-xs font-bold text-gray-500">حدد الركاب الذين سينضمون لهذه الرحلة بالضغط على بطاقاتهم.</p>
                             </div>
 
@@ -221,13 +284,15 @@
                                         :checked="selectedPassengers.includes(passenger.id)"
                                         @change="togglePassenger(passenger.id)">
 
-                                    <div class="flex gap-4 justify-between items-center p-5 h-full bg-white rounded-2xl border shadow-sm transition-all dark:bg-boxdark border-slate-200 dark:border-boxdark-2 peer-checked:ring-2 peer-checked:ring-primary peer-checked:border-transparent peer-checked:bg-primary/5 hover:border-primary/30">
+                                    <div class="flex gap-4 justify-between items-center p-5 h-full rounded-2xl border transition-all"
+                                        :class="selectedPassengers.includes(passenger.id) ? 'bg-primary/[0.04] dark:bg-primary/10 border-primary ring-2 ring-primary/40 shadow-sm' : 'bg-white dark:bg-boxdark border-slate-200 dark:border-boxdark-2 shadow-xs hover:border-primary/40'">
                                         
                                         <div class="flex flex-1 gap-4 items-center min-w-0">
                                             {{-- العداد --}}
-                                            <div class="flex flex-col justify-center items-center w-14 h-14 rounded-xl border transition-all bg-slate-50 dark:bg-boxdark-2 text-slate-600 dark:text-gray-300 peer-checked:bg-primary peer-checked:text-white peer-checked:shadow-md shrink-0 border-slate-100 dark:border-boxdark-2 peer-checked:border-transparent">
+                                            <div class="flex flex-col justify-center items-center w-14 h-14 rounded-xl border transition-all shrink-0"
+                                                :class="selectedPassengers.includes(passenger.id) ? 'bg-primary text-white border-primary shadow-md' : 'bg-slate-50 dark:bg-boxdark-2 text-slate-700 dark:text-gray-300 border-slate-100 dark:border-boxdark-2'">
                                                 <span class="text-xl font-black leading-none font-headline" x-text="passenger.count"></span>
-                                                <span class="text-[10px] font-bold mt-1">ركاب</span>
+                                                <span class="text-[10px] font-bold mt-1" x-text="passenger.count == 1 ? 'راكب' : (passenger.count == 2 ? 'راكبان' : 'ركاب')"></span>
                                             </div>
 
                                             {{-- التفاصيل --}}
@@ -239,6 +304,12 @@
                                                 </div>
                                                 
                                                 <div class="flex flex-wrap gap-2 items-center">
+                                                    <template x-if="passenger.note">
+                                                        <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
+                                                            <span class="material-symbols-outlined text-[12px]">note</span>
+                                                            <span class="truncate max-w-[120px]" x-text="passenger.note"></span>
+                                                        </div>
+                                                    </template>
                                                     <template x-if="passenger.vehicle_type">
                                                         <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-900/30 text-[11px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-800/40">
                                                             <span class="material-symbols-outlined text-[12px]">directions_car</span>
@@ -252,16 +323,17 @@
                                                             <span class="truncate max-w-[120px]" x-text="passenger.broker_name"></span>
                                                         </div>
                                                     </template>
-                                                    <div class="flex gap-1.5 items-center px-2.5 py-1 w-max rounded-md bg-slate-50 dark:bg-boxdark-2">
-                                                        <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
-                                                        <span class="text-xs font-bold truncate text-slate-600 dark:text-gray-300" x-text="passenger.destination || 'غير محدد'"></span>
-                                                    </div>
-                                                    <template x-if="passenger.pickup_location">
+                                                     <template x-if="passenger.pickup_location">
                                                         <div class="flex gap-1 items-center px-2 py-0.5 rounded-md bg-slate-100/70 dark:bg-boxdark-2/60 text-[11px] font-bold text-slate-500 dark:text-gray-400">
                                                             <span class="material-symbols-outlined text-[12px] text-slate-400">pin_drop</span>
                                                             <span class="truncate max-w-[120px]" x-text="passenger.pickup_location"></span>
                                                         </div>
                                                     </template>
+                                                    <div class="flex gap-1.5 items-center px-2.5 py-1 w-max rounded-md bg-slate-50 dark:bg-boxdark-2">
+                                                        <span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
+                                                        <span class="text-xs font-bold truncate text-slate-600 dark:text-gray-300" x-text="passenger.destination || 'غير محدد'"></span>
+                                                    </div>
+                                                   
                                                     
                                                 </div>
                                             </div>
@@ -281,8 +353,9 @@
                                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                                             </button>
 
-                                            <div class="flex justify-center items-center w-7 h-7 rounded-full border-2 transition-all border-slate-300 dark:border-boxdark-2 peer-checked:bg-primary peer-checked:border-primary shrink-0 peer-checked:shadow-sm">
-                                                <span class="material-symbols-outlined text-white text-[18px] hidden peer-checked:block">check</span>
+                                            <div class="flex justify-center items-center w-7 h-7 rounded-full border-2 transition-all shrink-0"
+                                                :class="selectedPassengers.includes(passenger.id) ? 'bg-primary border-primary text-white shadow-sm' : 'border-slate-300 dark:border-boxdark-2 bg-transparent text-transparent'">
+                                                <span class="material-symbols-outlined text-white text-[18px]" x-show="selectedPassengers.includes(passenger.id)">check</span>
                                             </div>
                                         </div>
                                     </div>
@@ -344,17 +417,17 @@
                             {{-- 1. بطاقة: التاريخ، مكان الصعود، وجهة الراكب (3 أعمدة مثل شاشة الإنشاء) --}}
                             <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border border-slate-100 md:grid-cols-3 bg-slate-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">التاريخ <span class="text-rose-500">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">التاريخ <span class="text-rose-500">*</span></label>
                                     <input type="date" x-model="editPassengerData.date" required
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">مكان الصعود <span class="text-rose-500">*</span></label>
                                     <input type="text" x-model="editPassengerData.pickup_location" required placeholder="من أين سيركب؟"
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">وجهة الراكب</label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">وجهة الراكب</label>
                                     <input type="text" x-model="editPassengerData.destination" placeholder="إلى أين يسافر؟"
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
@@ -362,7 +435,7 @@
 
                             {{-- 2. رقم جوال الراكب --}}
                             <div>
-                                <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
+                                <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">رقم جوال الراكب <span class="text-rose-500">*</span></label>
                                 <div class="flex overflow-visible relative items-center h-12 bg-white rounded-xl ring-1 ring-slate-200 dark:bg-boxdark dark:ring-boxdark-2 focus-within:ring-2 focus-within:ring-primary/50" style="direction: ltr;">
                                     <div class="relative h-full shrink-0" @click.away="editPassengerData.openCountryDropdown = false">
                                         <button type="button" @click="editPassengerData.openCountryDropdown = !editPassengerData.openCountryDropdown"
@@ -397,12 +470,12 @@
                             </div>
 
                             {{-- 3. بطاقة بيانات الوسيط: اسم الوسيط ورقم هاتف الوسيط (واتساب) --}}
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
+                            <div class="grid grid-cols-1 gap-4 p-4 rounded-2xl border md:grid-cols-2 border-slate-100 bg-slate-50/50 dark:bg-boxdark-2/50 dark:border-boxdark-2">
                                 <div class="relative text-right">
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">
                                         اسم الوسيط أو المكتب <span class="text-rose-500">*</span>
                                     </label>
-                                    <div class="flex relative items-center bg-white rounded-xl ring-1 ring-slate-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
+                                    <div class="flex relative items-center bg-white rounded-xl ring-1 transition-all ring-slate-200 dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40"
                                         :class="editPassengerData.broker_id ? 'bg-emerald-50/30 dark:bg-emerald-500/10 ring-emerald-400 dark:ring-emerald-500/50' : ''">
                                         <span class="absolute right-3 material-symbols-outlined text-[20px]"
                                             :class="editPassengerData.broker_id ? 'text-emerald-500' : 'text-slate-400'">handshake</span>
@@ -417,7 +490,7 @@
                                             :class="editPassengerData.broker_id ? 'text-emerald-600 dark:text-emerald-400 font-black' : ''">
 
                                         <button type="button" x-show="editPassengerData.brokerSearchQuery.length > 0" @click="resetEditBroker()"
-                                            class="absolute left-2 p-1 text-slate-400 rounded-full transition-colors bg-white/80 dark:bg-boxdark/80 hover:text-rose-500">
+                                            class="absolute left-2 p-1 rounded-full transition-colors text-slate-400 bg-white/80 dark:bg-boxdark/80 hover:text-rose-500">
                                             <span class="material-symbols-outlined text-[16px]">close</span>
                                         </button>
                                     </div>
@@ -426,7 +499,7 @@
                                         class="absolute top-[4.7rem] right-0 w-full bg-white dark:bg-boxdark border border-slate-100 dark:border-boxdark-2 rounded-xl shadow-lg z-[70] overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
                                         <template x-for="b in editPassengerFilteredBrokers" :key="b.id">
                                             <button type="button" @click="selectEditBroker(b)"
-                                                class="flex justify-between items-center px-4 py-3 w-full text-right border-b border-slate-50 transition-colors hover:bg-slate-50 dark:hover:bg-boxdark-2 dark:border-boxdark-2">
+                                                class="flex justify-between items-center px-4 py-3 w-full text-right border-b transition-colors border-slate-50 hover:bg-slate-50 dark:hover:bg-boxdark-2 dark:border-boxdark-2">
                                                 <span class="text-sm font-bold text-slate-800 dark:text-white" x-text="b.name"></span>
                                                 <span class="flex gap-1 items-center text-xs font-medium text-emerald-500">
                                                     اختيار <span class="material-symbols-outlined text-[14px]">done</span>
@@ -437,16 +510,16 @@
                                 </div>
 
                                 <div class="relative text-right">
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">
-                                        رقم هاتف الوسيط (واتساب) <span class="text-xs text-slate-400 font-normal">(اختياري)</span>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">
+                                        رقم هاتف الوسيط (واتساب) <span class="text-xs font-normal text-slate-400">(اختياري)</span>
                                     </label>
-                                    <div class="flex relative items-center bg-white rounded-xl ring-1 ring-slate-200 transition-all dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40">
+                                    <div class="flex relative items-center bg-white rounded-xl ring-1 transition-all ring-slate-200 dark:bg-boxdark focus-within:ring-2 focus-within:ring-primary/40">
                                         <span class="absolute right-3 material-symbols-outlined text-[20px] text-slate-400">call</span>
                                         <input type="text" x-model="editPassengerData.broker_phone"
                                             placeholder="77xxxxxxxx"
                                             dir="ltr"
                                             autocomplete="off"
-                                            class="px-4 pr-10 w-full h-12 text-sm font-bold bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-white text-right">
+                                            class="px-4 pr-10 w-full h-12 text-sm font-bold text-right bg-transparent border-none outline-none focus:ring-0 text-slate-800 dark:text-white">
                                     </div>
                                 </div>
                             </div>
@@ -454,22 +527,22 @@
                             {{-- 4. نوع المركبة، عدد الركاب، عمولة المكتب، عمولة مكاتب أخرى (4 أعمدة) --}}
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">نوع المركبة</label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">نوع المركبة</label>
                                     <input type="text" list="vehicle_types_list" x-model="editPassengerData.vehicle_type" placeholder="مثلاً: صالون، باص"
                                         class="px-4 w-full h-12 text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">عدد الركاب <span class="text-rose-500">*</span></label>
                                     <input type="number" min="1" x-model="editPassengerData.count" required
                                         class="px-4 w-full h-12 text-sm font-black bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">عمولة المكتب <span class="text-rose-500">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">عمولة المكتب <span class="text-rose-500">*</span></label>
                                     <input type="number" min="0" step="0.01" x-model="editPassengerData.office_commission" placeholder="0.00"
                                         class="px-4 w-full h-12 text-sm font-black text-emerald-600 bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
                                 <div>
-                                    <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">عمولة مكاتب أخرى <span class="text-rose-500">*</span></label>
+                                    <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">عمولة مكاتب أخرى <span class="text-rose-500">*</span></label>
                                     <input type="number" min="0" step="0.01" x-model="editPassengerData.other_office_commission" placeholder="0.00"
                                         class="px-4 w-full h-12 text-sm font-black text-amber-600 bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark focus:border-primary focus:ring-1 focus:ring-primary">
                                 </div>
@@ -477,16 +550,16 @@
 
                             {{-- 5. ملاحظات إضافية --}}
                             <div>
-                                <label class="block mb-2 text-xs md:text-sm font-bold text-slate-600 dark:text-gray-300">ملاحظات إضافية</label>
+                                <label class="block mb-2 text-xs font-bold md:text-sm text-slate-600 dark:text-gray-300">ملاحظات إضافية</label>
                                 <textarea x-model="editPassengerData.note" rows="2" placeholder="أي ملاحظات إضافية..."
                                     class="px-4 py-3 w-full text-sm bg-white rounded-xl border outline-none border-slate-200 dark:border-boxdark-2 dark:bg-boxdark dark:text-white focus:border-primary focus:ring-1 focus:ring-primary"></textarea>
                             </div>
                         </div>
 
                         {{-- Footer Buttons --}}
-                        <div class="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50">
+                        <div class="flex flex-wrap gap-3 justify-between items-center px-6 py-4 border-t border-slate-100 dark:border-boxdark-2 bg-slate-50/50 dark:bg-boxdark-2/50">
                             <button type="button" @click="openCancelModalFromEdit()"
-                                class="flex gap-2 items-center px-4 h-12 text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 rounded-xl transition-all border border-amber-200 dark:border-amber-500/20 active:scale-95">
+                                class="flex gap-2 items-center px-4 h-12 text-sm font-bold text-amber-700 bg-amber-50 rounded-xl border border-amber-200 transition-all hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 dark:border-amber-500/20 active:scale-95">
                                 <span class="material-symbols-outlined text-[20px]">block</span>
                                 <span>إلغاء حجز الراكب</span>
                             </button>
@@ -555,7 +628,7 @@
 
                             {{-- شارة الوسيط --}}
                             <template x-if="statusPassengerData.broker_name">
-                                <div class="inline-flex items-center gap-1.5 px-3 py-1.5 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-full border border-emerald-200 dark:border-emerald-500/20">
+                                <div class="inline-flex gap-1.5 items-center px-3 py-1.5 mb-4 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20">
                                     <span class="material-symbols-outlined text-[16px]">handshake</span>
                                     <span>الوسيط:</span>
                                     <span x-text="statusPassengerData.broker_name"></span>
@@ -575,7 +648,7 @@
                                         <input type="text" name="broker_phone" x-model="statusPassengerData.broker_phone"
                                             placeholder="أدخل رقم الوسيط (مثال: 771234567)"
                                             dir="ltr"
-                                            class="p-3.5 pr-10 w-full text-sm font-bold text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400 text-right">
+                                            class="p-3.5 pr-10 w-full text-sm font-bold text-right text-gray-700 bg-gray-50 rounded-2xl border border-gray-200 transition-all outline-none dark:bg-boxdark-2 dark:border-boxdark dark:text-white focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-body placeholder:text-gray-400">
                                     </div>
                                 </div>
 
@@ -591,11 +664,11 @@
                                 </div>
 
                                 {{-- خيار إرسال واتساب للوسيط --}}
-                                <div class="flex items-center gap-2.5 p-3 text-right bg-emerald-50/70 dark:bg-emerald-500/10 rounded-2xl border border-emerald-100 dark:border-emerald-500/20">
+                                <div class="flex gap-2.5 items-center p-3 text-right rounded-2xl border border-emerald-100 bg-emerald-50/70 dark:bg-emerald-500/10 dark:border-emerald-500/20">
                                     <input type="checkbox" id="send_whatsapp_cancel" name="send_whatsapp" value="1" 
                                         x-model="statusPassengerData.send_whatsapp"
-                                        class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer">
-                                    <label for="send_whatsapp_cancel" class="text-xs font-bold text-gray-700 dark:text-gray-200 cursor-pointer select-none flex-1">
+                                        class="w-4 h-4 text-emerald-600 rounded border-gray-300 cursor-pointer focus:ring-emerald-500">
+                                    <label for="send_whatsapp_cancel" class="flex-1 text-xs font-bold text-gray-700 cursor-pointer select-none dark:text-gray-200">
                                         إرسال إشعار الإلغاء للوسيط عبر واتساب 💬
                                     </label>
                                 </div>
@@ -651,6 +724,7 @@
                 openCountryDropdown: false,
                 searchCountryQuery: '',
                 showDriverDropdown: false,
+                showDriverNameDropdown: false,
                 selectedDriverId: null,
                 nameInput: '',
                 vehicleTypeInput: '',
@@ -739,13 +813,50 @@
                     const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '').replace(/^0+/, '');
                     return local ? dial + local : '';
                 },
+                formatDriverPhone(phone) {
+                    if (!phone) return '';
+                    const clean = String(phone).replace(/[^\d]/g, '');
+                    const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
+                    const country = sorted.find(c => clean.startsWith(c.dial_code.replace('+', '')));
+                    if (country) {
+                        const dial = country.dial_code;
+                        const local = clean.substring(dial.replace('+', '').length);
+                        return dial + ' ' + local;
+                    }
+                    return phone.startsWith('+') ? phone : '+' + phone;
+                },
                 get filteredDrivers() {
-                    const local = String(this.localPhoneNumber || '').replace(/[^\d]/g, '');
-                    if (!local) return [];
-                    return this.drivers.filter(d => String(d.phone || '').includes(local));
+                    const raw = String(this.localPhoneNumber || '').trim();
+                    if (!raw) return [];
+                    const digits = raw.replace(/[^\d]/g, '');
+                    const query = raw.toLowerCase();
+
+                    return this.drivers.filter(d => {
+                        const phoneClean = String(d.phone || '').replace(/[^\d]/g, '');
+                        const matchPhone = digits ? phoneClean.includes(digits) : false;
+                        const matchName = String(d.name || '').toLowerCase().includes(query);
+                        return matchPhone || matchName;
+                    });
+                },
+                get filteredDriversByName() {
+                    const query = String(this.nameInput || '').trim().toLowerCase();
+                    if (!query) return [];
+                    const digits = query.replace(/[^\d]/g, '');
+
+                    return this.drivers.filter(d => {
+                        const matchName = String(d.name || '').toLowerCase().includes(query);
+                        const phoneClean = String(d.phone || '').replace(/[^\d]/g, '');
+                        const matchPhone = digits.length >= 3 ? phoneClean.includes(digits) : false;
+                        return matchName || matchPhone;
+                    });
+                },
+                onDriverNameInput() {
+                    if (this.selectedDriverId) return;
+                    this.showDriverNameDropdown = true;
                 },
                 searchDriver() {
-                    const exact = this.drivers.find(d => String(d.phone || '').replace(/[^\d]/g, '') === String(this.fullPhoneNumber).replace(/[^\d]/g, ''));
+                    const cleanDigits = String(this.fullPhoneNumber).replace(/[^\d]/g, '');
+                    const exact = cleanDigits ? this.drivers.find(d => String(d.phone || '').replace(/[^\d]/g, '') === cleanDigits) : null;
                     if (exact) {
                         this.selectDriver(exact);
                     } else {
@@ -758,15 +869,17 @@
                     this.nameInput = driver.name;
                     this.vehicleTypeInput = driver.vehicle_type || '';
                     this.showDriverDropdown = false;
+                    this.showDriverNameDropdown = false;
                     
                     const clean = String(driver.phone || '').replace(/[^\d]/g, '');
                     const sorted = [...this.countries].sort((a, b) => b.dial_code.length - a.dial_code.length);
                     const country = sorted.find(c => clean.startsWith(c.dial_code.replace('+', '')));
                     if (country) {
                         this.selectedCountry = country;
-                        this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length);
+                        this.localPhoneNumber = clean.substring(country.dial_code.replace('+', '').length).replace(/^0+/, '');
                     } else {
-                        this.localPhoneNumber = clean;
+                        this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0] || null;
+                        this.localPhoneNumber = clean.replace(/^0+/, '');
                     }
                 },
                 resetSelection() {
@@ -775,6 +888,13 @@
                     this.vehicleTypeInput = '';
                     this.localPhoneNumber = '';
                     this.showDriverDropdown = false;
+                    this.showDriverNameDropdown = false;
+                },
+
+                get selectedPassengersCount() {
+                    return (this.passengers || [])
+                        .filter(p => this.selectedPassengers.includes(p.id))
+                        .reduce((sum, p) => sum + (parseInt(p.count) || 1), 0);
                 },
 
                 filteredPassengers() {
