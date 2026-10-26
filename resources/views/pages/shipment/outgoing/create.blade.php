@@ -491,7 +491,9 @@
                 {{-- الجانب الأيسر: محتويات الطرد والدفع (4 أعمدة) --}}
                 <div class="flex flex-col gap-6 lg:col-span-5 xl:col-span-4" x-data="{
                     packageFee: {{ old('package_fee', 0) }},
-                    packageCommissionRate: {{ old('package_commission_rate', 0) }},
+                    packageCommissionRate: {{ old('package_commission_rate', 30) }},
+                    isCommissionOpen: false,
+                    commissionOptions: [10, 20, 30],
                     honeyFee: {{ old('honey_fee', 0) }},
                     honeyCommissionRate: {{ old('honey_commission_rate', 0) }},
                 
@@ -577,11 +579,32 @@
 
                             <div class="flex flex-col col-span-1 gap-2 mt-2">
                                 <label class="text-[11px] font-bold text-slate-500">نسبة العمولة (%)</label>
-                                <div class="relative">
+                                <div class="relative z-[30]" @click.outside="isCommissionOpen = false">
                                     <input type="number" name="package_commission_rate"
-                                        x-model.number="packageCommissionRate" placeholder="30" min="0" value="30"  
-                                        max="100" dir="ltr"
-                                        class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+                                        x-model.number="packageCommissionRate"
+                                        @focus="isCommissionOpen = true" @click="isCommissionOpen = true"
+                                        placeholder="30" min="0" max="100" dir="ltr"
+                                        value="{{ old('package_commission_rate', 30) }}"
+                                        class="pl-10 pr-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+
+                                    <button type="button" @click="isCommissionOpen = !isCommissionOpen" tabindex="-1"
+                                        class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
+                                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                                            :class="isCommissionOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
+                                    </button>
+
+                                    <div x-show="isCommissionOpen" x-cloak x-transition.opacity.translate.y.-10px
+                                        class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
+                                        <template x-for="option in commissionOptions" :key="option">
+                                            <button type="button" @click="packageCommissionRate = option; isCommissionOpen = false"
+                                                class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                                <span x-text="option + '%'"></span>
+                                                <span x-show="packageCommissionRate == option"
+                                                    class="material-symbols-outlined text-[18px] text-primary">check</span>
+                                            </button>
+                                        </template>
+                                    </div>
+
                                     <div class="absolute -bottom-5 left-1 flex gap-1 items-center text-[10px] font-bold text-emerald-600">
                                         <span class="material-symbols-outlined text-[12px]">payments</span>
                                         المبلغ: <span x-text="packageCommissionCalc"></span>

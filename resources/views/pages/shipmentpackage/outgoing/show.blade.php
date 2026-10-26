@@ -4,15 +4,24 @@
 @section('Breadcrumb', 'إدارة الشحنات / تفاصيل الإرسالية')
 
 @section('content')
-    {{-- إضافة x-data للتحكم بالمودال والبحث --}}
+    @php
+        $alpineAvailableShipments = isset($availableShipments) ? $availableShipments->map(function ($s) {
+            return [
+                'id' => $s->id,
+                'uuid' => $s->uuid ?? '',
+                'bond_number' => $s->bond_number ?? '',
+                'code' => $s->code ?? '',
+                'receiver_name' => $s->receiverCustomer->name ?? 'غير مسجل',
+                'branch_name' => $s->receiverBranch->name ?? 'مستودع',
+            ];
+        })->values() : collect();
+
+        $currentBranchCode = auth()->user()->branch->code ?? 'B' . (auth()->user()->branch_id ?? '1');
+    @endphp
+
+    {{-- إضافة x-data للتحكم بالمودال والبحث ومسح الباركود --}}
     <div class="flex relative flex-col gap-6 p-4 rounded-3xl bg-surface dark:bg-boxdark-2 lg:p-6 font-body" dir="rtl"
-        x-data="{
-            isAddModalOpen: false,
-            searchShipment: '',
-            showDeleteModal: false,
-            isSubmitting: false,
-            deleteShipmentData: { bond_number: '', url: '' }
-        }">
+        x-data="outgoingPackageShow({{ $alpineAvailableShipments->toJson() }}, '{{ $currentBranchCode }}')">
 
         {{-- الهيدر العلوي --}}
         <div
@@ -79,34 +88,63 @@
 
                         if ($currentStatus === 'pending') {
                             $availableStatuses = [
-                                'in_transit' => ['label' => 'انطلاق الرحلة', 'icon' => 'local_shipping'],
-                                'returned' => ['label' => 'إلغاء الرحلة', 'icon' => 'cancel'],
+                                'in_transit' => [
+                                    'label' => 'انطلاق الرحلة',
+                                    'icon' => 'local_shipping',
+                                ],
+                                'returned' => [
+                                    'label' => 'إلغاء الرحلة',
+                                    'icon' => 'cancel',
+                                ],
                             ];
                         } elseif ($currentStatus === 'in_transit') {
                             $availableStatuses = [
-                                'delivered' => ['label' => 'إنهاء الرحلة للتسليم', 'icon' => 'check_circle'],
-                                'returned' => ['label' => 'إلغاء الرحلة وارجاعها', 'icon' => 'assignment_return'],
+                                'delivered' => [
+                                    'label' => 'إنهاء الرحلة للتسليم',
+                                    'icon' => 'check_circle',
+                                ],
+                                'returned' => [
+                                    'label' => 'إلغاء الرحلة وإرجاعها',
+                                    'icon' => 'assignment_return',
+                                ],
+                                'pending' => [
+                                    'label' => 'إرجاع للمكتب',
+                                    'icon' => 'undo',
+                                ],
                             ];
                         }
                     @endphp
+
                     @if (!empty($availableStatuses))
                         <div x-data="{ open: false }" class="relative">
                             <button @click="open = !open" @click.away="open = false"
                                 class="flex gap-2 items-center px-5 h-11 text-xs font-black text-white rounded-xl shadow-lg transition-all bg-primary hover:bg-primary-hover shadow-primary/20">
+
                                 <span class="material-symbols-outlined text-[18px]">update</span>
                                 تحديث الحالة
+
                                 <span class="material-symbols-outlined text-[18px] transition-transform duration-200"
-                                    :class="open ? 'rotate-180' : ''">expand_more</span>
+                                    :class="open ? 'rotate-180' : ''">
+                                    expand_more
+                                </span>
                             </button>
+
                             <div x-show="open" x-cloak x-transition.origin.top.right
                                 class="overflow-hidden absolute left-0 top-full z-50 mt-2 w-56 bg-white rounded-2xl border border-gray-100 shadow-xl dark:bg-boxdark dark:border-boxdark-2">
+
                                 <form action="{{ route('shipmentpackage.updateStatus', $package->id) }}" method="POST">
                                     @csrf
+
                                     @foreach ($availableStatuses as $value => $data)
                                         <button type="submit" name="status" value="{{ $value }}"
                                             class="flex gap-3 items-center px-5 py-4 w-full text-sm font-bold text-right text-gray-700 border-b border-gray-50 transition-colors hover:bg-gray-50 dark:hover:bg-boxdark-2 last:border-0 dark:border-boxdark-2 dark:text-white">
+
                                             <span
-                                                class="material-symbols-outlined text-[20px] {{ $value === 'returned' ? 'text-rose-500' : 'text-primary' }}">{{ $data['icon'] }}</span>
+                                                class="material-symbols-outlined text-[20px]
+                            {{ $value === 'returned' ? 'text-rose-500' : ($value === 'pending' ? 'text-amber-500' : 'text-primary') }}">
+                                                {{ $data['icon'] }}
+                                            </span>
+
                                             {{ $data['label'] }}
                                         </button>
                                     @endforeach
@@ -140,11 +178,12 @@
                             <span class="material-symbols-outlined text-[32px]">person</span>
                         </div>
                         <div class="flex-1 pt-1">
-                            <div class="flex items-center gap-2">
+                            <div class="flex gap-2 items-center">
                                 <div class="text-lg font-black truncate text-on-surface dark:text-white">
                                     {{ $package->driver->name ?? 'غير محدد' }}</div>
                                 @if ($package->driver?->vehicle_type)
-                                    <span class="px-2 py-0.5 text-xs font-bold rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-hover">
+                                    <span
+                                        class="px-2 py-0.5 text-xs font-bold rounded-lg bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-hover">
                                         {{ $package->driver->vehicle_type }}
                                     </span>
                                 @endif
@@ -362,8 +401,7 @@
                                         <div class="flex gap-1.5 items-center">
                                             <span
                                                 class="material-symbols-outlined text-[16px] text-gray-400">qr_code_2</span>
-                                            <span
-                                                class="font-mono tracking-widest">{{ $shipment->id }}</span>
+                                            <span class="font-mono tracking-widest">{{ $shipment->id }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -490,7 +528,46 @@
 
         </div>
 
-        {{-- ================= نافذة إضافة طرد منبثقة (Desktop Modal) ================= --}}
+        {{-- ================= نافذة مسح الباركود بالكاميرا (Camera Scanner Modal) ================= --}}
+        <template x-teleport="body">
+            <div x-show="isScannerOpen" x-cloak x-transition.opacity
+                class="fixed inset-0 z-[100000] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" dir="rtl">
+                <div @click.away="stopCameraScanner()"
+                    class="relative w-full max-w-md overflow-hidden bg-white dark:bg-boxdark rounded-[2rem] shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6">
+
+                    <div class="flex justify-between items-center pb-4 mb-4 border-b border-gray-100 dark:border-boxdark-2">
+                        <div class="flex gap-2.5 items-center">
+                            <div class="flex justify-center items-center w-9 h-9 rounded-xl bg-primary/10 text-primary">
+                                <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-black text-on-surface dark:text-white">مسح باركود السند بالكاميرا</h3>
+                                <p class="text-[11px] font-bold text-gray-400">وجه الكاميرا نحو باركود أو رمز QR للسند</p>
+                            </div>
+                        </div>
+                        <button type="button" @click="stopCameraScanner()"
+                            class="flex justify-center items-center w-8 h-8 text-gray-400 rounded-full transition-colors hover:bg-gray-100 dark:hover:bg-boxdark-2 hover:text-error">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </button>
+                    </div>
+
+                    {{-- منطقة الكاميرا --}}
+                    <div class="overflow-hidden relative bg-black rounded-2xl aspect-square">
+                        <div id="qr-reader-show" class="w-full h-full"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-3 mt-5 border-t border-gray-100 dark:border-boxdark-2">
+                        <span class="text-xs font-bold text-gray-500">الطرود المختارة: <strong class="text-primary"
+                                x-text="selectedShipmentIds.length"></strong></span>
+                        <button type="button" @click="stopCameraScanner()"
+                            class="px-5 py-2 text-xs font-black text-white rounded-xl bg-primary hover:bg-primary-hover">
+                            إغلاق الكاميرا
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         {{-- ================= نافذة إضافة طرد منبثقة (Desktop Modal) ================= --}}
         @if (!in_array($package->status, ['delivered', 'returned', 'received_at_branch']) && isset($availableShipments))
             {{-- استخدام x-teleport لنقل المودال خارج القوائم الجانبية ليكون فوق كل شيء --}}
@@ -513,7 +590,7 @@
                         x-transition:leave="transform transition ease-in duration-200"
                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                         x-transition:leave-end="opacity-0 scale-95 translate-y-4"
-                        class="relative bg-white dark:bg-boxdark w-full max-w-3xl max-h-[85vh] rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-gray-100 dark:border-boxdark-2">
+                        class="relative bg-white dark:bg-boxdark w-full max-w-4xl max-h-[88vh] rounded-[2rem] shadow-2xl flex flex-col overflow-hidden border border-gray-100 dark:border-boxdark-2">
 
                         {{-- الهيدر وزر الإغلاق --}}
                         <div
@@ -524,8 +601,9 @@
                                     <span class="material-symbols-outlined text-primary">add_circle</span>
                                     إضافة طرد للإرسالية
                                 </h2>
-                                <p class="mt-1 text-xs font-bold text-gray-500 dark:text-gray-400">ابحث عن الطرد المطلوب
-                                    واضغط إضافة لربطه بالرحلة</p>
+                                <p class="mt-1 text-xs font-bold text-gray-500 dark:text-gray-400">
+                                    امسح باركود السند لاختياره مباشرة أو اختر من قائمة الطرود المتاحة
+                                </p>
                             </div>
                             <button type="button" @click="isAddModalOpen = false"
                                 class="flex justify-center items-center w-10 h-10 text-gray-500 bg-gray-50 rounded-xl transition-colors dark:bg-boxdark-2 hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 active:scale-90">
@@ -533,36 +611,112 @@
                             </button>
                         </div>
 
-                        {{-- حقل البحث --}}
+                        {{-- شريط أدوات مسح الباركود والبحث المتقدم --}}
                         <div
-                            class="p-6 border-b border-gray-100 bg-gray-50/50 dark:bg-boxdark-2/50 shrink-0 dark:border-boxdark-2">
-                            <div class="relative group">
-                                <input type="text" x-model="searchShipment"
-                                    placeholder="ابحث برقم السند أو اسم المستلم..."
-                                    class="pr-12 pl-4 w-full h-14 text-sm font-bold placeholder-gray-400 text-gray-700 bg-white rounded-xl border border-gray-200 shadow-sm transition-all outline-none dark:bg-boxdark dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white dark:placeholder-gray-500">
-                                <div
-                                    class="flex absolute inset-y-0 right-0 items-center pr-4 text-gray-400 transition-colors group-focus-within:text-primary">
-                                    <span class="material-symbols-outlined text-[24px]">search</span>
+                            class="p-5 border-b border-gray-100 bg-gray-50/70 dark:bg-boxdark-2/50 shrink-0 dark:border-boxdark-2 flex flex-col gap-3">
+                            
+                            {{-- صف مسح الباركود والكاميرا --}}
+                            <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+                                {{-- حقل إدخال الباركود / جهاز المسح السريع --}}
+                                <div class="relative flex-1 group">
+                                    <span
+                                        class="absolute right-3.5 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined text-[22px] transition-transform group-focus-within:scale-110">
+                                        qr_code_scanner
+                                    </span>
+                                    <input type="text" x-model="barcodeInput" x-ref="barcodeField"
+                                        @keydown.enter.prevent="handleBarcodeScan(barcodeInput)"
+                                        placeholder="امسح باركود السند هنا (أو اكتب الرقم + Enter)..."
+                                        class="pr-11 pl-10 w-full h-12 text-sm font-black rounded-xl border-2 transition-all outline-none border-primary/30 bg-white dark:bg-boxdark dark:border-primary/40 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                                    
+                                    <button type="button" x-show="barcodeInput" @click="barcodeInput = ''; $refs.barcodeField?.focus()"
+                                        class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500">
+                                        <span class="material-symbols-outlined text-[18px]">close</span>
+                                    </button>
+                                </div>
+
+                                {{-- زر تشغيل الكاميرا للمسح --}}
+                                <button type="button" @click="startCameraScanner()"
+                                    class="flex gap-2 justify-center items-center px-4 h-12 text-xs font-black text-white rounded-xl shadow-sm transition-all bg-primary hover:bg-primary-hover shrink-0 active:scale-95"
+                                    title="مسح باستخدام كاميرا الجهاز">
+                                    <span class="material-symbols-outlined text-[20px]">photo_camera</span>
+                                    <span>مسح بالكاميرا</span>
+                                </button>
+                            </div>
+
+                            {{-- صف البحث والتصفية النصية + أزرار التحديد --}}
+                            <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+                                <div class="relative flex-1">
+                                    <input type="text" x-model="searchShipment"
+                                        placeholder="ابحث برقم السند أو اسم المستلم..."
+                                        class="pr-10 pl-4 w-full h-10 text-xs font-bold placeholder-gray-400 text-gray-700 bg-white rounded-xl border border-gray-200 shadow-sm transition-all outline-none dark:bg-boxdark dark:border-boxdark-2 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:text-white">
+                                    <div
+                                        class="flex absolute inset-y-0 right-0 items-center pr-3 text-gray-400 pointer-events-none">
+                                        <span class="material-symbols-outlined text-[18px]">search</span>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button type="button" @click="selectAllFiltered()"
+                                        class="flex gap-1 items-center px-3 h-10 text-[11px] font-black rounded-xl text-primary bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 transition-all active:scale-95">
+                                        <span class="material-symbols-outlined text-[16px]">done_all</span>
+                                        <span>تحديد الكل</span>
+                                    </button>
+                                    <button type="button" x-show="selectedShipmentIds.length > 0" @click="clearSelection()"
+                                        class="flex gap-1 items-center px-3 h-10 text-[11px] font-black rounded-xl text-rose-600 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 transition-all active:scale-95">
+                                        <span class="material-symbols-outlined text-[16px]">deselect</span>
+                                        <span>إلغاء (<span x-text="selectedShipmentIds.length"></span>)</span>
+                                    </button>
                                 </div>
                             </div>
+
+                            {{-- شريط الإشعار والتغذية الراجعة عند مسح الباركود --}}
+                            <template x-if="scanFeedback.message">
+                                <div x-transition class="flex gap-2 items-center p-3 text-xs font-bold rounded-xl shadow-sm"
+                                    :class="{
+                                        'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20': scanFeedback.type === 'success',
+                                        'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20': scanFeedback.type === 'info',
+                                        'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20': scanFeedback.type === 'error'
+                                    }">
+                                    <span class="material-symbols-outlined text-[18px]"
+                                        x-text="scanFeedback.type === 'success' ? 'check_circle' : (scanFeedback.type === 'info' ? 'info' : 'error')"></span>
+                                    <span x-text="scanFeedback.message"></span>
+                                </div>
+                            </template>
                         </div>
 
                         {{-- قائمة الطرود المتاحة للإضافة (عرض شبكي Grid) --}}
                         <div class="overflow-y-auto flex-1 p-6 custom-scrollbar bg-gray-50/30 dark:bg-boxdark/30">
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 @forelse($availableShipments as $availShipment)
-                                    <div class="flex flex-col justify-between p-5 bg-white rounded-2xl border border-gray-100 shadow-sm transition-colors dark:bg-boxdark-2 dark:border-boxdark hover:border-primary/30 group"
-                                        x-show="'{{ $availShipment->bond_number }}'.includes(searchShipment) || '{{ $availShipment->receiverCustomer->name ?? '' }}'.includes(searchShipment)">
+                                    <div id="shipment-card-{{ $availShipment->id }}"
+                                        class="relative flex flex-col justify-between p-5 rounded-2xl border transition-all duration-200 group cursor-pointer"
+                                        :class="isShipmentSelected({{ $availShipment->id }}) 
+                                            ? 'bg-primary/5 dark:bg-primary/10 border-primary ring-2 ring-primary/40 shadow-md' 
+                                            : 'bg-white dark:bg-boxdark-2 border-gray-100 dark:border-boxdark hover:border-primary/40 shadow-sm'"
+                                        @click="toggleShipment({{ $availShipment->id }})"
+                                        x-show="'{{ $availShipment->bond_number }}'.includes(searchShipment) || '{{ $availShipment->receiverCustomer->name ?? '' }}'.includes(searchShipment) || '{{ $availShipment->id }}'.includes(searchShipment)">
 
-                                        <div class="mb-5">
+                                        {{-- مؤشر الاختيار / Checkbox --}}
+                                        <div class="absolute top-4 left-4">
+                                            <div class="w-6 h-6 rounded-lg flex items-center justify-center transition-all"
+                                                :class="isShipmentSelected({{ $availShipment->id }}) 
+                                                    ? 'bg-primary text-white scale-110 shadow-sm' 
+                                                    : 'border-2 border-gray-200 dark:border-boxdark text-transparent group-hover:border-primary/50'">
+                                                <span class="material-symbols-outlined text-[16px]">check</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-4 pr-1">
                                             <div class="flex justify-between items-start mb-2">
-                                                <span
-                                                    class="font-mono text-base font-black text-on-surface dark:text-white">{{ $availShipment->bond_number }}</span>
-                                                <span
-                                                    class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-boxdark text-gray-600 dark:text-gray-300 flex items-center gap-1">
-                                                    <span class="material-symbols-outlined text-[14px]">store</span>
-                                                    {{ $availShipment->receiverBranch->name ?? 'مستودع' }}
-                                                </span>
+                                                <div class="flex items-center gap-2">
+                                                    <span
+                                                        class="font-mono text-base font-black text-on-surface dark:text-white">{{ $availShipment->bond_number }}</span>
+                                                    <span
+                                                        class="text-[10px] font-bold px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-boxdark text-gray-600 dark:text-gray-300 flex items-center gap-1">
+                                                        <span class="material-symbols-outlined text-[14px]">store</span>
+                                                        {{ $availShipment->receiverBranch->name ?? 'مستودع' }}
+                                                    </span>
+                                                </div>
                                             </div>
                                             <p
                                                 class="text-[11px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
@@ -571,16 +725,29 @@
                                             </p>
                                         </div>
 
-                                        <form action="{{ route('shipmentpackage.addShipment', $package->id) }}"
-                                            method="POST">
-                                            @csrf
-                                            <input type="hidden" name="shipment_id" value="{{ $availShipment->id }}">
-                                            <button type="submit"
-                                                class="flex gap-2 justify-center items-center w-full h-11 text-xs font-black rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary hover:text-white dark:bg-primary/20 dark:hover:bg-primary active:scale-95">
-                                                <span class="material-symbols-outlined text-[18px]">add</span>
-                                                إضافة للإرسالية
+                                        {{-- أزرار الإجراء السريع --}}
+                                        <div class="flex gap-2 items-center pt-3 border-t border-gray-100 dark:border-boxdark/60" @click.stop>
+                                            {{-- زر تحديد/إلغاء تحديد الطرد --}}
+                                            <button type="button" @click="toggleShipment({{ $availShipment->id }})"
+                                                class="flex-1 flex gap-1.5 justify-center items-center h-10 text-xs font-black rounded-xl transition-all"
+                                                :class="isShipmentSelected({{ $availShipment->id }}) 
+                                                    ? 'bg-primary text-white shadow-sm' 
+                                                    : 'bg-primary/10 text-primary hover:bg-primary hover:text-white dark:bg-primary/20'">
+                                                <span class="material-symbols-outlined text-[16px]"
+                                                    x-text="isShipmentSelected({{ $availShipment->id }}) ? 'check' : 'add'"></span>
+                                                <span x-text="isShipmentSelected({{ $availShipment->id }}) ? 'تم الاختيار' : 'اختيار الطرد'"></span>
                                             </button>
-                                        </form>
+
+                                            {{-- زر الإضافة المباشرة الفورية --}}
+                                            <form action="{{ route('shipmentpackage.addShipment', $package->id) }}" method="POST" class="inline">
+                                                @csrf
+                                                <input type="hidden" name="shipment_id" value="{{ $availShipment->id }}">
+                                                <button type="submit" title="إضافة للإرسالية فوراً"
+                                                    class="flex justify-center items-center w-10 h-10 text-gray-500 bg-gray-50 dark:bg-boxdark rounded-xl border border-gray-100 dark:border-boxdark hover:text-primary hover:bg-primary/10 transition-all active:scale-90">
+                                                    <span class="material-symbols-outlined text-[18px]">send</span>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </div>
                                 @empty
                                     <div class="col-span-full py-12 text-center">
@@ -589,10 +756,8 @@
                                             <span
                                                 class="material-symbols-outlined text-[32px] text-gray-400 dark:text-gray-600">inventory_2</span>
                                         </div>
-                                        <p class="text-sm font-black text-gray-600 dark:text-gray-400">لا توجد طرود متاحة
-                                            في المستودع</p>
-                                        <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 mt-1">جميع الطرود
-                                            تم شحنها أو تسليمها.</p>
+                                        <p class="text-sm font-black text-gray-600 dark:text-gray-400">لا توجد طرود متاحة في المستودع</p>
+                                        <p class="text-[11px] font-bold text-gray-400 dark:text-gray-500 mt-1">جميع الطرود تم شحنها أو تسليمها.</p>
                                     </div>
                                 @endforelse
 
@@ -601,11 +766,51 @@
                                     <div class="col-span-full py-12 text-center"
                                         x-show="searchShipment !== '' && $el.previousElementSibling.querySelectorAll('div[x-show]').length && Array.from($el.previousElementSibling.querySelectorAll('div[x-show]')).every(el => el.style.display === 'none')"
                                         x-cloak>
-                                        <p class="text-sm font-black text-gray-500 dark:text-gray-400">لا توجد نتائج مطابقة
-                                            للبحث.</p>
+                                        <p class="text-sm font-black text-gray-500 dark:text-gray-400">لا توجد نتائج مطابقة للبحث.</p>
                                     </div>
                                 @endif
                             </div>
+                        </div>
+
+                        {{-- الشريط السفلي الثابت عند اختيار طرود للإضافة الجماعية --}}
+                        <div x-show="selectedShipmentIds.length > 0" x-cloak
+                            x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 translate-y-4"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            class="p-4 px-6 border-t border-gray-100 bg-white dark:bg-boxdark dark:border-boxdark-2 shrink-0 flex items-center justify-between gap-4 shadow-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm">
+                                    <span x-text="selectedShipmentIds.length"></span>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-black text-on-surface dark:text-white">الطرود المحددة للإضافة</p>
+                                    <p class="text-[10px] font-bold text-gray-400">سيتم ربطها مباشرة بهذه الإرسالية</p>
+                                </div>
+                            </div>
+
+                            <form action="{{ route('shipmentpackage.addShipment', $package->id) }}" method="POST"
+                                @submit="isSubmitting = true">
+                                @csrf
+                                <template x-for="sId in selectedShipmentIds" :key="sId">
+                                    <input type="hidden" name="shipment_ids[]" :value="sId">
+                                </template>
+
+                                <button type="submit" :disabled="selectedShipmentIds.length === 0 || isSubmitting"
+                                    class="flex items-center gap-2 px-6 h-12 text-sm font-black text-white bg-primary hover:bg-primary-hover rounded-xl shadow-md shadow-primary/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <template x-if="isSubmitting">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                            <span>جاري الإضافة...</span>
+                                        </div>
+                                    </template>
+                                    <template x-if="!isSubmitting">
+                                        <div class="flex items-center gap-2">
+                                            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                                            <span>إضافة الطرود المحددة (<span x-text="selectedShipmentIds.length"></span>)</span>
+                                        </div>
+                                    </template>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -613,4 +818,197 @@
         @endif
 
     </div>
+@endsection
+
+@section('script')
+    {{-- مكتبة html5-qrcode لمسح الباركود و QR عبر الكاميرا --}}
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script>
+        function registerOutgoingPackageShow() {
+            Alpine.data('outgoingPackageShow', (availableShipments, branchCode) => ({
+                isAddModalOpen: false,
+                searchShipment: '',
+                barcodeInput: '',
+                selectedShipmentIds: [],
+                showDeleteModal: false,
+                isSubmitting: false,
+                deleteShipmentData: { bond_number: '', url: '' },
+                isScannerOpen: false,
+                html5QrCode: null,
+                scanFeedback: { message: '', type: '' },
+                feedbackTimeout: null,
+                availableShipments: availableShipments || [],
+                branchCode: branchCode || '',
+
+                init() {
+                    this.$watch('isAddModalOpen', (val) => {
+                        if (val) {
+                            this.barcodeInput = '';
+                            this.searchShipment = '';
+                            setTimeout(() => {
+                                this.$refs.barcodeField?.focus();
+                            }, 150);
+                        } else {
+                            this.stopCameraScanner();
+                        }
+                    });
+                },
+
+                playBeep(isSuccess = true) {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.type = isSuccess ? 'sine' : 'sawtooth';
+                        osc.frequency.setValueAtTime(isSuccess ? 880 : 240, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        osc.start();
+                        osc.stop(ctx.currentTime + (isSuccess ? 0.12 : 0.25));
+                    } catch (e) {}
+                },
+
+                showFeedback(message, type = 'success') {
+                    this.scanFeedback = { message, type };
+                    if (this.feedbackTimeout) clearTimeout(this.feedbackTimeout);
+                    this.feedbackTimeout = setTimeout(() => {
+                        this.scanFeedback = { message: '', type: '' };
+                    }, 4000);
+                },
+
+                handleBarcodeScan(rawValue) {
+                    if (!rawValue || !rawValue.trim()) return;
+
+                    let scanned = rawValue.trim();
+
+                    // تنظيف الرابط في حال كان الباركود QR مشفراً كرابط
+                    if (scanned.includes('/')) {
+                        const parts = scanned.replace(/\/$/, '').split('/');
+                        scanned = parts[parts.length - 1].split('?')[0];
+                    }
+
+                    const cleanScanned = scanned.replace(/^#/, '');
+
+                    // معالجة الرقم الذكي (مثل تحويل 14 إلى ADN-014 أو ADN-14 إذا لم يحتوي على شرطة)
+                    let expectedBondNumber = cleanScanned;
+                    if (!cleanScanned.includes('-')) {
+                        let paddedNumber = cleanScanned.padStart(3, '0');
+                        expectedBondNumber = this.branchCode + '-' + paddedNumber;
+                    }
+
+                    const matchedShipment = this.availableShipments.find(s => {
+                        const sId = String(s.id);
+                        const sBond = String(s.bond_number || '').replace(/^#/, '');
+                        const sUuid = String(s.uuid || '');
+                        const sCode = String(s.code || '');
+
+                        return (
+                            sId === cleanScanned ||
+                            sBond === cleanScanned ||
+                            sBond === expectedBondNumber ||
+                            sBond.endsWith('-' + cleanScanned) ||
+                            sUuid === cleanScanned ||
+                            sCode === cleanScanned
+                        );
+                    });
+
+                    if (matchedShipment) {
+                        let displayNum = matchedShipment.bond_number || matchedShipment.id;
+                        const isAlreadySelected = this.selectedShipmentIds.includes(matchedShipment.id);
+
+                        if (!isAlreadySelected) {
+                            this.selectedShipmentIds.push(matchedShipment.id);
+                            this.playBeep(true);
+                            this.showFeedback(`تم اختيار الطرد رقم #${displayNum} بنجاح`, 'success');
+
+                            // التمرير التلقائي للطرد المحدد
+                            this.$nextTick(() => {
+                                const cardEl = document.getElementById('shipment-card-' + matchedShipment.id);
+                                if (cardEl) {
+                                    cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                                }
+                            });
+                        } else {
+                            this.playBeep(true);
+                            this.showFeedback(`الطرد رقم #${displayNum} محدد بالفعل في القائمة`, 'info');
+                        }
+                    } else {
+                        this.playBeep(false);
+                        this.showFeedback(`لم يتم العثور على طرد متاح يطابق الكود: (${cleanScanned})`, 'error');
+                    }
+
+                    this.barcodeInput = '';
+                    this.$nextTick(() => {
+                        this.$refs.barcodeField?.focus();
+                    });
+                },
+
+                toggleShipment(id) {
+                    const index = this.selectedShipmentIds.indexOf(id);
+                    if (index > -1) {
+                        this.selectedShipmentIds.splice(index, 1);
+                    } else {
+                        this.selectedShipmentIds.push(id);
+                    }
+                },
+
+                isShipmentSelected(id) {
+                    return this.selectedShipmentIds.includes(id);
+                },
+
+                selectAllFiltered() {
+                    this.availableShipments.forEach(s => {
+                        const matchesSearch = this.searchShipment === '' ||
+                            (s.bond_number + ' ' + s.receiver_name + ' ' + s.id).includes(this.searchShipment);
+                        if (matchesSearch && !this.selectedShipmentIds.includes(s.id)) {
+                            this.selectedShipmentIds.push(s.id);
+                        }
+                    });
+                },
+
+                clearSelection() {
+                    this.selectedShipmentIds = [];
+                },
+
+                startCameraScanner() {
+                    this.isScannerOpen = true;
+                    this.$nextTick(() => {
+                        if (!this.html5QrCode) {
+                            this.html5QrCode = new Html5Qrcode("qr-reader-show");
+                        }
+                        this.html5QrCode.start(
+                            { facingMode: "environment" },
+                            { fps: 10, qrbox: { width: 230, height: 230 } },
+                            (decodedText) => {
+                                this.handleBarcodeScan(decodedText);
+                            },
+                            (errorMessage) => {}
+                        ).catch((err) => {
+                            this.showFeedback('تعذر الوصول إلى الكاميرا، تأكد من منح الصلاحية للمتصفح.', 'error');
+                        });
+                    });
+                },
+
+                stopCameraScanner() {
+                    if (this.html5QrCode && this.html5QrCode.isScanning) {
+                        this.html5QrCode.stop().then(() => {
+                            this.isScannerOpen = false;
+                        }).catch(() => {
+                            this.isScannerOpen = false;
+                        });
+                    } else {
+                        this.isScannerOpen = false;
+                    }
+                }
+            }));
+        }
+
+        if (window.Alpine) {
+            registerOutgoingPackageShow();
+        } else {
+            document.addEventListener('alpine:init', registerOutgoingPackageShow);
+        }
+    </script>
 @endsection

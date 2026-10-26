@@ -83,7 +83,7 @@ class ShipmentPackagesController extends Controller
     //معتمد
     public function sentStore(Request $request)
     {
-        
+
         $request->validate([
             'parcel_ids'         => 'required|array|min:1',
             'parcel_ids.*'       => 'exists:shipments,id',
@@ -216,48 +216,71 @@ class ShipmentPackagesController extends Controller
     //معتمد
     public function updateStatus(Request $request, $id)
     {
-        $request->validate(['status' => 'required|string']);
+        $request->validate([
+            'status' => 'required|string|in:pending,in_transit,delivered,returned,received_at_branch',
+        ]);
 
         $package = ShipmentPackage::findOrFail($id);
         $newStatus = $request->status;
+        $currentStatus = $package->status;
 
-        // ========================================================
-        // 🛡️ الحماية 1: منع انطلاق رحلة شحن فارغة
-        // ========================================================
+        // السماح بالانتقالات المحددة فقط
+        $allowedTransitions = [
+            'pending' => ['in_transit', 'returned'],
+            'in_transit' => ['delivered', 'returned', 'pending'],
+        ];
+
+        if (
+            !isset($allowedTransitions[$currentStatus]) ||
+            !in_array($newStatus, $allowedTransitions[$currentStatus], true)
+        ) {
+            return back()->with('error', 'لا يمكن تغيير حالة الإرسالية من الحالة الحالية إلى الحالة المطلوبة.');
+        }
+
+        // منع انطلاق رحلة شحن فارغة
         if ($newStatus === 'in_transit') {
             $shipmentsCount = Shipment::where('shipment_package_id', $package->id)->count();
 
             if ($shipmentsCount === 0) {
-                return back()->with('error', 'لا يمكن تحويل الإرسالية إلى "في الطريق" وهي فارغة. يرجى إضافة طرود إليها أولاً.');
+                return back()->with(
+                    'error',
+                    'لا يمكن تحويل الإرسالية إلى "في الطريق" وهي فارغة. يرجى إضافة طرود إليها أولاً.'
+                );
             }
         }
 
-        // ========================================================
-        // 🛡️ الحماية 2: منع الإغلاق اليدوي إذا كانت هناك طرود لم تصل لفروعها
-        // ========================================================
-        if ($newStatus === 'delivered' || $newStatus === 'received_at_branch') {
+        // منع إغلاق الرحلة يدوياً إذا كانت هناك طرود لم تصل لفروعها
+        if (in_array($newStatus, ['delivered', 'received_at_branch'], true)) {
             $unreceivedShipments = Shipment::where('shipment_package_id', $package->id)
                 ->whereNotIn('status', ['received_at_branch', 'delivered', 'returned'])
                 ->count();
 
             if ($unreceivedShipments > 0) {
-                return back()->with('error', "لا يمكن إغلاق الإرسالية يدوياً. يوجد ({$unreceivedShipments}) طرود بداخلها لم تقم الفروع الوجهة باستلامها بعد!");
+                return back()->with(
+                    'error',
+                    "لا يمكن إغلاق الإرسالية يدوياً. يوجد ({$unreceivedShipments}) طرود بداخلها لم تقم الفروع الوجهة باستلامها بعد!"
+                );
             }
         }
 
         try {
             DB::beginTransaction();
 
-            $package->update(['status' => $newStatus]);
+            // تحديث حالة الإرسالية
+            $package->update([
+                'status' => $newStatus,
+            ]);
 
             if ($newStatus === 'returned') {
+                // إلغاء الرحلة وإرجاع الطرود إلى قائمة الانتظار
                 Shipment::where('shipment_package_id', $package->id)->update([
-                    'status'              => 'pending',
-                    'shipment_package_id' => null
+                    'status' => 'pending',
+                    'shipment_package_id' => null,
                 ]);
 
-                // 💰 حذف قيد عمولة الحمولة عند الإلغاء/الإرجاع
+                // حذف قيد عمولة الحمولة عند إلغاء الرحلة فقط
                 $appId = $package->app_id ?? auth()->user()?->app_id;
+
                 if ($appId) {
                     CashTransaction::withoutGlobalScopes()
                         ->where('app_id', $appId)
@@ -268,16 +291,26 @@ class ShipmentPackagesController extends Controller
                         ->delete();
                 }
 
-                $message = 'تم إغلاق الرحلة كمرتجعة، وتم إعادة جميع الطرود إلى المستودع (قيد الانتظار).';
+                $message = 'تم إلغاء الرحلة وإرجاع جميع الطرود إلى قائمة الانتظار.';
+            } elseif ($newStatus === 'pending' && $currentStatus === 'in_transit') {
+                // إرجاع الرحلة إلى المكتب دون اعتبارها رحلة ملغاة
+                Shipment::where('shipment_package_id', $package->id)->update([
+                    'status' => 'pending',
+                    'shipment_package_id' => null,
+                ]);
+
+                // لا نحذف قيد العمولة هنا؛ لأن العملية إرجاع للمكتب وليست إلغاءً للرحلة.
+                $message = 'تم إرجاع الإرسالية إلى المكتب، وإعادة جميع الطرود إلى حالة قيد الانتظار.';
             } else {
-                // تحديث حالة الطرود فقط إذا كانت الإرسالية "في الطريق"
-                // (لأننا لا نريد تغيير حالة الطرود يدوياً إذا كانت الإرسالية delivered، بل نتركها لحالتها الفعلية)
                 if ($newStatus === 'in_transit') {
+                    // تحديث حالة الطرود عند انطلاق الرحلة
                     $package->shipments()->each(function (Shipment $shipment) {
-                        $shipment->update(['status' => 'in_transit']);
+                        $shipment->update([
+                            'status' => 'in_transit',
+                        ]);
                     });
 
-                    // 💰 تسقيط إجمالي عمولة جميع طرود الحمولة في قيد واحد
+                    // تسجيل عمولة الحمولة
                     $cashService = app(CashTransactionService::class);
                     $cashService->recordPackageCommission($package);
                 }
@@ -285,11 +318,12 @@ class ShipmentPackagesController extends Controller
                 $message = 'تم تحديث حالة الإرسالية بنجاح.';
             }
 
-            // ========================================================
-            // 🔔 إشعارات الفروع (عند انطلاق الرحلة)
-            // ========================================================
+            // إشعارات الفروع عند انطلاق الرحلة
             if ($newStatus === 'in_transit') {
-                $shipmentsGroupedByBranch = Shipment::select('receiver_branch_id', DB::raw('count(*) as total'))
+                $shipmentsGroupedByBranch = Shipment::select(
+                    'receiver_branch_id',
+                    DB::raw('count(*) as total')
+                )
                     ->where('shipment_package_id', $package->id)
                     ->groupBy('receiver_branch_id')
                     ->get();
@@ -310,10 +344,14 @@ class ShipmentPackagesController extends Controller
             }
 
             DB::commit();
-            return back()->with('success',  $message);
-        } catch (\Exception $e) {
+
+            return back()->with('success', $message);
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'فشل التحديث: ' . $e->getMessage());
+
+            report($e);
+
+            return back()->with('error', 'فشل تحديث حالة الإرسالية. يرجى المحاولة مرة أخرى.');
         }
     }
     // معتمد
@@ -355,39 +393,61 @@ class ShipmentPackagesController extends Controller
     // معتمد
     public function addShipment(Request $request, $packageId)
     {
-
-        $request->validate([
-            'shipment_id' => 'required|exists:shipments,id'
-        ], [
-            'shipment_id.required' => 'يرجى تحديد طرد لإضافته.',
-            'shipment_id.exists'   => 'الطرد المحدد غير موجود في النظام.'
-        ]);
-
         $package = ShipmentPackage::findOrFail($packageId);
 
         if (in_array($package->status, ['delivered'])) {
             return back()->with('error', 'لا يمكن إضافة طرود لإرسالية مغلقة (تم التسليم).');
         }
 
+        // دعم إضافة طرد واحد أو مجموعة طرود محددة
+        $shipmentIds = [];
+        if ($request->has('shipment_ids')) {
+            $ids = $request->input('shipment_ids');
+            $shipmentIds = is_array($ids) ? array_filter($ids) : array_filter(explode(',', $ids));
+        } elseif ($request->filled('shipment_id')) {
+            $shipmentIds = [$request->input('shipment_id')];
+        }
+
+        if (empty($shipmentIds)) {
+            return back()->with('error', 'يرجى تحديد طرد واحد على الأقل لإضافته.');
+        }
+
         try {
             DB::beginTransaction();
 
-            $shipment = Shipment::findOrFail($request->shipment_id);
+            $shipments = Shipment::whereIn('id', $shipmentIds)->get();
 
-            if (!is_null($shipment->shipment_package_id)) {
-                return back()->with('error', 'عفواً، هذا الطرد (' . $shipment->bond_number . ') مرتبط بالفعل بإرسالية أخرى. يرجى فك ارتباطه أولاً.');
+            if ($shipments->isEmpty()) {
+                return back()->with('error', 'الطرود المحددة غير موجودة في النظام.');
             }
 
-            if (in_array($shipment->status, ['delivered', 'returned'])) {
-                return back()->with('error', 'لا يمكن إضافة طرد حالته منتهية (مسلم أو مرتجع) إلى إرسالية جديدة.');
+            $addedCount = 0;
+            $addedBonds = [];
+
+            foreach ($shipments as $shipment) {
+                if (!is_null($shipment->shipment_package_id)) {
+                    continue;
+                }
+
+                if (in_array($shipment->status, ['delivered', 'returned'])) {
+                    continue;
+                }
+
+                $shipment->update([
+                    'shipment_package_id' => $package->id,
+                    'status' => $package->status === 'in_transit' ? 'in_transit' : $shipment->status,
+                ]);
+
+                $addedCount++;
+                $addedBonds[] = $shipment->bond_number;
             }
 
-            $shipment->update([
-                'shipment_package_id' => $package->id,
-                'status' => $package->status === 'in_transit' ? 'in_transit' : $shipment->status,
-            ]);
+            if ($addedCount === 0) {
+                DB::rollBack();
+                return back()->with('error', 'عفواً، لم يتم إضافة أي طرد لأن الطرود المختارة إما مرتبطة بإرساليات أخرى أو حالتها منتهية.');
+            }
 
-            // 💰 تعديل قيد عمولة الحمولة بعد إضافة الطرد (إذا كانت الحمولة في الطريق)
+            // 💰 تعديل قيد عمولة الحمولة بعد إضافة الطرود (إذا كانت الحمولة في الطريق)
             if ($package->status === 'in_transit') {
                 $package->refresh();
                 $cashService = app(CashTransactionService::class);
@@ -395,7 +455,12 @@ class ShipmentPackagesController extends Controller
             }
 
             DB::commit();
-            return back()->with('success', 'تمت إضافة الطرد (' . $shipment->bond_number . ') إلى الإرسالية بنجاح.');
+
+            if ($addedCount === 1) {
+                return back()->with('success', 'تمت إضافة الطرد (' . ($addedBonds[0] ?? '') . ') إلى الإرسالية بنجاح.');
+            }
+
+            return back()->with('success', 'تمت إضافة ' . $addedCount . ' طرود إلى الإرسالية بنجاح.');
         } catch (Exception $e) {
             DB::rollBack();
             return back()->with('error', 'حدث خطأ أثناء إضافة الطرد: ' . $e->getMessage());
