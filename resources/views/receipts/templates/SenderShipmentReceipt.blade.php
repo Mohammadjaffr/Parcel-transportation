@@ -556,7 +556,8 @@
                             <div style="margin-top: 2.5px;">
                                 <span
                                     style="display: inline-block; background-color: rgba(5, 150, 105, 0.08); color: {{ $primary }}; border: 1px solid {{ $primary }}; padding: 1.5px 8px; border-radius: 12px; font-size: 7.5pt; font-weight: 800; line-height: 1.2;">
-                                    الفرع: {{ $sender_branch ?? ($company['main_branch']['title'] ?? ($user_branch ?? 'المركز الرئيسي')) }}
+                                    الفرع:
+                                    {{ $sender_branch ?? ($company['main_branch']['title'] ?? ($user_branch ?? 'المركز الرئيسي')) }}
                                 </span>
                             </div>
                         </div>
@@ -720,11 +721,13 @@
                         if (!empty($honey_details) && $honey_details !== '---') {
                             $shipmentFields[] = ['label' => 'تفاصيل إضافية:', 'value' => $honey_details];
                         }
-                        if (!empty($other_fee) && (float) $other_fee > 0) {
+                        if (!empty($show_other_fee_in_receipt) && !empty($other_fee) && (float) $other_fee > 0) {
                             $feeText = number_format((float) $other_fee, 0) . ' ر.ي';
-                            if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description)) {
+
+                            if (!empty($other_fee_description)) {
                                 $feeText .= ' (' . $other_fee_description . ')';
                             }
+
                             $shipmentFields[] = ['label' => 'أجور أخرى:', 'value' => $feeText];
                         }
                     @endphp
@@ -772,28 +775,33 @@
                                 <td style="color: #475569; width: 45%;">تكلفة النقل</td>
                                 <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9pt;"
                                     dir="ltr">
-                                    {{ $transport_fee ?? '0' }}
+                                    {{ $transport_fee }}
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="color: #475569;">
-                                    أجور أخرى
-                                    @if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description))
-                                        <span style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
-                                    @endif
-                                </td>
-                                <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
-                                    dir="ltr">
-                                    {{ number_format((float) ($other_fee ?? 0), 0) }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="color: #0f172a; font-weight: 900;">الإجمالي</td>
-                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
-                                    dir="ltr">
-                                    {{ $total_amount ?? '0' }}
-                                </td>
-                            </tr>
+                            @if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description))
+                                <tr>
+                                    <td style="color: #475569;">
+                                        أجور أخرى
+
+                                        <span
+                                            style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
+
+                                    </td>
+                                    <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
+                                        dir="ltr">
+                                        {{ number_format((float) ($other_fee ?? 0), 0) }}
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td style="color: #0f172a; font-weight: 900;">الإجمالي</td>
+                                    <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
+                                        dir="ltr">
+                                        {{ $total_amount ?? '0' }}
+                                    </td>
+                                </tr>
+                            @endif
+
                         @else
                             <tr>
                                 <td style="color: #475569; width: 45%;">الإجمالي</td>
@@ -803,18 +811,22 @@
                                 </td>
                             </tr>
                         @endif
+                        
+                      {{-- يظهر سطر "المسدد" فقط إذا كانت طريقة الدفع: دفع جزئي --}}
+                        @if(isset($payment_key) && $payment_key === 'partial_payment')
                         <tr>
                             <td style="color: #475569;">المسدد</td>
-                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
-                                dir="ltr">
+                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;" dir="ltr">
                                 {{ $partial_amount ?? '0' }}
                             </td>
                         </tr>
+                        @endif
+                        
                         <tr>
-                            <td style="color: {{ $primary }};">المتبقي</td>
-                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
-                                dir="ltr">
-                                {{ $remaining_amount ?? '0' }}
+                            <td style="color: {{ $primary ?? '#059669' }};">المتبقي</td>
+                            <td style="color: {{ $primary ?? '#059669' }}; text-align: left; font-weight: 900; font-size: 9.5pt;" dir="ltr">
+                                {{-- إذا كان الدفع مقدماً اجعل المتبقي 0، وإلا اعرض القيمة القادمة من الكنترولر --}}
+                                {{ (isset($payment_key) && $payment_key === 'prepaid') ? '0' : ($remaining_amount ?? '0') }}
                             </td>
                         </tr>
                     </table>
@@ -823,7 +835,7 @@
                     <div class="finance-payment-method">
                         <span style="color: #475569; font-size: 8pt;">طريقة الدفع:</span>
                         <span
-                            style="color: {{ (isset($is_price_agreed) && !$is_price_agreed) ? '#d97706' : $primary }}; font-weight: 900; font-size: 8.5pt;">{{ $payment_method ?? '---' }}</span>
+                            style="color: {{ isset($is_price_agreed) && !$is_price_agreed ? '#d97706' : $primary }}; font-weight: 900; font-size: 8.5pt;">{{ $payment_method ?? '---' }}</span>
                     </div>
                 </div>
             </div>
@@ -854,15 +866,20 @@
                         @endforeach
                     @else
                         <tr>
-                            <td><span style="font-weight: bold; color: {{ $primary }};">1-</span> أي سند لا يحمل ختم المكتب غير مقبول.</td>
-                            <td><span style="font-weight: bold; color: {{ $primary }};">2-</span> المكتب غير مسؤول عن الطرد بعد شهر من استلامه.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">1-</span> أي سند لا يحمل
+                                ختم المكتب غير مقبول.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">2-</span> المكتب غير
+                                مسؤول عن الطرد بعد شهر من استلامه.</td>
                         </tr>
                         <tr>
-                            <td><span style="font-weight: bold; color: {{ $primary }};">3-</span> المكتب غير مسؤول عن الإجراءات الأمنية والجمركية.</td>
-                            <td><span style="font-weight: bold; color: {{ $primary }};">4-</span> نحن غير مسؤولين عن الحريق وحوادث السير.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">3-</span> المكتب غير
+                                مسؤول عن الإجراءات الأمنية والجمركية.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">4-</span> نحن غير مسؤولين
+                                عن الحريق وحوادث السير.</td>
                         </tr>
                         <tr>
-                            <td><span style="font-weight: bold; color: {{ $primary }};">5-</span> الرجاء التأكد من بيانات السند قبل المغادرة.</td>
+                            <td><span style="font-weight: bold; color: {{ $primary }};">5-</span> الرجاء التأكد
+                                من بيانات السند قبل المغادرة.</td>
                             <td></td>
                         </tr>
                     @endif

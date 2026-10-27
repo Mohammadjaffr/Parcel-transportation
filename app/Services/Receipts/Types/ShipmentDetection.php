@@ -145,6 +145,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
             // إجمالي المبالغ تم تصحيحه هنا
             $totalAccountantAmounts += $accountantAmount;
             $totalDeferredAmounts += $deferredAmount;
+            $rowTotal = $accountantAmount + $deferredAmount + $otherFee;
+            
 
             $shipmentsData[] = [
                 // ... (باقي البيانات كما هي: bond_number, tracking_code, إلخ) ...
@@ -170,6 +172,12 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'other_fee'                 => $otherFee > 0 ? number_format($otherFee, 0) : '',
                 'other_fee_description'     => $shipment->other_fee_description,
                 'show_other_fee_in_receipt' => (bool) ($shipment->show_other_fee_in_receipt ?? false),
+                // إضافة الحقول الجديدة لعمود الإجمالي
+                'row_total'         => $rowTotal > 0 ? number_format($rowTotal, 0) : '',
+                'has_accountant'    => $accountantAmount > 0,
+                'has_deferred'      => $deferredAmount > 0,
+                'raw_accountant'    => $accountantAmount,
+                'raw_deferred'      => $deferredAmount,
 
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
@@ -213,7 +221,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'other_phones' => $otherPhonesStr,
             ],
 
-            'title'             => $isReceiver ? 'كشف استلام شحنة' : 'كشف تسليم شحنة ',
+            'title'             => $isReceiver ? 'كشف ارسال شحنة' : 'كشف ارسال شحنة ',
             'package_number'    => $isReceiver ? $package->tracking_number_only ?? $package->id : $package->id,
             'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 

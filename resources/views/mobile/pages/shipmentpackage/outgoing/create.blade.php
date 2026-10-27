@@ -124,7 +124,7 @@
                 <div class="absolute -top-12 -right-12 w-24 h-24 rounded-full blur-3xl pointer-events-none bg-primary/5"></div>
 
                 {{-- ================= السائق المسؤول ================= --}}
-                <div x-data="driverSelect({{ json_encode($drivers ?? []) }}, {{ json_encode(array_values(config('countries', []))) }})"
+                <div x-data="driverSelect({{ json_encode($drivers ?? []) }}, @js(array_values(config('countries', []))), { id: '{{ old('driver_id') }}', name: '{{ old('driver_name') }}', phone: '{{ old('driver_phone') }}', vehicle_type: '{{ old('driver_vehicle_type') }}' })"
                     class="z-50 p-4 rounded-2xl border bg-slate-50 border-slate-100">
                     <span class="-top-2.5 right-4 bg-slate-50 px-2 text-[10px] font-black text-slate-500">
                         السائق المسؤول <span class="text-red-500">*</span>
@@ -134,90 +134,161 @@
                         <input type="hidden" name="driver_id" x-model="selectedDriverId">
                         <input type="hidden" name="driver_phone" :value="fullPhoneNumber">
 
-                        <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 transition-all group ring-slate-200 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary"
-                            :class="selectedDriverId ? 'bg-primary/5 ring-primary/30' : ''" style="direction: ltr;">
+                        {{-- 1. اسم السائق مع خاصية البحث بالاسم والرقم --}}
+                        <div class="relative" @click.away="showDriverNameDropdown = false">
+                            <label class="block mb-1 text-[11px] font-bold text-slate-600">
+                                اسم السائق <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex relative items-center">
+                                <input type="text" name="driver_name" x-model="nameInput"
+                                    @input="searchDriverByName"
+                                    @focus="if(nameInput.trim().length > 0 && !selectedDriverId) showDriverNameDropdown = true"
+                                    :readonly="selectedDriverId !== null"
+                                    placeholder="ابحث بالاسم أو اكتب اسماً جديداً..." autocomplete="off" required
+                                    class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
+                                    :class="selectedDriverId ?
+                                        'bg-primary/5 border-primary/30 text-primary font-bold pl-20 cursor-not-allowed' :
+                                        'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700'">
 
-                            <div class="relative h-full" @click.away="openCountryDropdown = false">
-                                <button type="button" @click="openCountryDropdown = !openCountryDropdown"
-                                    class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 shrink-0 hover:bg-slate-100">
-                                    <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden"
-                                        x-html="selectedCountry?.svg"></div>
-                                    <span class="text-xs font-bold text-slate-600"
-                                        x-text="selectedCountry?.dial_code"></span>
-                                </button>
-
-                                <div x-show="openCountryDropdown" x-cloak x-transition
-                                    class="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
-                                    <div class="p-2 border-b border-slate-50">
-                                        <input type="text" x-model="searchCountryQuery" placeholder="Search country..."
-                                            class="px-3 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 focus:ring-1 ring-primary/30"
-                                            dir="ltr">
-                                    </div>
-                                    <div class="overflow-y-auto max-h-48" dir="ltr">
-                                        <template x-for="country in filteredCountries" :key="country.code">
-                                            <button type="button"
-                                                @click="selectedCountry = country; openCountryDropdown = false; searchDriver()"
-                                                class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-slate-50">
-                                                <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden"
-                                                    x-html="country.svg"></div>
-                                                <span class="flex-1 text-xs font-bold text-slate-700"
-                                                    x-text="country.name"></span>
-                                                <span class="text-xs text-slate-400" x-text="country.dial_code"></span>
-                                            </button>
-                                        </template>
-                                    </div>
+                                {{-- مؤشر السائق المسجل وزر الإلغاء --}}
+                                <div x-show="selectedDriverId" class="flex absolute left-2 z-10 gap-1 items-center">
+                                    <span class="inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold text-primary bg-primary/10 rounded-md">
+                                        <span class="material-symbols-outlined text-[13px]">check_circle</span>
+                                        مسجل
+                                    </span>
+                                    <button type="button" @click="resetSelection"
+                                        class="p-1 text-slate-400 rounded-full hover:text-red-500 hover:bg-red-50 active:scale-95"
+                                        title="إلغاء التحديد">
+                                        <span class="material-symbols-outlined text-[16px]">close</span>
+                                    </button>
                                 </div>
                             </div>
 
-                            <input type="tel" x-model="localPhoneNumber" @input="searchDriver"
-                                @focus="showDriverDropdown = true" @click.away="showDriverDropdown = false"
-                                placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
-                                :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
-                                class="flex-1 px-4 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
-                                :class="selectedDriverId ? 'font-bold text-primary' : ''">
-
-                            <button type="button" x-show="selectedDriverId" @click="resetSelection"
-                                class="absolute right-3 z-10 p-0.5 bg-white rounded-full text-slate-400 hover:text-red-500">
-                                <span class="material-symbols-outlined text-[16px]">close</span>
-                            </button>
-                        </div>
-
-                        <div x-show="showDriverDropdown && localPhoneNumber.length > 0 && !selectedDriverId"
-                            x-transition x-cloak
-                            class="absolute top-[3.25rem] right-0 w-full bg-white border border-slate-100 rounded-xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.1)] overflow-hidden max-h-48 overflow-y-auto z-50">
-                            <template x-for="driver in filteredDrivers" :key="driver.id">
-                                <button type="button" @click="selectDriver(driver)"
-                                    class="flex justify-between items-center px-4 py-3 w-full text-right border-b transition-colors hover:bg-slate-50 border-slate-50">
-                                    <div class="flex flex-col gap-0.5">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="text-sm font-bold text-slate-800" x-text="driver.name"></span>
-                                            <template x-if="driver.vehicle_type">
-                                                <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-primary/10 text-primary"
-                                                    x-text="driver.vehicle_type"></span>
-                                            </template>
+                            {{-- قائمة نتائج البحث بالاسم وعرض الرقم --}}
+                            <div x-show="showDriverNameDropdown && nameInput.trim().length > 0 && !selectedDriverId"
+                                x-transition x-cloak
+                                class="absolute top-full right-0 mt-1 w-full bg-white border border-slate-100 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar">
+                                <template x-for="driver in filteredDriversByName" :key="driver.id">
+                                    <button type="button" @click="selectDriver(driver)"
+                                        class="flex justify-between items-center px-4 py-2.5 w-full text-right border-b border-slate-50 transition-colors hover:bg-slate-50 group">
+                                        <div class="flex flex-col gap-0.5">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-xs font-bold text-slate-800" x-text="driver.name"></span>
+                                                <template x-if="driver.vehicle_type">
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-primary/10 text-primary"
+                                                        x-text="driver.vehicle_type"></span>
+                                                </template>
+                                            </div>
+                                            <span class="text-[10px] text-slate-500 dir-ltr text-right font-mono"
+                                                x-text="driver.phone || 'بدون رقم'"></span>
                                         </div>
-                                        <span class="text-xs text-right text-slate-500 dir-ltr"
-                                            x-text="driver.phone"></span>
-                                    </div>
-                                    <span class="material-symbols-outlined text-slate-300 text-[18px]">arrow_back_ios</span>
-                                </button>
-                            </template>
-                            <div x-show="filteredDrivers.length === 0" class="px-4 py-3 text-center bg-slate-50/50">
-                                <span class="text-xs font-bold text-slate-500">سائق جديد، سيتم حفظه.</span>
+                                        <span class="material-symbols-outlined text-slate-300 text-[16px]">arrow_back_ios</span>
+                                    </button>
+                                </template>
+                                <div x-show="filteredDriversByName.length === 0"
+                                    class="px-4 py-2.5 text-xs font-bold text-center text-slate-500 bg-slate-50/50">
+                                    سائق جديد، سيتم حفظه تلقائياً.
+                                </div>
                             </div>
                         </div>
 
-                        <input type="text" name="driver_name" x-model="nameInput" :readonly="selectedDriverId !== null"
-                            placeholder="اسم السائق..." required
-                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
-                            :class="selectedDriverId ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
+                        {{-- 2. رقم هاتف السائق مع خاصية البحث بالرقم --}}
+                        <div class="relative" @click.away="showDriverPhoneDropdown = false">
+                            <label class="block mb-1 text-[11px] font-bold text-slate-600">
+                                رقم هاتف السائق <span class="text-red-500">*</span>
+                            </label>
+                            <div class="flex overflow-visible relative items-center bg-white rounded-xl ring-1 transition-all group ring-slate-200 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary"
+                                :class="selectedDriverId ? 'bg-primary/5 ring-primary/30' : ''" style="direction: ltr;">
 
-                        <input type="text" name="driver_vehicle_type" x-model="vehicleTypeInput"
-                            :readonly="selectedDriverId !== null && !!vehicleTypeInput"
-                            list="mobile_outgoing_package_vehicle_types"
-                            placeholder="نوع المركبة (مثلاً: صالون، باص...)"
-                            class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
-                            :class="selectedDriverId && vehicleTypeInput ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
+                                <div class="relative h-full" @click.away="openCountryDropdown = false">
+                                    <button type="button" @click="openCountryDropdown = !openCountryDropdown"
+                                        class="flex gap-2 items-center px-3 h-12 rounded-l-xl border-r transition-colors bg-slate-50 border-slate-200 shrink-0 hover:bg-slate-100">
+                                        <div class="w-5 h-auto flex items-center justify-center rounded-[2px] shadow-sm overflow-hidden"
+                                            x-html="selectedCountry?.svg"></div>
+                                        <span class="text-xs font-bold text-slate-600"
+                                            x-text="selectedCountry?.dial_code"></span>
+                                    </button>
+
+                                    <div x-show="openCountryDropdown" x-cloak x-transition
+                                        class="absolute top-full left-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-[60] overflow-hidden">
+                                        <div class="p-2 border-b border-slate-50">
+                                            <input type="text" x-model="searchCountryQuery" placeholder="بحث..."
+                                                class="px-3 w-full h-8 text-xs rounded-lg outline-none bg-slate-50 focus:ring-1 ring-primary/30"
+                                                dir="rtl">
+                                        </div>
+                                        <div class="overflow-y-auto max-h-48 custom-scrollbar" dir="ltr">
+                                            <template x-for="country in filteredCountries" :key="country.code">
+                                                <button type="button"
+                                                    @click="selectedCountry = country; openCountryDropdown = false; onCountryChanged()"
+                                                    class="flex gap-3 items-center px-3 py-2 w-full text-left transition-colors hover:bg-slate-50">
+                                                    <div class="w-5 h-auto flex items-center justify-center rounded-[2px] overflow-hidden"
+                                                        x-html="country.svg"></div>
+                                                    <span class="flex-1 text-xs font-bold text-slate-700"
+                                                        x-text="country.name"></span>
+                                                    <span class="text-xs text-slate-400 font-mono" x-text="country.dial_code"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <input type="tel" x-model="localPhoneNumber"
+                                    @input="searchDriverByPhone"
+                                    @focus="if(localPhoneNumber.trim().length > 0 && !selectedDriverId) showDriverPhoneDropdown = true"
+                                    :readonly="selectedDriverId !== null"
+                                    placeholder="7XXXXXXXX" required inputmode="numeric" autocomplete="off"
+                                    :maxlength="selectedCountry?.code === 'YE' ? 9 : 15"
+                                    class="flex-1 px-3 w-full h-12 text-sm text-left bg-transparent border-0 outline-none focus:ring-0 font-headline text-slate-800"
+                                    :class="selectedDriverId ? 'font-bold text-primary cursor-not-allowed' : ''">
+
+                                <div x-show="selectedDriverId" class="flex items-center px-2">
+                                    <button type="button" @click="resetSelection"
+                                        class="p-1 text-slate-400 rounded-full hover:text-red-500 hover:bg-red-50 active:scale-95"
+                                        title="إلغاء التحديد">
+                                        <span class="material-symbols-outlined text-[16px]">close</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- قائمة نتائج البحث بالرقم --}}
+                            <div x-show="showDriverPhoneDropdown && localPhoneNumber.trim().length > 0 && !selectedDriverId"
+                                x-transition x-cloak
+                                class="absolute top-full right-0 mt-1 w-full bg-white border border-slate-100 rounded-xl shadow-lg z-50 overflow-hidden max-h-48 overflow-y-auto custom-scrollbar" dir="rtl">
+                                <template x-for="driver in filteredDriversByPhone" :key="driver.id">
+                                    <button type="button" @click="selectDriver(driver)"
+                                        class="flex justify-between items-center px-4 py-2.5 w-full text-right border-b border-slate-50 transition-colors hover:bg-slate-50">
+                                        <div class="flex flex-col gap-0.5">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-xs font-bold text-slate-800" x-text="driver.name"></span>
+                                                <template x-if="driver.vehicle_type">
+                                                    <span class="px-1.5 py-0.5 text-[10px] font-bold rounded bg-primary/10 text-primary"
+                                                        x-text="driver.vehicle_type"></span>
+                                                </template>
+                                            </div>
+                                            <span class="text-[10px] text-slate-500 dir-ltr text-right font-mono"
+                                                x-text="driver.phone"></span>
+                                        </div>
+                                        <span class="material-symbols-outlined text-slate-300 text-[16px]">arrow_back_ios</span>
+                                    </button>
+                                </template>
+                                <div x-show="filteredDriversByPhone.length === 0" class="px-4 py-2.5 text-xs font-bold text-center text-slate-500 bg-slate-50/50">
+                                    سائق جديد، سيتم حفظه تلقائياً.
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- 3. نوع المركبة --}}
+                        <div>
+                            <label class="block mb-1 text-[11px] font-bold text-slate-600">
+                                نوع المركبة <span class="text-[10px] text-slate-400 font-normal">(اختياري)</span>
+                            </label>
+                            <input type="text" name="driver_vehicle_type" x-model="vehicleTypeInput"
+                                :readonly="selectedDriverId !== null && !!vehicleTypeInput"
+                                list="mobile_outgoing_package_vehicle_types"
+                                placeholder="نوع المركبة (مثلاً: صالون، باص...)"
+                                class="px-4 w-full h-12 text-sm rounded-xl border transition-colors outline-none"
+                                :class="selectedDriverId && vehicleTypeInput ? 'bg-slate-50 border-transparent text-slate-500 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 text-slate-700'">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -565,10 +636,12 @@
             }
         }));
 
-        Alpine.data('driverSelect', (initialDrivers, countries) => ({
+        // مكون السائق (بحث بالاسم والرقم بنفس أسلوب ومنطق العملاء في الطرود)
+        Alpine.data('driverSelect', (initialDrivers, countriesList, initialData) => ({
             drivers: initialDrivers || [],
-            countries: countries || [],
-            filteredDrivers: [],
+            countries: countriesList || [],
+            filteredDriversByName: [],
+            filteredDriversByPhone: [],
             selectedCountry: null,
             openCountryDropdown: false,
             searchCountryQuery: '',
@@ -576,50 +649,166 @@
             nameInput: '',
             vehicleTypeInput: '',
             selectedDriverId: null,
-            showDriverDropdown: false,
+            showDriverNameDropdown: false,
+            showDriverPhoneDropdown: false,
+
+            normalize(text) {
+                if (!text) return '';
+                return String(text)
+                    .replace(/[\u064B-\u065F]/g, '')
+                    .replace(/[أإآ]/g, 'ا')
+                    .replace(/ة/g, 'ه')
+                    .replace(/ى/g, 'ي')
+                    .toLowerCase()
+                    .trim();
+            },
 
             init() {
-                this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                if (initialData && (initialData.phone || initialData.name || initialData.id)) {
+                    let phone = initialData.phone || '';
+                    if (phone && /^\d/.test(phone)) phone = '+' + phone;
+
+                    this.selectedCountry = this.countries.find(c => phone.startsWith(c.dial_code)) ||
+                        this.countries.find(c => c.code === 'YE') ||
+                        this.countries[0];
+
+                    if (this.selectedCountry && phone.startsWith(this.selectedCountry.dial_code)) {
+                        this.localPhoneNumber = phone.substring(this.selectedCountry.dial_code.length);
+                    } else {
+                        this.localPhoneNumber = phone;
+                    }
+
+                    this.selectedDriverId = initialData.id ? Number(initialData.id) : null;
+                    this.nameInput = initialData.name || '';
+                    this.vehicleTypeInput = initialData.vehicle_type || '';
+                } else {
+                    this.selectedCountry = this.countries.find(c => c.code === 'YE') || this.countries[0];
+                }
             },
 
             get filteredCountries() {
                 if (this.searchCountryQuery === '') return this.countries;
-                return this.countries.filter(c => c.name.toLowerCase().includes(this.searchCountryQuery.toLowerCase()) || c.dial_code.includes(this.searchCountryQuery));
+                const query = this.searchCountryQuery.toLowerCase();
+                return this.countries.filter(c => c.name.toLowerCase().includes(query) || c.dial_code.includes(query));
             },
 
             get fullPhoneNumber() {
-                if (!this.selectedCountry || !this.localPhoneNumber) return '';
+                if (!this.localPhoneNumber) return '';
+                let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
                 let cleanLocal = this.localPhoneNumber.replace(/^0+/, '');
-                return this.selectedCountry.dial_code + cleanLocal;
+                return dialCode + cleanLocal;
             },
 
-            searchDriver() {
+            onCountryChanged() {
+                if (this.localPhoneNumber.trim().length > 0 && !this.selectedDriverId) {
+                    this.searchDriverByPhone();
+                }
+            },
+
+            searchDriverByName() {
                 this.selectedDriverId = null;
-                this.nameInput = '';
-                this.vehicleTypeInput = '';
-                if (this.localPhoneNumber.length === 0) {
-                    this.filteredDrivers = [];
+                let rawQuery = (this.nameInput || '').trim();
+                if (rawQuery === '') {
+                    this.filteredDriversByName = [];
+                    this.showDriverNameDropdown = false;
                     return;
                 }
-                let currentFullPhone = this.fullPhoneNumber;
-                this.filteredDrivers = this.drivers.filter(driver => {
-                    return driver.phone.includes(currentFullPhone) || driver.phone.includes(this.localPhoneNumber);
+
+                let normQuery = this.normalize(rawQuery);
+                let searchWords = normQuery.split(/\s+/);
+
+                this.filteredDriversByName = this.drivers.filter(d => {
+                    if (!d) return false;
+
+                    let nameMatch = false;
+                    if (d.name) {
+                        let normalizedName = this.normalize(d.name);
+                        nameMatch = searchWords.every(word => normalizedName.includes(word));
+                    }
+
+                    let phoneMatch = d.phone && String(d.phone).includes(rawQuery);
+
+                    return nameMatch || phoneMatch;
                 });
+
+                this.showDriverNameDropdown = true;
+            },
+
+            searchDriverByPhone() {
+                this.selectedDriverId = null;
+                let rawQuery = (this.localPhoneNumber || '').trim();
+                if (rawQuery === '') {
+                    this.filteredDriversByPhone = [];
+                    this.showDriverPhoneDropdown = false;
+                    return;
+                }
+
+                let cleanLocal = rawQuery.replace(/^0+/, '');
+                let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                let fullTarget = dialCode + cleanLocal;
+
+                let normQuery = this.normalize(rawQuery);
+                let searchWords = normQuery.split(/\s+/);
+
+                this.filteredDriversByPhone = this.drivers.filter(d => {
+                    if (!d) return false;
+
+                    let phoneMatch = false;
+                    if (d.phone) {
+                        let dPhone = String(d.phone).replace('+', '');
+                        phoneMatch = dPhone.includes(cleanLocal) || dPhone.includes(fullTarget);
+                    }
+
+                    let nameMatch = false;
+                    if (d.name) {
+                        let normalizedName = this.normalize(d.name);
+                        nameMatch = searchWords.every(word => normalizedName.includes(word));
+                    }
+
+                    return phoneMatch || nameMatch;
+                });
+
+                this.showDriverPhoneDropdown = true;
             },
 
             selectDriver(driver) {
                 this.selectedDriverId = driver.id;
-                this.nameInput = driver.name;
+                this.nameInput = driver.name || '';
                 this.vehicleTypeInput = driver.vehicle_type || '';
-                let phone = driver.phone;
-                let matchedCountry = this.countries.find(c => phone.startsWith(c.dial_code));
-                if (matchedCountry) {
-                    this.selectedCountry = matchedCountry;
-                    this.localPhoneNumber = phone.substring(matchedCountry.dial_code.length);
+
+                let phone = driver.phone ? String(driver.phone) : '';
+                if (phone) {
+                    let phoneWithPlus = phone;
+                    if (/^\d/.test(phoneWithPlus)) phoneWithPlus = '+' + phoneWithPlus;
+
+                    let matchedCountry = this.countries
+                        .slice()
+                        .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                        .find(c => phoneWithPlus.startsWith(c.dial_code));
+
+                    if (matchedCountry) {
+                        this.selectedCountry = matchedCountry;
+                        this.localPhoneNumber = phoneWithPlus.substring(matchedCountry.dial_code.length);
+                    } else {
+                        let cleanPhone = phone.replace(/^\+/, '');
+                        let matchedCountryClean = this.countries
+                            .slice()
+                            .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                            .find(c => cleanPhone.startsWith(c.dial_code.replace('+', '')));
+
+                        if (matchedCountryClean) {
+                            this.selectedCountry = matchedCountryClean;
+                            this.localPhoneNumber = cleanPhone.substring(matchedCountryClean.dial_code.replace('+', '').length);
+                        } else {
+                            this.localPhoneNumber = phone;
+                        }
+                    }
                 } else {
-                    this.localPhoneNumber = phone;
+                    this.localPhoneNumber = '';
                 }
-                this.showDriverDropdown = false;
+
+                this.showDriverNameDropdown = false;
+                this.showDriverPhoneDropdown = false;
             },
 
             resetSelection() {
@@ -627,8 +816,10 @@
                 this.nameInput = '';
                 this.vehicleTypeInput = '';
                 this.localPhoneNumber = '';
-                this.filteredDrivers = [];
-                setTimeout(() => this.$el.querySelector('input[type="tel"]').focus(), 50);
+                this.filteredDriversByName = [];
+                this.filteredDriversByPhone = [];
+                this.showDriverNameDropdown = false;
+                this.showDriverPhoneDropdown = false;
             }
         }));
     });

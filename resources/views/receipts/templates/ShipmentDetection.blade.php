@@ -19,7 +19,7 @@
 
             .print-no-shadow {
                 box-shadow: none !important;
-            } 
+            }
 
             .print-hidden {
                 display: none !important;
@@ -131,7 +131,7 @@
                         <span
                             class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
                             <span class="w-2 h-2 bg-teal-500 rounded-full print:hidden"></span>
-                            فرع الترحيل: {{ $package_sender_branch ?? ($user_branch ?? 'الفرع الرئيسي') }}
+                            فرع الارسال: {{ $package_sender_branch ?? ($user_branch ?? 'الفرع الرئيسي') }}
                         </span>
 
                         @if (!empty($company['other_phones']))
@@ -218,6 +218,8 @@
                             <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">المحاسب</th>
                             <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">آجل</th>
                             <th class="px-2 py-3 w-20 font-black border-l text-slate-500 border-slate-200">اجور اخرى</th>
+                            <th class="px-2 py-3 w-24 font-black border-l text-slate-500 border-slate-200">الإجمالي</th>
+                            <!-- العمود الجديد -->
                             <th class="px-2 py-3 w-24 font-black text-slate-500">رقم السند</th>
                         </tr>
                     </thead>
@@ -263,12 +265,27 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td class="px-2 py-2 font-sans font-black text-slate-900 border-l border-slate-100 print:border-slate-200 print:text-black bg-slate-50/50"
+                                    dir="ltr">
+                                    <div class="text-sm">{{ $shipment['row_total'] }}</div>
+                                    <div class="text-[8px] font-normal text-slate-500 mt-0.5 flex flex-col gap-0.5 leading-tight"
+                                        dir="rtl">
+                                        @if ($shipment['has_accountant'])
+                                            <span class="text-emerald-600">محاسب
+                                                </span>
+                                        @endif
+                                        @if ($shipment['has_deferred'])
+                                            <span class="text-rose-600">آجل</span>
+                                        @endif
+                                    </div>
+                                </td>
                                 <td class="px-2 py-2 font-mono font-black text-indigo-700 print:text-black" dir="ltr">
                                     {{ $shipment['bond_number'] }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="p-6 font-bold text-center text-slate-500 bg-slate-50">لا توجد طرود
+                                <td colspan="11" class="p-6 font-bold text-center text-slate-500 bg-slate-50">لا توجد
+                                    طرود
                                     في هذه الإرسالية.</td>
                             </tr>
                         @endforelse
@@ -290,59 +307,75 @@
                     <div class="mt-4 w-full print:mt-2">
                         <div
                             class="overflow-x-auto rounded-xl border shadow-sm border-slate-200 print:rounded-none print:shadow-none print:border-t-2 print:border-b-2 print:border-l-0 print:border-r-0 print:border-slate-800">
-                            <table class="w-full text-xs text-center bg-white divide-y divide-slate-200 summary-table" style="width: 100%; border-collapse: collapse;">
+                            <table class="w-full text-xs text-center bg-white divide-y divide-slate-200 summary-table"
+                                style="width: 100%; border-collapse: collapse;">
                                 <thead class="bg-indigo-50/50 print:bg-slate-100">
                                     <tr>
-                                        <th
-                                            class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800" style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             إجمالي الرسائل</th>
-                                        <th
-                                            class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800" style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             إجمالي المبالغ
                                         </th>
-                                        <th
-                                            class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800" style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             إجمالي العمولة
                                         </th>
-                                        <th
-                                            class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800" style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
-                                            إجمالي المحاسب</th>
-                                        <th
-                                            class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                        
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
                                             style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             <div>التصفية مع السائق</div>
                                         </th>
-                                        <th class="px-2 py-2.5 font-black text-indigo-900 print:text-slate-800" style="padding: 6px; font-weight: 900;">
-                                            إجمالي الآجل</th>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                            إجمالي الآجل
+                                        </th>
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                           إجمالي الآجور الاخرى
+                                        </th>
+                                        <!-- الحقل الجديد في الترويسة -->
+                                        <th class="px-2 py-2.5 font-black text-indigo-900 print:text-slate-800 bg-slate-100"
+                                            style="padding: 6px; font-weight: 900;">
+                                            إجمالي (محاسب + آجل + الآجور الاخرى)
+                                        </th>
                                     </tr>
+
                                 </thead>
                                 <tbody class="divide-y divide-slate-100 print:divide-slate-200">
                                     <tr>
-                                        <td
-                                            class="px-2 py-3 text-lg font-black border-l text-slate-800 border-slate-100 print:border-slate-200 total-val" style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
-                                            {{ $total_shipments ?? 0 }}</td>
-                                        <td
-                                            class="px-2 py-3 text-lg font-black border-l text-slate-800 border-slate-100 print:border-slate-200 total-val" style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
-                                            {{ number_format($totals['total_amounts'] ?? 0, 0) }}</td>
-                                        <td
-                                            class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val" style="padding: 6px; font-size: 15px; font-weight: 900; color: #16a34a; border-left: 1px solid #f1f5f9;">
-                                            {{ number_format($totals['grand_commission'] ?? 0, 0) }}</td>
-                                        <td
-                                            class="px-2 py-3 font-sans text-lg font-black text-indigo-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val" style="padding: 6px; font-size: 15px; font-weight: 900; color: #4f46e5; border-left: 1px solid #f1f5f9;">
-                                            {{ number_format($totals['accountant_amount'] ?? 0, 0) }}</td>
-                                        <td
-                                            class="px-2 py-3 font-sans text-lg font-black border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
+                                        <td class="px-2 py-3 text-lg font-black border-l text-slate-800 border-slate-100 print:border-slate-200 total-val"
                                             style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
-                                            <div dir="ltr" style="color: {{ $settlementColor }}; font-size: 15px; font-weight: 900;">
+                                            {{ $total_shipments ?? 0 }}</td>
+                                        <td class="px-2 py-3 text-lg font-black border-l text-slate-800 border-slate-100 print:border-slate-200 total-val"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
+                                            {{ number_format($totals['total_amounts'] ?? 0, 0) }}</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; color: #16a34a; border-left: 1px solid #f1f5f9;">
+                                            {{ number_format($totals['grand_commission'] ?? 0, 0) }}</td>
+                                   
+                                        <td class="px-2 py-3 font-sans text-lg font-black border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
+                                            <div dir="ltr"
+                                                style="color: {{ $settlementColor }}; font-size: 15px; font-weight: 900;">
                                                 {{ number_format($settlementAmount ?? 0, 0) }}
                                             </div>
-                                            <div class="settlement-cell-label" style="font-size: 9px; font-weight: 700; color: #64748b; margin-top: 1px;">
+                                            <div class="settlement-cell-label"
+                                                style="font-size: 9px; font-weight: 700; color: #64748b; margin-top: 1px;">
                                                 {{ $settlementLabel }}
                                             </div>
                                         </td>
-                                        <td
-                                            class="px-2 py-3 font-sans text-lg font-black text-rose-600 print:text-slate-800 total-val" style="padding: 6px; font-size: 15px; font-weight: 900; color: #dc2626;">
-                                            {{ number_format($totals['deferred_amount'] ?? 0, 0) }}</td>
+                                       <td class="px-2 py-3 font-sans text-lg font-black text-rose-600 print:text-slate-800 total-val border-l border-slate-100 print:border-slate-200" style="padding: 6px; font-size: 15px; font-weight: 900; color: #dc2626; border-left: 1px solid #f1f5f9;">
+    {{ number_format($totals['deferred_amount'] ?? 0, 0) }}
+</td>
+<td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 print:text-slate-800 total-val border-l border-slate-100 print:border-slate-200" style="padding: 6px; font-size: 15px; font-weight: 900; color: #166534; border-left: 1px solid #f1f5f9;">
+    {{ number_format($totals['other_fee'] ?? 0, 0) }}
+</td>
+<!-- الخلية الجديدة لجمع المحاسب والآجل -->
+<td class="px-2 py-3 font-sans text-lg font-black text-slate-800 bg-slate-50 print:bg-slate-50 total-val" style="padding: 6px; font-size: 15px; font-weight: 900;">
+    {{ number_format(($totals['accountant_amount'] ?? 0) + ($totals['deferred_amount'] ?? 0) + ($totals['other_fee'] ?? 0), 0) }} 
+</td>
                                     </tr>
                                 </tbody>
                             </table>

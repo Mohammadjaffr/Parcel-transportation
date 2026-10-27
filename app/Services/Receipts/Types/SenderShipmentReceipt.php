@@ -167,13 +167,14 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
             
             // المبالغ المالية
-            'transport_fee'     => number_format($transportFee, 0),     // تكلفة النقل
+            'transport_fee'     => number_format($transportFee + $otherFee, 0),     // تكلفة النقل
             'total_amount'      => number_format($grandTotal, 0),       // المبلغ الإجمالي
             'partial_amount'    => number_format($paidAmount, 0),       // المبلغ المسدد
-            'remaining_amount'  => number_format($remainingAmount, 0),  // المبلغ المتبقي
+            'remaining_amount'  => number_format($remainingAmount+ $otherFee, 0),  // المبلغ المتبقي
             'other_fee'         => $otherFee,
             'other_fee_description' => $shipment->other_fee_description,
             'show_other_fee_in_receipt' => $showOtherFee,
+        
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),

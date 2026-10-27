@@ -563,7 +563,7 @@
                             <div class="flex flex-col col-span-1 gap-2">
                                 <label class="text-[11px] font-bold text-slate-500">عدد الطرود</label>
                                 <div class="relative">
-                                    <input type="number" name="parcels_quantity" value="{{ old('parcels_quantity', 0) }}"
+                                    <input type="number" name="parcels_quantity" value="{{ old('parcels_quantity') }}"
                                         placeholder="0" min="0" dir="ltr"
                                         class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
                                 </div>

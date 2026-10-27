@@ -661,14 +661,18 @@
                             </div>
 
                             {{-- ================= مفتاح إظهار الأجور الأخرى في السند ================= --}}
-                            <div class="flex items-center justify-between col-span-2 p-3.5 mt-1 rounded-xl border border-slate-200 bg-slate-50/70 dark:bg-boxdark-2 dark:border-boxdark transition-all">
+                            <div
+                                class="flex items-center justify-between col-span-2 p-3.5 mt-1 rounded-xl border border-slate-200 bg-slate-50/70 dark:bg-boxdark-2 dark:border-boxdark transition-all">
                                 <div class="flex items-center gap-3">
-                                    <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 shrink-0">
+                                    <div
+                                        class="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 shrink-0">
                                         <span class="material-symbols-outlined text-[20px]">receipt_long</span>
                                     </div>
                                     <div>
-                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200 block">إظهار الأجور الأخرى في السند</span>
-                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">عند التفعيل، سيتم إدراج الأجور وتوضيحها ضمن جدول تفاصيل المبلغ في السند المطبوع</p>
+                                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200 block">إظهار
+                                            الأجور الأخرى في السند</span>
+                                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">عند التفعيل، سيتم
+                                            إدراج الأجور وتوضيحها ضمن جدول تفاصيل المبلغ في السند المطبوع</p>
                                     </div>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer shrink-0 mr-2">
@@ -676,7 +680,9 @@
                                     <input type="checkbox" name="show_other_fee_in_receipt" value="1"
                                         class="sr-only peer"
                                         {{ old('show_other_fee_in_receipt', $shipment->show_other_fee_in_receipt ? '1' : '0') == '1' ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    <div
+                                        class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+                                    </div>
                                 </label>
                             </div>
                         </div>
@@ -776,16 +782,20 @@
                                     <select name="payment_method" x-model="paymentMethod"
                                         class="px-4 w-full h-14 text-sm font-bold rounded-2xl border border-gray-200 transition-all appearance-none outline-none text-on-surface dark:text-white bg-surface dark:bg-boxdark-2 dark:border-boxdark focus:border-primary focus:ring-2 focus:ring-primary/20">
                                         <option value="">اختر طريقة الدفع</option>
-                                        @hasservice('prepaid')
+                                        @hasservice('Payment_Prepaid')
                                             <option value="prepaid">مدفوع مقدماً</option>
                                         @endhasservice
+
                                         @hasservice('Payment_COD')
                                             <option value="cod">الدفع عند الاستلام (على المستلم)</option>
                                         @endhasservice
+
                                         <option value="partial_payment">دفع جزئي</option>
+
                                         @hasservice('Payment_Credit')
                                             <option value="customer_credit">آجل (على حساب المرسل)</option>
                                         @endhasservice
+
                                     </select>
                                 </div>
                             </div>
@@ -933,7 +943,7 @@
                         }
                     }
 
-                    
+
 
                     this.updateValidity();
                 },
@@ -941,7 +951,7 @@
                 // تسمية الوجهة المحددة حالياً
                 get selectedDestinationName() {
                     const found = this.destinations.find(d => d.key === this
-                    .selectedDestinationKey);
+                        .selectedDestinationKey);
                     return found ? found.name : '';
                 },
 
@@ -1034,15 +1044,15 @@
                 },
 
                 // مسح التحديد
-              clearSelection() {
-    this.selectedDestinationKey = '';
-    this.selectedOfficeId = '';
-    this.selectedBranchId = '';
-    this.searchQuery = '';
-    this.isSearching = false;
-    this.isOpen = true;
-    this.updateValidity();
-},
+                clearSelection() {
+                    this.selectedDestinationKey = '';
+                    this.selectedOfficeId = '';
+                    this.selectedBranchId = '';
+                    this.searchQuery = '';
+                    this.isSearching = false;
+                    this.isOpen = true;
+                    this.updateValidity();
+                },
 
                 // عند النقر خارج القائمة
                 onBlurOutside() {
@@ -1147,7 +1157,7 @@
                             let normalizedName = this.normalize(c.name);
                             // نتحقق مما إذا كانت *كل* كلمة كتبها المستخدم موجودة داخل اسم العميل
                             nameMatch = searchWords.every(word => normalizedName.includes(
-                            word));
+                                word));
                         }
 
                         let phoneMatch = c.phone && String(c.phone).includes(rawQuery);
