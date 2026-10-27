@@ -13,9 +13,12 @@ use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Models\Customer;
 use App\Models\Passengers;
+use App\Models\CashTransaction;
 use App\Services\WhatsApp\WhatsAppLinkService;
 use App\Services\WhatsApp\Messages\PassengerBookingMessage;
 use App\Services\WhatsApp\Messages\PassengerCancelMessage;
+use App\Services\WhatsApp\Messages\CashTransactionMessage;
+use Illuminate\Http\Request;
 
 class WhatsAppController extends Controller
 {
@@ -773,6 +776,127 @@ class WhatsAppController extends Controller
             Log::error("sendPassengerRebook Error for passenger #{$id}: " . $e->getMessage());
 
             $fallbackLink = isset($passenger) ? WhatsAppLinkService::generate($passenger, 'passengerRebook') : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
+
+    /**
+     * إرسال سند الصندوق (قبض / صرف) عبر الواتساب بنفس لوجك إرسال الشحنات
+     */
+    public function sendCashTransactionWhatsapp(Request $request, $id)
+    {
+        try {
+            $trx = CashTransaction::with([
+                'category',
+                'branch.app',
+                'user',
+                'driver',
+                'source',
+            ])->findOrFail($id);
+
+            // رقم الهاتف المعتمد للإرسال: من الطلب أو من السائق المرتبط بالسند
+            $phone = $request->input('phone') ?: ($trx->driver_phone ?: null);
+
+            // تجهيز رابط الواتساب البديل (wa.me)
+            $fallbackLink = WhatsAppLinkService::generate($trx, 'cash_ledger', $phone);
+
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف المستلم أو السائق غير متوفر لإرسال السند.',
+                ], 422);
+            }
+
+            // تحديد الفرع لتحميل إعدادات الواتساب الخاصة به
+            $branch = $trx->branch ?? auth()->user()?->branch;
+
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            // التحقق من تهيئة خدمة الواتساب
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            // فحص حالة الاتصال من الكاش مع فحص مباشر في حال الكاش offline
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                $checkLive = $this->whatsAppService->getStatus();
+                if (!empty($checkLive['data']['Connected'])) {
+                    $serviceStatus = 'online';
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                } else {
+                    return response()->json([
+                        'success'       => false,
+                        'fallback'      => true,
+                        'whatsapp_link' => $fallbackLink,
+                        'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                    ]);
+                }
+            }
+
+            // تجهيز رابط السند العام ونص الرسالة
+            $receiptUrl = route('receipt.cash.public', $trx->id);
+            $msgStrategy = new CashTransactionMessage();
+            $message = $msgStrategy->getMessageBody($trx, $receiptUrl);
+
+            // إرسال الرسالة عبر الواتساب API
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+                $serverStatus = $this->whatsAppService->getStatus();
+                $isServerOnline = !empty($serverStatus['data']['Connected']);
+
+                if (!$isServerOnline) {
+                    Cache::put($cacheKey, 'offline', now()->addMinute());
+                    $userMessage = 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+                } else {
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                    $userMessage = 'رقم الهاتف غير مسجل في الواتساب أو غير صحيح، جاري فتح الواتساب للإرسال اليدوي...';
+                }
+
+                Log::warning("WhatsApp sendText (cashLedger) failed for transaction #{$id}: " . $errorMsg);
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال السند بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendCashTransactionWhatsapp Error for transaction #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($trx) ? WhatsAppLinkService::generate($trx, 'cash_ledger', $request->input('phone')) : null;
 
             return response()->json([
                 'success'       => false,

@@ -101,31 +101,46 @@
                         {{ $company['name'] ?? 'شركة النقل' }}
                     </h1>
 
+                    @php
+                        $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+                    @endphp
                     <div class="inline-flex flex-col gap-1.5 text-xs font-bold text-slate-600 print:gap-1 print:text-[10px]">
-                        @if (!empty($company['main_branch']))
-                            <span
-                                class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
-                                <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
-                                {{ $company['main_branch']['title'] }}
-                                <span dir="rtl" class="mr-1 font-semibold text-slate-500">هاتف: <span dir="ltr"
-                                        class="font-bold text-slate-800">{{ $company['main_branch']['phones'] }}</span></span>
-                            </span>
-                        @else
-                            <span
-                                class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
-                                <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
-                                الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
-                            </span>
-                        @endif
+                        @if (empty($activeBranchAddresses))
+                            @if (!empty($company['main_branch']))
+                                <span
+                                    class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
+                                    <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
+                                    {{ $company['main_branch']['title'] }}
+                                    <span dir="rtl" class="mr-1 font-semibold text-slate-500">هاتف: <span dir="ltr"
+                                            class="font-bold text-slate-800">{{ $company['main_branch']['phones'] }}</span></span>
+                                </span>
+                            @else
+                                <span
+                                    class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
+                                    <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
+                                    الفرع: {{ $user_branch ?? 'المركز الرئيسي' }}
+                                </span>
+                            @endif
 
-                        @if (!empty($company['headquarters']) && ($company['main_branch']['title'] ?? '') !== $company['headquarters']['title'])
-                            <span
-                                class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
-                                <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
-                                {{ $company['headquarters']['title'] }}
-                                <span dir="rtl" class="mr-1 font-semibold text-slate-500">هاتف: <span dir="ltr"
-                                        class="font-bold text-slate-800">{{ $company['headquarters']['phones'] }}</span></span>
-                            </span>
+                            @if (!empty($company['headquarters']) && ($company['main_branch']['title'] ?? '') !== $company['headquarters']['title'])
+                                <span
+                                    class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
+                                    <span class="w-2 h-2 bg-indigo-500 rounded-full print:hidden"></span>
+                                    {{ $company['headquarters']['title'] }}
+                                    <span dir="rtl" class="mr-1 font-semibold text-slate-500">هاتف: <span dir="ltr"
+                                            class="font-bold text-slate-800">{{ $company['headquarters']['phones'] }}</span></span>
+                                </span>
+                            @endif
+
+                            @if (!empty($company['other_phones']))
+                                <span
+                                    class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
+                                    <span class="w-2 h-2 rounded-full bg-slate-500 print:hidden"></span>
+                                    فروع أخرى:
+                                    <span dir="ltr"
+                                        class="text-slate-800 font-bold text-[10px] print:text-[9px]">{{ $company['other_phones'] }}</span>
+                                </span>
+                            @endif
                         @endif
 
                         <span
@@ -133,16 +148,6 @@
                             <span class="w-2 h-2 bg-teal-500 rounded-full print:hidden"></span>
                             فرع الارسال: {{ $package_sender_branch ?? ($user_branch ?? 'الفرع الرئيسي') }}
                         </span>
-
-                        @if (!empty($company['other_phones']))
-                            <span
-                                class="flex gap-1.5 items-center px-2 py-1 rounded-md border bg-slate-100 border-slate-200 print:bg-transparent print:border-none print:p-0">
-                                <span class="w-2 h-2 rounded-full bg-slate-500 print:hidden"></span>
-                                فروع أخرى:
-                                <span dir="ltr"
-                                    class="text-slate-800 font-bold text-[10px] print:text-[9px]">{{ $company['other_phones'] }}</span>
-                            </span>
-                        @endif
                     </div>
                 </div>
 
@@ -199,6 +204,30 @@
                     </div>
                 </div>
             </div>
+
+            {{-- شريط عناوين الفروع المعتمدة --}}
+            @php
+                $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+            @endphp
+            @if (!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
+                <div class="pt-2 mt-2 border-t border-slate-200/80 print:pt-1 print:mt-1 print:border-slate-300">
+                    <div class="flex flex-col gap-1">
+                        @foreach ($activeBranchAddresses as $branchItem)
+                            <div class="flex items-center gap-2 text-xs font-bold text-slate-800 print:text-[10px] print:gap-1.5 leading-snug">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-white bg-slate-900 print:bg-black font-black text-[10px] print:text-[9px] shrink-0">
+                                    {{ $branchItem['name'] ?? '' }}
+                                </span>
+                                <span class="truncate print:whitespace-normal">
+                                    {{ $branchItem['address'] ?? '' }}
+                                    @if (!empty($branchItem['phone']))
+                                        <span class="text-slate-500 font-semibold mr-1"> - هاتف: <span dir="ltr" class="font-bold font-sans text-slate-800 print:text-black">{{ $branchItem['phone'] }}</span></span>
+                                    @endif
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         {{-- الجدول العصري والأنيق --}}

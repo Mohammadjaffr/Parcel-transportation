@@ -137,7 +137,9 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
+                'branch_addresses' => $app?->effective_branch_addresses ?? [],
             ],
+            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
 
             'title'             => 'سند استلام طرد',
             'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',

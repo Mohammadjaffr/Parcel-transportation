@@ -237,9 +237,9 @@ class PassangersDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-
-
+                'branch_addresses' => $app?->effective_branch_addresses ?? [],
             ],
+            'branch_addresses'              => $app?->effective_branch_addresses ?? [],
             'title'                         => "كشف الركاب ",
             'date_from'                     => $filters['from'] ?? null,
             'date_to'                       => $filters['to'] ?? null,

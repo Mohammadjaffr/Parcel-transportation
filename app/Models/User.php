@@ -103,6 +103,18 @@ class User extends Authenticatable
         });
     }
 
+    public function getCachedAppBranchAddressesAttribute()
+    {
+        if (!$this->app_id) {
+            return [];
+        }
+
+        return Cache::remember('app_branch_addresses_' . $this->app_id, 86400, function () {
+            $app = $this->app;
+            return $app ? $app->effective_branch_addresses : [];
+        });
+    }
+
 
     public function isAdmin()
     {

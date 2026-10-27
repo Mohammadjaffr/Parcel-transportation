@@ -41,7 +41,45 @@ use Illuminate\Support\Facades\Cache;
         protected $guarded = [];
         protected $casts = [
             'terms_and_conditions' => 'array',
+            'branch_addresses'     => 'array',
         ];
+
+        /**
+         * عناوين الفروع المعتمدة للسندات والكشوفات
+         * تأخذ من الإعدادات المخصصة، أو تستخرج تلقائياً من جدول الفروع كبديل
+         */
+        public function getEffectiveBranchAddressesAttribute(): array
+        {
+            if (!empty($this->branch_addresses) && is_array($this->branch_addresses) && count($this->branch_addresses) > 0) {
+                $filtered = array_values(array_filter($this->branch_addresses, function ($item) {
+                    return is_array($item) && (!empty(trim($item['name'] ?? '')) || !empty(trim($item['address'] ?? '')));
+                }));
+                if (count($filtered) > 0) {
+                    return $filtered;
+                }
+            }
+
+            $branches = $this->branches;
+            if ($branches && $branches->count() > 0) {
+                return $branches->map(function ($b) {
+                    $name = $b->is_main ? 'المركز الرئيسي' : $b->name;
+                    $addressParts = [];
+                    if (!empty($b->city)) {
+                        $addressParts[] = trim($b->city);
+                    }
+                    if (!empty($b->address)) {
+                        $addressParts[] = trim($b->address);
+                    }
+                    return [
+                        'name'    => $name,
+                        'address' => implode(' - ', $addressParts) ?: 'العنوان غير مسجل',
+                        'phone'   => $b->phone ?? null,
+                    ];
+                })->toArray();
+            }
+
+            return [];
+        }
 
         public function hasSmsConfigured(): bool
         {

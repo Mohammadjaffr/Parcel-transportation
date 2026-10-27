@@ -154,6 +154,11 @@ class AppController extends Controller
             
             'terms_and_conditions'   => 'nullable|array',
             'terms_and_conditions.*' => 'nullable|string|max:500',
+
+            'branch_addresses'          => 'nullable|array',
+            'branch_addresses.*.name'    => 'nullable|string|max:150',
+            'branch_addresses.*.address' => 'nullable|string|max:500',
+            'branch_addresses.*.phone'   => 'nullable|string|max:50',
         ]);
 
         try {
@@ -171,6 +176,26 @@ class AppController extends Controller
             } else {
                 $dataToUpdate['terms_and_conditions'] = null;
             }
+
+            if ($request->has('branch_addresses') && is_array($request->branch_addresses)) {
+                $cleanAddresses = [];
+                foreach ($request->branch_addresses as $item) {
+                    $bName = trim($item['name'] ?? '');
+                    $bAddress = trim($item['address'] ?? '');
+                    $bPhone = trim($item['phone'] ?? '');
+                    if ($bName !== '' || $bAddress !== '') {
+                        $cleanAddresses[] = [
+                            'name'    => $bName,
+                            'address' => $bAddress,
+                            'phone'   => $bPhone,
+                        ];
+                    }
+                }
+                $dataToUpdate['branch_addresses'] = !empty($cleanAddresses) ? $cleanAddresses : null;
+            } else {
+                $dataToUpdate['branch_addresses'] = null;
+            }
+
             if ($request->hasFile('logo')) {
                 if ($company->logo && Storage::disk('public')->exists($company->logo)) {
                     Storage::disk('public')->delete($company->logo);
@@ -182,6 +207,7 @@ class AppController extends Controller
             Cache::forget('app_logo_' . auth()->user()->app_id);
             Cache::forget('app_name_' . auth()->user()->app_id);
             Cache::forget('app_terms_' . auth()->user()->app_id);
+            Cache::forget('app_branch_addresses_' . auth()->user()->app_id);
 
 
             return WebResponseClass::sendResponse(

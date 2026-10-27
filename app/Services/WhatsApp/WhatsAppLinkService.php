@@ -17,11 +17,13 @@ use App\Services\WhatsApp\Messages\TripDriverMessage;
 use App\Services\WhatsApp\Messages\PriceAgreementMessage;
 use App\Services\WhatsApp\Messages\PassengerCancelMessage;
 use App\Services\WhatsApp\Messages\PassengerRebookMessage;
+use App\Services\WhatsApp\Messages\CashTransactionMessage;
+use App\Models\CashTransaction;
 
 
 class WhatsAppLinkService
 {
-    public static function generate(Model $entity, string $target): ?string
+    public static function generate(Model $entity, string $target, ?string $customPhone = null): ?string
     {
         $strategy = match ($target) {
             'sender'   => new SenderMessage(),
@@ -37,6 +39,7 @@ class WhatsAppLinkService
             'passengerBooking' => new PassengerBookingMessage(),
             'passengerCancel' => new PassengerCancelMessage(),
             'passengerRebook' => new PassengerRebookMessage(),
+            'cash_ledger' => new CashTransactionMessage(),
             default    => null,
         };
 
@@ -44,13 +47,15 @@ class WhatsAppLinkService
             return null;
         }
 
-        $phone = $strategy->getPhoneNumber($entity);
+        $phone = $customPhone ?: $strategy->getPhoneNumber($entity);
         if (!$phone) {
             return null;
         }
 
         $receiptUrl = null;
-        if ($strategy->getReceiptType()) {
+        if ($entity instanceof CashTransaction) {
+            $receiptUrl = route('receipt.cash.public', $entity->id);
+        } elseif ($strategy->getReceiptType()) {
             $entityId = $entity->uuid ?? $entity->id;
             
             $receiptUrl = route('receipt.generate', [

@@ -179,7 +179,9 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
+                'branch_addresses' => $app?->effective_branch_addresses ?? [],
             ],
+            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
 
             'title'             => 'كشف إرسالية - ' . $officeTitle,
             'package_number'    => $package->tracking_number ?? 'غير متوفر',

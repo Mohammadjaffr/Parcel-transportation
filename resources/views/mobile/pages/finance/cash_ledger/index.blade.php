@@ -221,13 +221,16 @@
                                     class="absolute top-full left-0 mt-1.5 w-44 bg-white/90 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] border border-slate-100/50 z-50 overflow-hidden py-1.5">
 
                                     @if(is_null($trx->source_id) && is_null($trx->source_type))
-                                        <button type="button" 
+                                        <button type="button"
                                             @click="openEditModal(@js([
                                                 'id' => $trx->id,
                                                 'type' => $trx->type,
                                                 'branch_id' => $trx->branch_id,
                                                 'cash_category_id' => $trx->cash_category_id,
                                                 'category_name' => $trx->category?->name,
+                                                'driver_id' => $trx->driver_id,
+                                                'driver_name' => $trx->driver_name,
+                                                'driver_phone' => $trx->driver_phone,
                                                 'amount' => (float) $trx->amount,
                                                 'payment_method' => $trx->payment_method,
                                                 'transaction_date' => $trx->transaction_date->format('Y-m-d'),
@@ -252,6 +255,18 @@
                                         <span class="material-symbols-outlined text-[18px]">print</span>
                                         طباعة السند
                                     </a>
+
+                                    @php
+                                        $whatsappFallback = \App\Services\WhatsApp\WhatsAppLinkService::generate($trx, 'cash_ledger');
+                                    @endphp
+                                    <button type="button" 
+                                        onclick="sendCashReceiptDirect({{ $trx->id }}, '{{ $trx->driver_phone ?? '' }}', this, '{{ $whatsappFallback ?? '' }}'); openMenu = false"
+                                        class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right transition-colors text-emerald-600 hover:bg-slate-50">
+                                        <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+                                        </svg>
+                                        إرسال واتساب
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -402,6 +417,7 @@
                 showDetailsModal: false,
                 createType: 'income',
                 rawCategories: @js($categories),
+                rawDrivers: @js($drivers ?? []),
                 details: {},
 
                 // حالة وضع التعديل
@@ -421,6 +437,12 @@
                 categorySearchText: '',
                 selectedCategoryId: '',
                 selectedCategoryName: '',
+
+                driverDropdownOpen: false,
+                driverSearchText: '',
+                selectedDriverId: '',
+                selectedDriverName: '',
+                selectedDriverPhone: '',
 
                 get formActionUrl() {
                     if (this.isEditMode && this.editId) {
@@ -464,6 +486,43 @@
                     }
                 },
 
+                get filteredDrivers() {
+                    if (!this.driverSearchText || this.driverSearchText.trim() === '') {
+                        return this.rawDrivers;
+                    }
+                    const query = this.driverSearchText.trim().toLowerCase();
+                    return this.rawDrivers.filter(d => 
+                        (d.name && d.name.toLowerCase().includes(query)) ||
+                        (d.phone && d.phone.toLowerCase().includes(query))
+                    );
+                },
+
+                selectDriver(driver) {
+                    this.selectedDriverId = driver.id;
+                    this.selectedDriverName = driver.name;
+                    this.selectedDriverPhone = driver.phone || '';
+                    this.driverDropdownOpen = false;
+                    this.driverSearchText = '';
+                },
+
+                clearDriver() {
+                    this.selectedDriverId = '';
+                    this.selectedDriverName = '';
+                    this.selectedDriverPhone = '';
+                    this.driverDropdownOpen = false;
+                    this.driverSearchText = '';
+                },
+
+                toggleDriverDropdown() {
+                    this.driverDropdownOpen = !this.driverDropdownOpen;
+                    if (this.driverDropdownOpen) {
+                        this.driverSearchText = '';
+                        this.$nextTick(() => {
+                            this.$refs.driverSearchInput?.focus();
+                        });
+                    }
+                },
+
                 openCreateModal(type) {
                     this.isEditMode = false;
                     this.editId = null;
@@ -481,6 +540,13 @@
                     this.selectedCategoryName = '';
                     this.categorySearchText = '';
                     this.categoryDropdownOpen = false;
+
+                    this.selectedDriverId = '';
+                    this.selectedDriverName = '';
+                    this.selectedDriverPhone = '';
+                    this.driverSearchText = '';
+                    this.driverDropdownOpen = false;
+
                     this.showCreateModal = true;
                 },
 
@@ -505,6 +571,13 @@
                     }
                     this.categorySearchText = '';
                     this.categoryDropdownOpen = false;
+
+                    this.selectedDriverId = item.driver_id || '';
+                    this.selectedDriverName = item.driver_name || '';
+                    this.selectedDriverPhone = item.driver_phone || '';
+                    this.driverSearchText = '';
+                    this.driverDropdownOpen = false;
+
                     this.showCreateModal = true;
                 },
 
@@ -521,6 +594,87 @@
                     }
                 }
             }
+        }
+
+        async function sendCashReceiptDirect(transactionId, recipientPhone, triggerElement, fallbackUrl) {
+            let phone = recipientPhone ? recipientPhone.trim() : '';
+
+            if (!phone) {
+                const inputPhone = prompt('الرجاء إدخال رقم هاتف المستلم (مثال: 967770000000):');
+                if (!inputPhone || !inputPhone.trim()) {
+                    return;
+                }
+                phone = inputPhone.trim();
+            }
+
+            const originalContent = triggerElement ? triggerElement.innerHTML : null;
+            if (triggerElement) {
+                triggerElement.disabled = true;
+                triggerElement.innerHTML = `
+                    <svg class="animate-spin h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>جارٍ الإرسال...</span>
+                `;
+            }
+
+            try {
+                const response = await fetch(`{{ url('whatsapp/cash-ledger') }}/${transactionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ phone: phone })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showNotificationToast(data.message || 'تم إرسال السند عبر الواتساب بنجاح', 'success');
+                } else if (data.fallback_url || fallbackUrl) {
+                    const targetUrl = data.fallback_url || fallbackUrl;
+                    window.open(targetUrl, '_blank');
+                    showNotificationToast(data.message || 'تم فتح محادثة الواتساب عبر الرابط المباشر', 'info');
+                } else {
+                    showNotificationToast(data.message || 'تعذر إرسال الرسالة عبر الواتساب', 'error');
+                }
+            } catch (err) {
+                console.error('WhatsApp Cash Receipt Error:', err);
+                if (fallbackUrl) {
+                    window.open(fallbackUrl, '_blank');
+                    showNotificationToast('تم فتح محادثة الواتساب كخيار بديل', 'info');
+                } else {
+                    showNotificationToast('حدث خطأ أثناء محاولة الإرسال', 'error');
+                }
+            } finally {
+                if (triggerElement && originalContent) {
+                    triggerElement.disabled = false;
+                    triggerElement.innerHTML = originalContent;
+                }
+            }
+        }
+
+        function showNotificationToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-emerald-600' : (type === 'error' ? 'bg-rose-600' : 'bg-slate-800');
+            toast.className = `fixed bottom-6 right-6 z-[999999] px-4 py-3 rounded-xl text-white text-xs font-bold shadow-xl flex items-center gap-2 ${bgClass} transition-all duration-300 transform translate-y-4 opacity-0`;
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[18px]">
+                    ${type === 'success' ? 'check_circle' : (type === 'error' ? 'error' : 'info')}
+                </span>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
     </script>
 @endsection

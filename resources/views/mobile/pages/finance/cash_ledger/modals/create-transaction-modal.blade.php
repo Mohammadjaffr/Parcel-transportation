@@ -117,6 +117,85 @@
                     </div>
                 </div>
 
+                {{-- ربط السائق (اختياري - يقبل null) --}}
+                <div class="relative" @click.outside="driverDropdownOpen = false">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold text-slate-600">السائق المرتبط (اختياري)</label>
+                        <span class="text-[10px] text-slate-400">يقبل بدون سائق</span>
+                    </div>
+
+                    <input type="hidden" name="driver_id" :value="selectedDriverId || ''">
+
+                    <button type="button" @click="toggleDriverDropdown()"
+                        class="flex items-center justify-between w-full h-14 px-4 bg-slate-50 border-none rounded-2xl transition-all focus:ring-2 focus:ring-primary/20 text-right"
+                        :class="selectedDriverId ? 'text-slate-800 font-bold' : 'text-slate-400'">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="material-symbols-outlined text-[20px]" :class="selectedDriverId ? 'text-primary' : 'text-slate-400'">local_shipping</span>
+                            <template x-if="selectedDriverId">
+                                <span class="truncate">
+                                    <span x-text="selectedDriverName"></span>
+                                    <template x-if="selectedDriverPhone">
+                                        <span class="text-xs font-mono text-slate-400 font-normal mr-1" dir="ltr" x-text="'(' + selectedDriverPhone + ')'"></span>
+                                    </template>
+                                </span>
+                            </template>
+                            <template x-if="!selectedDriverId">
+                                <span>اختر السائق (أو اتركه فارغاً)...</span>
+                            </template>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <template x-if="selectedDriverId">
+                                <span @click.stop="clearDriver()" title="إلغاء التحديد" class="flex items-center justify-center w-6 h-6 text-slate-400 transition-colors rounded-full hover:bg-slate-200">
+                                    <span class="material-symbols-outlined text-[16px]">close</span>
+                                </span>
+                            </template>
+                            <span class="material-symbols-outlined text-[20px] text-slate-400 transition-transform duration-200" :class="{ 'rotate-180': driverDropdownOpen }">expand_more</span>
+                        </div>
+                    </button>
+
+                    {{-- القائمة المنبثقة للسائقين --}}
+                    <div x-show="driverDropdownOpen" x-cloak x-transition.opacity
+                        class="absolute z-50 w-full mt-2 overflow-hidden bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] rounded-2xl">
+                        <div class="p-2 border-b border-slate-50 bg-slate-50/50">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+                                    <span class="material-symbols-outlined text-[18px]">search</span>
+                                </span>
+                                <input type="text" x-ref="driverSearchInput" x-model="driverSearchText"
+                                    @keydown.escape="driverDropdownOpen = false"
+                                    @keydown.enter.prevent="if (filteredDrivers.length > 0) selectDriver(filteredDrivers[0])"
+                                    placeholder="ابحث باسم السائق أو رقمه..."
+                                    class="w-full h-10 pr-10 pl-3 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            </div>
+                        </div>
+                        <ul class="overflow-y-auto max-h-48 p-1 space-y-1 custom-scrollbar text-sm">
+                            <li>
+                                <button type="button" @click="clearDriver()"
+                                    class="flex items-center justify-between w-full px-4 py-2 text-xs font-bold rounded-xl transition-colors text-right text-rose-500 hover:bg-rose-50">
+                                    <span>-- بدون سائق (إلغاء التحديد) --</span>
+                                    <span class="material-symbols-outlined text-[16px]">clear</span>
+                                </button>
+                            </li>
+                            <template x-for="driver in filteredDrivers" :key="driver.id">
+                                <li>
+                                    <button type="button" @click="selectDriver(driver)"
+                                        class="flex items-center justify-between w-full px-4 py-2.5 text-xs font-bold rounded-xl transition-colors text-right"
+                                        :class="selectedDriverId == driver.id ? 'bg-primary/10 text-primary' : 'text-slate-700 hover:bg-slate-50'">
+                                        <div class="flex flex-col text-right">
+                                            <span x-text="driver.name"></span>
+                                            <template x-if="driver.phone">
+                                                <span class="text-[10px] font-mono text-slate-400" dir="ltr" x-text="driver.phone"></span>
+                                            </template>
+                                        </div>
+                                        <span x-show="selectedDriverId == driver.id" class="material-symbols-outlined text-[18px]">check</span>
+                                    </button>
+                                </li>
+                            </template>
+                            <li x-show="filteredDrivers.length === 0" class="p-4 text-xs font-bold text-center text-slate-400">لا يوجد سائقون مطابقون</li>
+                        </ul>
+                    </div>
+                </div>
+
                 {{-- المبلغ وطريقة الدفع --}}
                 <div class="grid grid-cols-2 gap-3">
                     <div>

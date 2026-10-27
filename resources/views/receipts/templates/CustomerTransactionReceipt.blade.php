@@ -38,6 +38,29 @@
                     <div class="mt-1.5 text-xs font-medium text-slate-400" dir="ltr">{{ $date }}</div>
                 </div>
             </div>
+
+            @php
+                $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+            @endphp
+            @if (!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
+                <div class="pt-3 mt-4 border-t border-slate-200/80 print:pt-1 print:mt-1 print:border-slate-300">
+                    <div class="flex flex-col gap-1.5 print:gap-1">
+                        @foreach ($activeBranchAddresses as $branchItem)
+                            <div class="flex items-center gap-2 text-xs font-bold text-slate-800 print:text-[10px] print:gap-1.5 leading-snug">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-white bg-slate-900 print:bg-black font-black text-[10px] print:text-[9px] shrink-0">
+                                    {{ $branchItem['name'] ?? '' }}
+                                </span>
+                                <span class="truncate print:whitespace-normal">
+                                    {{ $branchItem['address'] ?? '' }}
+                                    @if (!empty($branchItem['phone']))
+                                        <span class="text-slate-500 font-semibold mr-1"> - هاتف: <span dir="ltr" class="font-bold font-sans text-slate-800 print:text-black">{{ $branchItem['phone'] }}</span></span>
+                                    @endif
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div class="p-6 space-y-6 sm:p-8">

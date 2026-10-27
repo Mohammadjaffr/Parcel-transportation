@@ -351,6 +351,88 @@
             </div>
         </div>
 
+        {{-- ================= بطاقة عناوين الفروع للسندات والكشوفات ================= --}}
+        <div class="px-4 mt-8 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 class="flex gap-2 items-center text-lg font-black font-headline text-slate-800">
+                    <span class="material-symbols-outlined text-primary">location_on</span>
+                    <span class="dark:text-white">عناوين الفروع (للسندات والكشوفات)</span>
+                </h3>
+                <button @click="showEditCompanyModal = true"
+                    class="flex justify-center items-center w-10 h-10 rounded-xl transition-all bg-slate-100 text-slate-500 active:scale-90 hover:text-primary hover:bg-primary/10"
+                    title="تعديل عناوين الفروع">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                {{-- التنبيه الذكي للمستخدم --}}
+                <div class="lg:col-span-1">
+                    <div
+                        class="flex gap-4 items-start p-5 h-full rounded-2xl border shadow-sm bg-emerald-50/70 border-emerald-100/80">
+                        <div class="p-2 text-emerald-600 rounded-xl bg-emerald-100/60 shrink-0">
+                            <span class="material-symbols-outlined text-[24px]">print</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold leading-relaxed text-emerald-900">
+                                <span class="block mb-1 font-black text-emerald-700">ملاحظة هامة:</span>
+                                ستظهر هذه العناوين في ترويسة وهوامش جميع السندات والكشوفات المطبوعة لتعريف العملاء بمواقع فروعكم بدقة.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2">
+                    @php
+                        $cachedBranchAddresses = auth()->user()->cached_app_branch_addresses ?? [];
+                    @endphp
+                    @if (count($cachedBranchAddresses) > 0)
+                        <div
+                            class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden h-full dark:bg-boxdark dark:border-boxdark-2">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-bl-[4rem] -z-0"></div>
+                            <span
+                                class="material-symbols-outlined absolute top-6 right-6 text-[60px] text-primary/10 -z-0 -rotate-12"
+                                style="font-variation-settings: 'FILL' 1;">storefront</span>
+
+                            <div class="relative z-10 space-y-3">
+                                @foreach ($cachedBranchAddresses as $item)
+                                    <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/70">
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-white bg-slate-900 font-black text-xs shrink-0 shadow-sm">
+                                            {{ $item['name'] ?? 'فرع' }}
+                                        </span>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs font-bold leading-relaxed text-slate-800 dark:text-white">
+                                                {{ $item['address'] ?? 'العنوان غير مسجل' }}
+                                            </p>
+                                            @if(!empty($item['phone']))
+                                                <p class="text-[11px] font-semibold text-slate-500 mt-0.5 flex items-center gap-1">
+                                                    <span class="material-symbols-outlined text-[13px]">phone</span>
+                                                    <span dir="ltr" class="font-sans">{{ $item['phone'] }}</span>
+                                                </p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @else
+                        <div
+                            class="py-12 flex flex-col items-center justify-center bg-white rounded-[2rem] border border-dashed border-slate-200 h-full">
+                            <div
+                                class="flex justify-center items-center mb-4 w-16 h-16 rounded-full bg-slate-50 text-slate-300">
+                                <span class="material-symbols-outlined text-[32px]">storefront</span>
+                            </div>
+                            <p class="text-base font-bold text-slate-500">لم يتم تخصيص عناوين الفروع للسندات والكشوفات</p>
+                            <button @click="showEditCompanyModal = true"
+                                class="mt-3 text-sm font-black text-primary hover:underline underline-offset-4">
+                                أضف عناوين فروعك الآن لتظهر في المطبوعات
+                            </button>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <div x-data="{
             isSubmitting: false,
             allCountries: @js(array_values(config('countries', []))),
@@ -549,7 +631,30 @@
         <div x-data="{
             isSubmittingCompany: false,
             terms: {{ json_encode($company->terms_and_conditions ?? ['']) }},
-            companyColor: '{{ $company->color ?? '#059669' }}'
+            companyColor: '{{ $company->color ?? '#059669' }}',
+            branchAddresses: {{ json_encode(!empty($company->branch_addresses) ? $company->branch_addresses : ($company->effective_branch_addresses ?? [])) }},
+            registeredBranches: {{ json_encode($company->branches->map(function($b) {
+                $name = $b->is_main ? 'المركز الرئيسي' : $b->name;
+                $parts = [];
+                if (!empty($b->city)) $parts[] = trim($b->city);
+                if (!empty($b->address)) $parts[] = trim($b->address);
+                return [
+                    'name'    => $name,
+                    'address' => implode(' - ', $parts) ?: 'العنوان غير مسجل',
+                    'phone'   => $b->phone ?? '',
+                ];
+            })) }},
+            importFromBranches() {
+                if (this.registeredBranches && this.registeredBranches.length > 0) {
+                    this.branchAddresses = JSON.parse(JSON.stringify(this.registeredBranches));
+                }
+            },
+            addBranchAddress() {
+                this.branchAddresses.push({ name: '', address: '', phone: '' });
+            },
+            removeBranchAddress(index) {
+                this.branchAddresses.splice(index, 1);
+            }
         }" x-show="showEditCompanyModal" x-cloak
             class="fixed inset-0 z-[99999] flex items-center justify-center pointer-events-none p-4">
 
@@ -717,6 +822,75 @@
                                     <span class="material-symbols-outlined text-slate-300 text-[32px] mb-1">list_alt</span>
                                     <p class="text-xs font-bold text-slate-400">لا توجد شروط مسجلة. اضغط "إضافة شرط" للبدء.
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- ================= عناوين الفروع للسندات والكشوفات ================= --}}
+                        <div class="pt-4 mt-2 border-t border-slate-100">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <label class="block px-1 text-sm font-bold text-slate-700 font-headline">
+                                        عناوين الفروع (للسندات والكشوفات)
+                                    </label>
+                                    <p class="text-[10px] text-slate-400 px-1 mt-0.5">ستظهر هذه العناوين في ترويسة وهوامش السندات والكشوفات</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <template x-if="registeredBranches && registeredBranches.length > 0">
+                                        <button type="button" @click="importFromBranches()"
+                                            title="تعبئة العناوين تلقائياً من قائمة الفروع المسجلة"
+                                            class="flex gap-1 items-center px-2.5 py-1.5 text-xs font-bold rounded-xl transition-all bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95">
+                                            <span class="material-symbols-outlined text-[16px]">sync</span>
+                                            استيراد من الفروع
+                                        </button>
+                                    </template>
+                                    <button type="button" @click="addBranchAddress()"
+                                        class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-bold rounded-xl transition-all bg-primary/10 text-primary hover:bg-primary/20 active:scale-95">
+                                        <span class="material-symbols-outlined text-[18px]">add</span>
+                                        إضافة عنوان
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-y-auto pr-1 space-y-3 max-h-64 custom-scrollbar">
+                                <template x-for="(item, index) in branchAddresses" :key="index">
+                                    <div class="p-3 rounded-2xl border border-slate-200/80 bg-slate-50/80 space-y-2 relative group transition-all hover:bg-slate-50">
+                                        <div class="flex gap-2 items-center">
+                                            <div class="w-1/3">
+                                                <label class="block text-[10px] font-bold text-slate-500 mb-1">اسم الفرع / الشارة</label>
+                                                <input type="text" x-model="branchAddresses[index].name" :name="'branch_addresses[' + index + '][name]'"
+                                                    placeholder="مثال: المركز الرئيسي"
+                                                    class="px-3 w-full h-10 text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-200 bg-white focus:ring-2 focus:ring-primary/20 font-bold">
+                                            </div>
+                                            <div class="flex-1">
+                                                <label class="block text-[10px] font-bold text-slate-500 mb-1">هاتف الفرع (اختياري)</label>
+                                                <input type="text" x-model="branchAddresses[index].phone" :name="'branch_addresses[' + index + '][phone]'"
+                                                    placeholder="مثال: 777123456" dir="ltr"
+                                                    class="px-3 w-full h-10 text-xs text-left rounded-xl border-none ring-1 transition-all outline-none ring-slate-200 bg-white focus:ring-2 focus:ring-primary/20 font-bold">
+                                            </div>
+                                            <div class="pt-4">
+                                                <button type="button" @click="removeBranchAddress(index)"
+                                                    class="flex justify-center items-center w-10 h-10 text-rose-500 bg-rose-50 rounded-xl transition-all hover:bg-rose-100 hover:text-rose-600 shrink-0 active:scale-90"
+                                                    title="حذف هذا العنوان">
+                                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold text-slate-500 mb-1">العنوان التفصيلي (المدينة، الشارع، المعالم)</label>
+                                            <textarea x-model="branchAddresses[index].address" :name="'branch_addresses[' + index + '][address]'"
+                                                placeholder="مثال: سيئون - شارع الجزائر - مقابل شركة الثور للصرافة بجانب الزبيدي اخوان للكهربائيات"
+                                                rows="2"
+                                                class="p-2.5 w-full text-xs rounded-xl border-none ring-1 transition-all outline-none ring-slate-200 bg-white focus:ring-2 focus:ring-primary/20 font-headline resize-none"></textarea>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <div x-show="branchAddresses.length === 0"
+                                    class="py-6 text-center rounded-2xl border-2 border-dashed bg-slate-50 border-slate-200">
+                                    <span class="material-symbols-outlined text-slate-300 text-[32px] mb-1">storefront</span>
+                                    <p class="text-xs font-bold text-slate-400">لا توجد عناوين فروع مخصصة حالياً.</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">اضغط "استيراد من الفروع" لجلب بيانات فروعك الحالية أو "إضافة عنوان".</p>
                                 </div>
                             </div>
                         </div>

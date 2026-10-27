@@ -272,7 +272,9 @@ public function fetchData(string $referenceId): array
             'main_branch'  => $mainBranchData,
             'headquarters' => $headquartersData,
             'other_phones' => $otherPhonesStr,
+            'branch_addresses' => $app?->effective_branch_addresses ?? [],
         ],
+        'branch_addresses' => $app?->effective_branch_addresses ?? [],
 
         'title'         => $reportTitle,
         'date'          => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),

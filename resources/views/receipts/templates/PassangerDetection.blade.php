@@ -86,38 +86,43 @@
                     <h1 class="mb-4 text-3xl font-black tracking-tight text-slate-900" style="color: #001e4a;">
                         {{ $company['name'] ?? 'شركة مرسال' }}
                     </h1>
-                    <div class="inline-flex flex-col gap-1.5 text-xs font-bold text-slate-600 border-r-2 border-rose-500 pr-3">
-                        @if(!empty($company['main_branch']))
-                            <span class="text-sm text-slate-800">
-                                {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
-                            </span>
-                            @if(!empty($company['main_branch']['phones']))
-                                <span class="text-slate-500 mb-2">
-                                    هاتف: <span dir="ltr">{{ $company['main_branch']['phones'] }}</span>
+                    @php
+                        $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+                    @endphp
+                    @if(empty($activeBranchAddresses))
+                        <div class="inline-flex flex-col gap-1.5 text-xs font-bold text-slate-600 border-r-2 border-rose-500 pr-3">
+                            @if(!empty($company['main_branch']))
+                                <span class="text-sm text-slate-800">
+                                    {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
                                 </span>
+                                @if(!empty($company['main_branch']['phones']))
+                                    <span class="text-slate-500 mb-2">
+                                        هاتف: <span dir="ltr">{{ $company['main_branch']['phones'] }}</span>
+                                    </span>
+                                @endif
                             @endif
-                        @endif
 
-                        @if(!empty($company['headquarters']))
-                            <span class="text-sm text-slate-800">
-                                {{ $company['headquarters']['title'] ?? 'الفرع الرئيسي' }}
-                            </span>
-                            @if(!empty($company['headquarters']['phones']))
-                                <span class="text-slate-500 mb-2">
-                                    هاتف: <span dir="ltr">{{ $company['headquarters']['phones'] }}</span>
+                            @if(!empty($company['headquarters']))
+                                <span class="text-sm text-slate-800">
+                                    {{ $company['headquarters']['title'] ?? 'الفرع الرئيسي' }}
+                                </span>
+                                @if(!empty($company['headquarters']['phones']))
+                                    <span class="text-slate-500 mb-2">
+                                        هاتف: <span dir="ltr">{{ $company['headquarters']['phones'] }}</span>
+                                    </span>
+                                @endif
+                            @endif
+                            
+                            @if(!empty($company['other_phones']))
+                                <span class="text-slate-500">
+                                    فروع أخرى:
+                                </span>
+                                <span class="text-slate-500" dir="ltr">
+                                    {{ $company['other_phones'] }}
                                 </span>
                             @endif
-                        @endif
-                        
-                        @if(!empty($company['other_phones']))
-                            <span class="text-slate-500">
-                                فروع أخرى:
-                            </span>
-                            <span class="text-slate-500" dir="ltr">
-                                {{ $company['other_phones'] }}
-                            </span>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
  
                 {{-- وسط: الشعار والبطاقة --}}
@@ -156,6 +161,29 @@
                     </div>
                 </div>
             </div>
+
+            @php
+                $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+            @endphp
+            @if (!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
+                <div class="pt-2 mt-2 border-t border-slate-200/80 print:pt-1 print:mt-1 print:border-slate-300">
+                    <div class="flex flex-col gap-1">
+                        @foreach ($activeBranchAddresses as $branchItem)
+                            <div class="flex items-center gap-2 text-xs font-bold text-slate-800 print:text-[10px] print:gap-1.5 leading-snug">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-white bg-slate-900 print:bg-black font-black text-[10px] print:text-[9px] shrink-0">
+                                    {{ $branchItem['name'] ?? '' }}
+                                </span>
+                                <span class="truncate print:whitespace-normal">
+                                    {{ $branchItem['address'] ?? '' }}
+                                    @if (!empty($branchItem['phone']))
+                                        <span class="text-slate-500 font-semibold mr-1"> - هاتف: <span dir="ltr" class="font-bold font-sans text-slate-800 print:text-black">{{ $branchItem['phone'] }}</span></span>
+                                    @endif
+                                </span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div class="p-6 sm:p-8">

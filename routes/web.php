@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingPageController::class, 'index'])->name('welcome');
 Route::get('/receipt/{type}/{id}', [ReceiptController::class, 'generate'])->name('receipt.generate');
 Route::get('/receipt/{type}/{id}/pdf', [ReceiptController::class, 'downloadPdf'])->name('receipt.pdf');
+Route::get('/receipt/cash-ledger/{id}', [CashTransactionController::class, 'printReceiptPublic'])->name('receipt.cash.public');
 Route::get('/pricing', [PackageController::class, 'index'])->name('pricing.page');
 Route::middleware('guest')->group(function () {
 
@@ -185,6 +186,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/whatsapp/passenger-booking/{id}', [WhatsAppController::class, 'sendPassengerBooking'])->name('whatsapp.passengerBooking');
         Route::post('/whatsapp/passenger-cancel/{id}', [WhatsAppController::class, 'sendPassengerCancel'])->name('whatsapp.passengerCancel');
         Route::post('/whatsapp/passenger-rebook/{id}', [WhatsAppController::class, 'sendPassengerRebook'])->name('whatsapp.passengerRebook');
+        Route::post('/whatsapp/cash-ledger/{id}', [WhatsAppController::class, 'sendCashTransactionWhatsapp'])->name('whatsapp.cashLedger');
 
         Route::get('/admin/logs', [ShipmentController::class, 'adminlog'])->name('shipment.adminlog');
 

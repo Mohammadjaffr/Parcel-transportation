@@ -29,9 +29,26 @@
         </div>
         @endif
         <h1 class="text-base font-black text-slate-800">{{ $company['name'] ?? 'مرسال' }}</h1>
-        <p class="mt-0.5 text-xs font-medium text-slate-500">{{ $company['main_branch']['title'] ?? '' }}</p>
-        @if(!empty($company['main_branch']['phones']))
-        <p class="mt-1 text-xs text-slate-400" dir="ltr">{{ $company['main_branch']['phones'] }}</p>
+        @php
+            $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+        @endphp
+        @if(!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
+        <div class="pt-2 mt-2 border-t border-dashed border-slate-200 space-y-1 text-right">
+            @foreach($activeBranchAddresses as $branchItem)
+                <div class="text-[10px] leading-tight text-slate-800">
+                    <span class="inline-block px-1.5 py-0.5 rounded bg-slate-900 text-white font-black text-[9px]">{{ $branchItem['name'] ?? '' }}</span>
+                    <span class="font-bold">{{ $branchItem['address'] ?? '' }}</span>
+                    @if(!empty($branchItem['phone']))
+                        <span class="text-slate-600 mr-0.5" dir="ltr">({{ $branchItem['phone'] }})</span>
+                    @endif
+                </div>
+            @endforeach
+        </div>
+        @else
+            <p class="mt-0.5 text-xs font-medium text-slate-500">{{ $company['main_branch']['title'] ?? '' }}</p>
+            @if(!empty($company['main_branch']['phones']))
+            <p class="mt-1 text-xs text-slate-400" dir="ltr">{{ $company['main_branch']['phones'] }}</p>
+            @endif
         @endif
     </div>
 
@@ -153,6 +170,8 @@
             <p>{{ $notes }}</p>
         </div>
         @endif
+
+
 
         <div class="mt-2 mb-2 border-t border-dashed border-slate-200"></div>
         <div class="pb-2 text-center">

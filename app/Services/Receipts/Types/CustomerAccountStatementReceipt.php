@@ -288,7 +288,9 @@ if (file_exists($imagePath)) {
                 'logo'         => $logoBase64,
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
+                'branch_addresses' => $app?->effective_branch_addresses ?? [],
             ],
+            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
 
             'title' => 'كشف حساب عميل شامل',
 

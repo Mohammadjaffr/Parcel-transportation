@@ -17,6 +17,8 @@
 
         $logo = $company['logo'] ?? null;
 
+        $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
+
         // 2. شروط وأحكام السند (عرض جميع الشروط كاملة)
         $filteredTerms = [];
         if (!empty($terms_and_conditions) && is_array($terms_and_conditions)) {
@@ -507,39 +509,41 @@
 
                         <div
                             style="border-right: 2.5px solid {{ $primary }}; padding-right: 6px; margin-top: 2px;">
-                            @if (!empty($company['headquarters']))
-                                <div
-                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
-                                    {{ $company['headquarters']['title'] }}
-                                    @if (!empty($company['headquarters']['phones']))
-                                        <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
-                                        <span dir="ltr"
-                                            style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['headquarters']['phones'] }}</span>
-                                    @endif
-                                </div>
-                            @elseif (!empty($company['main_branch']))
-                                <div
-                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
-                                    {{ $company['main_branch']['title'] }}
-                                    @if (!empty($company['main_branch']['phones']))
-                                        <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
-                                        <span dir="ltr"
-                                            style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['main_branch']['phones'] }}</span>
-                                    @endif
-                                </div>
-                            @else
-                                <div
-                                    style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
-                                    {{ $user_branch ?? 'المركز الرئيسي' }}
-                                </div>
-                            @endif
+                            @if (empty($activeBranchAddresses))
+                                @if (!empty($company['headquarters']))
+                                    <div
+                                        style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                        {{ $company['headquarters']['title'] }}
+                                        @if (!empty($company['headquarters']['phones']))
+                                            <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
+                                            <span dir="ltr"
+                                                style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['headquarters']['phones'] }}</span>
+                                        @endif
+                                    </div>
+                                @elseif (!empty($company['main_branch']))
+                                    <div
+                                        style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                        {{ $company['main_branch']['title'] }}
+                                        @if (!empty($company['main_branch']['phones']))
+                                            <span style="color: #475569; font-weight: bold;"> - هاتف: </span>
+                                            <span dir="ltr"
+                                                style="font-family: sans-serif; color: #0f172a; font-weight: 800;">{{ $company['main_branch']['phones'] }}</span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div
+                                        style="margin-bottom: 1.5px; font-size: 8pt; font-weight: 800; color: #1e293b; line-height: 1.25;">
+                                        {{ $user_branch ?? 'المركز الرئيسي' }}
+                                    </div>
+                                @endif
 
-                            @if (!empty($company['other_phones']))
-                                <div
-                                    style="font-size: 7.5pt; font-weight: bold; color: #64748b; line-height: 1.2; margin-bottom: 1.5px;">
-                                    فروع أخرى: <span dir="ltr"
-                                        style="font-family: sans-serif; color: #334155; font-weight: 700;">{{ $company['other_phones'] }}</span>
-                                </div>
+                                @if (!empty($company['other_phones']))
+                                    <div
+                                        style="font-size: 7.5pt; font-weight: bold; color: #64748b; line-height: 1.2; margin-bottom: 1.5px;">
+                                        فروع أخرى: <span dir="ltr"
+                                            style="font-family: sans-serif; color: #334155; font-weight: 700;">{{ $company['other_phones'] }}</span>
+                                    </div>
+                                @endif
                             @endif
 
                             {{-- شارة الفرع المتميزة والواضحة --}}
@@ -646,6 +650,25 @@
 
             <!-- خط فاصل أخضر أفقي متصل وأنيق أسفل الترويسة -->
             <div class="header-divider"></div>
+
+            <!-- عناوين الفروع المعتمدة في أعلى السند -->
+            @if(!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
+                <div class="branch-addresses-bar" style="margin-top: 1mm; margin-bottom: 1.5mm; padding: 2px 5px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    @foreach($activeBranchAddresses as $branchItem)
+                        <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 1px; font-size: 7pt; font-weight: 700; color: #0f172a; line-height: 1.25;">
+                            <span style="background-color: #0f172a; color: #ffffff; padding: 1px 6px; border-radius: 3px; font-weight: 900; font-size: 6.5pt; white-space: nowrap; flex-shrink: 0;">
+                                {{ $branchItem['name'] ?? '' }}
+                            </span>
+                            <span style="flex-grow: 1; word-break: break-word;">
+                                {{ $branchItem['address'] ?? '' }}
+                                @if(!empty($branchItem['phone']))
+                                    <span style="color: #475569; margin-right: 4px;"> - هاتف: <span dir="ltr" style="font-family: sans-serif; font-weight: bold;">{{ $branchItem['phone'] }}</span></span>
+                                @endif
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
 
             <!-- 3. SENDER & RECEIVER (بيانات المرسل والمستلم) -->
             <div class="split-section">

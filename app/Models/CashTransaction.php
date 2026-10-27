@@ -26,6 +26,7 @@ class CashTransaction extends Model
         'branch_id',
         'user_id',
         'cash_category_id',
+        'driver_id',
         'type',
         'payment_method',
         'receipt_number',
@@ -59,6 +60,11 @@ class CashTransaction extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(CashCategory::class, 'cash_category_id');
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(Driver::class, 'driver_id');
     }
 
     /**
@@ -142,6 +148,11 @@ class CashTransaction extends Model
      */
     public function getDriverAttribute(): ?Driver
     {
+        // 0. الفحص المباشر عبر driver_id المحفوظ بالسند إن وجد
+        if ($this->driver_id) {
+            return $this->relationLoaded('driver') ? $this->getRelation('driver') : Driver::find($this->driver_id);
+        }
+
         // 1. الفحص عبر العلاقة البوليمورفية المباشرة (source)
         $source = $this->relationLoaded('source') ? $this->source : ($this->source_type && $this->source_id ? $this->source : null);
         if ($source) {

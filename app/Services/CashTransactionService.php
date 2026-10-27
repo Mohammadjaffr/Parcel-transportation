@@ -50,6 +50,7 @@ class CashTransactionService
                 'payment_method'   => $data['payment_method'] ?? 'cash',
                 'receipt_number'   => CashTransaction::generateReceiptNumber($appId, 'income'),
                 'amount'           => $data['amount'],
+                'driver_id'        => $data['driver_id'] ?? null,
                 'transaction_date' => $data['transaction_date'] ?? now()->toDateString(),
                 'source_type'      => $data['source_type'] ?? null,
                 'source_id'        => $data['source_id'] ?? null,
@@ -196,6 +197,7 @@ class CashTransactionService
                 'payment_method'   => $paymentMethod,
                 'receipt_number'   => CashTransaction::generateReceiptNumber($appId, 'expense'),
                 'amount'           => $data['amount'],
+                'driver_id'        => $data['driver_id'] ?? null,
                 'transaction_date' => $data['transaction_date'] ?? now()->toDateString(),
                 'source_type'      => $data['source_type'] ?? null,
                 'source_id'        => $data['source_id'] ?? null,
@@ -471,6 +473,7 @@ class CashTransactionService
                 'payment_method'   => $data['payment_method'],
                 'transaction_date' => $data['transaction_date'],
                 'reference_number' => $data['reference_number'] ?? null,
+                'driver_id'        => array_key_exists('driver_id', $data) ? $data['driver_id'] : $trx->driver_id,
                 'notes'            => $data['notes'] ?? null,
             ];
 

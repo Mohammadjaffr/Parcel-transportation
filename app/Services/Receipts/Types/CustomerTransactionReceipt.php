@@ -76,7 +76,9 @@ class CustomerTransactionReceipt implements ReceiptStrategyInterface
                 'name'         => $app?->name ?? 'اسم الشركة غير محدد',
                 'logo'         => $logoBase64,
                 'main_branch'  => $branchData,
+                'branch_addresses' => $app?->effective_branch_addresses ?? [],
             ],
+            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
 
             'title'             => $receiptTitle,
             'transaction_id'    => $transaction->id,

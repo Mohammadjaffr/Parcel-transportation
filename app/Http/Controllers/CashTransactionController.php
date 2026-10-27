@@ -7,6 +7,7 @@ use App\Exports\CashTransactionExport;
 use App\Models\Branch;
 use App\Models\CashCategory;
 use App\Models\CashTransaction;
+use App\Models\Driver;
 use App\Services\CashTransactionService;
 use App\Services\ImageService;
 use Exception;
@@ -53,6 +54,7 @@ class CashTransactionController extends Controller
             'category',
             'user',
             'branch',
+            'driver',
             'source' => function (\Illuminate\Database\Eloquent\Relations\MorphTo $morphTo) {
                 $morphTo->morphWith([
                     \App\Models\ShipmentPackage::class => ['driver'],
@@ -127,6 +129,7 @@ class CashTransactionController extends Controller
 
         $branches = ($isAdmin || $isSuperAdmin) ? Branch::all() : collect();
         $categories = CashCategory::active()->orderBy('name')->get();
+        $drivers = Driver::where('is_banned', false)->orderBy('name')->get(['id', 'name', 'phone', 'vehicle_type']);
 
         if ($request->isMobile) {
             return view('mobile.pages.finance.cash_ledger.index', compact(
@@ -137,6 +140,7 @@ class CashTransactionController extends Controller
                 'totalCount',
                 'branches',
                 'categories',
+                'drivers',
                 'selectedBranchId',
                 'startDate',
                 'endDate'
@@ -151,6 +155,7 @@ class CashTransactionController extends Controller
             'totalCount',
             'branches',
             'categories',
+            'drivers',
             'selectedBranchId',
             'startDate',
             'endDate'
@@ -185,6 +190,7 @@ class CashTransactionController extends Controller
         $validator = Validator::make($request->all(), [
             'type'             => 'required|in:income,expense',
             'cash_category_id' => 'required|exists:cash_categories,id',
+            'driver_id'        => 'nullable|exists:drivers,id',
             'amount'           => 'required|numeric|min:0.01',
             'payment_method'   => 'required|in:cash,bank_transfer',
             'transaction_date' => 'required|date',
@@ -209,6 +215,7 @@ class CashTransactionController extends Controller
         try {
             $data = $validator->validated();
             $data['branch_id'] = $branchId;
+            $data['driver_id'] = $request->filled('driver_id') ? (int) $request->driver_id : null;
 
             $category = CashCategory::findOrFail($data['cash_category_id']);
             if ($category->type !== $data['type']) {
@@ -254,6 +261,7 @@ class CashTransactionController extends Controller
 
         $rules = [
             'cash_category_id' => 'required|exists:cash_categories,id',
+            'driver_id'        => 'nullable|exists:drivers,id',
             'amount'           => 'required|numeric|min:0.01',
             'payment_method'   => 'required|in:cash,bank_transfer',
             'transaction_date' => 'required|date',
@@ -299,6 +307,8 @@ class CashTransactionController extends Controller
                 $data['branch_id'] = $trx->branch_id;
             }
 
+            $data['driver_id'] = $request->filled('driver_id') ? (int) $request->driver_id : null;
+
             // إذا تم رفع مرفق جديد (attachment)، احفظه عبر ImageService وحدّث attachment_path
             if ($request->hasFile('attachment')) {
                 if ($trx->attachment_path) {
@@ -328,7 +338,7 @@ class CashTransactionController extends Controller
      */
     public function showDetails($id)
     {
-        $trx = CashTransaction::with(['category', 'user', 'branch', 'source'])->findOrFail($id);
+        $trx = CashTransaction::with(['category', 'user', 'branch', 'driver', 'source'])->findOrFail($id);
 
         return response()->json([
             'success' => true,
@@ -345,6 +355,7 @@ class CashTransactionController extends Controller
                 'branch'           => $trx->branch->name ?? '-',
                 'user'             => $trx->user->name ?? '-',
                 'reference_number' => $trx->related_entity ? $trx->related_entity['label'] : ($trx->reference_number ?? '-'),
+                'driver_id'        => $trx->driver_id,
                 'driver_name'      => $trx->driver_name,
                 'driver_phone'     => $trx->driver_phone,
                 'notes'            => $trx->notes ?? '-',
@@ -377,6 +388,31 @@ class CashTransactionController extends Controller
         }
 
         // افتراضياً: عرض حراري فوري للمتصفح بأداء فائق واستهلاك 0MB من الذاكرة
+        return view('pdf.transaction-receipt', ['transaction' => $trx, 'isPdf' => false]);
+    }
+
+    /**
+     * طباعة إيصال مالي حراري للسند برابط عام (بدون طلب تسجيل دخول) لمشاركته عبر الواتساب
+     */
+    public function printReceiptPublic(Request $request, $id)
+    {
+        $trx = CashTransaction::withoutGlobalScopes()->with(['category', 'branch.app', 'user', 'driver', 'source'])->findOrFail($id);
+
+        if ($request->get('format') === 'pdf' || $request->has('pdf')) {
+            $pdf = new TCPDF('P', 'mm', [80, 160], true, 'UTF-8', false);
+            $pdf->SetMargins(4, 4, 4);
+            $pdf->setPrintHeader(false);
+            $pdf->setPrintFooter(false);
+            $pdf->setRTL(true);
+            $pdf->SetFont('dejavusans', '', 9);
+            $pdf->AddPage();
+
+            $html = view('pdf.transaction-receipt', ['transaction' => $trx, 'isPdf' => true])->render();
+            $pdf->writeHTML($html, true, false, true, false, '');
+
+            return $pdf->Output("Receipt-{$trx->receipt_number}.pdf", 'I');
+        }
+
         return view('pdf.transaction-receipt', ['transaction' => $trx, 'isPdf' => false]);
     }
 }
