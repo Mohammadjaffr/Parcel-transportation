@@ -4,10 +4,13 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class ThermalShipmentReceipt implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return [70, 120]; // Default size
@@ -19,26 +22,21 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
         $shipment = Shipment::with([
             'senderCustomer',
             'receiverCustomer',
-            'senderBranch.app', // 👈 تم إضافة .app هنا
+            'senderBranch.app',
             'receiverBranch',
             'receiverOfficeBranch',
-            'creator.app'       // 👈 وتمت إضافتها هنا
+            'creator.app'
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) من الشحنة - آمن جداً للروابط العامة
+        // 2. جلب بيانات التطبيق (الشركة) من الشحنة
         $app = $shipment->senderBranch?->app ?? $shipment->creator?->app;
-
-        // 3. تجهيز مسار الشعار الديناميكي - آمن
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
+
+        // 3. تجهيز الشعار والفروع
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         // 4. إعداد فرع السند وأرقام الفروع
         $senderBranch = $shipment->senderBranch;
@@ -47,23 +45,19 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($senderBranch->phone)
             ];
         }
 
         $otherPhonesList = [];
         $headquartersData = null;
         
-        // 🛡️ حماية: لن يتم تنفيذ هذا الكود إلا لو كان $app موجوداً
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -93,14 +87,14 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | دبات: " . ($shipment->no_honey_jars ?? 0)
             : null;
 
-        // 6. الثيم والألوان - آمن
+        // 6. الثيم والألوان
         $theme = $app?->theme ?? [
             'primary'   => '#ea580c',
             'secondary' => '#1e293b',
             'bg_light'  => '#fffaf5',
         ];
 
-        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع (العمليات السابقة كما هي)
+        // 7. الحسابات المالية الدقيقة
         $totalAmount = (float) ($shipment->total_amount ?? 0);
         $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
 
@@ -111,11 +105,12 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             default           => 0,
         };
 
-        // الأجور الأخرى والإجمالي الجامع للصف فقط
         $otherFee = (float) ($shipment->other_fee ?? 0);
-        $showOtherFee = (bool) ($shipment->show_other_fee_in_receipt ?? false) && $otherFee > 0;
+        $showOtherFee = (bool) ($shipment->show_other_fee_in_receipt ?? false);
         $transportFee = $totalAmount;
-        $grandTotal = $showOtherFee ? ($transportFee + $otherFee) : $totalAmount;
+        $grandTotal = $otherFee > 0 ? ($transportFee + $otherFee) : $totalAmount;
+
+        $dateInfo = $this->prepareDateInfo($shipment->created_at);
 
         // 8. إرجاع البيانات المنظمة
         return [
@@ -126,29 +121,30 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
+
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
 
             // --- معلومات السند ---
             'title'             => 'سند استلام طرد',
             'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
             'tracking_code'     => $shipment->bond_number ?? 'بدون تتبع',
-            
-            // 🛡️ تم إصلاح الثغرة المخفية في التاريخ
-            'date'              => ($shipment->created_at ? $shipment->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'))
-                                   . ' - ' . Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'date'              => $dateInfo['date_full'],
 
             // --- بيانات المرسل والمستلم ---
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
-            'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
+            'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
             'sender_branch'     => $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
             'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-            'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
+            'receiver_phone'    => $this->formatPhoneNumber($shipment->receiverCustomer?->phone),
             'receiver_branch'   => $receiverDestination,
-            'receiver_office'   => $shipment->receiverOfficeBranch?->name, // 👈 إضافة اسم المكتب
+            'receiver_office'   => $shipment->receiverOfficeBranch?->name,
             'receiver_app'      => $shipment->receiverOfficeBranch->name ?? 'الفرع الرئيسي',
-            'sender_office'     => $shipment->senderOfficeBranch?->name, // 👈 إضافة اسم المكتب
+            'sender_office'     => $shipment->senderOfficeBranch?->name,
 
             // --- تفاصيل الطرد ---
             'package_type'      => $shipment->package_type ?? 'طرد عادي',
@@ -171,16 +167,17 @@ class ThermalShipmentReceipt implements ReceiptStrategyInterface
             'other_fee_description' => $shipment->other_fee_description,
             'show_other_fee_in_receipt' => $showOtherFee,
 
-            // --- معلومات النظام والتصميم ---
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => now()->format('Y-m-d H:i'),
-            'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0) 
-                ? $app->terms_and_conditions 
-                : ['لا توجد شروط وأحكام'],
+            'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
+            'user_branch'       => $shipment->creator?->branch?->name ?? $shipment->senderBranch?->name ?? 'الفرع الرئيسي',
+            'terms_and_conditions' => (is_array($app?->terms_and_conditions) && count($app->terms_and_conditions) > 0)
+                ? $app->terms_and_conditions
+                : ['يرجى فحص الطرد قبل مغادرة الفرع.', 'الشركة غير مسؤولة بعد الاستلام.'],
+
             'design' => [
-                'primary_color'   => $theme['primary'] ?? '#ea580c',
-                'secondary_color' => $theme['secondary'] ?? '#1e293b',
-                'bg_color'        => $theme['bg_light'] ?? '#fffaf5',
+                'primary_color'   => $theme['primary'],
+                'secondary_color' => $theme['secondary'],
+                'bg_color'        => $theme['bg_light'],
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'thermal',
             ]

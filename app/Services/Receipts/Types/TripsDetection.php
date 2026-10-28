@@ -4,11 +4,14 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\PassengerTrip;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class TripsDetection implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -61,18 +64,8 @@ class TripsDetection implements ReceiptStrategyInterface
             $currentBranch = $user->branch ?? null;
         }
 
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = @file_get_contents($imagePath);
-            if ($data) {
-                $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-            }
-        }
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         $statusLabels = [
             'pending'   => 'قيد الانتظار',
@@ -92,7 +85,6 @@ class TripsDetection implements ReceiptStrategyInterface
             $driverName = $trip->driver->name ?? 'سائق غير محدد';
             $driverPhone = $trip->driver->phone ?? '';
 
-            // بناء نص رسالة الواتساب للسائق
             $msg = "السلام عليكم ورحمة الله وبركاته\n";
             $msg .= "الأخ الكابتن / *{$driverName}* المحترم،\n\n";
             $msg .= "إليك كشف الركاب لرحلتك رقم #{$trip->id}:\n\n";
@@ -100,112 +92,97 @@ class TripsDetection implements ReceiptStrategyInterface
             $msg .= "------------------------------------------\n";
 
             $passengersData = [];
-            $i = 1;
-
+            $tripTotalPassengers = 0;
             $tripTotalCount = 0;
             $tripTotalOffice = 0;
             $tripTotalOther = 0;
 
-
             foreach ($trip->passengers as $p) {
                 $pNum = $p->passenger_number ?? '---';
-                $pPickup = $p->pickup_location ?? '---';
-                $pDest = $p->destination ?? '---';
-                $pCnt = $p->count ?? 0;
-                $pNote = $p->note ? $p->note : '---';
+                $displayPhone = $pNum;
+                if ($pNum !== '---') {
+                    if (str_starts_with($pNum, '967')) {
+                        $displayPhone = substr($pNum, 3);
+                    } elseif (strlen($pNum) > 0) {
+                        $displayPhone = '+' . $pNum;
+                    }
+                }
 
-                $tripTotalCount += $pCnt;
-                $tripTotalOffice += $p->office_commission ?? 0;
-                $tripTotalOther += $p->other_office_commission ?? 0;
-                $totalOfficeCommissionAll += $p->office_commission + $p->other_office_commission ?? 0;
-                $totalPassengers++;
+                $rawStatus = strtolower(trim((string) $p->status));
+                $statusAr = $statusLabels[$rawStatus] ?? ($p->status ?? '---');
 
                 $passengersData[] = [
-                    'date'                    => $p->date ? $p->date->format('Y-m-d') : '---',
+                    'id'                      => $p->id,
                     'passenger_name'          => $p->passenger_name ?? '---',
-                    'passenger_number'        => $pNum,
-                    'broker_name' => $user ? ($p->broker?->name ?? 'بدون وسيط') : null,
-                    'pickup_location'         => $pPickup,
-                    'destination'             => $pDest,
-                    'vehicle_type'            => $p->vehicle_type ?? '---',
-                    'count'                   => $pCnt,
-                    'office_commission'       => number_format($p->office_commission ?? 0, 0),
-                    'other_office_commission' => number_format($p->other_office_commission ?? 0, 0),
-                    'status_key'              => $p->status ?? 'pending',
-                    'status_label'            => $statusLabels[$p->status ?? 'pending'] ?? 'غير محدد',
-                    'note'                    => $p->note,
-
+                    'passenger_phone'         => $displayPhone,
+                    'count'                   => $p->count ?? 1,
+                    'pickup_point'            => $p->pickup_point ?? '---',
+                    'dropoff_point'           => $p->dropoff_point ?? '---',
+                    'broker_name'             => $p->broker->name ?? '---',
+                    'office_commission'       => $p->office_commission ?? 0,
+                    'other_office_commission' => $p->other_office_commission ?? 0,
+                    'status'                  => $statusAr,
+                    'raw_status'              => $rawStatus,
+                    'notes'                   => $p->notes ?? '---',
                 ];
 
-                $nameInfo = $p->passenger_name ? " ({$p->passenger_name})" : "";
-                $msg .= "{$i}. الراكب: {$pNum}{$nameInfo}\n";
-                $msg .= "📍 مكان الراكب: {$pPickup}\n";
-                $msg .= "🏁 الوجهة: {$pDest}\n";
-                if (!empty($p->vehicle_type)) {
-                    $msg .= "🚗 نوع المركبة: {$p->vehicle_type}\n";
-                }
-                $msg .= "👥 العدد: {$pCnt}\n";
-                if ($p->note) {
-                    $msg .= "📝 ملاحظات: {$pNote}\n";
-                }
+                $tripTotalPassengers++;
+                $tripTotalCount += ($p->count ?? 1);
+                $tripTotalOffice += ($p->office_commission ?? 0);
+                $tripTotalOther += ($p->other_office_commission ?? 0);
+
+                $msg .= "• *الاسم:* " . ($p->passenger_name ?? '---') . "\n";
+                $msg .= "  *الهاتف:* " . ($displayPhone ?? '---') . "\n";
+                $msg .= "  *المقاعد:* " . ($p->count ?? 1) . "\n";
+                $msg .= "  *مكان الركوب:* " . ($p->pickup_point ?? '---') . "\n";
+                $msg .= "  *مكان النزول:* " . ($p->dropoff_point ?? '---') . "\n";
+                $msg .= "  *الحالة:* " . $statusAr . "\n";
                 $msg .= "------------------------------------------\n";
-                $i++;
             }
 
-            // بناء رابط الـ PDF للرحلة
-            $pdfLink = route('receipt.generate', [
-                'type' => 'trip',
-                'id'   => $trip->uuid
-            ]);
+            $msg .= "\n*الإجمالي:*\n";
+            $msg .= "• إجمالي الحجوزات: {$tripTotalPassengers}\n";
+            $msg .= "• إجمالي الركاب: {$tripTotalCount}\n\n";
+            $msg .= "نتمنى لك رحلة آمنة وموفقة!\n";
+            $msg .= ($app?->name ?? 'شركة النقل');
 
-            $msg .= "📊 إجمالي عدد الركاب: *{$tripTotalCount}* راكب\n";
-            $msg .= "📄 رابط كشف الـ PDF للرحلة:\n{$pdfLink}\n\n";
-            $msg .= "رافقتكم السلامة. 🚚";
-
-            $whatsappLink = '';
-            if (!empty($driverPhone)) {
-                $whatsappLink = $this->getWhatsAppLink($driverPhone, $msg);
-            }
+            $whatsappLink = !empty($driverPhone) ? $this->getWhatsAppLink($driverPhone, $msg) : null;
 
             $driversData[] = [
-                'driver_id'               => $trip->driver_id ?: 'unassigned',
-                'driver_name'             => $driverName . " (رحلة #{$trip->id})",
-                'driver_phone'            => $driverPhone ?: '---',
-                'driver_vehicle_type'     => $trip->driver?->vehicle_type ?? '---',
-                'passengers'              => $passengersData,
-                'total_passengers_count'  => count($passengersData),
-                'total_count'             => $tripTotalCount,
-                'total_office_commission' => $tripTotalOffice,
-                'total_other_office_commission' => $tripTotalOther,
-                'whatsapp_link'           => $whatsappLink,
-                'pdf_link'                => $pdfLink,
+                'trip_id'                       => $trip->id,
+                'driver_name'                   => $driverName,
+                'driver_phone'                  => $this->formatPhoneNumber($driverPhone),
+                'whatsapp_link'                 => $whatsappLink,
+                'passengers'                    => $passengersData,
+                'total_passengers'              => $tripTotalPassengers,
+                'total_count'                   => $tripTotalCount,
+                'total_office_commission'       => number_format($tripTotalOffice, 0),
+                'total_other_office_commission' => number_format($tripTotalOther, 0),
             ];
 
+            $totalPassengers += $tripTotalPassengers;
             $totalCount += $tripTotalCount;
             $totalOfficeCommission += $tripTotalOffice;
             $totalOtherOfficeCommission += $tripTotalOther;
-            $totalOfficeCommissionAll += $tripTotalOffice + $tripTotalOther;
         }
 
         $mainBranchData = null;
         if ($currentBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $currentBranch->name . ($currentBranch->address ? ' - ' . $currentBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $currentBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($currentBranch->phone)
             ];
         }
 
-        $otherPhonesList = [];
         $headquartersData = null;
+        $otherPhonesList = [];
+
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -217,6 +194,9 @@ class TripsDetection implements ReceiptStrategyInterface
         }
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
+        $dateInfo = $this->prepareDateInfo(now());
+        $firstTrip = $trips->first();
+
         return [
             'company' => [
                 'name'         => $app?->name ?? 'اسم الشركة غير محدد',
@@ -224,10 +204,21 @@ class TripsDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'              => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'              => $branchAddresses,
+
+            'day_name'                      => $dateInfo['day_name'],
+            'formatted_date'                => $dateInfo['formatted_date'],
+            'formatted_time'                => $dateInfo['formatted_time'],
+
             'title'                         => "كشف الرحلات",
+            'package_number'                => $firstTrip?->id ?? '---',
+            'trip_number'                   => $firstTrip?->id ?? '---',
+            'manifest_number'               => $firstTrip?->id ?? '---',
+            'sender_branch'                 => $currentBranch?->name ?? 'المركز الرئيسي',
+
+            'date'                          => $dateInfo['date_full'],
             'date_from'                     => $filters['from'] ?? null,
             'date_to'                       => $filters['to'] ?? null,
             'status_filter'                 => null,
@@ -237,7 +228,7 @@ class TripsDetection implements ReceiptStrategyInterface
             'total_office_commission'       => $totalOfficeCommission,
             'total_other_office_commission' => $totalOtherOfficeCommission,
             'creator_name'                  => $user->name ?? 'مسؤول النظام',
-            'print_date'                    => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'print_date'                    => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
         ];
     }
 
@@ -251,10 +242,6 @@ class TripsDetection implements ReceiptStrategyInterface
         return 'TripManifest_' . now()->format('Y-m-d') . '.pdf';
     }
 
-    /**
-     * تحليل الفلاتر من referenceId
-     * الصيغة: all أو from:2026-01-01|to:2026-12-31|driver_id:5
-     */
     private function parseFilters(string $referenceId): array
     {
         $filters = ['from' => null, 'to' => null, 'driver_id' => null, 'branch_id' => null];
@@ -281,7 +268,6 @@ class TripsDetection implements ReceiptStrategyInterface
     private function getWhatsAppLink(string $phone, string $message): string
     {
         $encodedMessage = urlencode($message);
-        // Clean phone number
         $cleanPhone = preg_replace('/[^\d\+]/', '', $phone);
         $cleanPhone = ltrim($cleanPhone, '+');
 
@@ -297,7 +283,6 @@ class TripsDetection implements ReceiptStrategyInterface
         if (preg_match('/^0(7[0-9]\d{7})$/', $cleanPhone, $matches)) {
             $cleanPhone = '967' . $matches[1];
         }
-        // If Yemen local 9-digit
         if (strlen($cleanPhone) === 9 && (str_starts_with($cleanPhone, '77') || str_starts_with($cleanPhone, '73') || str_starts_with($cleanPhone, '71') || str_starts_with($cleanPhone, '70'))) {
             $cleanPhone = '967' . $cleanPhone;
         }

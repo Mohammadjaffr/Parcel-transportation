@@ -4,11 +4,14 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 use App\Models\OfficeBranch;
 
 class ExternalOfficeDetection implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -24,9 +27,9 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
 
         // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها وعلاقة الشركة (.app)
         $package = ShipmentPackage::with([
-            'senderBranch.app', // 👈 إضافة .app
+            'senderBranch.app',
             'driver',
-            'creator.app',      // 👈 إضافة .app
+            'creator.app',
             'shipments' => function($q) use ($officeBranchId) {
                 if ($officeBranchId) {
                     $q->where('receiver_office_branch_id', $officeBranchId);
@@ -39,45 +42,35 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
             'shipments.receiverOfficeBranch',
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) من الرحلة - آمن جداً
+        // 2. جلب بيانات التطبيق (الشركة) من الرحلة
         $app = $package->senderBranch?->app ?? $package->creator?->app;
-
-        // 3. تجهيز مسار الشعار الديناميكي - محمي
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
+
+        // 3. تجهيز مسار الشعار والفروع
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         // 4. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
-
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($senderBranch->phone)
             ];
         }
 
         $otherPhonesList = [];
         $headquartersData = null;
 
-        // 🛡️ حماية: لن يدخل هنا إلا لو كان $app موجوداً
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -111,39 +104,22 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
                 ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
+            $totalAmount = (float) ($shipment->total_amount ?? 0);
+            $paidAmount = (float) ($shipment->partial_amount ?? 0);
+            $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
             $paymentMethod = $shipment->payment_method ?? 'prepaid';
-            $totalAmount = $shipment->total_amount ?? 0;
-            $partialAmount = $shipment->partial_amount ?? 0;
-
-            if ($paymentMethod === 'prepaid') {
-                $paidAmount = $totalAmount;
-                $remainingAmount = 0;
-            } elseif ($paymentMethod === 'cod') {
-                $paidAmount = 0;
-                $remainingAmount = $totalAmount;
-            } elseif ($paymentMethod === 'partial_payment') {
-                $paidAmount = $partialAmount;
-                $remainingAmount = $totalAmount - $partialAmount;
-            } elseif ($paymentMethod === 'customer_credit') {
-                $paidAmount = 0;
-                $remainingAmount = 0;
-            } else {
-                $paidAmount = 0;
-                $remainingAmount = 0;
-            }
 
             $shipmentsData[] = [
-                'bond_number'          => $shipment->bond_number ?? '---',
-                'tracking_code'        => $shipment->code ?? '---',
-                'sender_name'          => $shipment->senderCustomer?->name ?? 'عميل نقدي',
-                'sender_phone'         => $shipment->senderCustomer?->phone ?? '---',
-                'receiver_name'        => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-                'receiver_phone'       => $shipment->receiverCustomer?->phone ?? '---',
+                'id'                   => $shipment->id,
+                'bond_number'          => $shipment->bond_number ?? 'غير متوفر',
+                'sender_name'          => $shipment->senderCustomer?->name ?? 'غير محدد',
+                'sender_phone'         => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
+                'receiver_name'        => $shipment->receiverCustomer?->name ?? 'غير محدد',
+                'receiver_phone'       => $this->formatPhoneNumber($shipment->receiverCustomer?->phone),
                 'sender_branch'        => $shipment->senderBranch?->name ?? '---',
                 'receiver_branch'      => $receiverDestination,
                 'package_type'         => $shipment->package_type ?? 'طرد',
-                'weight'               => $shipment->weight ? $shipment->weight . ' كجم' : null,
-                'is_price_agreed'      => (bool) ($shipment->is_price_agreed ?? true),
+                'weight'               => $shipment->weight,
                 'payment_key'          => $paymentMethod,
                 'payment_method'       => !($shipment->is_price_agreed ?? true)
                     ? 'سيتم الاتفاق عليه لاحقاً'
@@ -160,7 +136,7 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
             $totalShipmentsCount++;
         }
 
-        // 7. الثيم والألوان - آمن
+        // 7. الثيم والألوان
         $theme = $app?->theme ?? [
             'primary'   => '#fb6514',
             'secondary' => '#333333',
@@ -171,6 +147,8 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
             ? 'مكتب ' . ($officeBranch->office->name ?? '') . ' - ' . $officeBranch->name 
             : 'مكتب خارجي';
 
+        $dateInfo = $this->prepareDateInfo($package->created_at);
+
         // 8. إرجاع البيانات المنظمة
         return [
             'company' => [
@@ -179,18 +157,25 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
+
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
 
             'title'             => 'كشف إرسالية - ' . $officeTitle,
-            'package_number'    => $package->tracking_number ?? 'غير متوفر',
-            'date'              => $package->created_at ? $package->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
+            'package_number'    => $package->tracking_number ?? $package->id ?? 'غير متوفر',
+            'manifest_number'   => $package->tracking_number ?? $package->id ?? 'غير متوفر',
+            'date'              => $dateInfo['date_full'],
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
-            'driver_phone'      => $package->driver?->phone ?? '---',
+            'driver_phone'      => $this->formatPhoneNumber($package->driver?->phone),
             'driver_vehicle_type' => $package->driver?->vehicle_type ?? '---',
+            'vehicle_type'      => $package->driver?->vehicle_type ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
+            'sender_branch'     => $package->senderBranch?->name ?? 'المركز الرئيسي',
             'package_receiver_office' => $officeBranch ? 'مكتب ' . ($officeBranch->office->name ?? '') . ' - ' . $officeBranch->name : 'غير محدد',
             'package_receiver_phone' => $officeBranch->phone ?? '---',
             'total_shipments'   => $totalShipmentsCount,
@@ -198,7 +183,7 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
                 
             'design' => [
                 'primary_color'   => $theme['primary'],
@@ -212,7 +197,7 @@ class ExternalOfficeDetection implements ReceiptStrategyInterface
 
     public function getTemplatePath(): string
     {
-        return 'receipts.templates.ExternalOfficeDetection'; // Same template is fine since we passed the new title
+        return 'receipts.templates.ExternalOfficeDetection';
     }
 
     public function getFileName(array $data): string

@@ -37,59 +37,8 @@
     <div
         class="max-w-4xl w-full mx-auto bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] print-no-shadow overflow-hidden border border-slate-100 print-border my-8 print:my-0">
 
-        <!-- 1. Header Section -->
-        <div class="p-6 border-b bg-slate-50 sm:p-8 border-slate-100">
-            <div class="flex flex-col gap-6 justify-between items-start sm:flex-row sm:items-center">
-                <div class="flex gap-4 items-center">
-                    @if(!empty($companyLogo))
-                        <div
-                            class="flex justify-center items-center p-2 w-16 h-16 bg-white rounded-2xl border shadow-sm border-slate-100">
-                            <img src="{{ $companyLogo }}" alt="Logo" class="object-contain w-full h-full">
-                        </div>
-                    @endif
-                    <div>
-                        <h1 class="text-2xl font-black tracking-tight text-brand-600">{{ $companyName }}</h1>
-                        <p class="mt-1 text-sm font-medium text-slate-500">للنقل والشحن السريع - {{ $mainBranchTitle }}</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div
-                        class="inline-flex justify-center items-center px-4 py-2 mb-2 text-sm font-bold rounded-xl border bg-brand-50 text-brand-700 border-brand-100">
-                        {{ $title ?? 'كشف حساب عميل' }}
-                    </div>
-                    <div class="flex gap-1.5 justify-end items-center text-xs font-medium text-slate-400">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <span dir="ltr">{{ $print_date ?? date('Y-m-d H:i') }}</span>
-                    </div>
-                </div>
-            </div>
-
-            @php
-                $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
-            @endphp
-            @if (!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
-                <div class="pt-3 mt-4 border-t border-slate-200/80 print:pt-1 print:mt-1 print:border-slate-300">
-                    <div class="flex flex-col gap-1.5 print:gap-1">
-                        @foreach ($activeBranchAddresses as $branchItem)
-                            <div class="flex items-center gap-2 text-xs font-bold text-slate-800 print:text-[10px] print:gap-1.5 leading-snug">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-white bg-slate-900 print:bg-black font-black text-[10px] print:text-[9px] shrink-0">
-                                    {{ $branchItem['name'] ?? '' }}
-                                </span>
-                                <span class="truncate print:whitespace-normal">
-                                    {{ $branchItem['address'] ?? '' }}
-                                    @if (!empty($branchItem['phone']))
-                                        <span class="text-slate-500 font-semibold mr-1"> - هاتف: <span dir="ltr" class="font-bold font-sans text-slate-800 print:text-black">{{ $branchItem['phone'] }}</span></span>
-                                    @endif
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+        <div class="p-6 border-b bg-white border-slate-100">
+            @include('receipts.partials.manifest_header')
         </div>
 
         <div class="p-6 sm:p-8">

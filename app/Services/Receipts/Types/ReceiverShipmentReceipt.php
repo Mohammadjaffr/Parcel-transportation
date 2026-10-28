@@ -4,10 +4,13 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A5 landscape'; // Default size
@@ -15,14 +18,14 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
     public function fetchData(string $referenceId): array
     {
-        // 1. جلب الشحنة مع جميع العلاقات الأساسية (بما فيها المكاتب الخارجية 🎯)
+        // 1. جلب الشحنة مع جميع العلاقات الأساسية (بما فيها المكاتب الخارجية)
         $shipment = Shipment::with([
             'senderCustomer' => fn($q) => $q->withoutGlobalScopes(),
             'receiverCustomer' => fn($q) => $q->withoutGlobalScopes(),
             'senderBranch.app',
             'receiverBranch.app',
-            'senderOfficeBranch.office',   // 👈 إصلاح: جلب المكتب الخارجي المرسل وشركته
-            'receiverOfficeBranch.office', // 👈 إصلاح: جلب شركة المكتب الخارجي المستلم
+            'senderOfficeBranch.office',
+            'receiverOfficeBranch.office',
             'creator.app',
             'creator.branch'
         ])->where(function ($q) use ($referenceId) {
@@ -33,28 +36,22 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
         // 2. تحديد الفرع الذي سيطبع السند (الفرع المُستلم أو المكتب الخارجي المُستلم)
         $printBranch = $shipment->receiverBranch ?? $shipment->receiverOfficeBranch ?? $shipment->senderBranch ?? $shipment->senderOfficeBranch;
 
-        // جلب بيانات التطبيق (الشركة) بناءً على الفرع المُستلم
-        // ملاحظة: المكاتب الخارجية تتبع لـ office وليس app، لذلك نأخذ app الخاص بمنشئ الشحنة كبديل آمن
+        // جلب بيانات التطبيق (الشركة) بناءً على الفرع المُستلم أو منشئ الشحنة
         $app = $printBranch?->app ?? $shipment->creator?->app;
-
-        // 3. تجهيز مسار الشعار الديناميكي - آمن
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
 
-        // 4. إعداد ترويسة السند (Header) لتكون باسم الفرع المُستلم
+        // 3. تجهيز الشعار وقائمة الفروع ديناميكياً
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
+
+        // 4. إعداد ترويسة السند (Header)
         $mainBranchData = null;
         if ($printBranch) {
             $mainBranchData  = [
                 'title' => 'فرع / ' . $printBranch->name . ($printBranch->address ? ' - ' . $printBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $printBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($printBranch->phone)
             ];
         }
 
@@ -63,13 +60,10 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
 
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -91,7 +85,6 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'customer_credit' => 'آجل (ذمة)'
         ];
 
-        // 🎯 إصلاح: تحديد وجهة الإرسال والاستلام بدقة (يدعم المكاتب الخارجية)
         $senderSource = $shipment->senderBranch?->name
             ?? $shipment->senderOfficeBranch?->name
             ?? 'الفرع الرئيسي';
@@ -110,7 +103,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'bg_light'  => '#fffaf5',
         ];
 
-        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع (العمليات السابقة كما هي)
+        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع
         $totalAmount = (float) ($shipment->total_amount ?? 0);
         $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
 
@@ -127,7 +120,10 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
         $transportFee = $totalAmount;
         $grandTotal = $otherFee > 0 ? ($transportFee + $otherFee) : $totalAmount;
 
-        $companyPhone = !empty($app?->phone) ? trim($app->phone) : null;
+        $companyPhone = !empty($app?->phone) ? $this->formatPhoneNumber($app->phone) : null;
+
+        // تفكيك التاريخ واليوم بدقة
+        $dateInfo = $this->prepareDateInfo($shipment->created_at);
 
         return [
             'company' => [
@@ -137,21 +133,24 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
+
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
 
             'title'             => 'سند استلام طرد',
             'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
             'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
-            // 🎯 دمج وتنسيق احترافي مرة واحدة فقط
-            'date' => ($shipment->created_at ?? now())->timezone('Asia/Aden')->locale('ar')->translatedFormat('l | Y-m-d | h:i A'),
+            
+            'date'              => $dateInfo['date_full'],
 
             // --- بيانات المرسل والمستلم ---
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
 
-            // 🎯 إصلاح: استخدام المتغيرات الذكية التي تتعرف على المكتب الخارجي
             'sender_branch'     => $senderSource,
             'sender_office'     => $shipment->senderBranch?->app?->name ?? $shipment->senderOfficeBranch?->office?->name ?? $app?->name ?? 'الفرع الرئيسي',
             'sender_branch_phone' => $this->formatPhoneNumber($shipment->senderBranch?->phone ?? $shipment->senderOfficeBranch?->phone),
@@ -174,6 +173,7 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'payment_method'    => !($shipment->is_price_agreed ?? true)
                 ? 'سيتم الاتفاق عليه لاحقاً'
                 : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
+
             // المبالغ المالية
             'transport_fee'     => number_format($transportFee, 0),     // تكلفة النقل
             'total_amount'      => number_format($grandTotal, 0),       // المبلغ الإجمالي
@@ -208,41 +208,5 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
     public function getFileName(array $data): string
     {
         return 'Receiver_Receipt_' . $data['bond_number'] . '.pdf';
-    }
-
-    private function formatPhoneNumber(?string $phone): string
-    {
-        if (empty($phone) || trim($phone) === '' || trim($phone) === '---') {
-            return '---';
-        }
-
-        $parts = preg_split('/[\s,\/]+/', trim($phone));
-        $formattedParts = [];
-
-        $countries = config('countries', []);
-        $dialCodes = [];
-        foreach ($countries as $country) {
-            $rawCode = ltrim($country['dial_code'] ?? '', '+');
-            if ($rawCode) {
-                $dialCodes[] = $rawCode;
-            }
-        }
-        $dialCodes = array_unique(array_merge($dialCodes, ['967', '966', '968', '971']));
-        usort($dialCodes, fn($a, $b) => strlen($b) <=> strlen($a));
-
-        foreach ($parts as $part) {
-            $cleaned = trim($part);
-            if ($cleaned === '') continue;
-
-            foreach ($dialCodes as $rawCode) {
-                if (preg_match('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', $cleaned)) {
-                    $cleaned = preg_replace('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', '', $cleaned);
-                    break;
-                }
-            }
-            $formattedParts[] = $cleaned;
-        }
-
-        return !empty($formattedParts) ? implode(' - ', $formattedParts) : '---';
     }
 }

@@ -4,10 +4,13 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class DriverDetection implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -17,9 +20,9 @@ class DriverDetection implements ReceiptStrategyInterface
     {
         // 1. جلب الإرسالية المجمعة (الرحلة) مع طرودها وعلاقة الشركة (.app)
         $package = ShipmentPackage::with([
-            'senderBranch.app', // 👈 إضافة .app
+            'senderBranch.app',
             'driver',
-            'creator.app',      // 👈 إضافة .app
+            'creator.app',
             'shipments.senderCustomer',
             'shipments.receiverCustomer',
             'shipments.senderBranch',
@@ -27,45 +30,35 @@ class DriverDetection implements ReceiptStrategyInterface
             'shipments.receiverOfficeBranch',
         ])->where('uuid', $referenceId)->firstOrFail();
 
-        // 2. جلب بيانات التطبيق (الشركة) من الرحلة - آمن جداً
+        // 2. جلب بيانات التطبيق (الشركة) من الرحلة
         $app = $package->senderBranch?->app ?? $package->creator?->app;
-
-        // 3. تجهيز مسار الشعار الديناميكي - محمي
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
+
+        // 3. تجهيز مسار الشعار والفروع
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         // 4. إعداد أرقام الفروع
         $senderBranch = $package->senderBranch;
-
         $mainBranchData = null;
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($senderBranch->phone)
             ];
         }
 
         $otherPhonesList = [];
         $headquartersData = null;
 
-        // 🛡️ حماية: لن يدخل هنا إلا لو كان $app موجوداً
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -100,23 +93,19 @@ class DriverDetection implements ReceiptStrategyInterface
                 : null;
 
             $shipmentsData[] = [
-                'bond_number'       => $shipment->id ?? '---',
-                'tracking_code'     => $shipment->code ?? '---',
-                'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
-                'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
-                'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-                'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
+                'id'                => $shipment->id,
+                'bond_number'       => $shipment->bond_number ?? 'غير متوفر',
+                'sender_name'       => $shipment->senderCustomer?->name ?? 'غير محدد',
+                'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
+                'receiver_name'     => $shipment->receiverCustomer?->name ?? 'غير محدد',
+                'receiver_phone'    => $this->formatPhoneNumber($shipment->receiverCustomer?->phone),
                 'sender_branch'     => $shipment->senderBranch?->name ?? '---',
                 'receiver_branch'   => $receiverDestination,
                 'package_type'      => $shipment->package_type ?? 'طرد',
-                'weight'            => $shipment->weight ? $shipment->weight . ' كجم' : null,
-                'is_price_agreed'   => (bool) ($shipment->is_price_agreed ?? true),
-                'payment_key'       => $shipment->payment_method ?? 'prepaid',
-                'payment_method'    => !($shipment->is_price_agreed ?? true)
-                    ? 'سيتم الاتفاق عليه لاحقاً'
-                    : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
+                'weight'            => $shipment->weight,
+                'payment_method'    => $paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد',
                 'total_amount'      => number_format($shipment->total_amount ?? 0, 0),
-                'partial_amount'    => number_format($shipment->partial_amount ?? 0, 0),
+                'paid_amount'       => number_format($shipment->partial_amount ?? 0, 0),
                 'remaining_amount'  => number_format(($shipment->total_amount ?? 0) - ($shipment->partial_amount ?? 0), 0),
                 'notes'             => $shipment->notes,
                 'honey_details'     => $honeyDetails,
@@ -124,12 +113,14 @@ class DriverDetection implements ReceiptStrategyInterface
             $totalShipmentsCount++;
         }
 
-        // 7. الثيم والألوان - آمن
+        // 7. الثيم والألوان
         $theme = $app?->theme ?? [
             'primary'   => '#fb6514',
             'secondary' => '#333333',
             'bg_light'  => '#fcfcfc',
         ];
+
+        $dateInfo = $this->prepareDateInfo($package->created_at);
 
         // 8. إرجاع البيانات المنظمة
         return [
@@ -139,24 +130,31 @@ class DriverDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
 
-            'title'             => 'كشف حمولة الرسائل',
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
+
+            'title'             => 'كشف شحنات السائق',
             'package_number'    => $package->id ?? 'غير متوفر',
-            'date'              => $package->created_at ? $package->created_at->format('Y-m-d h:i A') : now()->format('Y-m-d h:i A'),
+            'manifest_number'   => $package->id ?? 'غير متوفر',
+            'date'              => $dateInfo['date_full'],
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
-            'driver_phone'      => $package->driver?->phone ?? '---',
+            'driver_phone'      => $this->formatPhoneNumber($package->driver?->phone),
             'driver_vehicle_type' => $package->driver?->vehicle_type ?? '---',
+            'vehicle_type'      => $package->driver?->vehicle_type ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
+            'sender_branch'     => $package->senderBranch?->name ?? 'المركز الرئيسي',
             'total_shipments'   => $totalShipmentsCount,
 
             'shipments'         => $shipmentsData,
 
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'design' => [
                 'primary_color'   => $theme['primary'],

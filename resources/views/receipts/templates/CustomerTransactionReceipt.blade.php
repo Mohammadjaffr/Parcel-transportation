@@ -6,61 +6,8 @@
     <div
         class="max-w-2xl w-full mx-auto bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] print-no-shadow overflow-hidden border border-slate-100 print-border my-8 print:my-0">
 
-        <div
-            class="p-6 sm:p-8 border-b border-slate-100 {{ $is_credit ? 'bg-gradient-to-l from-emerald-50/50 to-white' : 'bg-gradient-to-l from-rose-50/50 to-white' }}">
-            <div class="flex flex-col gap-5 justify-between items-start sm:flex-row sm:items-center">
-                <div class="flex gap-4 items-center">
-
-                    <div
-                        class="flex justify-center items-center p-2 w-14 h-14 bg-white rounded-2xl border shadow-sm border-slate-100 shrink-0">
-                        @if(!empty($company['logo']))
-                            <img src="{{ $company['logo'] }}" alt="Logo" class="object-contain w-full h-full">
-                        @else
-                            <img src="{{ asset('assets/image/icon_without_bg.png') }}" alt="Logo"
-                                class="object-contain w-full h-full">
-                        @endif
-                    </div>
-
-                    <div>
-                        <h1 class="text-xl font-black tracking-tight text-slate-800">{{ $company['name'] ?? 'الشركة' }}</h1>
-                        <p class="mt-1 text-xs font-medium text-slate-500">
-                            {{ $company['main_branch']['title'] ?? 'المركز الرئيسي' }}
-                        </p>
-                        <p class="mt-1 text-xs font-bold text-slate-500">رقم الحركة: {{ $transaction_id }}</p>
-                    </div>
-                </div>
-
-                <div class="text-right">
-                    <div
-                        class="inline-flex items-center px-3 py-1.5 rounded-xl font-bold text-xs border {{ $is_credit ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-rose-50 text-rose-700 border-rose-100' }}">
-                        {{ $title }}
-                    </div>
-                    <div class="mt-1.5 text-xs font-medium text-slate-400" dir="ltr">{{ $date }}</div>
-                </div>
-            </div>
-
-            @php
-                $activeBranchAddresses = $branch_addresses ?? ($company['branch_addresses'] ?? []);
-            @endphp
-            @if (!empty($activeBranchAddresses) && count($activeBranchAddresses) > 0)
-                <div class="pt-3 mt-4 border-t border-slate-200/80 print:pt-1 print:mt-1 print:border-slate-300">
-                    <div class="flex flex-col gap-1.5 print:gap-1">
-                        @foreach ($activeBranchAddresses as $branchItem)
-                            <div class="flex items-center gap-2 text-xs font-bold text-slate-800 print:text-[10px] print:gap-1.5 leading-snug">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-white bg-slate-900 print:bg-black font-black text-[10px] print:text-[9px] shrink-0">
-                                    {{ $branchItem['name'] ?? '' }}
-                                </span>
-                                <span class="truncate print:whitespace-normal">
-                                    {{ $branchItem['address'] ?? '' }}
-                                    @if (!empty($branchItem['phone']))
-                                        <span class="text-slate-500 font-semibold mr-1"> - هاتف: <span dir="ltr" class="font-bold font-sans text-slate-800 print:text-black">{{ $branchItem['phone'] }}</span></span>
-                                    @endif
-                                </span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
+        <div class="p-4 sm:p-6 border-b border-slate-100 bg-white">
+            @include('receipts.partials.receipt_header')
         </div>
 
         <div class="p-6 space-y-6 sm:p-8">

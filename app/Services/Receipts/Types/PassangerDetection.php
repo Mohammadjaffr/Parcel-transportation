@@ -4,10 +4,13 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\Passengers;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class PassangerDetection implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -62,18 +65,8 @@ class PassangerDetection implements ReceiptStrategyInterface
             $currentBranch = $user->branch ?? null;
         }
 
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = @file_get_contents($imagePath);
-            if ($data) {
-                $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-            }
-        }
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         // تجميع الركاب حسب السائق
         $grouped = $passengers->groupBy(function ($passenger) {
@@ -81,49 +74,62 @@ class PassangerDetection implements ReceiptStrategyInterface
         });
 
         $driversData = [];
+        $firstDriverName = null;
+        $firstDriverPhone = null;
+        $firstDriverVehicle = null;
+
         foreach ($grouped as $driverId => $groupPassengers) {
             $firstP = $groupPassengers->first();
             $driverName = $firstP->driver->name ?? 'سائق غير محدد';
             $driverPhone = $firstP->driver->phone ?? '';
+            $driverVehicle = $firstP->driver->vehicle_type ?? '---';
+
+            if (!$firstDriverName) {
+                $firstDriverName = $driverName;
+                $firstDriverPhone = $driverPhone;
+                $firstDriverVehicle = $driverVehicle;
+            }
 
             $passengersData = [];
             foreach ($groupPassengers as $p) {
                 $pNum = $p->passenger_number ?? '---';
                 
-                // 🌟 معالجة رقم الهاتف (إزالة 967 لليمن، وإضافة + للبقية) 🌟
                 $displayPhone = $pNum;
                 if ($pNum !== '---') {
                     if (str_starts_with($pNum, '967')) {
-                        $displayPhone = substr($pNum, 3); // إزالة مفتاح اليمن 967
+                        $displayPhone = substr($pNum, 3);
                     } elseif (strlen($pNum) > 0) {
-                        $displayPhone = '+' . $pNum; // إضافة علامة الزائد للدول الأخرى مثل السعودية 966
+                        $displayPhone = '+' . $pNum;
                     }
                 }
 
                 $passengersData[] = [
-                    'date'             => $p->date ? \Carbon\Carbon::parse($p->date)->format('Y-m-d') : '---',
-                    'day'              => $p->date ? \Carbon\Carbon::parse($p->date)->locale('ar')->translatedFormat('l') : '---',
+                    'id'               => $p->id,
                     'passenger_name'   => $p->passenger_name ?? '---',
-                    'passenger_number' => $displayPhone,
-                    'pickup_location'  => $p->pickup_location ?? '---',
-                    'destination'      => $p->destination ?? '---',
-                    'vehicle_type'     => $p->vehicle_type ?? '---',
-                    'count'            => $p->count ?? 0,
-                    'note'             => $p->note ?: '---',
+                    'passenger_phone'  => $displayPhone,
+                    'count'            => $p->count,
+                    'date'             => $p->date ? $p->date->format('Y-m-d') : '---',
+                    'pickup_point'     => $p->pickup_point ?? '---',
+                    'dropoff_point'    => $p->dropoff_point ?? '---',
+                    'office_commission'=> $p->office_commission,
+                    'other_commission' => $p->other_office_commission,
+                    'status'           => $p->status ?? '---',
+                    'notes'            => $p->notes ?? '---',
                 ];
             }
 
             $driversData[] = [
-                'driver_id'              => $driverId,
-                'driver_name'            => $driverName,
-                'driver_phone'           => $driverPhone ?: '---',
-                'passengers'             => $passengersData,
-                'total_passengers_count' => $groupPassengers->count(),
-                'total_count'            => $groupPassengers->sum('count'),
+                'driver_name'      => $driverName,
+                'driver_phone'     => $this->formatPhoneNumber($driverPhone),
+                'passengers'       => $passengersData,
+                'total_passengers' => count($passengersData),
+                'total_count'      => $groupPassengers->sum('count'),
+                'total_office'     => $groupPassengers->sum('office_commission'),
+                'total_other'      => $groupPassengers->sum('other_office_commission'),
             ];
         }
 
-       $totalOffice = $passengers->sum('office_commission');
+        $totalOffice = $passengers->sum('office_commission');
         $totalOther  = $passengers->sum('other_office_commission');
         $totalAll    = $totalOffice + $totalOther;
 
@@ -131,21 +137,19 @@ class PassangerDetection implements ReceiptStrategyInterface
         if ($currentBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $currentBranch->name . ($currentBranch->address ? ' - ' . $currentBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $currentBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($currentBranch->phone)
             ];
         }
 
-        $otherPhonesList = [];
         $headquartersData = null;
+        $otherPhonesList = [];
+
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -157,6 +161,9 @@ class PassangerDetection implements ReceiptStrategyInterface
         }
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
+        $dateInfo = $this->prepareDateInfo(now());
+        $singlePass = (is_numeric($referenceId) || \Illuminate\Support\Str::isUuid($referenceId)) ? $passengers->first() : null;
+
         return [
             'company' => [
                 'name' => $app?->name ?? 'اسم الشركة غير محدد',
@@ -164,10 +171,22 @@ class PassangerDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'         => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'         => $branchAddresses,
+
+            'day_name'                 => $dateInfo['day_name'],
+            'formatted_date'           => $dateInfo['formatted_date'],
+            'formatted_time'           => $dateInfo['formatted_time'],
+
             'title'                    => "كشف تسليم السائق",
+            'package_number'           => $singlePass?->id ?? '---',
+            'manifest_number'          => $singlePass?->id ?? '---',
+            'driver_name'              => $firstDriverName ?? 'غير محدد',
+            'driver_phone'             => $this->formatPhoneNumber($firstDriverPhone),
+            'vehicle_type'             => $firstDriverVehicle ?? '---',
+            'sender_branch'            => $currentBranch?->name ?? 'المركز الرئيسي',
+
             'date_from'                => $filters['from'] ?? null,
             'date_to'                  => $filters['to'] ?? null,
             'drivers'                  => $driversData,
@@ -179,13 +198,12 @@ class PassangerDetection implements ReceiptStrategyInterface
             'total_passengers'         => $passengers->count(),
             'total_count'              => $passengers->sum('count'),
             'creator_name'             => $user->name ?? 'مسؤول النظام',
-            'print_date'               => Carbon::now()->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'print_date'               => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
         ];
     }
 
     public function getTemplatePath(): string
     {
-        // 🌟 توجيه التقرير لملف Blade خاص بالسائق فقط 🌟
         return 'receipts.templates.PassangerDetection';
     }
 

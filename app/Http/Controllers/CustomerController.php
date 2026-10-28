@@ -568,6 +568,45 @@ class CustomerController extends Controller
         $receivedCount = $receivedShipments->count();
         $totalShipments = $sentCount + $receivedCount;
 
+        $app = $customer->app ?? $customer->branch?->app ?? $user->app;
+        $imagePath = $app?->logo
+            ? public_path('storage/' . $app->logo)
+            : public_path('assets/image/icon_without_bg.png');
+        $logoBase64 = null;
+        if (file_exists($imagePath)) {
+            $ext = pathinfo($imagePath, PATHINFO_EXTENSION);
+            $imgData = @file_get_contents($imagePath);
+            if ($imgData) {
+                $logoBase64 = 'data:image/' . $ext . ';base64,' . base64_encode($imgData);
+            }
+        }
+        $branch_addresses = $app?->effective_branch_addresses ?? [];
+        if (empty($branch_addresses) && $app) {
+            $branch_addresses = $app->branches()->get()->map(function($b) {
+                return [
+                    'name' => $b->is_main ? 'المركز الرئيسي' : $b->name,
+                    'address' => $b->address ?? '',
+                    'phone' => $b->phone ?? '',
+                ];
+            })->toArray();
+        }
+        $now = now()->timezone('Asia/Aden');
+        $day_name = $now->locale('ar')->translatedFormat('l');
+        $formatted_date = $now->format('Y / m / d') . ' م';
+        $formatted_time = $now->locale('ar')->translatedFormat('h:i A');
+        $sender_branch = $customer->branch?->name ?? 'المركز الرئيسي';
+        $package_number = $customer->id;
+        $manifest_number = $customer->id;
+        $company = [
+            'name' => $app?->name ?? 'شركة النقل',
+            'logo' => $logoBase64,
+            'branch_addresses' => $branch_addresses,
+            'main_branch' => [
+                'title' => 'فرع / ' . ($customer->branch?->name ?? 'الرئيسي'),
+                'phones' => $customer->branch?->phone ?? '',
+            ],
+        ];
+
         return view('receipts.templates.CustomerAccountStatement', compact(
             'customer',
             'entries',
@@ -577,7 +616,15 @@ class CustomerController extends Controller
             'isDebtor',
             'sentCount',
             'receivedCount',
-            'totalShipments'
+            'totalShipments',
+            'company',
+            'branch_addresses',
+            'day_name',
+            'formatted_date',
+            'formatted_time',
+            'sender_branch',
+            'package_number',
+            'manifest_number'
         ));
     }
 

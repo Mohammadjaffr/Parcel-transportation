@@ -4,14 +4,18 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class SenderShipmentReceipt implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A5 landscape'; // Default size
     }
+
     public function fetchData(string $referenceId): array
     {
         // 1. جلب الشحنة مع العلاقات مع تعطيل Global Scopes للعملاء لضمان ظهورهم للزائر غير المسجل
@@ -34,17 +38,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             $app = auth()->user()->App ?? auth()->user()->app;
         }
 
-        // 3. تجهيز مسار الشعار
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-        }
+        // 3. تجهيز الشعار والفروع ديناميكياً
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         // 4. إعداد فرع السند وأرقام الهواتف
         $senderBranch = $shipment->senderBranch;
@@ -52,23 +48,22 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         if ($senderBranch) {
             $mainBranchData = [
                 'title'  => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\/]+/', $senderBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($senderBranch->phone)
+            ];
+        }
+
+        $companyPhone = !empty($app?->phone) ? $this->formatPhoneNumber($app->phone) : null;
+        $headquartersData = null;
+
+        if ($app && $companyPhone) {
+            $headquartersData = [
+                'title'  => 'الإدارة العامة',
+                'phones' => $companyPhone
             ];
         }
 
         $otherPhonesList = [];
-        $companyPhone = !empty($app?->phone) ? trim($app->phone) : null;
-        $headquartersData = null;
-
         if ($app) {
-            if ($companyPhone) {
-                $headquartersData = [
-                    'title'  => 'الإدارة العامة',
-                    'phones' => $companyPhone
-                ];
-            }
-
-            // جلب الفروع الأخرى التابعة للتطبيق
             $allBranches = $app->branches()->get();
             foreach ($allBranches as $b) {
                 if ($senderBranch && $b->id === $senderBranch->id) {
@@ -78,7 +73,6 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 $otherPhonesList = array_merge($otherPhonesList, $phonesArray);
             }
         }
-
         $otherPhonesStr = !empty($otherPhonesList) ? implode(' - ', array_unique($otherPhonesList)) : null;
 
         // 5. القواميس والوجهات
@@ -104,7 +98,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'bg_light'  => '#ecfdf5',
         ];
 
-        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع (العمليات السابقة كما هي)
+        // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع
         $totalAmount = (float) ($shipment->total_amount ?? 0);
         $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
 
@@ -121,6 +115,9 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
         $transportFee = $totalAmount;
         $grandTotal = $otherFee > 0 ? ($transportFee + $otherFee) : $totalAmount;
 
+        // تفكيك التاريخ واليوم بدقة
+        $dateInfo = $this->prepareDateInfo($shipment->created_at);
+
         // 8. إرجاع البيانات المنظمة
         return [
             'company' => [
@@ -130,17 +127,19 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
+
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
 
             'title'             => 'سند ارسال طرد',
             'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
             'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
 
-            'date'              => $shipment->created_at
-                ? $shipment->created_at->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i')
-                : now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d H:i'),
+            'date'              => $dateInfo['date_full'],
 
             'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي (غير مسجل)',
             'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
@@ -176,7 +175,6 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'other_fee'         => $otherFee,
             'other_fee_description' => $shipment->other_fee_description,
             'show_other_fee_in_receipt' => $showOtherFee,
-        
 
             'creator_name'      => $shipment->creator?->name ?? 'مسؤول النظام',
             'print_date'        => now()->format('Y-m-d H:i'),
@@ -193,6 +191,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             ]
         ];
     }
+
     public function getTemplatePath(): string
     {
         return 'receipts.templates.SenderShipmentReceipt';
@@ -201,40 +200,5 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
     public function getFileName(array $data): string
     {
         return 'Sender_Receipt_' . $data['bond_number'] . '.pdf';
-    }
-       private function formatPhoneNumber(?string $phone): string
-    {
-        if (empty($phone) || trim($phone) === '' || trim($phone) === '---') {
-            return '---';
-        }
-
-        $parts = preg_split('/[\s,\/]+/', trim($phone));
-        $formattedParts = [];
-
-        $countries = config('countries', []);
-        $dialCodes = [];
-        foreach ($countries as $country) {
-            $rawCode = ltrim($country['dial_code'] ?? '', '+');
-            if ($rawCode) {
-                $dialCodes[] = $rawCode;
-            }
-        }
-        $dialCodes = array_unique(array_merge($dialCodes, ['967', '966', '968', '971']));
-        usort($dialCodes, fn($a, $b) => strlen($b) <=> strlen($a));
-
-        foreach ($parts as $part) {
-            $cleaned = trim($part);
-            if ($cleaned === '') continue;
-
-            foreach ($dialCodes as $rawCode) {
-                if (preg_match('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', $cleaned)) {
-                    $cleaned = preg_replace('/^(\+|00)?' . preg_quote($rawCode, '/') . '/', '', $cleaned);
-                    break;
-                }
-            }
-            $formattedParts[] = $cleaned;
-        }
-
-        return !empty($formattedParts) ? implode(' - ', $formattedParts) : '---';
     }
 }

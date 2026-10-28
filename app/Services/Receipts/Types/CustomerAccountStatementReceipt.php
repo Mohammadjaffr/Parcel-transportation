@@ -6,10 +6,13 @@ use App\Models\Customer;
 use App\Models\CustomerTransaction;
 use App\Models\Shipment;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -20,9 +23,9 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        $app = $user->app;
-        $appId = $user->app_id;
-        $branchId = $user->branch_id;
+        $app = $user?->app;
+        $appId = $user?->app_id;
+        $branchId = $user?->branch_id;
 
         /*
         |--------------------------------------------------------------------------
@@ -30,7 +33,11 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
         |--------------------------------------------------------------------------
         */
         $customer = Customer::with('branch')
-            ->where('app_id', $appId)
+            ->where(function ($query) use ($appId) {
+                if ($appId) {
+                    $query->where('app_id', $appId);
+                }
+            })
             ->where(function ($query) use ($referenceId) {
                 $query->where('uuid', $referenceId);
 
@@ -40,51 +47,39 @@ class CustomerAccountStatementReceipt implements ReceiptStrategyInterface
             })
             ->firstOrFail();
 
+        if (!$app) {
+            $app = $customer->app ?? $customer->branch?->app;
+        }
+
         /*
         |--------------------------------------------------------------------------
         | 2. بيانات الشركة / الشعار / الفروع
         |--------------------------------------------------------------------------
         */
-        $appName = $user->cached_app_name ?? $app?->name ?? 'اسم الشركة غير محدد';
-
-           $imagePath = $app?->logo
-    ? public_path('storage/' . $app->logo)
-    : public_path('assets/image/icon_without_bg.png');
-
-$logoBase64 = null;
-if (file_exists($imagePath)) {
-    $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-    $data = file_get_contents($imagePath);
-    $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
-}
+        $appName = $user?->cached_app_name ?? $app?->name ?? 'اسم الشركة غير محدد';
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         $mainBranchData = null;
-
         if ($customer->branch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $customer->branch->name . ($customer->branch->address ? ' - ' . $customer->branch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $customer->branch->phone ?? '')))),
+                'phones' => $this->formatPhoneNumber($customer->branch->phone),
             ];
         }
 
         $headquartersData = null;
-
         if ($app?->phone) {
-            $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-
-            if (!empty($hqPhoneArray)) {
-                $headquartersData = [
-                    'title'  => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                    'phones' => implode(' - ', $hqPhoneArray),
-                ];
-            }
+            $headquartersData = [
+                'title'  => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                'phones' => $this->formatPhoneNumber($app->phone),
+            ];
         }
 
         /*
         |--------------------------------------------------------------------------
         | 3. جلب الشحنات المرتبطة بالعميل
         |--------------------------------------------------------------------------
-        | نجيب كل الشحنات التي يكون العميل فيها مرسل أو مستلم داخل نفس التطبيق.
         */
         $shipments = Shipment::with([
                 'senderBranch',
@@ -98,165 +93,140 @@ if (file_exists($imagePath)) {
                     ->orWhere('receiver_customer_id', $customer->id);
             })
             ->where(function ($query) use ($appId) {
-                $query->whereHas('senderBranch', function ($q) use ($appId) {
-                    $q->where('app_id', $appId);
-                })
-                ->orWhereHas('receiverBranch', function ($q) use ($appId) {
-                    $q->where('app_id', $appId);
-                });
+                if ($appId) {
+                    $query->whereHas('senderBranch', fn($q) => $q->where('app_id', $appId));
+                }
             })
             ->orderBy('created_at', 'asc')
             ->get();
 
         /*
         |--------------------------------------------------------------------------
-        | 4. تجهيز تفاصيل الطرود
+        | 4. جلب سندات القبض/الصرف الخاصة بالعميل
         |--------------------------------------------------------------------------
         */
-        $shipmentRows = $shipments->map(function ($shipment) use ($customer) {
-            $totalAmount = (float) ($shipment->total_amount ?? 0);
-            $paidAmount = (float) $shipment->payments->sum('amount');
-            $remainingAmount = max(0, $totalAmount - $paidAmount);
+        $transactions = CustomerTransaction::where('customer_id', $customer->id)
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-            $direction = $shipment->sender_customer_id == $customer->id ? 'sent' : 'received';
-            $directionLabel = $direction === 'sent' ? 'مرسل' : 'مستلم';
+        /*
+        |--------------------------------------------------------------------------
+        | 5. تجهيز جدول الشحنات المخصصة
+        |--------------------------------------------------------------------------
+        */
+        $shipmentRows = $shipments->map(function ($s) use ($customer) {
+            $isSender = (int) $s->sender_customer_id === (int) $customer->id;
+            $direction = $isSender ? 'sent' : 'received';
 
-            $otherPartyName = $direction === 'sent'
-                ? ($shipment->receiverCustomer?->name ?? '---')
-                : ($shipment->senderCustomer?->name ?? '---');
-
-            $otherBranchName = $direction === 'sent'
-                ? ($shipment->receiverBranch?->name ?? '---')
-                : ($shipment->senderBranch?->name ?? '---');
+            $totalAmount = (float) ($s->total_amount ?? 0);
+            $paid = (float) $s->payments->sum('amount');
+            $remaining = (float) ($s->amount_to_collect_from_receiver ?? max(0, $totalAmount - $paid));
 
             return [
-                'id' => $shipment->id,
-                'date' => optional($shipment->created_at)->format('Y-m-d'),
-                'bond_number' => $shipment->bond_number ?? '---',
-                'code' => $shipment->code ?? '---',
+                'id' => $s->id,
+                'uuid' => $s->uuid,
+                'bond_number' => $s->bond_number ?? '---',
                 'direction' => $direction,
-                'direction_label' => $directionLabel,
-                'other_party_name' => $otherPartyName,
-                'other_branch_name' => $otherBranchName,
-                'payment_method' => !($shipment->is_price_agreed ?? true) ? 'سيتم الاتفاق عليه لاحقاً' : $this->paymentMethodLabel($shipment->payment_method),
-                'status' => $this->statusLabel($shipment->status),
-                'package_type' => $shipment->package_type ?? '---',
-                'weight' => $shipment->weight ?? null,
+                'direction_label' => $isSender ? 'مرسلة' : 'مستقبلة',
+                'other_party_name' => $isSender
+                    ? ($s->receiverCustomer->name ?? '---')
+                    : ($s->senderCustomer->name ?? '---'),
+                'other_party_phone' => $isSender
+                    ? ($s->receiverCustomer->phone ?? '---')
+                    : ($s->senderCustomer->phone ?? '---'),
+                'route' => ($s->senderBranch->name ?? '---') . ' ➔ ' . ($s->receiverBranch->name ?? '---'),
+                'payment_method' => $this->paymentMethodLabel($s->payment_method),
                 'total_amount' => $totalAmount,
-                'paid_amount' => $paidAmount,
-                'remaining_amount' => $remainingAmount,
-                'notes' => $shipment->notes,
+                'paid_amount' => $paid,
+                'remaining_amount' => $remaining,
+                'status' => $this->statusLabel($s->status),
+                'date' => $s->created_at ? $s->created_at->format('Y-m-d') : '---',
             ];
         });
 
         /*
         |--------------------------------------------------------------------------
-        | 5. جلب الحركات المالية من دفتر الأستاذ CustomerTransaction
-        |--------------------------------------------------------------------------
-        | هذا هو المصدر الأهم لكشف الحساب لأنه يسجل debit / credit.
-        */
-        $transactions = CustomerTransaction::with('shipment')
-            ->where('customer_id', $customer->id)
-            ->orderBy('created_at', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
-
-        /*
-        |--------------------------------------------------------------------------
-        | 6. بناء جدول كشف الحساب
+        | 6. بناء الحركات المالية لكشف الحساب
         |--------------------------------------------------------------------------
         */
         $entries = collect();
 
-        foreach ($transactions as $transaction) {
-            $amount = (float) ($transaction->amount ?? 0);
-            $type = $transaction->type;
+        foreach ($shipments as $shipment) {
+            $isSender = (int) $shipment->sender_customer_id === (int) $customer->id;
+            $shipmentAmount = (float) ($shipment->total_amount ?? 0);
+            $paid = (float) $shipment->payments->sum('amount');
 
-            $shipment = $transaction->shipment;
+            if (in_array($shipment->payment_method, ['customer_credit', 'partial_payment'])) {
+                $description = $isSender
+                    ? 'شحنة صادرة إلى ' . ($shipment->receiverCustomer->name ?? '---') . ' - سند #' . ($shipment->bond_number ?? $shipment->id)
+                    : 'شحنة واردة من ' . ($shipment->senderCustomer->name ?? '---') . ' - سند #' . ($shipment->bond_number ?? $shipment->id);
 
-            $entries->push([
-                'date' => $transaction->created_at,
-                'reference' => $shipment?->bond_number ?? $transaction->reference_number ?? '---',
-                'movement_type' => $type === 'debit' ? 'قيد مديونية' : 'سداد / تحصيل',
-                'description' => $transaction->description
-                    ?? $transaction->notes
-                    ?? ($type === 'debit' ? 'مبلغ مستحق على العميل' : 'مبلغ مسدد من العميل'),
-                'payment_method' => $this->paymentMethodLabel($transaction->payment_method ?? null),
-                'debit' => $type === 'debit' ? $amount : 0,
-                'credit' => $type === 'credit' ? $amount : 0,
-                'notes' => $transaction->notes ?? null,
-            ]);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | 7. في حال لم تكن كل الشحنات مسجلة في CustomerTransaction
-        |--------------------------------------------------------------------------
-        | هذه حماية إضافية: لو عندك شحنات آجل/جزئي ولم ينشأ لها قيد في دفتر الأستاذ،
-        | ستظهر في التقرير كحركات تقديرية حتى لا يطلع الكشف ناقص.
-        */
-        $transactionShipmentIds = $transactions
-            ->pluck('shipment_id')
-            ->filter()
-            ->unique()
-            ->values();
-
-        $creditPaymentMethods = ['customer_credit', 'partial_payment'];
-
-        $missingLedgerShipments = $shipments
-            ->whereIn('payment_method', $creditPaymentMethods)
-            ->whereNotIn('id', $transactionShipmentIds);
-
-        foreach ($missingLedgerShipments as $shipment) {
-            $totalAmount = (float) ($shipment->total_amount ?? 0);
-            $paidAmount = (float) $shipment->payments->sum('amount');
-
-            $entries->push([
-                'date' => $shipment->created_at,
-                'reference' => $shipment->bond_number ?? '---',
-                'movement_type' => 'شحنة',
-                'description' => 'شحنة غير مضافة في دفتر الأستاذ - ' . ($shipment->sender_customer_id == $customer->id ? 'مرسلة' : 'مستقبلة'),
-                'payment_method' => $this->paymentMethodLabel($shipment->payment_method),
-                'debit' => $totalAmount,
-                'credit' => 0,
-                'notes' => $shipment->notes,
-            ]);
-
-            if ($paidAmount > 0) {
                 $entries->push([
-                    'date' => $shipment->created_at,
-                    'reference' => $shipment->bond_number ?? '---',
-                    'movement_type' => 'دفعة',
-                    'description' => 'دفعة مسجلة على الشحنة',
-                    'payment_method' => '---',
-                    'debit' => 0,
-                    'credit' => $paidAmount,
-                    'notes' => null,
+                    'date'           => $shipment->created_at ? $shipment->created_at->format('Y-m-d H:i') : '---',
+                    'raw_date'       => $shipment->created_at,
+                    'type'           => 'shipment',
+                    'type_label'     => 'شحنة آجل',
+                    'description'    => $description,
+                    'reference'      => $shipment->bond_number ?? $shipment->id,
+                    'debit'          => $shipmentAmount,
+                    'credit'         => 0,
+                    'payment_method' => $this->paymentMethodLabel($shipment->payment_method),
+                    'notes'          => $shipment->notes,
                 ]);
+
+                if ($paid > 0) {
+                    $entries->push([
+                        'date'           => $shipment->created_at ? $shipment->created_at->format('Y-m-d H:i') : '---',
+                        'raw_date'       => $shipment->created_at,
+                        'type'           => 'payment',
+                        'type_label'     => 'سداد شحنة',
+                        'description'    => 'دفعة مسددة على سند #' . ($shipment->bond_number ?? $shipment->id),
+                        'reference'      => $shipment->bond_number ?? $shipment->id,
+                        'debit'          => 0,
+                        'credit'         => $paid,
+                        'payment_method' => $this->paymentMethodLabel($shipment->payment_method),
+                        'notes'          => null,
+                    ]);
+                }
             }
         }
 
+        foreach ($transactions as $trx) {
+            $isCredit = $trx->type === 'credit';
+            $amount = (float) ($trx->amount ?? 0);
+
+            $entries->push([
+                'date'           => $trx->created_at ? $trx->created_at->format('Y-m-d H:i') : '---',
+                'raw_date'       => $trx->created_at,
+                'type'           => 'transaction',
+                'type_label'     => $isCredit ? 'سند قبض' : 'سند صرف',
+                'description'    => $trx->description ?? ($isCredit ? 'تحصيل نقدي / سند قبض' : 'صرف / قيد مديونية'),
+                'reference'      => '#' . $trx->id,
+                'debit'          => $isCredit ? 0 : $amount,
+                'credit'         => $isCredit ? $amount : 0,
+                'payment_method' => $this->paymentMethodLabel($trx->payment_method),
+                'notes'          => $trx->notes,
+            ]);
+        }
+
         /*
         |--------------------------------------------------------------------------
-        | 8. ترتيب الحركات وحساب الرصيد الجاري
+        | 7. ترتيب الحركات زمنياً
         |--------------------------------------------------------------------------
         */
-        $entries = $entries
-            ->sortBy([
-                ['date', 'asc'],
-                ['reference', 'asc'],
-            ])
-            ->values();
+        $entries = $entries->sortBy(function ($item) {
+            return $item['raw_date'] ? Carbon::parse($item['raw_date'])->timestamp : 0;
+        })->values();
 
+        /*
+        |--------------------------------------------------------------------------
+        | 8. احتساب الرصيد التراكمي
+        |--------------------------------------------------------------------------
+        */
         $runningBalance = 0;
-
         $entries = $entries->map(function ($entry) use (&$runningBalance) {
             $runningBalance += ((float) $entry['debit'] - (float) $entry['credit']);
             $entry['balance'] = $runningBalance;
-            $entry['date_formatted'] = $entry['date']
-                ? Carbon::parse($entry['date'])->format('Y-m-d')
-                : '---';
-
             return $entry;
         });
 
@@ -282,17 +252,26 @@ if (file_exists($imagePath)) {
             'bg_light'  => '#fff4ee',
         ];
 
+        $dateInfo = $this->prepareDateInfo(now());
+
         return [
             'company' => [
                 'name'         => $appName,
                 'logo'         => $logoBase64,
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
 
-            'title' => 'كشف حساب عميل شامل',
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
+
+            'title'             => 'كشف حساب عميل شامل',
+            'package_number'    => $customer->id,
+            'manifest_number'   => $customer->id,
+            'sender_branch'     => $customer->branch?->name ?? 'المركز الرئيسي',
 
             'customer' => [
                 'id'     => $customer->id,
@@ -336,11 +315,9 @@ if (file_exists($imagePath)) {
 
             'shipments' => $shipmentRows->toArray(),
 
-            'creator_name' => $user->name ?? 'مسؤول النظام',
+            'creator_name' => $user?->name ?? 'مسؤول النظام',
 
-            'print_date' => Carbon::now()
-                ->locale('ar')
-                ->translatedFormat('l Y-m-d H:i'),
+            'print_date' => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
 
             'design' => [
                 'primary_color'   => $theme['primary'] ?? '#fb6514',

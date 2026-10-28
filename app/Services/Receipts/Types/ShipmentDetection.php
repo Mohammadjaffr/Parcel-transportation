@@ -4,10 +4,13 @@ namespace App\Services\Receipts\Types;
 
 use App\Models\ShipmentPackage;
 use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
 use Carbon\Carbon;
 
 class ShipmentDetection implements ReceiptStrategyInterface
 {
+    use FormatsReceiptHeaderData;
+
     public function sizepage(): string|array
     {
         return 'A4 landscape';
@@ -29,17 +32,12 @@ class ShipmentDetection implements ReceiptStrategyInterface
         ])->where('uuid', $referenceId)->firstOrFail();
 
         $app = $package->senderBranch?->app ?? $package->creator?->app;
-
-        $imagePath = $app?->logo
-            ? public_path('storage/' . $app->logo)
-            : public_path('assets/image/icon_without_bg.png');
-
-        $logoBase64 = null;
-        if (file_exists($imagePath)) {
-            $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-            $data = file_get_contents($imagePath);
-            $logoBase64 = 'data:image/' . $extension . ';base64,' . base64_encode($data);
+        if (!$app && auth()->check()) {
+            $app = auth()->user()->App ?? auth()->user()->app;
         }
+
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
 
         $senderBranch = $package->senderBranch;
         $mainBranchData = null;
@@ -47,7 +45,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
         if ($senderBranch) {
             $mainBranchData = [
                 'title' => 'فرع / ' . $senderBranch->name . ($senderBranch->address ? ' - ' . $senderBranch->address : ''),
-                'phones' => implode(' - ', array_filter(array_map('trim', preg_split('/[\s,\-]+/', $senderBranch->phone ?? ''))))
+                'phones' => $this->formatPhoneNumber($senderBranch->phone)
             ];
         }
 
@@ -56,13 +54,10 @@ class ShipmentDetection implements ReceiptStrategyInterface
 
         if ($app) {
             if ($app->phone) {
-                $hqPhoneArray = array_filter(array_map('trim', preg_split('/[\s,\-]+/', $app->phone)));
-                if (!empty($hqPhoneArray)) {
-                    $headquartersData = [
-                        'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
-                        'phones' => implode(' - ', $hqPhoneArray)
-                    ];
-                }
+                $headquartersData = [
+                    'title' => 'الفرع الرئيسي' . ($app->address ? ' - ' . $app->address : ''),
+                    'phones' => $this->formatPhoneNumber($app->phone)
+                ];
             }
 
             $allBranches = $app->branches()->get();
@@ -108,28 +103,26 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 ? "جوالين: " . ($shipment->no_gallons_honey ?? 0) . " | قروف: " . ($shipment->no_honey_jars ?? 0)
                 : null;
 
-            // جلب البيانات المالية الأساسية للـ Format
             $totalAmount = (float) ($shipment->total_amount ?? 0);
             $paidAmount = (float) ($shipment->partial_amount ?? 0);
             $remainingAmount = (float) ($shipment->amount_to_collect_from_receiver ?? 0);
             $paymentMethod = $shipment->payment_method ?? 'prepaid';
 
-            // توزيع المبالغ لمنع التكرار حسب نوع الدفع
             $accountantAmount = 0;
             $deferredAmount = 0;
 
             switch ($paymentMethod) {
-                case 'customer_credit': // آجل (ذمة)
-                case 'cod': // الدفع عند الاستلام (يعتبر آجل حتى يتم تحصيله)
+                case 'customer_credit':
+                case 'cod':
                     $deferredAmount = $remainingAmount > 0 ? $remainingAmount : $totalAmount;
                     break;
-                case 'partial_payment': // دفع جزئي
-                    $accountantAmount = $paidAmount; // ما تم دفعه يذهب للمحاسب
-                    $deferredAmount = $remainingAmount; // المتبقي يذهب للآجل
+                case 'partial_payment':
+                    $accountantAmount = $paidAmount;
+                    $deferredAmount = $remainingAmount;
                     break;
-                case 'prepaid': // مدفوع مقدماً
+                case 'prepaid':
                 default:
-                    $accountantAmount = $totalAmount; // المبلغ كاملاً يذهب للمحاسب
+                    $accountantAmount = $totalAmount;
                     break;
             }
 
@@ -139,23 +132,18 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $otherFee          = (float) ($shipment->other_fee ?? 0);
             $totalOtherFee    += $otherFee;
 
-            // إضافة متبقي التحصيل النقدي الحقيقي المطلوب من السائق توريده
             $totalExpectedCash += $remainingAmount;
-
-            // إجمالي المبالغ تم تصحيحه هنا
             $totalAccountantAmounts += $accountantAmount;
             $totalDeferredAmounts += $deferredAmount;
             $rowTotal = $accountantAmount + $deferredAmount + $otherFee;
-            
 
             $shipmentsData[] = [
-                // ... (باقي البيانات كما هي: bond_number, tracking_code, إلخ) ...
                 'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
                 'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
                 'sender_name'       => $shipment->senderCustomer?->name ?? 'عميل نقدي',
-                'sender_phone'      => $shipment->senderCustomer?->phone ?? '---',
+                'sender_phone'      => $this->formatPhoneNumber($shipment->senderCustomer?->phone),
                 'receiver_name'     => $shipment->receiverCustomer?->name ?? 'مستلم غير محدد',
-                'receiver_phone'    => $shipment->receiverCustomer?->phone ?? '---',
+                'receiver_phone'    => $this->formatPhoneNumber($shipment->receiverCustomer?->phone),
                 'sender_branch'     => $shipment->senderBranch?->name ?? '---',
                 'receiver_branch'   => $receiverDestination,
                 'package_type'      => $shipment->package_type ?? 'طرد',
@@ -166,13 +154,11 @@ class ShipmentDetection implements ReceiptStrategyInterface
                     ? 'سيتم الاتفاق عليه لاحقاً'
                     : ($paymentMethods[$paymentMethod] ?? 'غير محدد'),
 
-                // التعديل السحري هنا لتمرير الحقول المجهزة مسبقاً
                 'accountant_amount' => $accountantAmount > 0 ? number_format($accountantAmount, 0) : '',
                 'deferred_amount'   => $deferredAmount > 0 ? number_format($deferredAmount, 0) : '',
-                'other_fee'                 => $otherFee > 0 ? number_format($otherFee, 0) : '',
+                'other_fee'         => $otherFee > 0 ? number_format($otherFee, 0) : '',
                 'other_fee_description'     => $shipment->other_fee_description,
                 'show_other_fee_in_receipt' => (bool) ($shipment->show_other_fee_in_receipt ?? false),
-                // إضافة الحقول الجديدة لعمود الإجمالي
                 'row_total'         => $rowTotal > 0 ? number_format($rowTotal, 0) : '',
                 'has_accountant'    => $accountantAmount > 0,
                 'has_deferred'      => $deferredAmount > 0,
@@ -212,6 +198,8 @@ class ShipmentDetection implements ReceiptStrategyInterface
             $settlementColor  = '#4b5563';
         }
 
+        $dateInfo = $this->prepareDateInfo($package->created_at);
+
         return [
             'company' => [
                 'name'         => $app?->name ?? 'اسم الشركة غير محدد',
@@ -219,18 +207,25 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'main_branch'  => $mainBranchData,
                 'headquarters' => $headquartersData,
                 'other_phones' => $otherPhonesStr,
-                'branch_addresses' => $app?->effective_branch_addresses ?? [],
+                'branch_addresses' => $branchAddresses,
             ],
-            'branch_addresses'  => $app?->effective_branch_addresses ?? [],
+            'branch_addresses'  => $branchAddresses,
 
-            'title'             => $isReceiver ? 'كشف ارسال شحنة' : 'كشف ارسال شحنة ',
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
+
+            'title'             => $isReceiver ? 'كشف تسليم شحنات' : 'كشف إرسال شحنة',
             'package_number'    => $isReceiver ? $package->tracking_number_only ?? $package->id : $package->id,
-            'date'              => $package->created_at ? $package->created_at->timezone('Asia/Aden')->format('Y-m-d h:i A') : now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
+            'manifest_number'   => $package->tracking_number_only ?? $package->id,
+            'date'              => $dateInfo['date_full'],
 
             'driver_name'       => $package->driver?->name ?? 'غير محدد',
-            'driver_phone'      => $package->driver?->phone ?? '---',
+            'driver_phone'      => $this->formatPhoneNumber($package->driver?->phone),
             'driver_vehicle_type' => $package->driver?->vehicle_type ?? '---',
+            'vehicle_type'      => $package->driver?->vehicle_type ?? '---',
             'package_sender_branch' => $package->senderBranch?->name ?? '---',
+            'sender_branch'     => $package->senderBranch?->name ?? 'المركز الرئيسي',
             'total_shipments'   => $totalShipmentsCount,
 
             'shipments'         => $shipmentsData,
@@ -253,7 +248,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
                 'settlement_color'   => $settlementColor,
             ],
             'creator_name'      => $package->creator?->name ?? 'مسؤول النظام',
-            'print_date'        => Carbon::now()->timezone('Asia/Aden')->locale('ar')->translatedFormat('l Y-m-d h:i A'),
+            'print_date'        => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
             'user_branch'       => $package->creator?->branch?->name ?? $package->senderBranch?->name ?? 'الفرع الرئيسي',
             'design' => [
                 'primary_color'   => $theme['primary'],
