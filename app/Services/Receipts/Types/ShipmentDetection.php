@@ -215,7 +215,7 @@ class ShipmentDetection implements ReceiptStrategyInterface
             'formatted_date'    => $dateInfo['formatted_date'],
             'formatted_time'    => $dateInfo['formatted_time'],
 
-            'title'             => $isReceiver ? 'كشف تسليم شحنات' : 'كشف إرسال شحنة',
+            'title'             => $isReceiver ? 'كشف إرسال شحنات' : 'كشف إرسال شحنة',
             'package_number'    => $isReceiver ? $package->tracking_number_only ?? $package->id : $package->id,
             'manifest_number'   => $package->tracking_number_only ?? $package->id,
             'date'              => $dateInfo['date_full'],

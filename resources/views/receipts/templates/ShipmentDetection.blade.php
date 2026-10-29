@@ -89,7 +89,7 @@
     <div dir="rtl"
         class="w-full bg-white overflow-hidden print-no-shadow print:border-none print:my-0 print:rounded-none {{ !empty($is_pdf) ? 'max-w-none my-0 rounded-none shadow-none border-none' : 'max-w-7xl mx-auto sm:rounded-[1.5rem] shadow-2xl shadow-indigo-100/50 border border-slate-200 my-8' }}">
 
-        <div class="px-6 py-4 border-b border-slate-200 bg-white">
+        <div class="px-6 py-4 bg-white border-b border-slate-200">
             @include('receipts.partials.manifest_header')
         </div>
 
@@ -148,7 +148,7 @@
                                     dir="ltr">
                                     {{ $shipment['deferred_amount'] }}
                                 </td>
-                                <td class="px-2 py-2 font-sans font-black text-slate-700 border-l border-slate-100 print:border-slate-200 print:text-black"
+                                <td class="px-2 py-2 font-sans font-black border-l text-slate-700 border-slate-100 print:border-slate-200 print:text-black"
                                     dir="ltr">
                                     {{ $shipment['other_fee'] }}
                                     @if (!empty($shipment['show_other_fee_in_receipt']) && !empty($shipment['other_fee_description']))
@@ -157,14 +157,14 @@
                                         </div>
                                     @endif
                                 </td>
-                                <td class="px-2 py-2 font-sans font-black text-slate-900 border-l border-slate-100 print:border-slate-200 print:text-black bg-slate-50/50"
+                                <td class="px-2 py-2 font-sans font-black border-l text-slate-900 border-slate-100 print:border-slate-200 print:text-black bg-slate-50/50"
                                     dir="ltr">
                                     <div class="text-sm">{{ $shipment['row_total'] }}</div>
                                     <div class="text-[8px] font-normal text-slate-500 mt-0.5 flex flex-col gap-0.5 leading-tight"
                                         dir="rtl">
                                         @if ($shipment['has_accountant'])
                                             <span class="text-emerald-600">محاسب
-                                                </span>
+                                            </span>
                                         @endif
                                         @if ($shipment['has_deferred'])
                                             <span class="text-rose-600">آجل</span>
@@ -214,7 +214,7 @@
                                             style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             إجمالي العمولة
                                         </th>
-                                        
+
                                         <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
                                             style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             <div>التصفية مع السائق</div>
@@ -225,7 +225,7 @@
                                         </th>
                                         <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
                                             style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
-                                           إجمالي الآجور الاخرى
+                                            إجمالي الآجور الاخرى
                                         </th>
                                         <!-- الحقل الجديد في الترويسة -->
                                         <th class="px-2 py-2.5 font-black text-indigo-900 print:text-slate-800 bg-slate-100"
@@ -246,7 +246,7 @@
                                         <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
                                             style="padding: 6px; font-size: 15px; font-weight: 900; color: #16a34a; border-left: 1px solid #f1f5f9;">
                                             {{ number_format($totals['grand_commission'] ?? 0, 0) }}</td>
-                                   
+
                                         <td class="px-2 py-3 font-sans text-lg font-black border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
                                             style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
                                             <div dir="ltr"
@@ -258,16 +258,19 @@
                                                 {{ $settlementLabel }}
                                             </div>
                                         </td>
-                                       <td class="px-2 py-3 font-sans text-lg font-black text-rose-600 print:text-slate-800 total-val border-l border-slate-100 print:border-slate-200" style="padding: 6px; font-size: 15px; font-weight: 900; color: #dc2626; border-left: 1px solid #f1f5f9;">
-    {{ number_format($totals['deferred_amount'] ?? 0, 0) }}
-</td>
-<td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 print:text-slate-800 total-val border-l border-slate-100 print:border-slate-200" style="padding: 6px; font-size: 15px; font-weight: 900; color: #166534; border-left: 1px solid #f1f5f9;">
-    {{ number_format($totals['other_fee'] ?? 0, 0) }}
-</td>
-<!-- الخلية الجديدة لجمع المحاسب والآجل -->
-<td class="px-2 py-3 font-sans text-lg font-black text-slate-800 bg-slate-50 print:bg-slate-50 total-val" style="padding: 6px; font-size: 15px; font-weight: 900;">
-    {{ number_format(($totals['accountant_amount'] ?? 0) + ($totals['deferred_amount'] ?? 0) + ($totals['other_fee'] ?? 0), 0) }} 
-</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-rose-600 border-l print:text-slate-800 total-val border-slate-100 print:border-slate-200"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; color: #dc2626; border-left: 1px solid #f1f5f9;">
+                                            {{ number_format($totals['deferred_amount'] ?? 0, 0) }}
+                                        </td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l print:text-slate-800 total-val border-slate-100 print:border-slate-200"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; color: #166534; border-left: 1px solid #f1f5f9;">
+                                            {{ number_format($totals['other_fee'] ?? 0, 0) }}
+                                        </td>
+                                        <!-- الخلية الجديدة لجمع المحاسب والآجل -->
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-slate-800 bg-slate-50 print:bg-slate-50 total-val"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900;">
+                                            {{ number_format(($totals['accountant_amount'] ?? 0) + ($totals['deferred_amount'] ?? 0) + ($totals['other_fee'] ?? 0), 0) }}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
