@@ -55,7 +55,7 @@
                         <div><span class="text-xs text-slate-400">طريقة الدفع:</span> <span
                                 class="text-sm font-bold text-slate-800">---</span></div>
                         <div><span class="text-xs text-slate-400">المرجع:</span> <span
-                                class="text-sm font-bold text-slate-800">{{ $reference_number }}</span></div>
+                                class="text-sm font-bold text-slate-800">{{ $reference_number ?? '---' }}</span></div>
                         <div><span class="text-xs text-slate-400">التاريخ:</span> <span
                                 class="text-sm font-medium text-slate-700">{{ $date }}</span></div>
                     </div>
@@ -69,7 +69,7 @@
                 </h3>
                 <p class="text-sm font-bold leading-relaxed text-slate-700">{{ $description }}</p>
 
-                @if($notes !== 'لا توجد ملاحظات')
+                @if(!empty($notes) && $notes !== 'لا توجد ملاحظات')
                     <div class="pt-4 mt-4 border-t border-slate-100">
                         <p class="mb-1 text-xs font-bold text-slate-400">ملاحظات إضافية:</p>
                         <p class="text-sm text-slate-600">{{ $notes }}</p>

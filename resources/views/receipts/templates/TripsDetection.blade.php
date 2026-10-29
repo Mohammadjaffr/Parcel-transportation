@@ -132,18 +132,18 @@
                                 @foreach($chunk as $passenger)
                                     <tr class="transition-colors hover:bg-slate-50/50">
                                             <td class="px-2 py-2 font-black border-l text-slate-400 border-slate-100 print:border-slate-200">{{ $globalPassengerIndex++ }}</td>
-                                            <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['date'] }}</td>
+                                            <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['date'] ?? '---' }}</td>
                                             <td class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $passenger['passenger_name'] ?? '---' }}</td>
-                                            <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['passenger_number'] }}</td>
+                                            <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['passenger_number'] ?? ($passenger['passenger_phone'] ?? '---') }}</td>
                                             @auth
-                                                <td class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $passenger['broker_name'] }}</td>
+                                                <td class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">{{ $passenger['broker_name'] ?? '---' }}</td>
                                             @endauth
-                                            <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['pickup_location'] }}</td>
-                                            <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['destination'] }}</td>
+                                            <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['pickup_location'] ?? ($passenger['pickup_point'] ?? '---') }}</td>
+                                            <td class="px-2 py-2 font-medium border-l text-slate-600 border-slate-100 print:border-slate-200">{{ $passenger['destination'] ?? ($passenger['dropoff_point'] ?? '---') }}</td>
                                             <td class="px-2 py-2 font-medium border-l text-slate-700 border-slate-100 print:border-slate-200">{{ $passenger['vehicle_type'] ?? '-' }}</td>
-                                            <td class="px-2 py-2 font-black border-l text-slate-800 bg-slate-50/50 border-slate-100 print:border-slate-200">{{ $passenger['count'] }}</td>
-                                            <td class="px-2 py-2 font-sans font-black border-l text-emerald-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['office_commission'] }}</td>
-                                            <td class="px-2 py-2 font-sans font-black border-l text-amber-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['other_office_commission'] }}</td>
+                                            <td class="px-2 py-2 font-black border-l text-slate-800 bg-slate-50/50 border-slate-100 print:border-slate-200">{{ $passenger['count'] ?? 1 }}</td>
+                                            <td class="px-2 py-2 font-sans font-black border-l text-emerald-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['office_commission'] ?? 0 }}</td>
+                                            <td class="px-2 py-2 font-sans font-black border-l text-amber-600 border-slate-100 print:border-slate-200" dir="ltr">{{ $passenger['other_office_commission'] ?? 0 }}</td>
                                             <td class="px-2 py-2 border-l border-slate-100 print:border-slate-200">
                                                 @php
                                                     $statusColors = [
@@ -152,10 +152,10 @@
                                                         'completed' => 'bg-emerald-50 text-emerald-700',
                                                         'cancel' => 'bg-rose-50 text-rose-700',
                                                     ];
-                                                    $colorClass = $statusColors[$passenger['status_key']] ?? 'bg-slate-50 text-slate-700';
+                                                    $colorClass = $statusColors[$passenger['status_key'] ?? ($passenger['raw_status'] ?? 'pending')] ?? 'bg-slate-50 text-slate-700';
                                                 @endphp
                                                 <span class="inline-flex items-center px-2 py-1 rounded-lg text-xs font-bold {{ $colorClass }} print:border print:border-slate-300 print:bg-transparent">
-                                                    {{ $passenger['status_label'] }}
+                                                    {{ $passenger['status_label'] ?? ($passenger['status'] ?? '---') }}
                                                 </span>
                                             </td>
                                             <td class="px-2 py-2 max-w-xs text-xs font-medium truncate text-slate-500 text-wrap-custom">{{ $passenger['note'] ?? '---' }}</td>

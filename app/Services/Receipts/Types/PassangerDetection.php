@@ -103,29 +103,39 @@ class PassangerDetection implements ReceiptStrategyInterface
                     }
                 }
 
+                $pDate = $p->date ? $p->date->format('Y-m-d') : '---';
+                $pDay = $p->date ? $p->date->translatedFormat('l') : '---';
+
                 $passengersData[] = [
                     'id'               => $p->id,
                     'passenger_name'   => $p->passenger_name ?? '---',
                     'passenger_phone'  => $displayPhone,
-                    'count'            => $p->count,
-                    'date'             => $p->date ? $p->date->format('Y-m-d') : '---',
+                    'passenger_number' => $displayPhone,
+                    'count'            => $p->count ?? 1,
+                    'date'             => $pDate,
+                    'day'              => $pDay,
                     'pickup_point'     => $p->pickup_point ?? '---',
+                    'pickup_location'  => $p->pickup_point ?? '---',
                     'dropoff_point'    => $p->dropoff_point ?? '---',
-                    'office_commission'=> $p->office_commission,
-                    'other_commission' => $p->other_office_commission,
+                    'destination'      => $p->dropoff_point ?? '---',
+                    'vehicle_type'     => $p->vehicle_type ?? '---',
+                    'office_commission'=> $p->office_commission ?? 0,
+                    'other_commission' => $p->other_office_commission ?? 0,
                     'status'           => $p->status ?? '---',
                     'notes'            => $p->notes ?? '---',
+                    'note'             => $p->notes ?? '---',
                 ];
             }
 
             $driversData[] = [
-                'driver_name'      => $driverName,
-                'driver_phone'     => $this->formatPhoneNumber($driverPhone),
-                'passengers'       => $passengersData,
-                'total_passengers' => count($passengersData),
-                'total_count'      => $groupPassengers->sum('count'),
-                'total_office'     => $groupPassengers->sum('office_commission'),
-                'total_other'      => $groupPassengers->sum('other_office_commission'),
+                'driver_name'            => $driverName,
+                'driver_phone'           => $this->formatPhoneNumber($driverPhone),
+                'passengers'             => $passengersData,
+                'total_passengers'       => count($passengersData),
+                'total_passengers_count' => count($passengersData),
+                'total_count'            => $groupPassengers->sum('count'),
+                'total_office'           => $groupPassengers->sum('office_commission'),
+                'total_other'            => $groupPassengers->sum('other_office_commission'),
             ];
         }
 

@@ -189,9 +189,9 @@
                         </div>
                         <div class="flex gap-4 text-xs font-bold text-slate-700">
                             <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">الركاب:
-                                <strong class="text-slate-900">{{ $driver['total_passengers_count'] }}</strong></span>
+                                <strong class="text-slate-900">{{ $driver['total_passengers_count'] ?? ($driver['total_passengers'] ?? 0) }}</strong></span>
                             <span class="px-3 py-1.5 bg-white rounded-lg border border-slate-200">العدد الكلي:
-                                <strong class="text-slate-900">{{ $driver['total_count'] }}</strong></span>
+                                <strong class="text-slate-900">{{ $driver['total_count'] ?? 0 }}</strong></span>
 
                         </div>
                     </div>
@@ -218,15 +218,15 @@
                                 @foreach ($chunk as $passenger)
                                     <tr class="transition-colors hover:bg-slate-50">
                                         <td class="font-bold text-center text-slate-800">{{ $globalPassengerIndex++ }}</td>
-                                        <td class="font-bold text-slate-900" dir="ltr">{{ $passenger['date'] }}</td>
+                                        <td class="font-bold text-slate-900" dir="ltr">{{ $passenger['date'] ?? '---' }}</td>
                                         <td class="font-bold text-slate-900">{{ $passenger['passenger_name'] ?? '---' }}</td>
                                         <td class="font-black text-slate-900" dir="ltr">
-                                            {{ $passenger['passenger_number'] }}</td>
-                                        <td class="font-bold text-slate-900">{{ $passenger['pickup_location'] }}
+                                            {{ $passenger['passenger_number'] ?? ($passenger['passenger_phone'] ?? '---') }}</td>
+                                        <td class="font-bold text-slate-900">{{ $passenger['pickup_location'] ?? ($passenger['pickup_point'] ?? '---') }}
                                         </td>
-                                        <td class="font-bold text-slate-900">{{ $passenger['destination'] }}</td>
+                                        <td class="font-bold text-slate-900">{{ $passenger['destination'] ?? ($passenger['dropoff_point'] ?? '---') }}</td>
                                         <td class="font-bold text-center text-slate-800">{{ $passenger['vehicle_type'] ?? '---' }}</td>
-                                        <td class="font-black text-center text-slate-900">{{ $passenger['count'] }}</td>
+                                        <td class="font-black text-center text-slate-900">{{ $passenger['count'] ?? 1 }}</td>
 
                                         <td class="max-w-xs font-bold text-slate-800">
                                             {{ $passenger['note'] ?? '---' }}</td>

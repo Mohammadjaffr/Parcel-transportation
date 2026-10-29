@@ -110,20 +110,29 @@ class TripsDetection implements ReceiptStrategyInterface
 
                 $rawStatus = strtolower(trim((string) $p->status));
                 $statusAr = $statusLabels[$rawStatus] ?? ($p->status ?? '---');
+                $pDate = $p->date ? (is_string($p->date) ? Carbon::parse($p->date)->format('Y-m-d') : $p->date->format('Y-m-d')) : ($p->created_at ? $p->created_at->format('Y-m-d') : '---');
 
                 $passengersData[] = [
                     'id'                      => $p->id,
+                    'date'                    => $pDate,
                     'passenger_name'          => $p->passenger_name ?? '---',
                     'passenger_phone'         => $displayPhone,
+                    'passenger_number'        => $displayPhone,
                     'count'                   => $p->count ?? 1,
-                    'pickup_point'            => $p->pickup_point ?? '---',
-                    'dropoff_point'           => $p->dropoff_point ?? '---',
-                    'broker_name'             => $p->broker->name ?? '---',
+                    'pickup_point'            => $p->pickup_location ?? ($p->pickup_point ?? '---'),
+                    'pickup_location'         => $p->pickup_location ?? ($p->pickup_point ?? '---'),
+                    'dropoff_point'           => $p->destination ?? ($p->dropoff_point ?? '---'),
+                    'destination'             => $p->destination ?? ($p->dropoff_point ?? '---'),
+                    'vehicle_type'            => $p->vehicle_type ?? '---',
+                    'broker_name'             => $p->broker?->name ?? '---',
                     'office_commission'       => $p->office_commission ?? 0,
                     'other_office_commission' => $p->other_office_commission ?? 0,
                     'status'                  => $statusAr,
                     'raw_status'              => $rawStatus,
-                    'notes'                   => $p->notes ?? '---',
+                    'status_key'              => $rawStatus,
+                    'status_label'            => $statusAr,
+                    'notes'                   => $p->note ?? ($p->notes ?? '---'),
+                    'note'                    => $p->note ?? ($p->notes ?? '---'),
                 ];
 
                 $tripTotalPassengers++;
@@ -155,6 +164,7 @@ class TripsDetection implements ReceiptStrategyInterface
                 'whatsapp_link'                 => $whatsappLink,
                 'passengers'                    => $passengersData,
                 'total_passengers'              => $tripTotalPassengers,
+                'total_passengers_count'        => $tripTotalPassengers,
                 'total_count'                   => $tripTotalCount,
                 'total_office_commission'       => number_format($tripTotalOffice, 0),
                 'total_other_office_commission' => number_format($tripTotalOther, 0),

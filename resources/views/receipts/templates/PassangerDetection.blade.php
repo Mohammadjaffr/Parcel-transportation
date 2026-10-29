@@ -114,31 +114,31 @@
                                             class="px-2 py-2 font-black border-l text-slate-400 border-slate-100 print:border-slate-200">
                                             {{ $globalPassengerIndex++ }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200"
-                                            dir="ltr">{{ $passenger['date'] }}</td>
+                                            dir="ltr">{{ $passenger['date'] ?? '---' }}</td>
                                         <td
                                             class="px-2 py-2 font-bold border-l text-indigo-600 border-slate-100 print:border-slate-200">
-                                            {{ $passenger['day'] }}</td>
+                                            {{ $passenger['day'] ?? '---' }}</td>
                                         <td
                                             class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">
                                             {{ $passenger['passenger_name'] ?? '---' }}</td>
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-800 border-slate-100 print:border-slate-200"
-                                            dir="ltr">{{ $passenger['passenger_number'] }}</td>
+                                            dir="ltr">{{ $passenger['passenger_number'] ?? ($passenger['passenger_phone'] ?? '---') }}</td>
                                         <td
                                             class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">
                                             {{ $passenger['vehicle_type'] ?? '-' }}</td>
                                         <td
                                             class="px-2 py-2 font-black border-l text-slate-800 bg-slate-50/50 border-slate-100 print:border-slate-200">
-                                            {{ $passenger['count'] }}</td>
+                                            {{ $passenger['count'] ?? 1 }}</td>
 
                                         {{-- تم استخدام كلاس text-wrap-custom لتوسيع الحقل والسماح بكسر النص --}}
                                         <td
                                             class="px-2 py-2 font-bold border-l text-slate-700 text-wrap-custom border-slate-100 print:border-slate-200">
-                                            {{ $passenger['pickup_location'] }}</td>
+                                            {{ $passenger['pickup_location'] ?? ($passenger['pickup_point'] ?? '---') }}</td>
                                         <td
                                             class="px-2 py-2 font-bold border-l text-slate-700 text-wrap-custom border-slate-100 print:border-slate-200">
-                                            {{ $passenger['destination'] }}</td>
+                                            {{ $passenger['destination'] ?? ($passenger['dropoff_point'] ?? '---') }}</td>
                                         <td class="px-2 py-2 text-xs font-medium text-slate-600 text-wrap-custom">
-                                            {{ $passenger['note'] }}</td>
+                                            {{ $passenger['note'] ?? '---' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
