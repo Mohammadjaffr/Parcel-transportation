@@ -545,7 +545,8 @@
                                     class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] bg-surface dark:bg-boxdark-2 dark:text-bodydark border-b border-t border-gray-100 dark:border-boxdark">
                                     <th class="px-4 py-4 w-12 text-center">تحديد</th>
                                     <th class="px-6 py-4">رقم السند</th>
-                                    <th class="px-6 py-4">المرسل والمستلم</th>
+                                    <th class="px-6 py-4">المرسل</th>
+                                    <th class="px-6 py-4">المستلم</th>
                                     <th class="px-6 py-4">الوجهة</th>
                                     <th class="px-6 py-4 text-center">نوع الطرود</th>
                                 </tr>
@@ -597,21 +598,23 @@
                                             </div>
                                         </td>
 
+                                        {{-- المرسل --}}
                                         <td class="px-6 py-4">
-                                            <div class="flex flex-col gap-1">
-                                                <div class="flex gap-1.5 items-center text-gray-800 dark:text-gray-200" title="المستلم">
-                                                    <span class="material-symbols-outlined text-[16px] text-primary">person</span>
-                                                    <span class="text-xs font-black truncate max-w-[160px]">
-                                                        {{ $customerName ?: 'عميل غير محدد' }}
-                                                    </span>
-                                                    <span class="text-[10px] text-gray-400 font-bold">(المستلم)</span>
-                                                </div>
-                                                <div class="flex gap-1.5 items-center text-gray-500 dark:text-bodydark" title="المرسل">
-                                                    <span class="material-symbols-outlined text-[14px] text-gray-400">outbox</span>
-                                                    <span class="text-[11px] font-bold truncate max-w-[160px]">
-                                                        من: {{ $senderName ?: 'غير محدد' }}
-                                                    </span>
-                                                </div>
+                                            <div class="flex gap-1.5 items-center text-gray-700 dark:text-gray-300">
+                                                <span class="material-symbols-outlined text-[16px] text-gray-400">outbox</span>
+                                                <span class="text-xs font-bold truncate max-w-[150px]">
+                                                    {{ $senderName ?: 'غير محدد' }}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        {{-- المستلم --}}
+                                        <td class="px-6 py-4">
+                                            <div class="flex gap-1.5 items-center text-gray-800 dark:text-gray-200">
+                                                <span class="material-symbols-outlined text-[16px] text-gray-400">person</span>
+                                                <span class="text-xs font-bold truncate max-w-[150px]">
+                                                    {{ $customerName ?: 'عميل غير محدد' }}
+                                                </span>
                                             </div>
                                         </td>
 
@@ -631,7 +634,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="py-20 text-center">
+                                        <td colspan="6" class="py-20 text-center">
                                             <div class="flex flex-col justify-center items-center">
                                                 <div
                                                     class="flex justify-center items-center mb-4 w-16 h-16 rounded-full border border-gray-100 shadow-sm bg-surface dark:bg-boxdark-2 dark:border-boxdark">
