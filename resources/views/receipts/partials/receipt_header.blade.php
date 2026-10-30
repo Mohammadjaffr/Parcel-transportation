@@ -44,7 +44,9 @@
             $qrCodeSvg = null;
         }
     }
-
+$period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]) : '';
+        // استخراج الوقت فقط (الأرقام والنقطتين)
+        $time_only = preg_replace('/[^\d:]+/', '', $formatted_time);
     // معالجة كود الـ SVG لإضافة viewBox تلقائياً وجعله متجاوباً ليملأ المربع بنسبة 100%
     if (!empty($qrCodeSvg) && is_string($qrCodeSvg)) {
         $qrCodeSvg = preg_replace('/<\?xml.*?\?>/is', '', $qrCodeSvg);
@@ -164,7 +166,7 @@
                     </span>
                 </div>
                     </div>
-                    
+            
                 @else
                     <div style="height: 14mm;"></div>
                 @endif
@@ -181,12 +183,12 @@
                 <div style="flex: 0 1 auto; min-width: 0; text-align: right; direction: rtl; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     {{-- فرع الإرسال (في الأعلى تماماً بموازاة اسم الشركة) --}}
                     <div style="font-size: 13.5pt; font-weight: 900; color: #0f172a; line-height: 1.1; white-space: nowrap;">
-                        فرع الارسال {{ $senderBranchDisplay }}
+                        فرع إلارسال {{ $senderBranchDisplay }}
                     </div>
 
                     {{-- اليوم --}}
                     <div style="font-size: 9.5pt; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                        اليوم : <span style="font-weight: 900; border-bottom: 1.5px dotted #475569; padding-bottom: 0.5px;">{{ $day_name ?? now()->locale('ar')->translatedFormat('l') }}</span>
+                        اليوم : <span style="font-weight: 900; border-bottom: 1.5px  #475569; padding-bottom: 0.5px;">{{ $day_name ?? now()->locale('ar')->translatedFormat('l') }}</span>
                     </div>
 
                     {{-- التاريخ --}}
@@ -211,7 +213,7 @@
                     {{-- رقم السند (في الأسفل تماماً بموازاة كبسولة سند الإرسال والخط الأخضر) --}}
                     <div style="line-height: 1;">
                         <span style="font-size: 9.5pt; font-weight: 900; color: #1e293b;">رقم السند : </span>
-                        <span style="color: #b91c1c; font-size: 14.5pt; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px; vertical-align: middle;">{{ $bondNumDisplay }}</span>
+                        <span style="color: #000000; font-size: 14.5pt; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px; vertical-align: middle;">{{ $bondNumDisplay }}</span>
                     </div>
                 </div>
 

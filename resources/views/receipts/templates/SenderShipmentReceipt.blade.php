@@ -424,18 +424,17 @@
         }
 
         /* 5. الشروط والأحكام */
-        /* 5. الشروط والأحكام */
         .terms-section {
             height: auto;
             overflow: visible;
-            margin-bottom: 1.5mm;
+            margin-bottom: 1.2mm;
         }
 
         .terms-table {
             width: 100%;
-            font-size: 7pt;
+            font-size: 6.8pt;
             /* حجم خط مثالي ليتسع حتى 12 شرطاً بأريحية */
-            line-height: 1.3;
+            line-height: 1.25;
             color: #334155;
             font-weight: 600;
             table-layout: fixed;
@@ -444,7 +443,7 @@
 
         .terms-table td {
             width: 50%;
-            padding: 0.5mm 1.5mm;
+            padding: 0.4mm 1.5mm;
             vertical-align: top;
             text-align: right;
         }
@@ -455,14 +454,15 @@
             background:
                 {{ $primary }};
             color: #ffffff;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8.5pt;
-            font-weight: bold;
             border-radius: 4px;
             margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4mm;
+            box-sizing: border-box;
+            font-size: 8pt;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -731,10 +731,21 @@
                 </table>
             </div>
 
-            <!-- 6. FOOTER (الفوتر وشريط الاتصال) -->
+            <!-- 6. FOOTER (الفوتر وشريط الاتصال مع اسم الموظف) -->
             <div class="footer-bar">
-                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;"
-                    dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
+                {{-- اسم الموظف منشئ السند بتصميم أنيق ومميز --}}
+                <div style="display: flex; align-items: center; gap: 5px; font-size: 9pt; font-weight: 800;>
+                    <span style="opacity: 0.9;">الموظف:</span>
+                        {{ $creator_name ?? 'مسؤول النظام' }}
+                  
+                </div>
+
+                {{-- أرقام الإدارة العامة لجميع الفروع --}}
+                <div style="font-size: 8pt; font-weight: 800;">
+                    <span>أرقام الإدارة العامة لجميع الفروع: </span>
+                    <span style="margin-right: 4px; font-family: sans-serif; font-weight: 900;"
+                        dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
+                </div>
             </div>
         </div>
     </div>

@@ -705,10 +705,22 @@
                 </table>
             </div>
 
-            <!-- 6. FOOTER (الفوتر وشريط الاتصال) -->
+            <!-- 6. FOOTER (الفوتر وشريط الاتصال مع اسم الموظف) -->
             <div class="footer-bar">
-                أرقام الإدارة العامة لجميع الفروع: <span style="margin-right: 4px; font-family: sans-serif;"
-                    dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
+                {{-- اسم الموظف منشئ السند بتصميم أنيق ومميز --}}
+                <div style="display: flex; align-items: center; gap: 5px; font-size: 8pt; font-weight: 800;">
+                    <span style="opacity: 0.9;">الموظف:</span>
+                    <span style="background: rgba(255, 255, 255, 0.22); padding: 1px 8px; border-radius: 10px; font-weight: 900; border: 0.5px solid rgba(255, 255, 255, 0.35);">
+                        {{ $creator_name ?? 'مسؤول النظام' }}
+                    </span>
+                </div>
+
+                {{-- أرقام الإدارة العامة لجميع الفروع --}}
+                <div style="font-size: 8pt; font-weight: 800;">
+                    <span>أرقام الإدارة العامة لجميع الفروع: </span>
+                    <span style="margin-right: 4px; font-family: sans-serif; font-weight: 900;"
+                        dir="ltr">{{ $company['phone'] ?? ($company['headquarters']['phones'] ?? ($company['main_branch']['phones'] ?? '')) }}</span>
+                </div>
             </div>
         </div>
     </div>
