@@ -101,6 +101,10 @@ class ShipmentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+
+        // الافتراضي عند الفتح: كل الأيام وكل الحالات
+
+
         // جلب الطرود المرسلة من فرع المستخدم
         $query = Shipment::with([
             'receiverBranch.app',
