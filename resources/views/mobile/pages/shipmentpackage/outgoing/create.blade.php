@@ -26,6 +26,7 @@
             'code' => $p->code ?? '',
             'weight' => $p->weight ?? 0,
             'package_type' => $pkgType,
+            'sender_name' => $p->senderCustomer->name ?? 'عميل غير محدد',
             'customer_name' => $p->receiverCustomer->name ?? 'عميل غير محدد',
             'branch_name' => $p->receiverBranch?->name ?? $p->receiverOfficeBranch?->name ?? 'فرع غير محدد'
         ];
@@ -61,6 +62,10 @@
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-slate-400">رقم السند:</span>
                     <span class="font-mono font-black text-slate-800" x-text="'#' + (pendingConfirmParcel?.bond_number || pendingConfirmParcel?.id || '')"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-400">المرسل:</span>
+                    <span class="font-black text-slate-800 truncate max-w-[180px]" x-text="pendingConfirmParcel?.sender_name || 'غير محدد'"></span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-slate-400">المستلم:</span>
@@ -442,9 +447,10 @@
                             @php
                                 $branchName = $parcel->receiverBranch?->name ?? $parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد';
                                 $customerName =$parcel->receiverCustomer?->name ?? '';
+                                $senderName = $parcel->senderCustomer?->name ?? '';
                                 $bondNum = $parcel->bond_number ?? $parcel->id;
                             @endphp
-                            <label x-show="(searchQuery === '' || ('{{ $parcel->id }} {{$bondNum }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{$branchName }}' === selectedBranch)"
+                            <label x-show="(searchQuery === '' || ('{{ $parcel->id }} {{$bondNum }} {{ $customerName }} {{ $senderName }}').includes(searchQuery)) && (selectedBranch === '' || '{{$branchName }}' === selectedBranch)"
                                 x-transition
                                 class="block relative cursor-pointer group">
                                 
@@ -477,8 +483,12 @@
                                                 <span class="text-[10px] font-bold text-slate-500 block truncate">{{ $parcel->receiverBranch->address ?? 'العنوان غير مسجل' }}</span>
                                             </div>
                                             <div class="flex gap-1 items-center">
-                                                <span class="material-symbols-outlined text-[12px] text-slate-400">person</span>
-                                                <span class="text-[10px] font-bold text-slate-500 block truncate">لـ: {{ $customerName ?: 'عميل غير محدد' }}</span>
+                                                <span class="material-symbols-outlined text-[12px] text-primary">person</span>
+                                                <span class="text-[10px] font-bold text-slate-700 block truncate">إلى: {{ $customerName ?: 'عميل غير محدد' }}</span>
+                                            </div>
+                                            <div class="flex gap-1 items-center">
+                                                <span class="material-symbols-outlined text-[12px] text-slate-400">outbox</span>
+                                                <span class="text-[10px] font-medium text-slate-500 block truncate">من: {{ $senderName ?: 'غير محدد' }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -726,7 +736,7 @@
             selectAllFiltered() {
                 this.parcels.forEach(p => {
                     const matchesSearch = this.searchQuery === '' || 
-                        (p.id + ' ' + p.bond_number + ' ' + p.customer_name).includes(this.searchQuery);
+                        (p.id + ' ' + p.bond_number + ' ' + p.customer_name + ' ' + (p.sender_name || '')).includes(this.searchQuery);
                     const matchesBranch = this.selectedBranch === '' || 
                         p.branch_name === this.selectedBranch;
 

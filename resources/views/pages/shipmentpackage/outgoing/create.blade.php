@@ -30,6 +30,7 @@
                 'code' => $p->code ?? '',
                 'weight' => $p->weight ?? 0,
                 'package_type' => $pkgType,
+                'sender_name' => $p->senderCustomer->name ?? 'عميل غير محدد',
                 'customer_name' => $p->receiverCustomer->name ?? 'عميل غير محدد',
                 'branch_name' => $p->receiverBranch?->name ?? ($p->receiverOfficeBranch?->name ?? 'فرع غير محدد'),
             ];
@@ -66,6 +67,10 @@
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-400">رقم السند:</span>
                         <span class="font-mono font-black text-on-surface dark:text-white" x-text="'#' + (pendingConfirmParcel?.bond_number || pendingConfirmParcel?.id || '')"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-400">المرسل:</span>
+                        <span class="font-black text-on-surface dark:text-white truncate max-w-[180px]" x-text="pendingConfirmParcel?.sender_name || 'غير محدد'"></span>
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-gray-400">المستلم:</span>
@@ -540,7 +545,7 @@
                                     class="text-[11px] font-black text-gray-400 uppercase tracking-[0.1em] bg-surface dark:bg-boxdark-2 dark:text-bodydark border-b border-t border-gray-100 dark:border-boxdark">
                                     <th class="px-4 py-4 w-12 text-center">تحديد</th>
                                     <th class="px-6 py-4">رقم السند</th>
-                                    <th class="px-6 py-4">المستلم</th>
+                                    <th class="px-6 py-4">المرسل والمستلم</th>
                                     <th class="px-6 py-4">الوجهة</th>
                                     <th class="px-6 py-4 text-center">نوع الطرود</th>
                                 </tr>
@@ -552,10 +557,11 @@
                                             $parcel->receiverBranch?->name ??
                                             ($parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد');
                                         $customerName = $parcel->receiverCustomer?->name ?? '';
+                                        $senderName = $parcel->senderCustomer?->name ?? '';
                                         $bondNum = $parcel->bond_number ?? $parcel->id;
                                     @endphp
                                     <tr id="parcel-row-{{ $parcel->id }}"
-                                        x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $bondNum }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
+                                        x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $bondNum }} {{ $customerName }} {{ $senderName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
                                         x-transition
                                         class="transition-all cursor-pointer group hover:bg-surface/50 dark:hover:bg-boxdark-2/50"
                                         @click="toggleParcel({{ $parcel->id }}, {{ $parcel->weight ?? 0 }})"
@@ -592,12 +598,20 @@
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <div class="flex gap-1.5 items-center text-gray-800 dark:text-gray-200">
-                                                <span
-                                                    class="material-symbols-outlined text-[16px] text-gray-400">person</span>
-                                                <span class="text-xs font-bold truncate max-w-[150px]">
-                                                    {{ $customerName ?: 'عميل غير محدد' }}
-                                                </span>
+                                            <div class="flex flex-col gap-1">
+                                                <div class="flex gap-1.5 items-center text-gray-800 dark:text-gray-200" title="المستلم">
+                                                    <span class="material-symbols-outlined text-[16px] text-primary">person</span>
+                                                    <span class="text-xs font-black truncate max-w-[160px]">
+                                                        {{ $customerName ?: 'عميل غير محدد' }}
+                                                    </span>
+                                                    <span class="text-[10px] text-gray-400 font-bold">(المستلم)</span>
+                                                </div>
+                                                <div class="flex gap-1.5 items-center text-gray-500 dark:text-bodydark" title="المرسل">
+                                                    <span class="material-symbols-outlined text-[14px] text-gray-400">outbox</span>
+                                                    <span class="text-[11px] font-bold truncate max-w-[160px]">
+                                                        من: {{ $senderName ?: 'غير محدد' }}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </td>
 
@@ -642,10 +656,11 @@
                                     $parcel->receiverBranch?->name ??
                                     ($parcel->receiverOfficeBranch?->name ?? 'فرع غير محدد');
                                 $customerName = $parcel->receiverCustomer?->name ?? '';
+                                $senderName = $parcel->senderCustomer?->name ?? '';
                                 $bondNum = $parcel->bond_number ?? $parcel->id;
                             @endphp
                             <label
-                                x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $bondNum }} {{ $customerName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
+                                x-show="(searchQuery === '' || ('{{ $parcel->id }} {{ $bondNum }} {{ $customerName }} {{ $senderName }}').includes(searchQuery)) && (selectedBranch === '' || '{{ $branchName }}' === selectedBranch)"
                                 x-transition class="block relative h-full cursor-pointer group">
                                 <input type="checkbox" class="hidden peer"
                                     :checked="selectedParcels.some(p => p.id === {{ $parcel->id }})"
@@ -681,11 +696,13 @@
 
                                     <div class="relative z-10 pt-3 mt-auto border-t border-gray-100 dark:border-boxdark">
                                         <div class="flex flex-col gap-1.5">
-                                            <div class="flex gap-2 items-center text-xs text-gray-500 dark:text-bodydark">
-                                                <span
-                                                    class="material-symbols-outlined text-[16px] text-gray-400">person</span>
-                                                <span class="font-medium truncate">لـ:
-                                                    {{ $customerName ?: 'عميل غير محدد' }}</span>
+                                            <div class="flex gap-2 items-center text-xs text-gray-800 dark:text-white">
+                                                <span class="material-symbols-outlined text-[16px] text-primary">person</span>
+                                                <span class="font-black truncate">إلى: {{ $customerName ?: 'عميل غير محدد' }}</span>
+                                            </div>
+                                            <div class="flex gap-2 items-center text-[11px] text-gray-500 dark:text-bodydark">
+                                                <span class="material-symbols-outlined text-[14px] text-gray-400">outbox</span>
+                                                <span class="font-bold truncate">من: {{ $senderName ?: 'غير محدد' }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -953,7 +970,7 @@
                 selectAllFiltered() {
                     this.parcels.forEach(p => {
                         const matchesSearch = this.searchQuery === '' ||
-                            (p.id + ' ' + p.bond_number + ' ' + p.customer_name).includes(this
+                            (p.id + ' ' + p.bond_number + ' ' + p.customer_name + ' ' + (p.sender_name || '')).includes(this
                                 .searchQuery);
                         const matchesBranch = this.selectedBranch === '' ||
                             p.branch_name === this.selectedBranch;

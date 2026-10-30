@@ -64,7 +64,7 @@ class ShipmentPackagesController extends Controller
         $drivers = Driver::where('is_banned', false)->get();
         $nextTrackingNumber = ShipmentPackage::generateNextTrackingNumber($user->branch_id, null, $user->app_id);
 
-        $pendingParcels = Shipment::with(['receiverCustomer', 'receiverBranch'])
+        $pendingParcels = Shipment::with(['receiverCustomer', 'senderCustomer', 'receiverBranch', 'receiverOfficeBranch'])
             ->where('sender_branch_id', $user->branch_id)
             ->where('status', 'pending')
             ->whereNull('shipment_package_id')
