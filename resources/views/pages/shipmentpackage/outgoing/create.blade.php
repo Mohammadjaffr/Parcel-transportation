@@ -15,13 +15,22 @@
 
         // 2. تجهيز بيانات الطرود لـ Alpine.js شاملة بيانات الباركود (id, bond_number, uuid, code)
         $alpineParcels = $pendingParcels->map(function ($p) {
+            $pkgType = match ($p->package_type) {
+                'carton' => 'كرتون',
+                'bag' => 'كيس',
+                'envelope' => 'مغلف',
+                null, '' => 'طرد',
+                default => $p->package_type,
+            };
+
             return [
                 'id' => $p->id,
                 'uuid' => $p->uuid ?? '',
                 'bond_number' => $p->bond_number ?? '',
                 'code' => $p->code ?? '',
                 'weight' => $p->weight ?? 0,
-                'customer_name' => $p->receiverCustomer->name ?? '',
+                'package_type' => $pkgType,
+                'customer_name' => $p->receiverCustomer->name ?? 'عميل غير محدد',
                 'branch_name' => $p->receiverBranch?->name ?? ($p->receiverOfficeBranch?->name ?? 'فرع غير محدد'),
             ];
         });
@@ -32,6 +41,66 @@
     @endphp
 
     <div class="pb-24 min-h-screen bg-surface dark:bg-boxdark-2 font-body lg:pb-12" dir="rtl" x-data="shipmentPreparation({{ $alpineParcels->toJson() }}, '{{ $currentBranchCode }}')">
+        {{-- ================= نافذة تأكيد تحميل الطرد بعد مسح الباركود ================= --}}
+        <div x-show="confirmScanModalOpen" x-cloak x-transition.opacity
+            @keydown.escape.window="if(confirmScanModalOpen) cancelScannedParcel()"
+            class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div @click.away="cancelScannedParcel()"
+                x-show="confirmScanModalOpen"
+                x-transition:enter="transform transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                class="relative w-full max-w-sm overflow-hidden bg-white dark:bg-boxdark rounded-3xl shadow-2xl border border-gray-100 dark:border-boxdark-2 p-6 text-center">
+
+                <div class="flex justify-center items-center mx-auto mb-3 w-14 h-14 rounded-2xl bg-primary/10 text-primary">
+                    <span class="material-symbols-outlined text-[28px]">inventory_2</span>
+                </div>
+
+                <h3 class="text-base font-black font-headline text-on-surface dark:text-white">
+                    هل تم تحميل "<span class="text-primary" x-text="pendingConfirmParcel?.package_type || 'الطرد'"></span>"؟
+                </h3>
+                <p class="mt-1 text-xs font-bold text-gray-400">تأكيد إضافة الطرد إلى قائمة الشحنة</p>
+
+                {{-- تفاصيل الطرد بشكل مختصر وبسيط --}}
+                <div class="p-3.5 my-4 space-y-2 text-xs text-right rounded-2xl border border-gray-100 bg-surface dark:bg-boxdark-2 dark:border-boxdark">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-400">رقم السند:</span>
+                        <span class="font-mono font-black text-on-surface dark:text-white" x-text="'#' + (pendingConfirmParcel?.bond_number || pendingConfirmParcel?.id || '')"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-400">المستلم:</span>
+                        <span class="font-black text-on-surface dark:text-white truncate max-w-[180px]" x-text="pendingConfirmParcel?.customer_name || 'غير محدد'"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-400">الوجهة:</span>
+                        <span class="font-black text-primary" x-text="pendingConfirmParcel?.branch_name || 'غير محدد'"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-gray-400">نوع الطرد:</span>
+                        <span class="px-2 py-0.5 font-black rounded-md bg-primary/10 text-primary" x-text="pendingConfirmParcel?.package_type || 'طرد'"></span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2.5">
+                    <button type="button"
+                        x-ref="confirmScanBtn"
+                        @click="confirmScannedParcel()"
+                        @keydown.enter.prevent.stop="confirmScannedParcel()"
+                        class="flex flex-1 gap-2 justify-center items-center py-3 text-xs font-black text-white rounded-xl shadow-md transition-all bg-primary hover:bg-primary-hover shadow-primary/25 focus:ring-4 focus:ring-primary/30 outline-none active:scale-95">
+                        <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                        <span>نعم، موافق</span>
+                        <span class="px-1.5 py-0.5 text-[10px] rounded bg-white/20 font-mono">Enter ↵</span>
+                    </button>
+
+                    <button type="button"
+                        @click="cancelScannedParcel()"
+                        class="px-4 py-3 text-xs font-black text-gray-600 bg-gray-100 rounded-xl transition-all hover:bg-gray-200 dark:bg-boxdark-2 dark:text-gray-300 dark:hover:bg-gray-700 active:scale-95">
+                        إلغاء
+                    </button>
+                </div>
+            </div>
+        </div>
+
         {{-- ================= نافذة مسح الباركود بالكاميرا (Camera Scanner Modal) ================= --}}
         <div x-show="isScannerOpen" x-cloak x-transition.opacity
             class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -400,7 +469,7 @@
                                 <span
                                     class="absolute right-3 top-1/2 -translate-y-1/2 text-primary material-symbols-outlined">qr_code_scanner</span>
                                 <input type="text" x-model="barcodeInput" x-ref="barcodeField"
-                                    @keydown.enter.prevent="handleBarcodeScan(barcodeInput)"
+                                    @keydown.enter.prevent.stop="handleBarcodeScan(barcodeInput)"
                                     placeholder="امسح باركود السند هنا (أو اكتب الرقم + Enter)..."
                                     class="pr-10 pl-4 w-full h-11 text-sm font-bold rounded-xl border-2 transition-all outline-none border-primary/30 bg-primary/5 dark:bg-primary/10 dark:border-primary/40 dark:text-white focus:ring-2 focus:ring-primary/30 focus:border-primary focus:bg-white">
                             </div>
@@ -679,6 +748,8 @@
                 selectedBranch: '',
                 barcodeInput: '',
                 isScannerOpen: false,
+                confirmScanModalOpen: false,
+                pendingConfirmParcel: null,
                 html5QrCode: null,
                 scanFeedback: { message: '', type: '' },
                 feedbackTimeout: null,
@@ -711,6 +782,7 @@
 
                 // 💡 الدالة المحدثة بذكاء الباركود
                 handleBarcodeScan(rawValue) {
+                    if (this.confirmScanModalOpen) return;
                     if (!rawValue || !rawValue.trim()) return;
 
                     let scanned = rawValue.trim();
@@ -759,19 +831,21 @@
                         const alreadySelected = this.selectedParcels.some(sp => sp.id === matchedParcel.id);
                         
                         // لعرض الرقم الصافي للمستخدم في رسالة النجاح
-                        let displayNum = matchedParcel.bond_number || matchedParcel.id;
+                        let displayNum = String(matchedParcel.bond_number || matchedParcel.id);
                         if (displayNum.includes('-')) {
                             displayNum = displayNum.split('-').pop();
                         }
 
                         if (!alreadySelected) {
-                            this.selectedParcels.push({
-                                id: matchedParcel.id,
-                                weight: matchedParcel.weight
-                            });
-                            this.updateStats();
+                            this.pendingConfirmParcel = {
+                                ...matchedParcel,
+                                display_num: displayNum
+                            };
+                            this.confirmScanModalOpen = true;
                             this.playBeep(true);
-                            this.showFeedback(`تم تحديد الطرد رقم #${displayNum} (${matchedParcel.customer_name || 'بدون اسم'}) بنجاح`, 'success');
+                            setTimeout(() => {
+                                this.$refs.confirmScanBtn?.focus();
+                            }, 50);
                         } else {
                             this.playBeep(true);
                             this.showFeedback(`الطرد رقم #${displayNum} محدد بالفعل في القائمة`, 'info');
@@ -782,6 +856,36 @@
                     }
 
                     this.barcodeInput = '';
+                },
+
+                confirmScannedParcel() {
+                    if (!this.pendingConfirmParcel) return;
+                    const parcel = this.pendingConfirmParcel;
+                    if (!this.selectedParcels.some(sp => sp.id === parcel.id)) {
+                        this.selectedParcels.push({
+                            id: parcel.id,
+                            weight: parcel.weight
+                        });
+                        this.updateStats();
+                    }
+                    this.confirmScanModalOpen = false;
+                    this.pendingConfirmParcel = null;
+                    this.showFeedback(`تم تحديد الطرد رقم #${parcel.display_num} (${parcel.customer_name || 'بدون اسم'}) بنجاح`, 'success');
+                    this.$nextTick(() => {
+                        if (!this.isScannerOpen) {
+                            this.$refs.barcodeField?.focus();
+                        }
+                    });
+                },
+
+                cancelScannedParcel() {
+                    this.confirmScanModalOpen = false;
+                    this.pendingConfirmParcel = null;
+                    this.$nextTick(() => {
+                        if (!this.isScannerOpen) {
+                            this.$refs.barcodeField?.focus();
+                        }
+                    });
                 },
 
                 // تشغيل كاميرا المسح
