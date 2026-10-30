@@ -46,6 +46,12 @@
                 <h1 class="text-lg font-black text-slate-800 dark:text-white">تفاصيل الراكب</h1>
             </div>
 
+            {{-- زر طباعة التذكرة / السند --}}
+            <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                class="flex justify-center items-center w-10 h-10 bg-white dark:bg-boxdark rounded-full border shadow-sm transition-all border-slate-100 dark:border-boxdark-2 text-slate-600 dark:text-gray-300 hover:text-primary active:scale-90"
+                title="طباعة السند / التذكرة">
+                <span class="material-symbols-outlined text-[20px]">print</span>
+            </a>
         </div>
 
         <div class="px-4 space-y-4 w-full">
@@ -97,6 +103,13 @@
                     </h3>
                     
                     <div class="flex flex-col gap-2.5">
+                        {{-- زر طباعة التذكرة / السند --}}
+                        <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                            class="flex gap-2.5 justify-center items-center py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-boxdark-2 border border-slate-200 dark:border-boxdark-2 rounded-2xl text-xs font-black text-slate-700 dark:text-white shadow-sm transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">print</span>
+                            <span>طباعة التذكرة / السند</span>
+                        </a>
+
                         @if ($whatsappUrl)
                             <button type="button"
                                 onclick="sendPassengerBookingDirect({{ $passenger->id }}, this, '{{ $whatsappUrl }}')"
@@ -120,6 +133,7 @@
                             </button>
                         </div>
                     </div>
+                </div>
             @elseif ($rawStatus == 'cancel')
                 @php
                     $whatsappCancelUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerCancel');
@@ -132,6 +146,13 @@
                     </h3>
                     
                     <div class="flex flex-col gap-2.5">
+                        {{-- زر طباعة التذكرة / السند --}}
+                        <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                            class="flex gap-2.5 justify-center items-center py-3 bg-slate-100 hover:bg-slate-200 dark:bg-boxdark-2 border border-slate-200 dark:border-boxdark-2 rounded-2xl text-xs font-black text-slate-700 dark:text-white shadow-sm transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">print</span>
+                            <span>طباعة التذكرة / السند</span>
+                        </a>
+
                         {{-- زر إعادة الحجز --}}
                         <button type="button" @click="showRebookModal = true"
                             class="flex gap-2.5 justify-center items-center py-3.5 bg-emerald-600 text-white rounded-2xl text-xs font-black shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 active:scale-95">
@@ -162,6 +183,20 @@
                             <span class="material-symbols-outlined text-[16px]">delete</span>
                             حذف الراكب
                         </button>
+                    </div>
+                </div>
+            @else
+                {{-- للمكتمل أو غيرها --}}
+                <div class="p-5 bg-white rounded-[2rem] border border-slate-100 shadow-sm dark:bg-boxdark dark:border-boxdark-2 space-y-3">
+                    <h3 class="flex items-center gap-2 text-xs font-black text-slate-400 dark:text-gray-500 uppercase tracking-wider">
+                        <span class="material-symbols-outlined text-[18px]">bolt</span> الإجراءات المتاحة
+                    </h3>
+                    <div class="flex flex-col gap-2.5">
+                        <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                            class="flex gap-2.5 justify-center items-center py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-boxdark-2 border border-slate-200 dark:border-boxdark-2 rounded-2xl text-xs font-black text-slate-700 dark:text-white shadow-sm transition-all active:scale-95">
+                            <span class="material-symbols-outlined text-[18px]">print</span>
+                            <span>طباعة التذكرة / السند</span>
+                        </a>
                     </div>
                 </div>
             @endif

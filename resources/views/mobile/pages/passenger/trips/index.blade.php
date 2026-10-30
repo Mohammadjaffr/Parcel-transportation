@@ -4,39 +4,76 @@
 
 @section('content')
 
-    <div class="flex flex-col pt-4 pb-24 min-h-screen bg-slate-50/50 dark:bg-black" dir="rtl">
+    <div class="flex flex-col pt-4 pb-24 min-h-screen bg-slate-50/50 dark:bg-black font-headline" dir="rtl" x-data="tripsDataMobile()">
 
         {{-- ================= الهيدر وزر إضافة رحلة جديدة ================= --}}
-        <div class="flex justify-between items-center px-4 mb-6">
+        <div class="flex justify-between items-center px-4 mb-4">
             <div>
                 <h1 class="text-lg font-black font-headline text-slate-800 dark:text-white">قائمة الرحلات الحالية</h1>
                 <p class="text-xs text-gray-400 mt-0.5">إدارة وتجميع الركاب داخل الرحلات</p>
             </div>
             <div class="flex gap-2">
                 <a href="{{ route('receipt.generate', ['type' => 'all_trips', 'id' => 'branch_id:' . auth()->user()->branch_id]) }}" target="_blank"
-                    class="flex justify-center items-center w-11 h-11 bg-primary/10 text-primary border border-primary/20 rounded-[1rem] shadow-sm transition-all active:scale-90 hover:bg-primary hover:text-white">
+                    class="flex justify-center items-center w-11 h-11 bg-primary/10 text-primary border border-primary/20 rounded-[1rem] shadow-sm transition-all active:scale-90 hover:bg-primary hover:text-white"
+                    title="طباعة الكشف">
                     <span class="material-symbols-outlined text-[24px]">print</span>
                 </a>
                 {{-- زر إضافة رحلة جديدة --}}
                 <a href="{{ route('trips.create') }}"
-                    class="flex justify-center items-center w-11 h-11 bg-primary text-white rounded-full shadow-md shadow-primary/20 transition-all active:scale-90">
+                    class="flex justify-center items-center w-11 h-11 bg-primary text-white rounded-full shadow-md shadow-primary/20 transition-all active:scale-90"
+                    title="إنشاء رحلة جديدة">
                     <span class="material-symbols-outlined text-[24px]">add</span>
                 </a>
+            </div>
+        </div>
+
+        {{-- ================= شريط البحث السريع والفلترة ================= --}}
+        <div class="px-4 mb-4">
+            <div class="relative flex items-center bg-white dark:bg-boxdark rounded-2xl border border-slate-200/80 dark:border-boxdark-2 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all p-1">
+                <div class="pr-3 pl-2 text-slate-400 flex items-center pointer-events-none">
+                    <span class="material-symbols-outlined text-[20px]">search</span>
+                </div>
+                <input type="text" x-model="searchQuery" @input.debounce.250ms="updateVisibility()"
+                    placeholder="ابحث برقم الرحلة، اسم السائق، الهاتف، اليوم..."
+                    class="w-full h-10 text-xs font-bold text-slate-700 dark:text-gray-200 bg-transparent border-0 outline-none focus:ring-0 placeholder-slate-400">
+                <button type="button" x-show="searchQuery.length > 0" x-cloak
+                    @click="searchQuery = ''; updateVisibility()"
+                    class="flex justify-center items-center w-8 h-8 rounded-xl text-slate-400 hover:text-rose-500 hover:bg-rose-50 active:scale-95 ml-1">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
+            </div>
+            <div class="flex justify-between items-center px-1 mt-2 text-[11px] font-bold text-slate-400">
+                <span>النتائج المعروضة: <strong class="text-primary font-black" x-text="visibleCount"></strong> من <span>{{ $trips->count() }}</span></span>
+                <span x-show="searchQuery.length > 0" x-cloak class="text-primary cursor-pointer hover:underline" @click="searchQuery = ''; updateVisibility()">إعادة تعيين</span>
             </div>
         </div>
 
         {{-- ================= حاوية الرحلات الأساسية ================= --}}
         <div class="px-4 space-y-4">
 
+            {{-- رسالة عند عدم وجود نتائج للبحث --}}
+            <div x-show="visibleCount === 0 && searchQuery.length > 0" x-cloak
+                class="w-full bg-white dark:bg-boxdark rounded-[2rem] p-8 border border-slate-100 dark:border-boxdark-2 text-center">
+                <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">search_off</span>
+                <p class="text-xs font-bold text-slate-500">لا توجد رحلات تطابق بحثك</p>
+                <button type="button" @click="searchQuery = ''; updateVisibility()"
+                    class="mt-3 px-4 py-1.5 text-xs font-bold text-primary bg-primary/10 rounded-xl active:scale-95">
+                    مسح البحث
+                </button>
+            </div>
 
             @forelse($trips as $trip)
                 @php
+                    $driverName = $trip->driver->name ?? 'سائق غير معين';
+                    $driverPhone = $trip->driver->phone ?? '';
+                    $dayName = $trip->created_at->locale('ar')->translatedFormat('l');
                     $tripOfficeComm = $trip->passengers->sum('office_commission');
                     $tripOtherComm = $trip->passengers->sum('other_office_commission');
                 @endphp
-                {{-- بطاقة كرت الرحلة الواحدة مع تهيئة النطاق المستقل للقائمة المنسدلة --}}
+                {{-- بطاقة كرت الرحلة الواحدة مع تهيئة النطاق المستقل للقائمة المنسدلة والفلترة --}}
                 <div x-data="{ openMenu: false }"
-                    class="w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2 relative transition-all hover:shadow-md">
+                    x-show="showRow(@js($driverName), @js($driverPhone), @js((string) $trip->id), @js($dayName))"
+                    class="trip-mobile-card w-full bg-white dark:bg-boxdark rounded-[2rem] shadow-sm p-5 border border-gray-100 dark:border-boxdark-2 relative transition-all hover:shadow-md">
 
                     {{-- خانة الرحلة والتاريخ واليوم --}}
                     <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-boxdark-2">
@@ -45,7 +82,7 @@
                                 رحلة #{{ $trip->id }}
                             </span>
                             <span class="text-xs font-black text-slate-700 dark:text-gray-200">
-                                {{ $trip->created_at->locale('ar')->translatedFormat('l') }}
+                                {{ $dayName }}
                             </span>
                         </div>
                         <div class="flex items-center gap-1 text-[11px] font-bold text-gray-400 font-mono">
@@ -64,7 +101,7 @@
                             <div>
                                 <div class="flex items-center gap-1.5 flex-wrap">
                                     <h3 class="text-sm font-black text-slate-800 dark:text-white">
-                                        {{ $trip->driver->name ?? 'سائق غير معين بعد' }}
+                                        {{ $driverName }}
                                     </h3>
                                     @if ($trip->driver?->vehicle_type)
                                         <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
@@ -72,9 +109,9 @@
                                         </span>
                                     @endif
                                 </div>
-                                @if ($trip->driver?->phone)
+                                @if ($driverPhone)
                                     <span class="text-xs text-gray-400 font-mono block text-right mt-0.5"
-                                        style="direction: ltr;"> <x-phone-number :value="$trip->driver->phone"
+                                        style="direction: ltr;"> <x-phone-number :value="$driverPhone"
                                             class="text-xs text-primary !justify-start" /></span>
                                 @else
                                     <span class="text-xs text-amber-500 font-medium block mt-0.5">يرجى تعيين سائق
@@ -184,4 +221,39 @@
         </div>
     </div>
 
+@endsection
+
+@section('script')
+    <script>
+        function tripsDataMobile() {
+            return {
+                searchQuery: '',
+                visibleCount: {{ $trips->count() }},
+
+                init() {
+                    this.updateVisibility();
+                },
+
+                showRow(driverName, driverPhone, tripId = '', dayName = '') {
+                    const query = this.searchQuery.toLowerCase().trim();
+                    if (!query) return true;
+
+                    const cleanQuery = query.replace(/^(\+967|967|00967|0)/, '');
+                    const check = (str) => {
+                        if (!str) return false;
+                        const cleanStr = String(str).toLowerCase();
+                        return cleanStr.includes(query) || (cleanQuery !== '' && cleanStr.includes(cleanQuery));
+                    };
+
+                    return check(driverName) || check(driverPhone) || check(tripId) || check(dayName);
+                },
+
+                updateVisibility() {
+                    this.$nextTick(() => {
+                        this.visibleCount = document.querySelectorAll('.trip-mobile-card:not([style*="display: none"])').length;
+                    });
+                }
+            }
+        }
+    </script>
 @endsection

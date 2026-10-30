@@ -374,7 +374,9 @@
 <div class="flex flex-col gap-4"
     x-data="{
         packageFee: {{ old('package_fee', $shipment->package_fee ?? 0) }},
-        packageCommissionRate: {{ old('package_commission_rate', $shipment->package_commission_rate ?? 0) }},
+        packageCommissionRate: {{ old('package_commission_rate', $shipment->package_commission_rate ?? 30) }},
+        isCommissionOpen: false,
+        commissionOptions: [10, 20, 30],
         honeyFee: {{ old('honey_fee', $shipment->honey_fee ?? 0) }},
         honeyCommissionRate: {{ old('honey_commission_rate', $shipment->honey_commission_rate ?? 0) }},
         
@@ -461,9 +463,31 @@
 
             <div class="flex flex-col col-span-1 gap-2 mt-1">
                 <label class="text-[11px] font-bold text-slate-400">نسبة العمولة (%)</label>
-                <div class="relative">
-                    <input type="number" name="package_commission_rate" x-model.number="packageCommissionRate" placeholder="0" min="0" max="100" dir="ltr"
-                        class="px-4 w-full h-12 text-sm font-bold text-left rounded-xl border-none ring-1 outline-none bg-slate-50 ring-slate-100 focus:bg-white focus:ring-2 focus:ring-primary/20 text-slate-700">
+                <div class="relative z-[30]" @click.outside="isCommissionOpen = false">
+                    <input type="number" name="package_commission_rate" x-model.number="packageCommissionRate"
+                        @focus="isCommissionOpen = true" @click="isCommissionOpen = true"
+                        placeholder="30" min="0" max="100" dir="ltr"
+                        value="{{ old('package_commission_rate', $shipment->package_commission_rate ?? 30) }}"
+                        class="pl-10 pr-4 w-full h-12 text-sm font-bold text-left rounded-xl border transition-all outline-none border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 text-slate-700">
+
+                    <button type="button" @click="isCommissionOpen = !isCommissionOpen" tabindex="-1"
+                        class="flex absolute inset-y-0 left-0 items-center px-3 h-full rounded-l-xl transition-colors text-slate-400 hover:text-primary">
+                        <span class="material-symbols-outlined text-[20px] transition-transform duration-300"
+                            :class="isCommissionOpen ? 'rotate-180 text-primary' : ''">expand_more</span>
+                    </button>
+
+                    <div x-show="isCommissionOpen" x-cloak x-transition.opacity.translate.y.-10px
+                        class="absolute left-0 right-0 top-full z-[60] mt-1.5 overflow-hidden rounded-xl bg-white border border-slate-100 shadow-[0_10px_40px_-15px_rgba(0,0,0,0.15)] py-1.5">
+                        <template x-for="option in commissionOptions" :key="option">
+                            <button type="button" @click="packageCommissionRate = option; isCommissionOpen = false"
+                                class="flex justify-between items-center px-4 py-2.5 w-full text-xs font-bold text-right transition-colors text-slate-700 hover:bg-slate-50 hover:text-primary">
+                                <span x-text="option + '%'"></span>
+                                <span x-show="packageCommissionRate == option"
+                                    class="material-symbols-outlined text-[18px] text-primary">check</span>
+                            </button>
+                        </template>
+                    </div>
+
                     {{-- عرض مباشر للمبلغ المحسوب --}}
                     <div class="absolute -bottom-5 left-1 flex gap-1 items-center text-[9px] font-bold text-emerald-600">
                         <span class="material-symbols-outlined text-[10px]">payments</span>
@@ -942,15 +966,39 @@
 
                 selectCustomer(customer) {
                     this.selectedCustomerId = customer.id;
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+', '') : '';
+                    this.nameInput = customer.name || '';
 
-                    if (customer.phone && customer.phone.startsWith(dialCode)) {
-                        this.localPhoneNumber = customer.phone.substring(dialCode.length);
+                    let phone = customer.phone ? String(customer.phone) : '';
+                    if (phone) {
+                        let phoneWithPlus = phone;
+                        if (/^\d/.test(phoneWithPlus)) phoneWithPlus = '+' + phoneWithPlus;
+
+                        let matchedCountry = this.countries
+                            .slice()
+                            .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                            .find(c => phoneWithPlus.startsWith(c.dial_code));
+
+                        if (matchedCountry) {
+                            this.selectedCountry = matchedCountry;
+                            this.localPhoneNumber = phoneWithPlus.substring(matchedCountry.dial_code.length);
+                        } else {
+                            let cleanPhone = phone.replace(/^\+/, '');
+                            let matchedCountryClean = this.countries
+                                .slice()
+                                .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                                .find(c => cleanPhone.startsWith(c.dial_code.replace('+', '')));
+
+                            if (matchedCountryClean) {
+                                this.selectedCountry = matchedCountryClean;
+                                this.localPhoneNumber = cleanPhone.substring(matchedCountryClean.dial_code.replace('+', '').length);
+                            } else {
+                                this.localPhoneNumber = phone;
+                            }
+                        }
                     } else {
-                        this.localPhoneNumber = customer.phone;
+                        this.localPhoneNumber = '';
                     }
 
-                    this.nameInput = customer.name;
                     this.showCustomerDropdown = false;
                 },
 

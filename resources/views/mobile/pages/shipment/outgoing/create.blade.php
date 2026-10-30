@@ -1002,19 +1002,39 @@
                 // عند اختيار عميل من القائمة المنسدلة
                 selectCustomer(customer) {
                     this.selectedCustomerId = customer.id;
+                    this.nameInput = customer.name || '';
 
-                    // محاولة استخراج الرقم المحلي فقط وعرضه في الحقل
-                    let dialCode = this.selectedCountry ? this.selectedCountry.dial_code.replace('+',
-                        '') : '';
+                    let phone = customer.phone ? String(customer.phone) : '';
+                    if (phone) {
+                        let phoneWithPlus = phone;
+                        if (/^\d/.test(phoneWithPlus)) phoneWithPlus = '+' + phoneWithPlus;
 
-                    if (customer.phone && customer.phone.startsWith(dialCode)) {
-                        this.localPhoneNumber = customer.phone.substring(dialCode.length);
+                        let matchedCountry = this.countries
+                            .slice()
+                            .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                            .find(c => phoneWithPlus.startsWith(c.dial_code));
+
+                        if (matchedCountry) {
+                            this.selectedCountry = matchedCountry;
+                            this.localPhoneNumber = phoneWithPlus.substring(matchedCountry.dial_code.length);
+                        } else {
+                            let cleanPhone = phone.replace(/^\+/, '');
+                            let matchedCountryClean = this.countries
+                                .slice()
+                                .sort((a, b) => b.dial_code.length - a.dial_code.length)
+                                .find(c => cleanPhone.startsWith(c.dial_code.replace('+', '')));
+
+                            if (matchedCountryClean) {
+                                this.selectedCountry = matchedCountryClean;
+                                this.localPhoneNumber = cleanPhone.substring(matchedCountryClean.dial_code.replace('+', '').length);
+                            } else {
+                                this.localPhoneNumber = phone;
+                            }
+                        }
                     } else {
-                        this.localPhoneNumber = customer.phone; // إذا لم يطابق المفتاح، نعرضه كاملاً
+                        this.localPhoneNumber = '';
                     }
 
-                    // تعبئة حقل الاسم وإغلاق القائمة
-                    this.nameInput = customer.name;
                     this.showCustomerDropdown = false;
                 },
 

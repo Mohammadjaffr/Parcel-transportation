@@ -11,19 +11,85 @@
 
     // 2. تجهيز بيانات الطرود لـ Alpine.js شاملة بيانات الباركود
     $alpineParcels = $pendingParcels->map(function($p) {
+        $pkgType = match ($p->package_type) {
+            'carton' => 'كرتون',
+            'bag' => 'كيس',
+            'envelope' => 'مغلف',
+            null, '' => 'طرد',
+            default => $p->package_type,
+        };
+
         return [
             'id' => $p->id,
             'uuid' => $p->uuid ?? '',
             'bond_number' => $p->bond_number ?? '',
             'code' => $p->code ?? '',
             'weight' => $p->weight ?? 0,
-            'customer_name' => $p->receiverCustomer->name ?? '',
+            'package_type' => $pkgType,
+            'customer_name' => $p->receiverCustomer->name ?? 'عميل غير محدد',
             'branch_name' => $p->receiverBranch?->name ?? $p->receiverOfficeBranch?->name ?? 'فرع غير محدد'
         ];
     });
+
+    $currentBranchCode = auth()->user()->branch->code ?? 'B' . (auth()->user()->branch_id ?? '1');
 @endphp
 
-<div class="flex flex-col gap-6 px-4 pt-4 pb-32" x-data="shipmentPreparation({{ $alpineParcels->toJson() }})">
+<div class="flex flex-col gap-6 px-4 pt-4 pb-32" x-data="shipmentPreparation({{ $alpineParcels->toJson() }}, '{{ $currentBranchCode }}')">
+
+    {{-- ================= نافذة تأكيد تحميل الطرد بعد مسح الباركود ================= --}}
+    <div x-show="confirmScanModalOpen" x-cloak x-transition.opacity
+        @keydown.escape.window="if(confirmScanModalOpen) cancelScannedParcel()"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div @click.away="cancelScannedParcel()"
+            x-show="confirmScanModalOpen"
+            x-transition:enter="transform transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+            class="relative w-full max-w-sm overflow-hidden bg-white rounded-3xl shadow-2xl border border-slate-100 p-6 text-center">
+
+            <div class="flex justify-center items-center mx-auto mb-3 w-14 h-14 rounded-2xl bg-primary/10 text-primary">
+                <span class="material-symbols-outlined text-[28px]">inventory_2</span>
+            </div>
+
+            <h3 class="text-base font-black font-headline text-slate-800">
+                هل تم تحميل "<span class="text-primary" x-text="pendingConfirmParcel?.package_type || 'الطرد'"></span>"؟
+            </h3>
+            <p class="mt-1 text-xs font-bold text-slate-400">تأكيد إضافة الطرد إلى قائمة الشحنة</p>
+
+            {{-- تفاصيل الطرد بشكل مختصر وبسيط --}}
+            <div class="p-3.5 my-4 space-y-2 text-xs text-right rounded-2xl border border-slate-100 bg-slate-50">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-400">رقم السند:</span>
+                    <span class="font-mono font-black text-slate-800" x-text="'#' + (pendingConfirmParcel?.bond_number || pendingConfirmParcel?.id || '')"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-400">المستلم:</span>
+                    <span class="font-black text-slate-800 truncate max-w-[180px]" x-text="pendingConfirmParcel?.customer_name || 'غير محدد'"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-400">الوجهة:</span>
+                    <span class="font-black text-primary" x-text="pendingConfirmParcel?.branch_name || 'غير محدد'"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-400">نوع الطرد:</span>
+                    <span class="px-2 py-0.5 font-black rounded-md bg-primary/10 text-primary" x-text="pendingConfirmParcel?.package_type || 'طرد'"></span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <button type="button" @click="confirmScannedParcel()" x-ref="confirmScanBtn"
+                    class="flex gap-1.5 justify-center items-center h-12 text-xs font-black text-white rounded-2xl shadow-md transition-all bg-primary hover:bg-primary-hover shadow-primary/20 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">check_circle</span>
+                    <span>تأكيد التحميل</span>
+                </button>
+                <button type="button" @click="cancelScannedParcel()"
+                    class="flex gap-1.5 justify-center items-center h-12 text-xs font-bold rounded-2xl transition-all text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                    <span>إلغاء</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     {{-- ================= نافذة الكاميرا للموبايل (Camera Scanner Modal) ================= --}}
     <div x-show="isScannerOpen" x-cloak x-transition.opacity
@@ -470,19 +536,22 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('shipmentPreparation', (parcels) => ({
+        Alpine.data('shipmentPreparation', (parcels, currentBranchCode = '') => ({
             selectedParcels: [],
             totalWeight: 0,
             searchQuery: '',
             selectedBranch: '',
             barcodeInput: '',
             isScannerOpen: false,
+            confirmScanModalOpen: false,
+            pendingConfirmParcel: null,
             html5QrCode: null,
             lastScannedCode: '',
             lastScannedTime: 0,
             scanFeedback: { message: '', type: '' },
             feedbackTimeout: null,
             parcels: parcels || [],
+            currentBranchCode: currentBranchCode || '',
 
             playBeep(isSuccess = true) {
                 try {
@@ -511,6 +580,7 @@
             },
 
             handleBarcodeScan(rawValue) {
+                if (this.confirmScanModalOpen) return;
                 if (!rawValue || !rawValue.trim()) return;
 
                 let scanned = rawValue.trim();
@@ -530,6 +600,11 @@
                 const cleanScanned = scanned.replace(/^#/, '');
                 const numericScanned = cleanScanned.replace(/^0+/, '');
 
+                let expectedBondNumber = '';
+                if (this.currentBranchCode && /^\d+$/.test(numericScanned)) {
+                    expectedBondNumber = this.currentBranchCode + '-' + numericScanned;
+                }
+
                 const matchedParcel = this.parcels.find(p => {
                     const pId = String(p.id);
                     const pBond = String(p.bond_number || '').replace(/^#/, '');
@@ -540,7 +615,11 @@
                     return (
                         pId === cleanScanned ||
                         pId === numericScanned ||
-                        (pBond !== '' && (pBond === cleanScanned || pBondNoZeros === numericScanned)) ||
+                        pBond === cleanScanned ||
+                        pBondNoZeros === numericScanned ||
+                        (expectedBondNumber !== '' && pBond === expectedBondNumber) ||
+                        pBond.endsWith('-' + cleanScanned) ||
+                        pBond.endsWith('-' + numericScanned) ||
                         (pUuid !== '' && pUuid === cleanScanned) ||
                         (pCode !== '' && pCode === cleanScanned)
                     );
@@ -548,19 +627,24 @@
 
                 if (matchedParcel) {
                     const alreadySelected = this.selectedParcels.some(sp => sp.id === matchedParcel.id);
-                    const displayNum = matchedParcel.bond_number || matchedParcel.id;
+                    let displayNum = String(matchedParcel.bond_number || matchedParcel.id);
+                    if (displayNum.includes('-')) {
+                        displayNum = displayNum.split('-').pop();
+                    }
 
                     if (!alreadySelected) {
-                        this.selectedParcels.push({
-                            id: matchedParcel.id,
-                            weight: matchedParcel.weight
-                        });
-                        this.updateStats();
+                        this.pendingConfirmParcel = {
+                            ...matchedParcel,
+                            display_num: displayNum
+                        };
+                        this.confirmScanModalOpen = true;
                         this.playBeep(true);
-                        this.showFeedback(`تم تحديد السند #${displayNum} (${matchedParcel.customer_name || 'عميل'})`, 'success');
+                        setTimeout(() => {
+                            this.$refs.confirmScanBtn?.focus();
+                        }, 50);
                     } else {
                         this.playBeep(true);
-                        this.showFeedback(`السند #${displayNum} محدد مسبقاً`, 'info');
+                        this.showFeedback(`السند #${displayNum} محدد مسبقاً في القائمة`, 'info');
                     }
                 } else {
                     this.playBeep(false);
@@ -568,6 +652,26 @@
                 }
 
                 this.barcodeInput = '';
+            },
+
+            confirmScannedParcel() {
+                if (!this.pendingConfirmParcel) return;
+                const parcel = this.pendingConfirmParcel;
+                if (!this.selectedParcels.some(sp => sp.id === parcel.id)) {
+                    this.selectedParcels.push({
+                        id: parcel.id,
+                        weight: parcel.weight
+                    });
+                    this.updateStats();
+                }
+                this.confirmScanModalOpen = false;
+                this.pendingConfirmParcel = null;
+                this.showFeedback(`تم تحديد الطرد #${parcel.display_num} (${parcel.customer_name || 'بدون اسم'}) بنجاح`, 'success');
+            },
+
+            cancelScannedParcel() {
+                this.confirmScanModalOpen = false;
+                this.pendingConfirmParcel = null;
             },
 
             startCameraScanner() {

@@ -187,7 +187,12 @@
                                     <a href="{{ route('passengers.edit', $passenger->id) }}"
                                         class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-600 font-headline">
                                         <span class="material-symbols-outlined text-[16px]">edit</span> تعديل
-</a>
+                                    </a>
+
+                                    <a href="{{ route('receipt.generate', ['type' => 'passenger', 'id' => $passenger->id]) }}" target="_blank"
+                                        class="flex gap-2 items-center px-3 py-2 w-full text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-primary font-headline">
+                                        <span class="material-symbols-outlined text-[16px]">print</span> طباعة السند
+                                    </a>
                                     @if ($statusKey == 'pending')
                                         @php
                                             $whatsappUrl = \App\Services\WhatsApp\WhatsAppLinkService::generate($passenger, 'passengerBooking');

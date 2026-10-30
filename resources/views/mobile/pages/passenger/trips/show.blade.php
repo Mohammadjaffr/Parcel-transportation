@@ -4,10 +4,11 @@
 
 @section('content')
 
-    <div class="flex flex-col pt-4 pb-24 min-h-screen bg-slate-50/50 dark:bg-black" dir="rtl" 
+    <div class="flex flex-col pt-4 pb-24 min-h-screen bg-slate-50/50 dark:bg-black font-headline" dir="rtl" 
          x-data="tripDetailsForm(@js($trip->passengers->map(function ($p) {
             return [
                 'id' => $p->id,
+                'passenger_name' => $p->passenger_name ?? '',
                 'passenger_number' => $p->passenger_number,
                 'count' => $p->count ?? 1,
                 'destination' => $p->destination ?? ' '
@@ -113,14 +114,14 @@
                 {{-- شريط البحث --}}
                 <div class="relative px-1">
                     <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px]">search</span>
-                    <input type="text" x-model="searchQuery" placeholder="البحث برقم جوال الراكب..."
+                    <input type="text" x-model="searchQuery" placeholder="البحث باسم الراكب أو رقم الجوال أو الوجهة..."
                         class="pr-11 pl-4 w-full h-12 text-sm bg-white rounded-2xl border shadow-sm transition-all outline-none dark:bg-boxdark text-slate-800 dark:text-white border-slate-200 dark:border-boxdark-2 focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 </div>
 
                 <div class="grid grid-cols-1 gap-3 px-1 mt-2">
                     @forelse($trip->passengers as $passenger)
                         <div class="bg-white dark:bg-boxdark p-4 rounded-3xl border border-slate-100 dark:border-boxdark-2 shadow-[0_4px_20px_rgb(0,0,0,0.01)] flex items-center justify-between gap-4 transition-all"
-                            x-show="searchQuery === '' || String(@js($passenger->passenger_number)).includes(searchQuery)">
+                            x-show="searchQuery === '' || String(@js($passenger->passenger_number)).includes(searchQuery) || String(@js($passenger->passenger_name ?? '')).toLowerCase().includes(searchQuery.toLowerCase()) || String(@js($passenger->destination ?? '')).toLowerCase().includes(searchQuery.toLowerCase())">
 
                             <div class="flex flex-1 gap-3 items-center min-w-0">
                                 <div class="flex flex-col justify-center items-center w-11 h-11 rounded-2xl border bg-slate-50 dark:bg-boxdark-2 text-slate-600 dark:text-gray-300 shrink-0 border-slate-100 dark:border-boxdark-2">
@@ -129,8 +130,13 @@
                                 </div>
 
                                 <div class="flex-1 min-w-0">
-                                    <span class="block mb-0.5 text-sm font-black tracking-tight truncate font-headline text-slate-800 dark:text-white" style="direction: ltr; text-align: right;">
-                                        <x-phone-number :value="$passenger->passenger_number" class="text-sm text-slate-800 dark:text-white !justify-start" />
+                                    @if(!empty($passenger->passenger_name))
+                                        <h4 class="text-sm font-black truncate text-slate-800 dark:text-white mb-0.5">
+                                            {{ $passenger->passenger_name }}
+                                        </h4>
+                                    @endif
+                                    <span class="block mb-0.5 text-xs font-black tracking-tight truncate font-headline text-slate-700 dark:text-gray-300" style="direction: ltr; text-align: right;">
+                                        <x-phone-number :value="$passenger->passenger_number" class="text-xs text-slate-700 dark:text-gray-300 !justify-start" />
                                     </span>
                                     <div class="flex flex-wrap gap-1.5 items-center mt-1">
                                         @if($passenger->vehicle_type)
@@ -150,6 +156,7 @@
                             <div class="flex gap-2 items-center shrink-0">
                                 <button type="button" @click="
                                         deleteShipmentData = { 
+                                            passenger_name: '{{ addslashes($passenger->passenger_name ?? '') }}',
                                             bond_number: '{{ $passenger->passenger_number }}', 
                                             url: '{{ route('trip.removePassenger', ['trip' => $trip->id, 'passenger' => $passenger->id]) }}' 
                                         }; 
@@ -212,7 +219,7 @@
                             <option value="">-- اضغط للاختيار --</option>
                             @forelse($pendingPassengers ?? [] as $pending)
                                 <option value="{{ $pending->id }}">
-                                    {{ $pending->passenger_number }} - {{ $pending->vehicle_type ? '(' . $pending->vehicle_type . ') - ' : '' }}(عدد الركاب: {{ $pending->count ?? 1 }}) 
+                                    {{ $pending->passenger_name ? $pending->passenger_name . ' - ' : '' }}{{ $pending->passenger_number }} - {{ $pending->vehicle_type ? '(' . $pending->vehicle_type . ') - ' : '' }}(عدد الركاب: {{ $pending->count ?? 1 }}) 
                                 </option>
                             @empty
                                 <option value="" disabled>لا يوجد ركاب في قائمة الانتظار حالياً</option>
@@ -243,7 +250,11 @@
                 <h3 class="mb-2 text-base font-black font-headline text-slate-800 dark:text-white">تأكيد فك ارتباط الراكب</h3>
 
                 <p class="mb-6 text-xs font-medium leading-relaxed text-slate-500 dark:text-gray-400">
-                    هل أنت متأكد من فك ارتباط الراكب ذو الرقم
+                    هل أنت متأكد من فك ارتباط الراكب
+                    <template x-if="deleteShipmentData.passenger_name">
+                        <span class="font-black text-slate-800 dark:text-white" x-text="deleteShipmentData.passenger_name + ' '"></span>
+                    </template>
+                    صاحب الرقم
                     <span class="inline-block font-black text-slate-700 dark:text-slate-200" x-text="deleteShipmentData.bond_number" style="direction: ltr;"></span>
                     وإعادته إلى قائمة الانتظار؟
                 </p>
@@ -277,12 +288,15 @@
                 searchQuery: '',
                 addModalOpen: false,      // تفعيل حالة نافذة الإضافة
                 showDeleteModal: false,   // تفعيل حالة نافذة الحذف
-                deleteShipmentData: { bond_number: '', url: '' },
+                deleteShipmentData: { passenger_name: '', bond_number: '', url: '' },
                 
                 get countVisible() {
-                    if (this.searchQuery === '') return this.passengers.length;
+                    const q = this.searchQuery.toLowerCase().trim();
+                    if (!q) return this.passengers.length;
                     return this.passengers.filter(p => 
-                        String(p.passenger_number).includes(this.searchQuery)
+                        String(p.passenger_number || '').includes(q) ||
+                        String(p.passenger_name || '').toLowerCase().includes(q) ||
+                        String(p.destination || '').toLowerCase().includes(q)
                     ).length;
                 }
             }

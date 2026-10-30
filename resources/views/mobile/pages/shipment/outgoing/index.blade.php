@@ -3,7 +3,23 @@
 @section('title', 'الطرود المرسلة')
 
 @section('content')
-    <div x-data="{ searchQuery: '' }" class="flex relative flex-col gap-6 px-4 pb-24 min-h-screen bg-slate-50/50">
+@php
+        $currentStatus = request('status');
+        $pageShipments = $shipments->getCollection();
+
+        $pendingCount = $pageShipments->where('status', 'pending')->count();
+        $inTransitCount = $pageShipments->where('status', 'in_transit')->count();
+        $deliveredCount = $pageShipments->where('status', 'delivered')->count();
+
+        $totalAmount = $pageShipments->sum('total_amount');
+
+        $statusUrl = fn($status = null) => request()->fullUrlWithQuery([
+            'status' => $status,
+            'page' => null,
+        ]);
+    @endphp
+
+    <div x-data="outgoingShipmentsMobileRegistry()" class="flex relative flex-col gap-5 px-4 pb-24 min-h-screen bg-slate-50/50">
 
         <div class="flex justify-between items-center mt-6">
             <div class="flex flex-col">
@@ -19,19 +35,178 @@
             </a>
         </div>
 
-        {{-- شريط البحث الحالي --}}
-        <div class="relative">
-            <input type="text" x-model="searchQuery" placeholder="ابحث برقم السند، أو هاتف العميل..."
-                class="pr-4 pl-12 w-full h-14 text-sm bg-white rounded-2xl border-none shadow-sm outline-none focus:ring-2 focus:ring-primary/20 text-slate-700 placeholder-slate-400">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400">search</span>
+        {{-- ================= بطاقات الإحصائيات (Stats Cards) ================= --}}
+        <div class="grid grid-cols-2 gap-3">
+            {{-- إجمالي الطرود --}}
+            <a href="{{ $statusUrl('all') }}"
+                class="flex flex-col justify-between p-4 bg-white rounded-[1.5rem] border shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all active:scale-95 {{ (!$currentStatus || $currentStatus === 'all') ? 'border-primary ring-2 ring-primary/20' : 'border-slate-100 hover:border-primary/40' }}">
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-slate-500">إجمالي الطرود</span>
+                    <div class="flex justify-center items-center w-8 h-8 rounded-xl bg-primary/10 text-primary">
+                        <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+                    </div>
+                </div>
+                <h4 class="mt-2 text-2xl font-black font-headline text-slate-800">
+                    {{ $shipments->total() ?? 0 }}
+                </h4>
+            </a>
+
+            {{-- قيد التجهيز --}}
+            <a href="{{ $statusUrl('pending') }}"
+                class="flex flex-col justify-between p-4 bg-white rounded-[1.5rem] border shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all active:scale-95 {{ $currentStatus === 'pending' ? 'border-amber-500 ring-2 ring-amber-500/20' : 'border-slate-100 hover:border-amber-300' }}">
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-amber-600">قيد التجهيز</span>
+                    <div class="flex justify-center items-center w-8 h-8 text-amber-500 bg-amber-50 rounded-xl">
+                        <span class="material-symbols-outlined text-[18px]">hourglass_top</span>
+                    </div>
+                </div>
+                <h4 class="mt-2 text-2xl font-black font-headline text-slate-800">
+                    {{ $pendingCount }}
+                </h4>
+            </a>
+
+            {{-- في الطريق --}}
+            <a href="{{ $statusUrl('in_transit') }}"
+                class="flex flex-col justify-between p-4 bg-white rounded-[1.5rem] border shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all active:scale-95 {{ $currentStatus === 'in_transit' ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-100 hover:border-blue-300' }}">
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-blue-600">في الطريق</span>
+                    <div class="flex justify-center items-center w-8 h-8 text-blue-500 bg-blue-50 rounded-xl">
+                        <span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                    </div>
+                </div>
+                <h4 class="mt-2 text-2xl font-black font-headline text-slate-800">
+                    {{ $inTransitCount }}
+                </h4>
+            </a>
+
+            {{-- إجمالي مبالغ الصفحة --}}
+            <div
+                class="flex flex-col justify-between p-4 bg-white rounded-[1.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-emerald-600">مبالغ الصفحة</span>
+                    <div class="flex justify-center items-center w-8 h-8 text-emerald-500 bg-emerald-50 rounded-xl">
+                        <span class="material-symbols-outlined text-[18px]">payments</span>
+                    </div>
+                </div>
+                <h4 class="mt-2 text-xl font-black font-headline text-slate-800 truncate">
+                    {{ number_format($totalAmount, 0) }} <span class="text-[10px] font-bold text-slate-400">ريال</span>
+                </h4>
+            </div>
         </div>
+
+        {{-- ================= شريط البحث والفلاتر (Search & Filters) ================= --}}
+        <form method="GET" action="{{ route('shipment.outgoing.index') }}" id="shipmentFilterForm" class="flex flex-col gap-3">
+            {{-- حقل البحث النصي --}}
+            <div class="relative">
+                <input type="text" name="search" value="{{ request('search') }}" x-model="searchQuery"
+                    @input.debounce.300ms="updateVisibility()"
+                    placeholder="ابحث برقم السند، هاتف أو اسم العميل..."
+                    class="pr-11 pl-10 w-full h-13 text-xs font-bold bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.03)] outline-none focus:ring-2 focus:ring-primary/20 text-slate-700 placeholder-slate-400">
+                <span class="absolute right-3.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[20px]">search</span>
+                <button type="button" x-show="searchQuery.length > 0"
+                    @click="searchQuery = ''; if('{{ request('search') }}') { $nextTick(() => $el.closest('form').submit()); } else { updateVisibility(); }"
+                    x-cloak
+                    class="flex absolute left-2.5 top-1/2 justify-center items-center w-7 h-7 text-slate-400 bg-slate-100 rounded-xl transition-all -translate-y-1/2 hover:text-rose-500 active:scale-95">
+                    <span class="text-[16px] material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            {{-- فلاتر الحالة والتاريخ --}}
+            <div class="grid grid-cols-2 gap-2.5">
+                {{-- قائمة الحالات --}}
+                <div class="relative">
+                    <select name="status" x-model="statusFilter" @change="updateVisibility(); $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
+                        class="pr-8 pl-6 w-full h-11 text-xs font-bold text-slate-700 bg-white rounded-xl border border-slate-100 shadow-sm appearance-none outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>كل الحالات</option>
+                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>قيد التجهيز</option>
+                        <option value="in_transit" {{ request('status') === 'in_transit' ? 'selected' : '' }}>في الطريق</option>
+                        <option value="received_at_branch" {{ request('status') === 'received_at_branch' ? 'selected' : '' }}>في الفرع</option>
+                        <option value="delivered" {{ request('status') === 'delivered' ? 'selected' : '' }}>تم التسليم</option>
+                        <option value="returned" {{ request('status') === 'returned' ? 'selected' : '' }}>مرتجع</option>
+                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>ملغي</option>
+                    </select>
+                    <span class="absolute right-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px] pointer-events-none">tune</span>
+                    <span class="absolute left-2.5 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-[18px] pointer-events-none">expand_more</span>
+                </div>
+
+                {{-- قائمة اختيار التاريخ --}}
+                <div class="relative" x-data="{ openDateMenu: false }" @click.away="openDateMenu = false">
+                    <button type="button" @click="openDateMenu = !openDateMenu"
+                        class="flex justify-between items-center px-2.5 w-full h-11 text-xs font-bold text-slate-700 bg-white rounded-xl border border-slate-100 shadow-sm focus:ring-2 focus:ring-primary/20">
+                        <div class="flex gap-1.5 items-center min-w-0">
+                            <span class="material-symbols-outlined text-[18px] text-primary shrink-0">calendar_today</span>
+                            <span class="truncate">
+                                @if (!request('date') || request('date') === 'all')
+                                    كل الأيام
+                                @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today')
+                                    اليوم
+                                @elseif (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
+                                    أمس
+                                @elseif (request('date'))
+                                    {{ request('date') }}
+                                @else
+                                    كل الأيام
+                                @endif
+                            </span>
+                        </div>
+                        <span class="material-symbols-outlined text-[18px] text-slate-400 shrink-0">expand_more</span>
+                    </button>
+
+                    <div x-show="openDateMenu" x-cloak x-transition
+                        class="absolute left-0 right-0 top-full mt-1.5 p-2 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 space-y-1 text-xs">
+                        <a href="{{ request()->fullUrlWithQuery(['date' => 'all', 'page' => null]) }}"
+                            class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 font-bold {{ (!request('date') || request('date') === 'all') ? 'text-primary bg-primary/5' : 'text-slate-700' }}">
+                            <span>كل الأيام</span>
+                            @if(!request('date') || request('date') === 'all') <span class="material-symbols-outlined text-[16px]">check</span> @endif
+                        </a>
+                        <a href="{{ request()->fullUrlWithQuery(['date' => now()->format('Y-m-d'), 'page' => null]) }}"
+                            class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 font-bold {{ (request('date') === now()->format('Y-m-d') || request('date') === 'today') ? 'text-primary bg-primary/5' : 'text-slate-700' }}">
+                            <span>اليوم</span>
+                            @if(request('date') === now()->format('Y-m-d') || request('date') === 'today') <span class="material-symbols-outlined text-[16px]">check</span> @endif
+                        </a>
+                        <a href="{{ request()->fullUrlWithQuery(['date' => now()->subDay()->format('Y-m-d'), 'page' => null]) }}"
+                            class="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 font-bold {{ (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday') ? 'text-primary bg-primary/5' : 'text-slate-700' }}">
+                            <span>أمس</span>
+                            @if(request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday') <span class="material-symbols-outlined text-[16px]">check</span> @endif
+                        </a>
+                        <div class="pt-1 border-t border-slate-100 mt-1">
+                            <span class="text-[10px] font-bold text-slate-400 block px-2 mb-1">تاريخ مخصص:</span>
+                            <input type="date" name="date" value="{{ (request()->filled('date') && !in_array(request('date'), ['all', 'today', 'yesterday'])) ? request('date') : '' }}"
+                                @change="document.getElementById('shipmentFilterForm').submit()"
+                                class="w-full h-9 px-2 text-xs bg-slate-50 rounded-lg border-none outline-none font-bold text-slate-700">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- نتائج الفلترة وزر إعادة التعيين --}}
+            <div class="flex items-center justify-between text-xs font-bold text-slate-400 px-1">
+                <div>
+                    النتائج: <span class="text-primary font-black" x-text="visibleCount"></span> من <span>{{ $shipments->count() }}</span>
+                </div>
+                @if (request('search') || (request()->filled('date') && request('date') !== 'all') || (request()->filled('status') && request('status') !== 'all'))
+                    <a href="{{ route('shipment.outgoing.index') }}"
+                        class="inline-flex gap-1 items-center px-2.5 py-1 text-[11px] font-bold text-rose-500 rounded-lg bg-rose-50 hover:bg-rose-100 transition-colors">
+                        <span class="material-symbols-outlined text-[14px]">restart_alt</span>
+                        <span>إلغاء الفلاتر</span>
+                    </a>
+                @endif
+            </div>
+        </form>
 
 
 
         <div class="space-y-5">
             @forelse($shipments as $shipment)
-                <div x-show="searchQuery === '' || '{{ $shipment->bond_number }}'.includes(searchQuery) || '{{ $shipment->receiverCustomer?->phone }}'.includes(searchQuery)"
-                    class="bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group">
+                @php
+                    $destText = $shipment->receiverOfficeBranch
+                        ? ($shipment->receiverOfficeBranch->office->name ?? 'مكتب خارجي') . ' - ' . $shipment->receiverOfficeBranch->name
+                        : ($shipment->receiverBranch
+                            ? (($shipment->senderBranch?->app_id == $shipment->receiverBranch->app_id ? 'مكتبنا' : ($shipment->receiverBranch->app->name ?? 'مكتب موثوق')) . ' - ' . $shipment->receiverBranch->name)
+                            : 'غير محدد');
+                @endphp
+                <div x-show="showRow('{{ $shipment->bond_number }}', '{{ addslashes($shipment->senderCustomer?->name ?? '') }}', '{{ $shipment->senderCustomer?->phone ?? '' }}', '{{ addslashes($shipment->receiverCustomer?->name ?? '') }}', '{{ $shipment->receiverCustomer?->phone ?? '' }}', '{{ addslashes($destText) }}')"
+                    class="shipment-card bg-white rounded-[24px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] overflow-visible transition-all duration-300 relative group">
 
                     {{-- شريط لوني علوي خفيف يعطي طابعاً مميزاً --}}
                     <div
@@ -361,6 +536,16 @@
                 </div>
             @endforelse
 
+            {{-- رسالة لا توجد نتائج مطابقة للبحث الفوري --}}
+            <div x-show="visibleCount === 0 && {{ $shipments->count() }} > 0" x-cloak
+                class="flex flex-col items-center justify-center py-16 bg-white rounded-[24px] border border-dashed border-slate-200 mt-4 text-center">
+                <div class="w-14 h-14 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-3">
+                    <span class="material-symbols-outlined text-[28px]">search_off</span>
+                </div>
+                <h3 class="text-sm font-black text-slate-700 font-headline">لا توجد نتائج مطابقة</h3>
+                <p class="text-[11px] font-bold text-slate-400 mt-1">لم نعثر على طرود تطابق كلمة البحث المدخلة.</p>
+            </div>
+
             @if(method_exists($shipments, 'hasPages') && $shipments->hasPages())
                 <div class="mt-8">
                     {{ $shipments->links('vendor.pagination.mobile') }}
@@ -374,6 +559,33 @@
 
 @section('script')
     <script>
+        function outgoingShipmentsMobileRegistry() {
+            return {
+                searchQuery: '{{ request('search', '') }}',
+                statusFilter: '{{ request('status', 'all') }}',
+                dateFilter: '{{ request('date', 'all') }}',
+                visibleCount: {{ $shipments->count() }},
+
+                showRow(id, senderName, senderPhone, receiverName, receiverPhone, destination) {
+                    const query = this.searchQuery.toLowerCase().trim();
+                    if (!query) return true;
+
+                    return String(id || '').toLowerCase().includes(query) ||
+                        String(senderName || '').toLowerCase().includes(query) ||
+                        String(senderPhone || '').toLowerCase().includes(query) ||
+                        String(receiverName || '').toLowerCase().includes(query) ||
+                        String(receiverPhone || '').toLowerCase().includes(query) ||
+                        String(destination || '').toLowerCase().includes(query);
+                },
+
+                updateVisibility() {
+                    this.$nextTick(() => {
+                        this.visibleCount = document.querySelectorAll('.shipment-card:not([style*="display: none"])').length;
+                    });
+                }
+            }
+        }
+
         async function sendPriceAgreementDirect(shipmentId, btn, fallbackLink = '') {
             if (!shipmentId || btn.disabled) return;
 
