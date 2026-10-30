@@ -183,7 +183,7 @@ $period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]
                 <div style="flex: 0 1 auto; min-width: 0; text-align: right; direction: rtl; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     {{-- فرع الإرسال (في الأعلى تماماً بموازاة اسم الشركة) --}}
                     <div style="font-size: 13.5pt; font-weight: 900; color: #0f172a; line-height: 1.1; white-space: nowrap;">
-                        فرع إلارسال {{ $senderBranchDisplay }}
+                        فرع الإرسال {{ $senderBranchDisplay }}
                     </div>
 
                     {{-- اليوم --}}
@@ -203,12 +203,12 @@ $period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]
                     {{-- الوقت --}}
                     @if (!empty($formatted_time))
                       <div style="font-size: 9pt; font-weight: 800; color: #1e293b; line-height: 1.2; direction: rtl;">
-        <span>الوقت : </span>
-        <span style="font-family: sans-serif; font-weight: 900; color: #0f172a; display: inline-block;">
-            <span dir="ltr">{{ $time_only }}</span>
-            <span>{{ $period }}</span>
-        </span>
-    </div>
+                        <span>الوقت : </span>
+                        <span style="font-family: sans-serif; font-weight: 900; color: #0f172a; display: inline-block;">
+                            <span dir="ltr">{{ $time_only }}</span>
+                            <span>{{ $period }}</span>
+                        </span>
+                    </div>
                     @endif
 
                     {{-- رقم السند (في الأسفل تماماً بموازاة كبسولة سند الإرسال والخط الأخضر) --}}
