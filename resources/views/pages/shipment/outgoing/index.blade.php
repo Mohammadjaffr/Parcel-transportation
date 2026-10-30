@@ -156,11 +156,7 @@
                                 <div class="flex gap-2 items-center min-w-0">
                                     <span class="material-symbols-outlined text-[20px] text-primary shrink-0">calendar_today</span>
                                     <span class="truncate">
-
-                                        @if (request('date') === 'all' || !request('date'))
-
                                         @if (!request('date') || request('date') === 'all')
-
                                             كل الأيام
                                         @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today')
                                             اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
@@ -207,20 +203,12 @@
                                 {{-- خيار كل الأيام --}}
                                 <button type="button"
                                     @click="dateFilter = 'all'; const f = document.getElementById('filter_date'); if(f) f.value = 'all'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
-
-                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === 'all' || !request('date') ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
-
                                     class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ !request('date') || request('date') === 'all' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
-
                                     <div class="flex gap-2.5 items-center">
                                         <span class="material-symbols-outlined text-[18px]">calendar_view_day</span>
                                         <span>كل الأيام</span>
                                     </div>
-
-                                    @if (request('date') === 'all' || !request('date'))
-
                                     @if (!request('date') || request('date') === 'all')
-
                                         <span class="material-symbols-outlined text-[18px] text-primary">check</span>
                                     @endif
                                 </button>
