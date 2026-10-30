@@ -261,30 +261,21 @@
                         $hasShipments = $app && ($app->hasService('Shipment_Out') || $app->hasService('Shipment_In'));
                     @endphp
                     @if($hasShipments)
-                    <li x-init="@if (request()->routeIs('shipment.outgoing.*') ||
-                            request()->routeIs('shipment.incoming.*') ||
-                            request()->routeIs('shipment.quickScan') ||
-                            request()->routeIs('shipment.index')) selected = 'Shipments' @endif">
-                        <a href="#" @click.prevent="selected = (selected === 'Shipments' ? '' : 'Shipments')"
-                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
+                    <li>
+                        <div
+                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200"
                             :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.quickScan', 'shipment.index') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
-                            'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
+                            'text-gray-600 dark:text-gray-400'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
-                                :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.quickScan', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                :class="{{ request()->routeIs('shipment.outgoing.*', 'shipment.incoming.*', 'shipment.quickScan', 'shipment.index') ? 'true' : 'false' }} ? 'text-primary dark:text-primary' : 'text-gray-400'">
                                 inventory_2
                             </span>
                             <span :class="{ 'lg:hidden': sidebarToggle }">الطرود</span>
+                        </div>
 
-                            <span
-                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{ 'rotate-180': selected === 'Shipments', 'lg:hidden': sidebarToggle }">
-                                expand_more
-                            </span>
-                        </a>
-
-                        <div x-cloak x-show="selected === 'Shipments'" x-collapse>
+                        <div>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
                                 :class="{ 'lg:hidden': sidebarToggle }">
                                 <div
@@ -324,29 +315,22 @@
                         $hasPackages = $app && ($app->hasService('Package_Out') || $app->hasService('Package_In'));
                     @endphp
                     @if($hasPackages)
-                    <li x-init="@if (request()->routeIs('shipmentpackage.*') || request()->routeIs('receipts.*')) selected = 'ShipmentsOps' @endif">
-                        <a href="#"
-                            @click.prevent="selected = (selected === 'ShipmentsOps' ? '' : 'ShipmentsOps')"
-                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 group"
+                    <li>
+                        <div
+                            class="flex relative gap-3 items-center px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200"
                             :class="{{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }} ?
                             'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white' :
-                            'text-gray-600 hover:bg-gray-50 hover:text-primary dark:text-gray-400 dark:hover:bg-gray-800'">
+                            'text-gray-600 dark:text-gray-400'">
 
                             <span class="material-symbols-outlined text-[22px] transition-colors"
                                 :class="{{ request()->routeIs('shipmentpackage.*', 'receipts.*') ? 'true' : 'false' }} ?
-                                'text-primary dark:text-primary' : 'text-gray-400 group-hover:text-primary'">
+                                'text-primary dark:text-primary' : 'text-gray-400'">
                                 local_shipping
                             </span>
                             <span :class="{ 'lg:hidden': sidebarToggle }">الشحنات</span>
+                        </div>
 
-                            <span
-                                class="absolute material-symbols-outlined text-[18px] transition-transform duration-200 {{ app()->getLocale() == 'ar' ? 'left-4' : 'right-4' }}"
-                                :class="{ 'rotate-180': selected === 'ShipmentsOps', 'lg:hidden': sidebarToggle }">
-                                expand_more
-                            </span>
-                        </a>
-
-                        <div x-cloak x-show="selected === 'ShipmentsOps'" x-collapse>
+                        <div>
                             <div class="relative mt-2 {{ app()->getLocale() == 'ar' ? 'pr-6' : 'pl-6' }}"
                                 :class="{ 'lg:hidden': sidebarToggle }">
                                 <div
