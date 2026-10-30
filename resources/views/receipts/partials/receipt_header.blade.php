@@ -202,12 +202,13 @@ $period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]
 
                     {{-- الوقت --}}
                     @if (!empty($formatted_time))
-                        <div style="font-size: 9pt; font-weight: 800; color: #1e293b; line-height: 1.2;">
-                            <span>الوقت : </span>
-                            <span dir="ltr" style="font-family: sans-serif; font-weight: 900; color: #0f172a; display: inline-block;">
-                                {{ $formatted_time }}
-                            </span>
-                        </div>
+                      <div style="font-size: 9pt; font-weight: 800; color: #1e293b; line-height: 1.2; direction: rtl;">
+        <span>الوقت : </span>
+        <span style="font-family: sans-serif; font-weight: 900; color: #0f172a; display: inline-block;">
+            <span dir="ltr">{{ $time_only }}</span>
+            <span>{{ $period }}</span>
+        </span>
+    </div>
                     @endif
 
                     {{-- رقم السند (في الأسفل تماماً بموازاة كبسولة سند الإرسال والخط الأخضر) --}}
