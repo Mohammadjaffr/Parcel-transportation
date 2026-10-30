@@ -156,9 +156,9 @@
                                 <div class="flex gap-2 items-center min-w-0">
                                     <span class="material-symbols-outlined text-[20px] text-primary shrink-0">calendar_today</span>
                                     <span class="truncate">
-                                        @if (request('date') === 'all')
+                                        @if (request('date') === 'all' || !request('date'))
                                             كل الأيام
-                                        @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')))
+                                        @elseif (request('date') === now()->format('Y-m-d') || request('date') === 'today')
                                             اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
                                         @elseif (request('date') === now()->subDay()->format('Y-m-d') || request('date') === 'yesterday')
                                             أمس ({{ now()->subDay()->translatedFormat('l - Y/m/d') }})
@@ -173,7 +173,7 @@
                                             @endphp
                                             {{ $dateLabel }}
                                         @else
-                                            اليوم ({{ now()->translatedFormat('l - Y/m/d') }})
+                                            كل الأيام
                                         @endif
                                     </span>
                                 </div>
@@ -203,12 +203,12 @@
                                 {{-- خيار كل الأيام --}}
                                 <button type="button"
                                     @click="dateFilter = 'all'; const f = document.getElementById('filter_date'); if(f) f.value = 'all'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
-                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === 'all' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === 'all' || !request('date') ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
                                     <div class="flex gap-2.5 items-center">
                                         <span class="material-symbols-outlined text-[18px]">calendar_view_day</span>
                                         <span>كل الأيام</span>
                                     </div>
-                                    @if (request('date') === 'all')
+                                    @if (request('date') === 'all' || !request('date'))
                                         <span class="material-symbols-outlined text-[18px] text-primary">check</span>
                                     @endif
                                 </button>
@@ -216,12 +216,12 @@
                                 {{-- خيار اليوم --}}
                                 <button type="button"
                                     @click="dateFilter = '{{ now()->format('Y-m-d') }}'; const f = document.getElementById('filter_date'); if(f) f.value = '{{ now()->format('Y-m-d') }}'; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
-                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')) ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
+                                    class="flex items-center justify-between w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all {{ request('date') === now()->format('Y-m-d') || request('date') === 'today' ? 'bg-primary/10 text-primary' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-boxdark-2' }}">
                                     <div class="flex gap-2.5 items-center">
                                         <span class="material-symbols-outlined text-[18px]">today</span>
                                         <span>اليوم ({{ now()->translatedFormat('l - Y/m/d') }})</span>
                                     </div>
-                                    @if (request('date') === now()->format('Y-m-d') || request('date') === 'today' || (!request('date') && !request()->has('date')))
+                                    @if (request('date') === now()->format('Y-m-d') || request('date') === 'today')
                                         <span class="material-symbols-outlined text-[18px] text-primary">check</span>
                                     @endif
                                 </button>
@@ -247,9 +247,9 @@
                                         تحديد يوم مخصص بالتقويم:
                                     </label>
                                     <div class="relative">
-                                        <input type="hidden" name="date" id="filter_date" value="{{ request('date', now()->format('Y-m-d')) }}">
+                                        <input type="hidden" name="date" id="filter_date" value="{{ request('date', 'all') }}">
                                         <input type="date" id="filter_date_picker"
-                                            value="{{ in_array(request('date'), ['all', 'today', 'yesterday', '']) ? (request('date') === 'today' ? now()->format('Y-m-d') : (request('date') === 'yesterday' ? now()->subDay()->format('Y-m-d') : '')) : request('date', now()->format('Y-m-d')) }}"
+                                            value="{{ in_array(request('date'), ['all', 'today', 'yesterday', '', null]) ? (request('date') === 'today' ? now()->format('Y-m-d') : (request('date') === 'yesterday' ? now()->subDay()->format('Y-m-d') : '')) : request('date', '') }}"
                                             @change="const f = document.getElementById('filter_date'); if(f) f.value = $el.value; dateFilter = $el.value; openDateMenu = false; $nextTick(() => document.getElementById('shipmentFilterForm').submit())"
                                             onclick="try { this.showPicker(); } catch(e) {}"
                                             class="px-3 w-full h-10 text-xs font-bold text-gray-700 bg-white rounded-xl border border-gray-200 cursor-pointer outline-none dark:bg-boxdark dark:border-boxdark focus:ring-2 focus:ring-primary/30 dark:text-white">
@@ -281,7 +281,7 @@
                         </div>
 
                         {{-- زر إعادة التعيين إذا تم تغيير الفلتر عن الوضع الافتراضي --}}
-                        @if (request('search') || (request()->has('date') && request('date') !== now()->format('Y-m-d') && request('date') !== 'today') || (request()->has('status') && request('status') !== 'all' && request('status') !== ''))
+                        @if (request('search') || (request()->filled('date') && request('date') !== 'all') || (request()->filled('status') && request('status') !== 'all'))
                             <a href="{{ route('shipment.outgoing.index') }}"
                                 class="inline-flex gap-1 items-center px-3 h-12 text-xs font-bold text-gray-500 rounded-2xl border border-gray-300 border-dashed transition-all hover:text-error dark:border-gray-700 hover:border-error"
                                 title="إعادة تعيين كافة الفلاتر للوضع الافتراضي">
@@ -854,7 +854,7 @@
             return {
                 searchQuery: '{{ request('search', '') }}',
                 statusFilter: '{{ request('status', 'all') }}',
-                dateFilter: '{{ request('date', now()->format('Y-m-d')) }}',
+                dateFilter: '{{ request('date', 'all') }}',
                 visibleCount: {{ $shipments->count() }},
 
                 showRow(id, senderName, senderPhone, receiverName, receiverPhone, destination) {

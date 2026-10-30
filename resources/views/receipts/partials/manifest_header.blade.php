@@ -196,7 +196,7 @@
                         <div style="margin-top: 4px;font-size: 12pt;">
                             <span
                                 style="background: #e2e8f0; border: 1px solid #94a3b8; padding: 2px 16px; border-radius: 4px; font-weight: 900; font-size: 12pt;; display: inline-block; color: #0f172a; white-space: nowrap;">
-                                فرع الارسال :{{ $senderBranchDisplay }}
+                                فرع الإرسال :{{ $senderBranchDisplay }}
                             </span>
                         </div>
 

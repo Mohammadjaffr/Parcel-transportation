@@ -75,7 +75,7 @@
     <div dir="rtl"
         class="w-full bg-white overflow-hidden print-no-shadow print:border-none print:my-0 print:rounded-none {{ !empty($is_pdf) ? 'max-w-none my-0 rounded-none shadow-none border-none' : 'max-w-7xl mx-auto sm:rounded-[1.5rem] shadow-2xl shadow-indigo-100/50 border border-slate-200 my-8' }}">
 
-        <div class="px-6 py-4 border-b border-slate-200 bg-white">
+        <div class="px-6 py-4 bg-white border-b border-slate-200">
             @include('receipts.partials.manifest_header')
         </div>
 
@@ -83,7 +83,7 @@
             <div class="mb-10 page-break-inside-avoid">
                     {{-- Passengers Table (Driver Version) --}}
                     <div
-                        class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm print:rounded-none print:shadow-none print:border-t-2 print:border-b-2 print:border-l-0 print:border-r-0 print:border-slate-800">
+                        class="overflow-x-auto rounded-xl border shadow-sm border-slate-200 print:rounded-none print:shadow-none print:border-t-2 print:border-b-2 print:border-l-0 print:border-r-0 print:border-slate-800">
                         <table class="w-full text-xs text-center bg-white divide-y divide-slate-200">
                             <thead class="bg-slate-50 print:bg-slate-100">
                                 <tr>
@@ -116,7 +116,7 @@
                                         <td class="px-2 py-2 font-sans font-bold border-l text-slate-700 border-slate-100 print:border-slate-200"
                                             dir="ltr">{{ $passenger['date'] ?? '---' }}</td>
                                         <td
-                                            class="px-2 py-2 font-bold border-l text-indigo-600 border-slate-100 print:border-slate-200">
+                                            class="px-2 py-2 font-bold text-indigo-600 border-l border-slate-100 print:border-slate-200">
                                             {{ $passenger['day'] ?? '---' }}</td>
                                         <td
                                             class="px-2 py-2 font-bold border-l text-slate-800 border-slate-100 print:border-slate-200">
@@ -183,7 +183,7 @@
                 </div>
                 <div class="flex flex-col items-center text-center">
                     <span class="mb-6 font-black text-slate-700 print:text-black">الموظف المختص</span>
-                    <span class="w-32 border-b-2 border-dashed border-slate-300 print:border-slate-400"></span>
+                    <span class="w-32 border-slate-300 print:border-slate-400">{{ $creator_name ?? 'مسؤول النظام' }}</span>
                 </div>
             </div>
         @endif
