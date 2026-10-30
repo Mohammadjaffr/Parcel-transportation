@@ -183,7 +183,7 @@ $period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]
                 <div style="flex: 0 1 auto; min-width: 0; text-align: right; direction: rtl; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
                     {{-- فرع الإرسال (في الأعلى تماماً بموازاة اسم الشركة) --}}
                     <div style="font-size: 13.5pt; font-weight: 900; color: #0f172a; line-height: 1.1; white-space: nowrap;">
-                        فرع الإرسال {{ $senderBranchDisplay }}
+                        فرع الإرسال: {{ $senderBranchDisplay }}
                     </div>
 
                     {{-- اليوم --}}

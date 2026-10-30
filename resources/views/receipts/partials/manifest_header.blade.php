@@ -168,7 +168,7 @@
                         style="font-weight: 800; color: #334155; font-size: 12pt; direction: rtl; text-align: right; line-height: 1.5;">
                         اليوم :
                         <span
-                            style="font-weight: 900; color: #0f172a; border-bottom: 1px dotted #475569; padding-bottom: 0.5px; margin-left: 8px;">
+                            style="font-weight: 900; color: #0f172a; border-bottom: 1px  #475569; padding-bottom: 0.5px; margin-left: 8px;">
                             {{ $day_name ?? now()->locale('ar')->translatedFormat('l') }}
                         </span>
 
@@ -182,7 +182,7 @@
                         @if (!empty($formatted_time))
                             <span
                                 style="font-size: 8.5pt; color: #64748b; margin-right: 6px; font-family: sans-serif; display: inline-block;"
-                                dir="ltr">
+                                dir="rtl">
                                 ({{ $formatted_time }})
                             </span>
                         @endif
@@ -204,7 +204,7 @@
                             <span style="font-size: 12pt;; font-weight: 800; color: #475569; margin-left: 3px;">رقم
                                 الكشف: </span>
                             <span
-                                style="color: #b91c1c; font-size: 14pt; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px;">{{ $manifestNumber }}</span>
+                                style="color: #080808; font-size: 14pt; font-weight: 900; font-family: sans-serif; letter-spacing: 0.5px;">{{ $manifestNumber }}</span>
                         </div>
 
                     </div>

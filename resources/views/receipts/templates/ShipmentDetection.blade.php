@@ -291,7 +291,7 @@
                         </div>
                         <div class="flex flex-col items-center text-center">
                             <span class="mb-6 font-black text-slate-700 print:text-black">الموظف المختص</span>
-                            <span class="w-32 border-b-2 border-dashed border-slate-300 print:border-slate-400"></span>
+                            <span class="w-32 border-slate-300 print:border-slate-400">{{ $creator_name ?? 'مسؤول النظام' }}</span>
                         </div>
                     </div>
 

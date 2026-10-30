@@ -135,7 +135,7 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'formatted_date'    => $dateInfo['formatted_date'],
             'formatted_time'    => $dateInfo['formatted_time'],
 
-            'title'             => 'سند ارسال طرد',
+            'title'             => 'سند إرسال طرد',
             'bond_number'       => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
             'tracking_code'     => isset($shipment->bond_number) ? (explode('-', $shipment->bond_number)[1] ?? $shipment->bond_number) : 'غير متوفر',
 
