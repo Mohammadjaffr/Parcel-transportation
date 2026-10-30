@@ -101,10 +101,7 @@ class ShipmentController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
-        // إعداد الفلاتر الافتراضية عند أول تحميل للصفحة (اليوم الحالي للديسكتوب)
-        if (!$request->has('date') && !$request->isMobile) {
-            $request->merge(['date' => \Carbon\Carbon::today()->toDateString()]);
-        }
+        // الافتراضي عند الفتح: كل الأيام وكل الحالات
 
         // جلب الطرود المرسلة من فرع المستخدم
         $query = Shipment::with([
