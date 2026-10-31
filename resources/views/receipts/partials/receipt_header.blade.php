@@ -19,6 +19,12 @@
     $senderBranchDisplay = $sender_branch ?? ($user_branch ?? ($company['main_branch']['title'] ?? 'الفرع الرئيسي'));
     $bondNumDisplay = $bond_number ?? ($transaction_id ?? ($reference_number ?? '---'));
 
+    $isReceiverReceipt = isset($title) && (str_contains($title, 'استلام') || str_contains($title, 'مستلم'));
+    $headerBranchLabel = $isReceiverReceipt ? 'فرع الاستلام' : 'فرع الإرسال';
+    $headerBranchValue = $isReceiverReceipt
+        ? ($receiver_branch ?? ($user_branch ?? $senderBranchDisplay))
+        : $senderBranchDisplay;
+
     // توليد رمز QR إذا لم يكن ممرراً
     if (empty($qrCodeSvg)) {
         $qrCodeSvg = null;
@@ -181,9 +187,9 @@ $period = preg_match('/[^\d:]+/u', $formatted_time, $matches) ? trim($matches[0]
                 
                 {{-- البيانات النصية موزعة من أعلى نقطة لأخفض نقطة بانتظام --}}
                 <div style="flex: 0 1 auto; min-width: 0; text-align: right; direction: rtl; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
-                    {{-- فرع الإرسال (في الأعلى تماماً بموازاة اسم الشركة) --}}
+                    {{-- فرع الإرسال أو فرع الاستلام بحسب نوع السند (في الأعلى تماماً بموازاة اسم الشركة) --}}
                     <div style="font-size: 13.5pt; font-weight: 900; color: #0f172a; line-height: 1.1; white-space: nowrap;">
-                        فرع الإرسال: {{ $senderBranchDisplay }}
+                        {{ $headerBranchLabel }}: {{ $headerBranchValue }}
                     </div>
 
                     {{-- اليوم --}}

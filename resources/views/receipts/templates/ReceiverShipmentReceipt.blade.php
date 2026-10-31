@@ -420,13 +420,14 @@
         .terms-section {
             height: auto;
             overflow: visible;
-            margin-bottom: 1.5mm;
+            margin-bottom: 1.2mm;
         }
 
         .terms-table {
             width: 100%;
-            font-size: 7pt;
-            line-height: 1.3;
+            font-size: 6.8pt;
+            /* حجم خط مثالي ليتسع حتى 12 شرطاً بأريحية */
+            line-height: 1.25;
             color: #334155;
             font-weight: 600;
             table-layout: fixed;
@@ -435,7 +436,7 @@
 
         .terms-table td {
             width: 50%;
-            padding: 0.5mm 1.5mm;
+            padding: 0.4mm 1.5mm;
             vertical-align: top;
             text-align: right;
         }
@@ -443,16 +444,18 @@
         /* 6. الفوتر */
         .footer-bar {
             height: 5.5mm;
-            background: {{ $primary }};
+            background:
+                {{ $primary }};
             color: #ffffff;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8.5pt;
-            font-weight: bold;
             border-radius: 4px;
             margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4mm;
+            box-sizing: border-box;
+            font-size: 8pt;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -556,11 +559,13 @@
                         if (!empty($honey_details) && $honey_details !== '---') {
                             $shipmentFields[] = ['label' => 'تفاصيل إضافية:', 'value' => $honey_details];
                         }
-                        if (!empty($other_fee) && (float) $other_fee > 0) {
+                        if (!empty($show_other_fee_in_receipt) && !empty($other_fee) && (float) $other_fee > 0) {
                             $feeText = number_format((float) $other_fee, 0) . ' ر.ي';
-                            if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description)) {
+
+                            if (!empty($other_fee_description)) {
                                 $feeText .= ' (' . $other_fee_description . ')';
                             }
+
                             $shipmentFields[] = ['label' => 'أجور أخرى:', 'value' => $feeText];
                         }
                     @endphp
@@ -608,28 +613,33 @@
                                 <td style="color: #475569; width: 45%;">تكلفة النقل</td>
                                 <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9pt;"
                                     dir="ltr">
-                                    {{ $transport_fee ?? '0' }}
+                                    {{ $transport_fee }}
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="color: #475569;">
-                                    أجور أخرى
-                                    @if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description))
-                                        <span style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
-                                    @endif
-                                </td>
-                                <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
-                                    dir="ltr">
-                                    {{ number_format((float) ($other_fee ?? 0), 0) }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="color: #0f172a; font-weight: 900;">الإجمالي</td>
-                                <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
-                                    dir="ltr">
-                                    {{ $total_amount ?? '0' }}
-                                </td>
-                            </tr>
+                            @if (!empty($show_other_fee_in_receipt) && !empty($other_fee_description))
+                                <tr>
+                                    <td style="color: #475569;">
+                                        أجور أخرى
+
+                                        <span
+                                            style="font-size: 7.5pt; color: #64748b; font-weight: normal; margin-right: 2px;">({{ $other_fee_description }})</span>
+
+                                    </td>
+                                    <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
+                                        dir="ltr">
+                                        {{ number_format((float) ($other_fee ?? 0), 0) }}
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td style="color: #0f172a; font-weight: 900;">الإجمالي</td>
+                                    <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
+                                        dir="ltr">
+                                        {{ $total_amount ?? '0' }}
+                                    </td>
+                                </tr>
+                            @endif
+
                         @else
                             <tr>
                                 <td style="color: #475569; width: 45%;">الإجمالي</td>
@@ -639,18 +649,22 @@
                                 </td>
                             </tr>
                         @endif
+                        
+                      {{-- يظهر سطر "المسدد" فقط إذا كانت طريقة الدفع: دفع جزئي --}}
+                        @if(isset($payment_key) && $payment_key === 'partial_payment')
                         <tr>
                             <td style="color: #475569;">المسدد</td>
-                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;"
-                                dir="ltr">
+                            <td style="text-align: left; color: #111827; font-weight: 800; font-size: 8.5pt;" dir="ltr">
                                 {{ $partial_amount ?? '0' }}
                             </td>
                         </tr>
+                        @endif
+                        
                         <tr>
-                            <td style="color: {{ $primary }};">المتبقي</td>
-                            <td style="color: {{ $primary }}; text-align: left; font-weight: 900; font-size: 9.5pt;"
-                                dir="ltr">
-                                {{ $remaining_amount ?? '0' }}
+                            <td style="color: {{ $primary ?? '#059669' }};">المتبقي</td>
+                            <td style="color: {{ $primary ?? '#059669' }}; text-align: left; font-weight: 900; font-size: 9.5pt;" dir="ltr">
+                                {{-- إذا كان الدفع مقدماً اجعل المتبقي 0، وإلا اعرض القيمة القادمة من الكنترولر --}}
+                                {{ (isset($payment_key) && $payment_key === 'prepaid') ? '0' : ($remaining_amount ?? '0') }}
                             </td>
                         </tr>
                     </table>
@@ -659,7 +673,7 @@
                     <div class="finance-payment-method">
                         <span style="color: #475569; font-size: 8pt;">طريقة الدفع:</span>
                         <span
-                            style="color: {{ (isset($is_price_agreed) && !$is_price_agreed) ? '#d97706' : $primary }}; font-weight: 900; font-size: 8.5pt;">{{ $payment_method ?? '---' }}</span>
+                            style="color: {{ isset($is_price_agreed) && !$is_price_agreed ? '#d97706' : $primary }}; font-weight: 900; font-size: 8.5pt;">{{ $payment_method ?? '---' }}</span>
                     </div>
                 </div>
             </div>
@@ -708,11 +722,9 @@
             <!-- 6. FOOTER (الفوتر وشريط الاتصال مع اسم الموظف) -->
             <div class="footer-bar">
                 {{-- اسم الموظف منشئ السند بتصميم أنيق ومميز --}}
-                <div style="display: flex; align-items: center; gap: 5px; font-size: 8pt; font-weight: 800;">
+                <div style="display: flex; align-items: center; gap: 5px; font-size: 9pt; font-weight: 800;">
                     <span style="opacity: 0.9;">الموظف:</span>
-                    <span style="background: rgba(255, 255, 255, 0.22); padding: 1px 8px; border-radius: 10px; font-weight: 900; border: 0.5px solid rgba(255, 255, 255, 0.35);">
-                        {{ $creator_name ?? 'مسؤول النظام' }}
-                    </span>
+                    {{ $creator_name ?? 'مسؤول النظام' }}
                 </div>
 
                 {{-- أرقام الإدارة العامة لجميع الفروع --}}

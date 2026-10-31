@@ -29,8 +29,11 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             'creator.app',
             'creator.branch'
         ])->where(function ($q) use ($referenceId) {
-            $q->where('uuid', $referenceId)
-              ->orWhere('id', $referenceId);
+            if (is_numeric($referenceId)) {
+                $q->where('id', $referenceId);
+            } else {
+                $q->where('uuid', $referenceId);
+            }
         })->firstOrFail();
 
         // 2. تحديد الفرع الذي سيطبع السند (الفرع المُستلم أو المكتب الخارجي المُستلم)
@@ -98,9 +101,9 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
             : null;
 
         $theme = $app?->theme ?? [
-            'primary'   => '#ea580c',
+            'primary'   => '#059669',
             'secondary' => '#1e293b',
-            'bg_light'  => '#fffaf5',
+            'bg_light'  => '#ecfdf5',
         ];
 
         // 7. الحسابات المالية الدقيقة بناءً على منطق الموديل وطريقة الدفع
@@ -175,10 +178,10 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
                 : ($paymentMethods[$shipment->payment_method ?? 'prepaid'] ?? 'غير محدد'),
 
             // المبالغ المالية
-            'transport_fee'     => number_format($transportFee, 0),     // تكلفة النقل
+            'transport_fee'     => number_format($transportFee + $otherFee, 0),     // تكلفة النقل
             'total_amount'      => number_format($grandTotal, 0),       // المبلغ الإجمالي
             'partial_amount'    => number_format($paidAmount, 0),       // المبلغ المسدد
-            'remaining_amount'  => number_format($remainingAmount, 0),  // المبلغ المتبقي
+            'remaining_amount'  => number_format($remainingAmount + $otherFee, 0),  // المبلغ المتبقي
             'other_fee'         => $otherFee,
             'other_fee_description' => $shipment->other_fee_description,
             'show_other_fee_in_receipt' => $showOtherFee,
@@ -191,9 +194,9 @@ class ReceiverShipmentReceipt implements ReceiptStrategyInterface
                 : ['نحن غير مسؤولين عن الإجراءات الأمنية الخارجة عن إرادتنا.', 'يرجى مراجعة الطرد قبل مغادرة الفرع.'],
 
             'design' => [
-                'primary_color'   => $theme['primary'] ?? '#ea580c',
+                'primary_color'   => $theme['primary'] ?? '#059669',
                 'secondary_color' => $theme['secondary'] ?? '#1e293b',
-                'bg_color'        => $theme['bg_light'] ?? '#fffaf5',
+                'bg_color'        => $theme['bg_light'] ?? '#ecfdf5',
                 'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
                 'paper_size'      => 'A5 landscape',
             ]

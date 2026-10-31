@@ -27,7 +27,13 @@ class SenderShipmentReceipt implements ReceiptStrategyInterface
             'receiverOfficeBranch.office',
             'creator.app',
             'creator.branch'
-        ])->where('uuid', $referenceId)->firstOrFail();
+        ])->where(function ($q) use ($referenceId) {
+            if (is_numeric($referenceId)) {
+                $q->where('id', $referenceId);
+            } else {
+                $q->where('uuid', $referenceId);
+            }
+        })->firstOrFail();
 
         // 2. جلب بيانات الشركة (التطبيق) - يدعم الزائر غير المسجل
         $app = $shipment->senderBranch?->app 

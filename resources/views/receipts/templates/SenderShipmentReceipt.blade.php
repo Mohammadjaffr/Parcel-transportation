@@ -734,10 +734,9 @@
             <!-- 6. FOOTER (الفوتر وشريط الاتصال مع اسم الموظف) -->
             <div class="footer-bar">
                 {{-- اسم الموظف منشئ السند بتصميم أنيق ومميز --}}
-                <div style="display: flex; align-items: center; gap: 5px; font-size: 9pt; font-weight: 800;>
+                <div style="display: flex; align-items: center; gap: 5px; font-size: 9pt; font-weight: 800;">
                     <span style="opacity: 0.9;">الموظف:</span>
-                        {{ $creator_name ?? 'مسؤول النظام' }}
-                  
+                    {{ $creator_name ?? 'مسؤول النظام' }}
                 </div>
 
                 {{-- أرقام الإدارة العامة لجميع الفروع --}}
