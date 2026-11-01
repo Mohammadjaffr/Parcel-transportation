@@ -18,6 +18,7 @@ use App\Services\WhatsApp\WhatsAppLinkService;
 use App\Services\WhatsApp\Messages\PassengerBookingMessage;
 use App\Services\WhatsApp\Messages\PassengerCancelMessage;
 use App\Services\WhatsApp\Messages\CashTransactionMessage;
+use App\Services\WhatsApp\Messages\DriverDetection;
 use Illuminate\Http\Request;
 
 class WhatsAppController extends Controller
@@ -435,7 +436,144 @@ class WhatsAppController extends Controller
     /**
      * Send Driver Manifest via WhatsApp
      */
+    /**
+     * إرسال إشعار وكشف الإرسالية للسائق مباشرة عبر واتساب (النهج المتبع في الطرود)
+     */
+    public function sendDriverPackageWhatsapp($id)
+    {
+        try {
+            $package = ShipmentPackage::with([
+                'driver',
+                'senderBranch.app',
+                'shipments.receiverBranch',
+                'shipments.receiverOfficeBranch',
+            ])->findOrFail($id);
+
+            // تجهيز رابط الواتساب اليدوي البديل (wa.me) مسبقاً
+            $fallbackLink = WhatsAppLinkService::generate($package, 'DriverDetection');
+
+            // تحديد الفرع المرسل لتحميل إعدادات واتساب الخاصة به
+            $branch = $package->senderBranch ?? auth()->user()?->branch;
+
+            if (!$branch) {
+                $branch = \App\Models\Branch::whereNotNull('whatsapp_api_key')
+                    ->where('whatsapp_api_key', '!=', '')
+                    ->first();
+            }
+
+            if ($branch) {
+                $this->whatsAppService->loadBranchConfig($branch);
+            }
+
+            // التحقق من وجود رقم هاتف السائق
+            $phone = $package->driver?->phone ?? null;
+            if (!$phone) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'رقم هاتف السائق غير متوفر.',
+                ], 422);
+            }
+
+            // التحقق من تهيئة بيانات الـ API الخاصة بالواتساب
+            if (!$this->whatsAppService->isConfigured()) {
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => 'خدمة الواتساب التلقائية غير مهيأة، جاري التحويل للمحادثة المباشرة...',
+                ]);
+            }
+
+            // فحص حالة الاتصال من الكاش
+            $cacheKey = 'whatsapp_status_branch_' . ($branch?->id ?? 'default');
+            $serviceStatus = Cache::get($cacheKey, 'online');
+
+            if ($serviceStatus === 'offline') {
+                $checkLive = $this->whatsAppService->getStatus();
+                if (!empty($checkLive['data']['Connected'])) {
+                    $serviceStatus = 'online';
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                } else {
+                    return response()->json([
+                        'success'       => false,
+                        'fallback'      => true,
+                        'whatsapp_link' => $fallbackLink,
+                        'message'       => 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...',
+                    ]);
+                }
+            }
+
+            // تجهيز رابط السند ونص الرسالة
+            $receiptUrl = route('receipt.generate', [
+                'type' => 'ShipmentDetection',
+                'id'   => $package->uuid ?? $package->id,
+            ]);
+
+            $driverDetection = new DriverDetection();
+            $message = $driverDetection->getMessageBody($package, $receiptUrl);
+
+            // إرسال الرسالة عبر WhatsApp API
+            $result = $this->whatsAppService->sendText($phone, $message);
+
+            // التحقق من نتيجة الإرسال
+            if (isset($result['error']) && $result['error']) {
+                $errorMsg = (string) ($result['message'] ?? '');
+
+                $serverStatus = $this->whatsAppService->getStatus();
+                $isServerOnline = !empty($serverStatus['data']['Connected']);
+
+                if (!$isServerOnline) {
+                    Cache::put($cacheKey, 'offline', now()->addMinute());
+                    $userMessage = 'خدمة الواتساب غير متصلة حالياً، جاري فتح الواتساب كرسالة...';
+                } else {
+                    Cache::put($cacheKey, 'online', now()->addMinutes(15));
+                    $userMessage = 'رقم هاتف السائق غير مسجل في الواتساب أو غير صحيح، جاري فتح الواتساب للتحقق...';
+                }
+
+                Log::warning("WhatsApp sendText (driverPackage) failed for package #{$id}: " . $errorMsg);
+
+                return response()->json([
+                    'success'       => false,
+                    'fallback'      => true,
+                    'whatsapp_link' => $fallbackLink,
+                    'message'       => $userMessage,
+                ]);
+            }
+
+            // في حال نجاح الإرسال نتأكد من بقاء الكاش online
+            Cache::put($cacheKey, 'online', now()->addMinutes(15));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إرسال إشعار السائق بنجاح عبر الواتساب ✅',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("sendDriverPackageWhatsapp Error for package #{$id}: " . $e->getMessage());
+
+            $fallbackLink = isset($package) ? WhatsAppLinkService::generate($package, 'DriverDetection') : null;
+
+            return response()->json([
+                'success'       => false,
+                'fallback'      => !empty($fallbackLink),
+                'whatsapp_link' => $fallbackLink,
+                'message'       => 'حدث خطأ، جاري فتح الواتساب للإرسال كرسالة...',
+            ]);
+        }
+    }
+
     public function sendDriverManifest($id)
+    {
+        if (request()->expectsJson() || request()->isMethod('post')) {
+            return $this->sendDriverPackageWhatsapp($id);
+        }
+        return redirect()->away(WhatsAppLinkService::generate(
+            ShipmentPackage::findOrFail($id),
+            'DriverDetection'
+        ) ?? '#');
+    }
+
+    public function _oldSendDriverManifest($id)
     {
         $package = ShipmentPackage::with(['shipments.senderCustomer', 'shipments.receiverCustomer', 'shipments.receiverBranch', 'shipments.senderBranch'])->findOrFail($id);
 

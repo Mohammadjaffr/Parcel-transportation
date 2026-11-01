@@ -298,11 +298,12 @@
                                         @if ($package->driver && $package->driver->phone && $package->DriverDetection)
                                             <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                            <a href="{{ $package->DriverDetection }}" target="_blank"
+                                            <button type="button"
+                                                onclick="sendDriverDirect({{ $package->id }}, this, '{{ $package->DriverDetection }}')"
                                                 class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                 <span class="material-symbols-outlined text-[18px]">send</span>
-                                            إشعار السائق
-                                            </a>
+                                                <span>إشعار السائق</span>
+                                            </button>
                                         @endif
                                     @endif
                                 </div>
@@ -557,11 +558,12 @@
                                                     @if ($package->driver && $package->driver->phone && $package->DriverDetection)
                                                         <div class="mx-3 my-1 h-px bg-gray-100 dark:bg-boxdark"></div>
 
-                                                        <a href="{{ $package->DriverDetection }}" target="_blank"
+                                                        <button type="button"
+                                                onclick="sendDriverDirect({{ $package->id }}, this, '{{ $package->DriverDetection }}')"
                                                             class="flex gap-3 items-center px-4 py-2.5 w-full text-xs font-bold text-emerald-600 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-500/10">
                                                             <span class="material-symbols-outlined text-[18px]">send</span>
-                                                            إشعار السائق
-                                                        </a>
+                                                                <span>إشعار السائق</span>
+                                                        </button>
                                                     @endif
                                                 @endif
                                             </div>
@@ -657,6 +659,107 @@
                     });
                 }
             }
+        }
+        async function sendDriverDirect(packageId, btn, fallbackLink = '') {
+            if (!packageId || btn.disabled) return;
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+            btn.innerHTML = `
+                <span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                <span>جاري الإرسال...</span>
+            `;
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const url = "{{ route('whatsapp.driverPackage', ':id') }}".replace(':id', packageId);
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-emerald-600">check_circle</span>
+                        <span class="text-emerald-600">تم الإرسال بنجاح ✅</span>
+                    `;
+                    showNotificationToast(data.message || 'تم إرسال إشعار السائق بنجاح ✅', 'success');
+                } else if (data.fallback && data.whatsapp_link) {
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">جاري فتح الواتساب...</span>
+                    `;
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    window.open(data.whatsapp_link, '_blank');
+                } else {
+                    if (fallbackLink) {
+                        window.open(fallbackLink, '_blank');
+                    }
+                    btn.innerHTML = `
+                        <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                        <span class="text-amber-500">تم التحويل للواتساب</span>
+                    `;
+                    showNotificationToast(data.message || 'تم فتح الواتساب للإرسال اليدوي', 'warning');
+                }
+            } catch (error) {
+                console.error('WhatsApp driver send error:', error);
+                if (fallbackLink) {
+                    window.open(fallbackLink, '_blank');
+                    showNotificationToast('تعذر الاتصال بالسيرفر، تم فتح الواتساب للإرسال كرسالة.', 'warning');
+                } else {
+                    showNotificationToast('حدث خطأ في الاتصال بالخادم. يرجى المحاولة لاحقاً.', 'error');
+                }
+                btn.innerHTML = `
+                    <span class="material-symbols-outlined text-[18px] text-amber-500">open_in_new</span>
+                    <span class="text-amber-500">تم التحويل للواتساب</span>
+                `;
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-75', 'cursor-not-allowed');
+                    btn.innerHTML = originalHtml;
+                }, 3000);
+            }
+        }
+
+        function showNotificationToast(message, type = 'success') {
+            const existingToast = document.getElementById('direct-whatsapp-toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'direct-whatsapp-toast';
+            let bgClass = 'bg-emerald-600 shadow-emerald-600/25';
+            let icon = 'check_circle';
+
+            if (type === 'error') {
+                bgClass = 'bg-red-600 shadow-red-600/25';
+                icon = 'error';
+            } else if (type === 'warning') {
+                bgClass = 'bg-amber-600 shadow-amber-600/25';
+                icon = 'open_in_new';
+            }
+
+            toast.className = `fixed bottom-6 left-6 z-[9999] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-sm transition-all duration-300 transform translate-y-0 ${bgClass}`;
+
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
     </script>
 @endsection
