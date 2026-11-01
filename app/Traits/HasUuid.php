@@ -17,6 +17,15 @@ trait HasUuid
 
     public function resolveRouteBinding($value, $field = null)
     {
-        return $this->where($field ?? 'uuid', $value)->firstOrFail();
+        if ($field) {
+            return $this->where($field, $value)->firstOrFail();
+        }
+
+        return $this->where(function ($query) use ($value) {
+            $query->where('uuid', $value);
+            if (is_numeric($value)) {
+                $query->orWhere($this->getRouteKeyName() ?? 'id', $value);
+            }
+        })->firstOrFail();
     }
 }

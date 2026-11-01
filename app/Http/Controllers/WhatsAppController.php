@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 use App\Services\WhatsApp\Messages\SenderMessage;
 use App\Services\WhatsApp\Messages\ReceiverMessage;
 use App\Models\Customer;
+use App\Models\Driver;
+use App\Models\DriverTransaction;
 use App\Models\Passengers;
 use App\Models\CashTransaction;
 use App\Services\WhatsApp\WhatsAppLinkService;
@@ -603,6 +605,26 @@ class WhatsAppController extends Controller
             return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم العميل.');
         }
 
+        return redirect()->away($link);
+    }
+
+    public function sendDriverAccountStatement($id)
+    {
+        $driver = Driver::findOrFail($id);
+        $link = WhatsAppLinkService::generate($driver, 'driver_account_statement');
+        if (!$link) {
+            return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم هاتف السائق.');
+        }
+        return redirect()->away($link);
+    }
+
+    public function sendDriverTransaction($id)
+    {
+        $transaction = DriverTransaction::with('driver')->findOrFail($id);
+        $link = WhatsAppLinkService::generate($transaction, 'driver_transaction');
+        if (!$link) {
+            return WebResponseClass::sendValidationError('فشل في إنشاء رابط واتساب: تأكد من وجود رقم هاتف السائق.');
+        }
         return redirect()->away($link);
     }
 

@@ -20,8 +20,8 @@ class InvoiceController extends Controller
      */
     public function printInvoice($id)
     {
-        $shipment = Shipment::findOrFail($id);
-        return $this->invoiceService->generateStandardInvoice($shipment);
+        $shipment = Shipment::withoutGlobalScopes()->where('id', $id)->orWhere('uuid', $id)->firstOrFail();
+        return redirect()->route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid ?? $shipment->id]);
     }
 
     /**
@@ -29,8 +29,7 @@ class InvoiceController extends Controller
      */
     public function printThermal($id)
     {
-        $shipment = Shipment::with(['senderCustomer', 'receiverCustomer', 'senderBranch', 'receiverBranch'])
-            ->findOrFail($id);
-        return $this->invoiceService->generateThermalSticker($shipment);
+        $shipment = Shipment::withoutGlobalScopes()->where('id', $id)->orWhere('uuid', $id)->firstOrFail();
+        return redirect()->route('receipt.generate', ['type' => 'thermal', 'id' => $shipment->uuid ?? $shipment->id]);
     }
 }

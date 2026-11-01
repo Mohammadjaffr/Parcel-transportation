@@ -244,6 +244,14 @@
                                         </button>
                                     @endif
 
+                                    @if($trx->related_entity && $trx->related_entity['type'] === 'shipment')
+                                        <button type="button" @click="openShipmentModal('{{ $trx->related_entity['id'] }}'); openMenu = false"
+                                            class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right transition-colors text-primary hover:bg-slate-50">
+                                            <span class="material-symbols-outlined text-[18px]">package_2</span>
+                                            تفاصيل الشحنة
+                                        </button>
+                                    @endif
+
                                     <button type="button" @click="viewDetails({{ $trx->id }}); openMenu = false"
                                         class="flex gap-2.5 items-center px-4 py-2 w-full text-xs font-bold text-right transition-colors text-slate-600 hover:bg-slate-50 hover:text-primary">
                                         <span class="material-symbols-outlined text-[18px]">visibility</span>
@@ -302,10 +310,15 @@
                                     @if ($trx->related_entity)
                                         <div>
                                             <p class="text-[9px] font-black text-slate-400 mb-0.5 tracking-wide">المرجع</p>
-                                            @if ($trx->related_entity['url'])
+                                            @if ($trx->related_entity['type'] === 'shipment')
+                                                <button type="button" @click="openShipmentModal('{{ $trx->related_entity['id'] }}')" class="text-[10px] font-mono font-bold text-primary hover:underline flex items-center gap-1 text-right">
+                                                    <span class="material-symbols-outlined text-[13px]">package_2</span>
+                                                    <span>{{ $trx->related_entity['label'] }}</span>
+                                                </button>
+                                            @elseif ($trx->related_entity['url'])
                                                 <a href="{{ $trx->related_entity['url'] }}" class="text-[10px] font-mono font-bold text-primary hover:underline flex items-center gap-1">
                                                     <span class="material-symbols-outlined text-[13px]">
-                                                        {{ $trx->related_entity['type'] === 'trip' ? 'explore' : ($trx->related_entity['type'] === 'shipment' ? 'package_2' : 'tag') }}
+                                                        {{ $trx->related_entity['type'] === 'trip' ? 'explore' : 'tag' }}
                                                     </span>
                                                     <span>{{ $trx->related_entity['label'] }}</span>
                                                 </a>
@@ -407,6 +420,7 @@
         {{-- تضمين المودالات --}}
         @include('mobile.pages.finance.cash_ledger.modals.create-transaction-modal')
         @include('mobile.pages.finance.cash_ledger.modals.details-transaction-modal')
+        @include('mobile.pages.finance.cash_ledger.modals.shipment-details-modal')
     </div>
 
     <script>
@@ -415,6 +429,9 @@
                 searchQuery: '',
                 showCreateModal: false,
                 showDetailsModal: false,
+                showShipmentModal: false,
+                shipmentDetails: null,
+                loadingShipment: false,
                 createType: 'income',
                 rawCategories: @js($categories),
                 rawDrivers: @js($drivers ?? []),
@@ -579,6 +596,30 @@
                     this.driverDropdownOpen = false;
 
                     this.showCreateModal = true;
+                },
+
+                async openShipmentModal(shipmentId) {
+                    if (!shipmentId) return;
+                    this.showShipmentModal = true;
+                    this.loadingShipment = true;
+                    this.shipmentDetails = null;
+                    try {
+                        const url = "{{ route('cash.ledger.shipmentDetails', ':id') }}".replace(':id', shipmentId);
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.shipmentDetails = data.data;
+                        } else {
+                            alert(data.message || 'تعذر تحميل بيانات الشحنة.');
+                            this.showShipmentModal = false;
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert('حدث خطأ أثناء تحميل بيانات الشحنة.');
+                        this.showShipmentModal = false;
+                    } finally {
+                        this.loadingShipment = false;
+                    }
                 },
 
                 async viewDetails(id) {

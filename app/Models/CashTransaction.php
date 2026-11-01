@@ -293,15 +293,15 @@ class CashTransaction extends Model
 
         // 3. شحنة فردية (Shipment)
         if ($source instanceof Shipment || $sourceType === Shipment::class || str_contains($notes, 'عمولة الشحنة') || str_contains($notes, 'قيمة الشحنة')) {
-            $shipmentNumber = $source?->bond_number_only ?? ($source?->bond_number ?? $sourceId ?? $ref);
+            $shipmentId = $source?->id ?? $sourceId;
+            $shipmentNumber = $source?->bond_number_only ?? ($source?->bond_number ?? $shipmentId ?? $ref);
             if (!$shipmentNumber && preg_match('/الشحنة\s*(?:رقم\s*)?([A-Za-z0-9\-]+)/u', $notes, $matches)) {
                 $shipmentNumber = $matches[1];
             }
-            if ($shipmentNumber) {
-                $shipmentId = $source?->id ?? $sourceId;
+            if ($shipmentId || $shipmentNumber) {
                 return [
                     'type'   => 'shipment',
-                    'id'     => $shipmentNumber,
+                    'id'     => $shipmentId ?? $shipmentNumber,
                     'label'  => 'شحنة رقم ' . $shipmentNumber,
                     'url'    => $shipmentId && \Illuminate\Support\Facades\Route::has('shipments.show') ? route('shipments.show', $shipmentId) : null,
                 ];

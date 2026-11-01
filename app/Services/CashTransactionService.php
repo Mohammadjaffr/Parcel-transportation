@@ -79,16 +79,21 @@ class CashTransactionService
         }
 
         // الحماية من التكرار المالي لنفس الشحنة (Idempotency)
-        $alreadyRecorded = CashTransaction::withoutGlobalScopes()
+        $driverId = $shipment->package?->driver_id ?? null;
+
+        $existing = CashTransaction::withoutGlobalScopes()
             ->where('app_id', $appId)
             ->where('source_type', Shipment::class)
             ->where('source_id', $shipment->id)
             ->where('type', 'income')
             ->where('notes', 'like', '%عمولة الشحنة%')
-            ->exists();
+            ->first();
 
-        if ($alreadyRecorded) {
-            return null;
+        if ($existing) {
+            if ($driverId && $existing->driver_id !== $driverId) {
+                $existing->update(['driver_id' => $driverId]);
+            }
+            return $existing;
         }
 
         // جلب أو إنشاء فئة عمولة الشحنات لهذا المستأجر (بدون fallback عشوائي)
@@ -110,6 +115,7 @@ class CashTransactionService
             'cash_category_id' => $category->id,
             'amount'           => $commissionAmount,
             'payment_method'   => 'cash',
+            'driver_id'        => $driverId,
             'reference_number' => $shipment->bond_number,
             'source_type'      => Shipment::class,
             'source_id'        => $shipment->id,
@@ -252,60 +258,18 @@ class CashTransactionService
      */
     public function recordPackageCommission(ShipmentPackage $package): ?CashTransaction
     {
-        // حساب إجمالي عمولة جميع الطرود في الحمولة
-        $totalCommission = (float) Shipment::where('shipment_package_id', $package->id)
-            ->sum('total_commission');
+        $package->loadMissing(['shipments.package', 'driver']);
+        $lastTrx = null;
 
-        if ($totalCommission <= 0 || !$package->sender_branch_id) {
-            return null;
+        // تسقيط عمولة كل شحنة منفصلة في دفتر الحسابات
+        foreach ($package->shipments as $shipment) {
+            $trx = $this->recordShipmentCommission($shipment);
+            if ($trx) {
+                $lastTrx = $trx;
+            }
         }
 
-        $appId = $package->app_id
-            ?? $package->senderBranch?->app_id
-            ?? auth()->user()?->app_id;
-
-        if (!$appId) {
-            return null;
-        }
-
-        // الحماية من التكرار المالي (Idempotency)
-        $alreadyRecorded = CashTransaction::withoutGlobalScopes()
-            ->where('app_id', $appId)
-            ->where('source_type', ShipmentPackage::class)
-            ->where('source_id', $package->id)
-            ->where('type', 'income')
-            ->where('notes', 'like', '%عمولة الحمولة%')
-            ->exists();
-
-        if ($alreadyRecorded) {
-            return null;
-        }
-
-        // جلب أو إنشاء فئة عمولة الشحنات (بدون fallback عشوائي لتجنب خلط التصنيفات)
-        $category = CashCategory::withoutGlobalScopes()->firstOrCreate(
-            [
-                'app_id' => $appId,
-                'name'   => 'عمولة شحنة',
-            ],
-            [
-                'type'      => 'income',
-                'is_active' => true,
-            ]
-        );
-
-        return $this->recordIncome([
-            'app_id'           => $appId,
-            'branch_id'        => $package->sender_branch_id,
-            'user_id'          => auth()->id() ?? $package->created_by,
-            'cash_category_id' => $category->id,
-            'amount'           => $totalCommission,
-            'payment_method'   => 'cash',
-            'reference_number' => $package->tracking_number,
-            'source_type'      => ShipmentPackage::class,
-            'source_id'        => $package->id,
-            'notes'            => "تسقيط عمولة الحمولة رقم {$package->tracking_number}",
-            'transaction_date' => now()->toDateString(),
-        ]);
+        return $lastTrx;
     }
 
     /**

@@ -19,6 +19,8 @@ use App\Services\WhatsApp\Messages\PassengerCancelMessage;
 use App\Services\WhatsApp\Messages\PassengerRebookMessage;
 use App\Services\WhatsApp\Messages\CashTransactionMessage;
 use App\Models\CashTransaction;
+use App\Services\WhatsApp\Messages\DriverTransactionMessage;
+use App\Services\WhatsApp\Messages\DriverAccountStatementMessage;
 
 
 class WhatsAppLinkService
@@ -40,6 +42,8 @@ class WhatsAppLinkService
             'passengerCancel' => new PassengerCancelMessage(),
             'passengerRebook' => new PassengerRebookMessage(),
             'cash_ledger' => new CashTransactionMessage(),
+            'driver_transaction' => new DriverTransactionMessage(),
+            'driver_account_statement' => new DriverAccountStatementMessage(),
             default    => null,
         };
 

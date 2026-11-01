@@ -8,10 +8,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Classes\WebResponseClass;
 use App\Services\AdminLoggerService;
+use App\Services\DriverTransactionService;
 use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
 {
+    public function __construct(
+        protected DriverTransactionService $transactionService
+    ) {}
+
     /* ========== 1- عرض جميع السائقين مع البحث والفلترة ========== */
     public function index(Request $request)
     {
@@ -21,7 +26,6 @@ class DriverController extends Controller
         $bannedCount = Driver::where('is_banned', true)->count();
 
         $query = Driver::latest();
-
 
         // الفلترة حسب الحالة
         if ($request->filled('status')) {
@@ -50,6 +54,7 @@ class DriverController extends Controller
 
         return view('pages.drivers.index', compact('drivers', 'totalCount', 'activeCount', 'bannedCount'));
     }
+
     /* ========== 2- صفحة إنشاء سائق ========== */
     public function create()
     {
@@ -86,11 +91,152 @@ class DriverController extends Controller
         }
     }
 
-    /* ========== 4- عرض تفاصيل سائق ========== */
-    public function show($id)
+    /* ========== 4- عرض تفاصيل سائق وكشف حسابه ========== */
+    public function show(Request $request, $id)
+    {
+        $driver = Driver::with('branch')->findOrFail($id);
+
+        $query = $driver->transactions()->with(['creator', 'cashTransaction'])->latest();
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $transactions = $query->paginate(20)->withQueryString();
+
+        $totalDebit = $driver->total_debit;
+        $totalCredit = $driver->total_credit;
+        $balance = $driver->balance;
+
+        if ($request->isMobile) {
+            return view('mobile.pages.people.drivers.show', compact('driver', 'transactions', 'totalDebit', 'totalCredit', 'balance'));
+        }
+
+        return view('pages.drivers.show', compact('driver', 'transactions', 'totalDebit', 'totalCredit', 'balance'));
+    }
+
+    /* ========== 4.1- تسجيل قيد جديد أو تصفية حساب للسائق ========== */
+    public function storeTransaction(Request $request, $id)
     {
         $driver = Driver::findOrFail($id);
-        return view('pages.drivers.show', compact('driver'));
+        $action = $request->input('action', 'new_entry');
+
+        try {
+            if ($action === 'clear_amount') {
+                $validator = Validator::make($request->all(), [
+                    'clear_type'       => ['required', 'in:receive,pay'],
+                    'amount'           => ['required', 'numeric', 'min:0.01'],
+                    'payment_method'   => ['required', 'in:cash,bank_transfer'],
+                    'reference_number' => ['nullable', 'string', 'max:100'],
+                    'notes'            => ['nullable', 'string', 'max:500'],
+                ], [
+                    'clear_type.required'     => 'نوع التصفية مطلوب.',
+                    'amount.required'         => 'المبلغ مطلوب.',
+                    'amount.min'              => 'المبلغ يجب أن يكون أكبر من صفر.',
+                    'payment_method.required' => 'طريقة الدفع مطلوبة.',
+                ]);
+
+                if ($validator->fails()) {
+                    return WebResponseClass::sendValidationError($validator);
+                }
+
+                $validated = $validator->validated();
+
+                if ($validated['clear_type'] === 'receive') {
+                    $this->transactionService->receivePaymentFromDriver(
+                        $driver,
+                        (float) $validated['amount'],
+                        $validated['payment_method'],
+                        $validated['notes'] ?? null,
+                        $validated['reference_number'] ?? null
+                    );
+                    $msg = 'تم تسجيل سند القبض وتوريد المبلغ إلى الصندوق بنجاح.';
+                    $logAction = 'سند قبض من سائق';
+                } else {
+                    $this->transactionService->payBalanceToDriver(
+                        $driver,
+                        (float) $validated['amount'],
+                        $validated['payment_method'],
+                        $validated['notes'] ?? null,
+                        $validated['reference_number'] ?? null
+                    );
+                    $msg = 'تم تسجيل سند الصرف ودفع المستحق للسائق بنجاح.';
+                    $logAction = 'سند صرف لسائق';
+                }
+
+                AdminLoggerService::log(
+                    $logAction,
+                    'Driver',
+                    $driver->id,
+                    "{$logAction} بمبلغ {$validated['amount']} للسائق {$driver->name}"
+                );
+
+                return WebResponseClass::sendResponse(
+                    'تمت العملية بنجاح!',
+                    $msg,
+                    'حسناً'
+                );
+
+            } else {
+                // new_entry (كشف / قيد جديد)
+                $validator = Validator::make($request->all(), [
+                    'type'             => ['required', 'in:debit,credit'],
+                    'total_amount'     => ['required', 'numeric', 'min:0.01'],
+                    'paid_now'         => ['nullable', 'numeric', 'min:0'],
+                    'payment_method'   => ['required', 'in:cash,bank_transfer'],
+                    'description'      => ['required', 'string', 'max:500'],
+                    'reference_number' => ['nullable', 'string', 'max:100'],
+                ], [
+                    'type.required'           => 'نوع القيد مطلوب.',
+                    'total_amount.required'   => 'المبلغ الكلي مطلوب.',
+                    'total_amount.min'        => 'المبلغ يجب أن يكون أكبر من صفر.',
+                    'payment_method.required' => 'طريقة الدفع مطلوبة.',
+                    'description.required'    => 'البيان مطلوب.',
+                ]);
+
+                if ($validator->fails()) {
+                    return WebResponseClass::sendValidationError($validator);
+                }
+
+                $validated = $validator->validated();
+                $totalAmount = (float) $validated['total_amount'];
+                $paidNow = (float) ($validated['paid_now'] ?? 0);
+
+                if ($paidNow > $totalAmount) {
+                    return WebResponseClass::sendError('المبلغ المدفوع حالياً لا يمكن أن يتجاوز المبلغ الكلي.');
+                }
+
+                $this->transactionService->recordManifestEntry(
+                    $driver,
+                    $totalAmount,
+                    $validated['type'],
+                    $validated['description'],
+                    $paidNow,
+                    $validated['payment_method'],
+                    null,
+                    null,
+                    $validated['reference_number'] ?? null
+                );
+
+                AdminLoggerService::log(
+                    'تسجيل قيد مالي للسائق',
+                    'Driver',
+                    $driver->id,
+                    "تسجيل قيد بمبلغ {$totalAmount} للسائق {$driver->name}"
+                );
+
+                return WebResponseClass::sendResponse(
+                    'تم الحفظ بنجاح!',
+                    'تم تسجيل القيد في كشف حساب السائق بنجاح.',
+                    'حسناً'
+                );
+            }
+        } catch (Exception $e) {
+            return WebResponseClass::sendExceptionError($e);
+        }
     }
 
     /* ========== 5- صفحة تعديل سائق ========== */

@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/shipment/quick-scan', [ShipmentController::class, 'quickScan'])->name('shipment.quickScan');
         });
         Route::prefix('finance/cash-ledger')->name('cash.ledger.')->group(function () {
+            Route::get('/shipment/{id}/details', [CashTransactionController::class, 'shipmentDetails'])->name('shipmentDetails');
             Route::get('/', [CashTransactionController::class, 'index'])->name('index');
             Route::post('/store', [CashTransactionController::class, 'store'])->name('store');
             Route::put('/{id}', [CashTransactionController::class, 'update'])->name('update');
@@ -196,6 +197,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/drivers/{id}/toggle-ban', [DriverController::class, 'toggleBan'])->name('drivers.toggle-ban')->middleware('check.service:Drivers');
         Route::get('/drivers/{id}/shipments', [DriverController::class, 'shipments'])->name('drivers.shipments')->middleware('check.service:Drivers');
         Route::get('/drivers/{id}/shipments/print', [DriverController::class, 'printShipments'])->name('drivers.shipments.print')->middleware('check.service:Drivers');
+        Route::post('/drivers/{id}/transactions', [DriverController::class, 'storeTransaction'])->name('drivers.storeTransaction')->middleware('check.service:Drivers');
 
         Route::resource('shipments', ShipmentController::class);
         Route::get('/reports/revenue', [ReportController::class, 'revenue'])->name('reports.revenue');
@@ -311,6 +313,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/connect/reject/{id}', [ConnectionController::class, 'reject'])->name('connections.reject');
 
         Route::get('/whatsapp/customer-account-statement/{id}', [WhatsAppController::class, 'sendCustomerAccountStatement'])->name('whatsapp.customer.account.statement');
+        Route::get('/whatsapp/driver-account-statement/{id}', [WhatsAppController::class, 'sendDriverAccountStatement'])->name('whatsapp.driver.account.statement');
+        Route::get('/whatsapp/driver-transaction/{id}', [WhatsAppController::class, 'sendDriverTransaction'])->name('whatsapp.driver.transaction');
 
 
         Route::middleware('check.service:Shipment_In')->group(function () {

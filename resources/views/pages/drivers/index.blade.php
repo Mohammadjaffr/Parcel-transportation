@@ -308,6 +308,7 @@
                             <th class="px-6 py-4 text-center">نوع المركبة</th>
                             <th class="px-6 py-4 text-center">رقم الهاتف</th>
                             <th class="px-6 py-4 text-center">الحالة</th>
+                            <th class="px-6 py-4 text-center">الرصيد / الذمة</th>
                             <th class="px-6 py-4 text-center">تواصل سريع</th>
                             <th class="px-6 py-4 text-center">الإجراءات</th>
                         </tr>
@@ -371,6 +372,28 @@
                                     @endif
                                 </td>
 
+                                {{-- Financial Balance Badge --}}
+                                <td class="px-6 py-4 text-center">
+                                    @php
+                                        $bal = $driver->balance;
+                                    @endphp
+                                    @if ($bal < 0)
+                                        <a href="{{ route('drivers.show', $driver->id) }}" class="inline-flex flex-col items-center px-2.5 py-1 rounded-xl bg-rose-50 border border-rose-200/60 text-rose-600 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 transition-colors">
+                                            <span class="text-xs font-black" dir="ltr">{{ number_format(abs($bal), 0) }} ر.ي</span>
+                                            <span class="text-[9px] font-bold">عليه (مدين)</span>
+                                        </a>
+                                    @elseif ($bal > 0)
+                                        <a href="{{ route('drivers.show', $driver->id) }}" class="inline-flex flex-col items-center px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200/60 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 transition-colors">
+                                            <span class="text-xs font-black" dir="ltr">{{ number_format($bal, 0) }} ر.ي</span>
+                                            <span class="text-[9px] font-bold">له (دائن)</span>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('drivers.show', $driver->id) }}" class="inline-flex items-center px-2.5 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 dark:bg-boxdark dark:border-boxdark-2 dark:text-slate-400 transition-colors">
+                                            <span class="text-[10px] font-bold">مصفى</span>
+                                        </a>
+                                    @endif
+                                </td>
+
                                 {{-- Quick Contact --}}
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex gap-3 justify-center items-center">
@@ -395,6 +418,12 @@
                                 {{-- Actions --}}
                                 <td class="relative px-6 py-4 text-center">
                                     <div class="flex gap-1.5 justify-center items-center">
+                                        {{-- زر كشف الحساب والذمة المالية --}}
+                                        <a href="{{ route('drivers.show', $driver->id) }}"
+                                            title="كشف الحساب والذمة المالية"
+                                            class="flex justify-center items-center w-9 h-9 rounded-xl transition-all bg-amber-50 text-amber-600 hover:bg-amber-100 active:scale-90 dark:bg-amber-500/10 dark:text-amber-400">
+                                            <span class="text-[19px] material-symbols-outlined">account_balance_wallet</span>
+                                        </a>
                                         {{-- زر الحظر / فك الحظر --}}
                                         <button type="button"
                                             @click="openBanModal({{ $driver->id }}, {{ json_encode($driver->name) }}, {{ $driver->is_banned ? 'true' : 'false' }})"

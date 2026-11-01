@@ -355,6 +355,7 @@ class CashTransactionController extends Controller
                 'branch'           => $trx->branch->name ?? '-',
                 'user'             => $trx->user->name ?? '-',
                 'reference_number' => $trx->related_entity ? $trx->related_entity['label'] : ($trx->reference_number ?? '-'),
+                'related_entity'   => $trx->related_entity,
                 'driver_id'        => $trx->driver_id,
                 'driver_name'      => $trx->driver_name,
                 'driver_phone'     => $trx->driver_phone,
@@ -367,6 +368,86 @@ class CashTransactionController extends Controller
     /**
      * طباعة إيصال مالي حراري للسند (HTML فائق السرعة مع خيار تصدير PDF)
      */
+    
+    /**
+     * إرجاع تفاصيل الشحنة عبر JSON لعرضها داخل نافذة منبثقة (Modal) في دفتر الحسابات
+     */
+    public function shipmentDetails($id)
+    {
+        try {
+            $shipment = \App\Models\Shipment::withoutGlobalScopes()
+                ->with([
+                    'senderCustomer',
+                    'receiverCustomer',
+                    'senderBranch',
+                    'receiverBranch',
+                    'senderOfficeBranch',
+                    'receiverOfficeBranch',
+                    'package.driver',
+                    'creator',
+                ])
+                ->where(function ($q) use ($id) {
+                    $q->where('id', $id)
+                      ->orWhere('bond_number', $id)
+                      ->orWhere('bond_number', 'LIKE', "%-{$id}");
+                })
+                ->firstOrFail();
+
+            $statusText = match ($shipment->status) {
+                'pending'    => 'قيد الانتظار',
+                'in_transit' => 'في الطريق',
+                'delivered'  => 'تم التسليم',
+                'returned'   => 'راجعة',
+                'cancelled'  => 'ملغية',
+                default      => $shipment->status ?? '-',
+            };
+
+            return response()->json([
+                'success' => true,
+                'data'    => [
+                    'id'                         => $shipment->id,
+                    'bond_number'                => $shipment->bond_number,
+                    'code'                       => $shipment->code ?? '-',
+                    'status'                     => $shipment->status,
+                    'status_text'                => $statusText,
+                    'payment_method'             => $shipment->payment_method_label ?? $shipment->payment_method,
+                    'created_at'                 => $shipment->created_at ? $shipment->created_at->format('Y-m-d h:i A') : '-',
+                    'sender_name'                => $shipment->senderCustomer->name ?? '-',
+                    'sender_phone'               => $shipment->senderCustomer->phone ?? '-',
+                    'receiver_name'              => $shipment->receiverCustomer->name ?? '-',
+                    'receiver_phone'             => $shipment->receiverCustomer->phone ?? '-',
+                    'sender_branch'              => $shipment->senderBranch->name ?? ($shipment->senderOfficeBranch->name ?? '-'),
+                    'receiver_branch'            => $shipment->receiverBranch->name ?? ($shipment->receiverOfficeBranch->name ?? '-'),
+                    'driver_name'                => $shipment->package->driver->name ?? '-',
+                    'driver_phone'               => $shipment->package->driver->phone ?? '-',
+                    'package_id'                 => $shipment->package?->id,
+                    'package_number'             => $shipment->package ? ($shipment->package->package_number ?? ('طرد #' . $shipment->package->id)) : null,
+                    'package_type'               => $shipment->package_type ?? 'عادي',
+                    'parcels_quantity'           => $shipment->parcels_count,
+                    'weight'                     => $shipment->weight ? $shipment->weight . ' كجم' : '-',
+                    'total_amount'               => number_format((float) $shipment->total_amount, 2),
+                    'total_commission'           => number_format((float) ($shipment->total_commission ?? 0), 2),
+                    'package_fee'                => number_format((float) ($shipment->package_fee ?? 0), 2),
+                    'other_fee'                  => number_format((float) ($shipment->other_fee ?? 0), 2),
+                    'amount_to_collect_receiver' => number_format((float) $shipment->amount_to_collect_from_receiver, 2),
+                    'amount_to_collect_sender'   => number_format((float) $shipment->amount_to_collect_from_sender, 2),
+                    'notes'                      => $shipment->notes ?? '-',
+                    'creator_name'               => $shipment->creator->name ?? '-',
+                    'show_url'                   => route('shipments.show', $shipment->id),
+                    'invoice_url'                => route('receipt.generate', ['type' => 'sender', 'id' => $shipment->uuid ?? $shipment->id]),
+                    'thermal_url'                => route('receipt.generate', ['type' => 'thermal', 'id' => $shipment->uuid ?? $shipment->id]),
+                    'sender_whatsapp_link'       => $shipment->sender_whatsapp_link,
+                    'receiver_whatsapp_link'     => $shipment->receiver_whatsapp_link,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'تعذر جلب تفاصيل الشحنة: ' . $e->getMessage()
+            ], 404);
+        }
+    }
+
     public function printReceipt(Request $request, $id)
     {
         $trx = CashTransaction::with(['category', 'branch', 'user', 'source'])->findOrFail($id);

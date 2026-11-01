@@ -119,6 +119,22 @@
                                         نشط
                                     </span>
                                 @endif
+                                @php
+                                    $bal = $driver->balance;
+                                @endphp
+                                @if ($bal < 0)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-600 border border-rose-200/60">
+                                        عليه: {{ number_format(abs($bal), 0) }} ر.ي
+                                    </span>
+                                @elseif ($bal > 0)
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-600 border border-emerald-200/60">
+                                        له: {{ number_format($bal, 0) }} ر.ي
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-50 text-slate-500 border border-slate-200">
+                                        مصفى
+                                    </span>
+                                @endif
                             </div>
 
                             <div class="flex gap-2 items-center text-slate-500">
@@ -168,6 +184,12 @@
                     <!-- Actions -->
                     <div class="flex relative z-10 justify-between items-center">
                         <div class="flex gap-2.5">
+                            <a href="{{ route('drivers.show', $driver->id) }}"
+                                class="flex gap-1.5 items-center px-3 py-2 text-xs font-bold text-amber-700 bg-amber-50 rounded-xl border border-amber-200/60 transition-transform font-headline active:scale-95">
+                                <span class="text-sm material-symbols-outlined">receipt_long</span>
+                                كشف الحساب
+                            </a>
+
                             <a href="tel:{{ $driver->phone }}"
                                 class="flex gap-2 items-center px-4 py-2 text-xs font-bold rounded-xl border transition-transform bg-primary/5 text-primary font-headline active:scale-95 border-primary/5">
                                 <span class="text-sm material-symbols-outlined"

@@ -87,7 +87,19 @@
             </template>
         </div>
 
-        {{-- أزرار الإجراءات السفلية --}}
+        {{-- زر فتح تفاصيل الشحنة إن كانت المعاملة مرتبطة بشحنة --}}
+            <template x-if="details.related_entity && details.related_entity.type === 'shipment'">
+                <div class="pt-2">
+                    <button type="button" 
+                            @click="showDetailsModal = false; openShipmentModal(details.related_entity.id)"
+                            class="flex items-center justify-center w-full gap-2 py-2.5 text-xs font-bold text-primary transition-colors bg-primary/10 rounded-xl hover:bg-primary/20">
+                        <span class="material-symbols-outlined text-[18px]">package_2</span>
+                        عرض تفاصيل الشحنة بالكامل (<span x-text="details.related_entity.label"></span>)
+                    </button>
+                </div>
+            </template>
+
+            {{-- أزرار الإجراءات السفلية --}}
         <div class="flex gap-2 pt-4 mt-5 border-t border-gray-100 dark:border-gray-800">
             <a :href="'{{ url('finance/cash-ledger') }}/' + details.id + '/receipt'" 
                target="_blank"

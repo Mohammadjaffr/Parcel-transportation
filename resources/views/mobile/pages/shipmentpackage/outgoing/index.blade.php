@@ -218,7 +218,8 @@
                                                 {{ $package->driver->name ?? 'غير محدد' }}
                                             </p>
                                             @if ($package->driver?->vehicle_type)
-                                                <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
+                                                <span
+                                                    class="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-700/50">
                                                     {{ $package->driver->vehicle_type }}
                                                 </span>
                                             @endif
@@ -317,7 +318,8 @@
             `;
 
             try {
-                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                    '{{ csrf_token() }}';
                 const url = "{{ route('whatsapp.driverPackage', ':id') }}".replace(':id', packageId);
 
                 const response = await fetch(url, {
@@ -342,7 +344,8 @@
                         <span class="material-symbols-outlined text-[16px] text-amber-500">open_in_new</span>
                         <span class="text-amber-500">جاري فتح الواتساب...</span>
                     `;
-                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...', 'warning');
+                    showNotificationToast(data.message || 'خدمة الواتساب غير متصلة، جاري فتح الواتساب كرسالة...',
+                        'warning');
                     window.open(data.whatsapp_link, '_blank');
                 } else {
                     if (fallbackLink) {
@@ -392,7 +395,8 @@
                 icon = 'open_in_new';
             }
 
-            toast.className = `fixed bottom-6 left-6 right-6 z-[9999] flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-xs transition-all duration-300 transform translate-y-0 ${bgClass}`;
+            toast.className =
+                `fixed bottom-6 left-6 right-6 z-[9999] flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl text-white font-bold text-xs transition-all duration-300 transform translate-y-0 ${bgClass}`;
 
             toast.innerHTML = `
                 <span class="material-symbols-outlined text-[18px]">${icon}</span>

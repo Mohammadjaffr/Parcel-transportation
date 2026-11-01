@@ -1,0 +1,214 @@
+<?php
+
+namespace App\Services\Receipts\Types;
+
+use App\Models\Driver;
+use App\Models\DriverTransaction;
+use App\Interfaces\ReceiptStrategyInterface;
+use App\Services\Receipts\Concerns\FormatsReceiptHeaderData;
+use Carbon\Carbon;
+
+class DriverAccountStatementReceipt implements ReceiptStrategyInterface
+{
+    use FormatsReceiptHeaderData;
+
+    public function sizepage(): string|array
+    {
+        return 'A4 landscape';
+    }
+
+    public function fetchData(string $referenceId): array
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        $app = $user?->app;
+        $appId = $user?->app_id;
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. بيانات السائق
+        |--------------------------------------------------------------------------
+        */
+        $driver = Driver::with('branch')
+            ->where(function ($query) use ($appId) {
+                if ($appId) {
+                    $query->where('app_id', $appId);
+                }
+            })
+            ->where(function ($query) use ($referenceId) {
+                $query->where('uuid', $referenceId);
+                if (is_numeric($referenceId)) {
+                    $query->orWhere('id', $referenceId);
+                }
+            })
+            ->firstOrFail();
+
+        if (!$app) {
+            $app = $driver->app ?? $driver->branch?->app;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. بيانات الشركة / الشعار / الفروع
+        |--------------------------------------------------------------------------
+        */
+        $appName = $user?->cached_app_name ?? $app?->name ?? 'اسم الشركة غير محدد';
+        $logoBase64 = $this->getLogoBase64($app);
+        $branchAddresses = $this->getBranchAddresses($app);
+
+        $mainBranchData = null;
+        if ($driver->branch) {
+            $mainBranchData = [
+                'title' => 'فرع / ' . $driver->branch->name . ($driver->branch->address ? ' - ' . $driver->branch->address : ''),
+                'phones' => $this->formatPhoneNumber($driver->branch->phone),
+            ];
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. جلب حركات السائق المالية
+        |--------------------------------------------------------------------------
+        */
+        $transactions = DriverTransaction::where('driver_id', $driver->id)
+            ->with('creator')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. بناء الحركات المالية لكشف الحساب
+        |--------------------------------------------------------------------------
+        */
+        $entries = collect();
+
+        foreach ($transactions as $trx) {
+            $isCredit = $trx->type === 'credit';
+            $amount = (float) ($trx->amount ?? 0);
+
+            $entries->push([
+                'date'           => $trx->created_at ? $trx->created_at->format('Y-m-d H:i') : '---',
+                'raw_date'       => $trx->created_at,
+                'type'           => 'transaction',
+                'type_label'     => $isCredit ? 'سند قبض / سداد' : 'قيد عهدة / مديونية',
+                'description'    => $trx->description ?? ($isCredit ? 'سداد من السائق' : 'قيد على السائق'),
+                'reference'      => '#' . $trx->id,
+                'debit'          => $isCredit ? 0 : $amount,
+                'credit'         => $isCredit ? $amount : 0,
+                'notes'          => null,
+                'creator'        => $trx->creator?->name ?? '---',
+            ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. ترتيب الحركات زمنياً
+        |--------------------------------------------------------------------------
+        */
+        $entries = $entries->sortBy(function ($item) {
+            return $item['raw_date'] ? Carbon::parse($item['raw_date'])->timestamp : 0;
+        })->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. احتساب الرصيد التراكمي
+        |--------------------------------------------------------------------------
+        */
+        $runningBalance = 0;
+        $entries = $entries->map(function ($entry) use (&$runningBalance) {
+            $runningBalance += ((float) $entry['debit'] - (float) $entry['credit']);
+            $entry['balance'] = $runningBalance;
+            return $entry;
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7. المجاميع النهائية
+        |--------------------------------------------------------------------------
+        */
+        $totalDebit = (float) $entries->sum('debit');
+        $totalCredit = (float) $entries->sum('credit');
+        $finalBalance = $totalDebit - $totalCredit;
+
+        $theme = $app ? ($app->theme ?? null) : null;
+        if (!$theme) {
+            $theme = [
+                'primary'   => '#fb6514',
+                'secondary' => '#333333',
+                'bg_light'  => '#fff4ee',
+            ];
+        }
+
+        $dateInfo = $this->prepareDateInfo(now());
+
+        return [
+            'company' => [
+                'name'         => $appName,
+                'logo'         => $logoBase64,
+                'main_branch'  => $mainBranchData,
+                'branch_addresses' => $branchAddresses,
+            ],
+            'branch_addresses'  => $branchAddresses,
+
+            'day_name'          => $dateInfo['day_name'],
+            'formatted_date'    => $dateInfo['formatted_date'],
+            'formatted_time'    => $dateInfo['formatted_time'],
+
+            'title'             => 'كشف حساب سائق',
+            'manifest_number'   => $driver->id,
+            'sender_branch'     => $driver->branch?->name ?? 'المركز الرئيسي',
+
+            'driver' => [
+                'id'     => $driver->id,
+                'uuid'   => $driver->uuid ?? null,
+                'name'   => $driver->name ?? '---',
+                'phone'  => $driver->phone ?? '---',
+                'branch' => $driver->branch?->name ?? '---',
+            ],
+
+            'summary' => [
+                'total_debit_raw' => $totalDebit,
+                'total_credit_raw' => $totalCredit,
+                'final_balance_raw' => $finalBalance,
+
+                'total_debit' => number_format($totalDebit, 0),
+                'total_credit' => number_format($totalCredit, 0),
+                'final_balance' => number_format(abs($finalBalance), 0),
+
+                'balance_status' => $finalBalance > 0 ? 'على السائق' : ($finalBalance < 0 ? 'للسائق' : 'مصفى'),
+                'is_debtor' => $finalBalance > 0,
+                'is_creditor' => $finalBalance < 0,
+                'is_cleared' => $finalBalance == 0,
+            ],
+
+            'statement' => [
+                'entries' => $entries->toArray(),
+                'entries_count' => $entries->count(),
+            ],
+
+            'creator_name' => $user?->name ?? 'مسؤول النظام',
+
+            'print_date' => now()->timezone('Asia/Aden')->format('Y-m-d h:i A'),
+
+            'design' => [
+                'primary_color'   => $theme['primary'] ?? '#fb6514',
+                'secondary_color' => $theme['secondary'] ?? '#333333',
+                'bg_color'        => $theme['bg_light'] ?? '#fff4ee',
+                'font_family'     => "'aealarabiya', 'dejavusans', sans-serif",
+                'paper_size'      => 'a4',
+            ],
+        ];
+    }
+
+    public function getTemplatePath(): string
+    {
+        return 'receipts.templates.DriverAccountStatement';
+    }
+
+    public function getFileName(array $data): string
+    {
+        $driverName = str_replace(' ', '_', $data['driver']['name'] ?? 'driver');
+        return 'Driver_Account_Statement_' . $driverName . '.pdf';
+    }
+}
+

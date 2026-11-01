@@ -15,6 +15,8 @@ use App\Services\Receipts\Types\ExternalOfficeDetection;
 use App\Services\Receipts\Types\PassangersDetection;
 use App\Services\Receipts\Types\TripDetection;
 use App\Services\Receipts\Types\TripsDetection;
+use App\Services\Receipts\Types\DriverTransactionReceipt;
+use App\Services\Receipts\Types\DriverAccountStatementReceipt;
 
 use Exception;
 
@@ -31,6 +33,8 @@ class ReceiptFactory
             'thermal' => new ThermalShipmentReceipt(),
             'CustomerAccountStatementReceipt' => new CustomerAccountStatementReceipt(),
             'transaction' => new CustomerTransactionReceipt(),
+            'driver_transaction' => new DriverTransactionReceipt(),
+            'DriverAccountStatementReceipt' => new DriverAccountStatementReceipt(),
             'passenger' => new PassangerDetection(),
             'all_passenger' => new PassangersDetection(),
             'trip' => new TripDetection(),

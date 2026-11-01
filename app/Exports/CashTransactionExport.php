@@ -33,17 +33,18 @@ class CashTransactionExport extends DefaultValueBinder implements
     WithCustomValueBinder
 {
     /**
-     * إجبار عمود الرقم المرجعي (I) على النوع String
+     * إجبار عمود الرقم المرجعي (J) على النوع String
      * لمنع Excel من تحويل أرقام الجوال إلى Scientific Notation
      */
     public function bindValue(Cell $cell, mixed $value): bool
     {
-        if ($cell->getColumn() === 'I' && $value !== null && $value !== '—') {
+        if ($cell->getColumn() === 'J' && $value !== null && $value !== '—') {
             $cell->setValueExplicit((string) $value, DataType::TYPE_STRING);
             return true;
         }
         return parent::bindValue($cell, $value);
     }
+
     protected array $filters;
 
     public function __construct(array $filters = [])
@@ -62,8 +63,8 @@ class CashTransactionExport extends DefaultValueBinder implements
     {
         return [
             'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED2, // المبلغ: #,##0.00
-            'I' => NumberFormat::FORMAT_TEXT,                    // رقم المرجع: نص (يمنع 9.67E+11)
-            'J' => NumberFormat::FORMAT_TEXT,                    // ملاحظات: نص
+            'J' => NumberFormat::FORMAT_TEXT,                    // رقم المرجع: نص
+            'K' => NumberFormat::FORMAT_TEXT,                    // ملاحظات: نص
         ];
     }
 
@@ -81,10 +82,12 @@ class CashTransactionExport extends DefaultValueBinder implements
                 'cash_transactions.reference_number  as ref_number',
                 'cash_transactions.notes             as tx_notes',
                 'cash_categories.name                as category_name',
+                'drivers.name                        as driver_name',
                 'branches.name                       as branch_name',
                 'users.name                          as user_name',
             ])
             ->leftJoin('cash_categories', 'cash_categories.id', '=', 'cash_transactions.cash_category_id')
+            ->leftJoin('drivers', 'drivers.id', '=', 'cash_transactions.driver_id')
             ->leftJoin('branches', 'branches.id', '=', 'cash_transactions.branch_id')
             ->leftJoin('users', 'users.id', '=', 'cash_transactions.user_id')
             ->orderByDesc('cash_transactions.transaction_date')
@@ -130,6 +133,7 @@ class CashTransactionExport extends DefaultValueBinder implements
             'طريقة الدفع',
             'المبلغ',
             'التصنيف',
+            'السائق',
             'الفرع',
             'المستخدم',
             'رقم المرجع',
@@ -148,10 +152,11 @@ class CashTransactionExport extends DefaultValueBinder implements
             $row->payment_method === 'cash' ? 'نقدي' : 'تحويل بنكي',
             (float) $row->amount,
             $row->category_name ?? '—',
+            $row->driver_name   ?? '—',
             $row->branch_name   ?? '—',
             $row->user_name     ?? '—',
-            $row->ref_number    ?? '—',   // ← alias صريح بعيداً عن تضارب الأسماء
-            $row->tx_notes      ?? '—',   // ← alias صريح
+            $row->ref_number    ?? '—',
+            $row->tx_notes      ?? '—',
         ];
     }
 
@@ -169,7 +174,7 @@ class CashTransactionExport extends DefaultValueBinder implements
                 // ═══════════════════════════════════════════════════════
                 $sheet->setRightToLeft(true);
                 $sheet->getRowDimension(1)->setRowHeight(22);
-                $sheet->getStyle('A1:J1')->applyFromArray([
+                $sheet->getStyle('A1:K1')->applyFromArray([
                     'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 11],
                     'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1F4E78']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -178,10 +183,9 @@ class CashTransactionExport extends DefaultValueBinder implements
 
                 // ═══════════════════════════════════════════════════════
                 // 2. تنسيق كامل النطاق دفعة واحدة (لا حلقة)
-                //    - محاذاة + حدود خفيفة لكل صفوف البيانات
                 // ═══════════════════════════════════════════════════════
                 if ($lastRow >= 2) {
-                    $dataRange = "A2:J{$lastRow}";
+                    $dataRange = "A2:K{$lastRow}";
                     $sheet->getStyle($dataRange)->applyFromArray([
                         'alignment' => [
                             'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -197,12 +201,9 @@ class CashTransactionExport extends DefaultValueBinder implements
                 }
 
                 // ═══════════════════════════════════════════════════════
-                // 3. ConditionalFormatting — يعمل داخل Excel لا PHP
-                //    → لا حلقة → يتحمل ملايين الصفوف بدون تأثير
+                // 3. ConditionalFormatting
                 // ═══════════════════════════════════════════════════════
                 if ($lastRow >= 2) {
-
-                    // ── وارد: صف أخضر فاتح (بناءً على قيمة عمود C) ──────────
                     $cfIncome = new Conditional();
                     $cfIncome->setConditionType(Conditional::CONDITION_EXPRESSION);
                     $cfIncome->addCondition('=TRIM($C2)="قبض"');
@@ -211,7 +212,6 @@ class CashTransactionExport extends DefaultValueBinder implements
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFDCFCE7']],
                     ]);
 
-                    // ── منصرف: صف أحمر فاتح ──────────────────────────────────
                     $cfExpense = new Conditional();
                     $cfExpense->setConditionType(Conditional::CONDITION_EXPRESSION);
                     $cfExpense->addCondition('=TRIM($C2)="صرف"');
@@ -220,7 +220,6 @@ class CashTransactionExport extends DefaultValueBinder implements
                         'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFFEE2E2']],
                     ]);
 
-                    // ── Zebra Striping: صفوف متبادلة ─────────────────────────
                     $cfZebra = new Conditional();
                     $cfZebra->setConditionType(Conditional::CONDITION_EXPRESSION);
                     $cfZebra->addCondition('=MOD(ROW(),2)=0');
@@ -228,15 +227,13 @@ class CashTransactionExport extends DefaultValueBinder implements
                         ->setFillType(Fill::FILL_SOLID)
                         ->getStartColor()->setARGB('FFF8FAFC');
 
-                    // تطبيق على عمود C فقط للألوان (أسرع من A:J)
                     $sheet->setConditionalStyles(
                         "C2:C{$lastRow}",
                         [$cfIncome, $cfExpense]
                     );
 
-                    // Zebra على كامل النطاق
                     $sheet->setConditionalStyles(
-                        "A2:J{$lastRow}",
+                        "A2:K{$lastRow}",
                         [$cfZebra]
                     );
                 }
@@ -277,16 +274,16 @@ class CashTransactionExport extends DefaultValueBinder implements
                 $r = $lastRow + 2;
 
                 // فاصل بصري
-                $sheet->mergeCells("A{$r}:J{$r}");
-                $sheet->getStyle("A{$r}:J{$r}")->getFill()
+                $sheet->mergeCells("A{$r}:K{$r}");
+                $sheet->getStyle("A{$r}:K{$r}")->getFill()
                       ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFECF1F7');
                 $sheet->getRowDimension($r)->setRowHeight(8);
                 $r++;
 
                 // بانر العنوان
-                $sheet->mergeCells("A{$r}:J{$r}");
+                $sheet->mergeCells("A{$r}:K{$r}");
                 $sheet->setCellValue("A{$r}", '  الملخص المالي للفترة');
-                $sheet->getStyle("A{$r}:J{$r}")->applyFromArray([
+                $sheet->getStyle("A{$r}:K{$r}")->applyFromArray([
                     'font'      => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 13],
                     'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -299,8 +296,8 @@ class CashTransactionExport extends DefaultValueBinder implements
                 $r++;
 
                 // مسافة علوية
-                $sheet->mergeCells("A{$r}:J{$r}");
-                $sheet->getStyle("A{$r}:J{$r}")->getFill()
+                $sheet->mergeCells("A{$r}:K{$r}");
+                $sheet->getStyle("A{$r}:K{$r}")->getFill()
                       ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFAFCFF');
                 $sheet->getRowDimension($r)->setRowHeight(5);
                 $r++;
@@ -334,15 +331,15 @@ class CashTransactionExport extends DefaultValueBinder implements
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                     ]);
 
-                    $sheet->mergeCells("F{$rowNum}:J{$rowNum}");
+                    $sheet->mergeCells("F{$rowNum}:K{$rowNum}");
                     $sheet->setCellValue("F{$rowNum}", $value);
-                    $sheet->getStyle("F{$rowNum}:J{$rowNum}")->applyFromArray([
+                    $sheet->getStyle("F{$rowNum}:K{$rowNum}")->applyFromArray([
                         'font'      => ['bold' => true, 'color' => ['argb' => $valueFg], 'size' => $emphasize ? $fontSize + 3 : $fontSize + 1],
                         'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $valueBg]],
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
                         'borders'   => ['right' => ['borderStyle' => Border::BORDER_MEDIUM, 'color' => ['argb' => $accentColor]]],
                     ]);
-                    $sheet->getStyle("A{$rowNum}:J{$rowNum}")->getBorders()
+                    $sheet->getStyle("A{$rowNum}:K{$rowNum}")->getBorders()
                         ->getBottom()->setBorderStyle(Border::BORDER_HAIR)->getColor()->setARGB('FFDDE6F0');
                     $sheet->getRowDimension($rowNum)->setRowHeight($emphasize ? 36 : 28);
                 };
@@ -356,8 +353,8 @@ class CashTransactionExport extends DefaultValueBinder implements
                     'FFE11D48', 'FFFFF1F3', 'FFFECDD3', 'FF9F1239');
 
                 // فاصل رقيق
-                $sheet->mergeCells("A{$r}:J{$r}");
-                $sheet->getStyle("A{$r}:J{$r}")->getFill()
+                $sheet->mergeCells("A{$r}:K{$r}");
+                $sheet->getStyle("A{$r}:K{$r}")->getFill()
                       ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFE2EBF5');
                 $sheet->getRowDimension($r)->setRowHeight(3);
                 $r++;
@@ -374,16 +371,16 @@ class CashTransactionExport extends DefaultValueBinder implements
                 );
 
                 // مسافة سفلية
-                $sheet->mergeCells("A{$r}:J{$r}");
-                $sheet->getStyle("A{$r}:J{$r}")->getFill()
+                $sheet->mergeCells("A{$r}:K{$r}");
+                $sheet->getStyle("A{$r}:K{$r}")->getFill()
                       ->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFAFCFF');
                 $sheet->getRowDimension($r)->setRowHeight(5);
                 $r++;
 
                 // تاريخ الإصدار
-                $sheet->mergeCells("A{$r}:J{$r}");
+                $sheet->mergeCells("A{$r}:K{$r}");
                 $sheet->setCellValue("A{$r}", '🕒   تاريخ إصدار الكشف:   ' . now()->format('Y-m-d  |  H:i'));
-                $sheet->getStyle("A{$r}:J{$r}")->applyFromArray([
+                $sheet->getStyle("A{$r}:K{$r}")->applyFromArray([
                     'font'      => ['color' => ['argb' => 'FF64748B'], 'size' => 10, 'italic' => true],
                     'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF8FAFC']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
@@ -393,9 +390,9 @@ class CashTransactionExport extends DefaultValueBinder implements
                 $r++;
 
                 // تذييل النظام
-                $sheet->mergeCells("A{$r}:J{$r}");
+                $sheet->mergeCells("A{$r}:K{$r}");
                 $sheet->setCellValue("A{$r}", 'تم التصدير باستخدام نظام مرسل   |   للتواصل أو طلب النظام:  967781152674');
-                $sheet->getStyle("A{$r}:J{$r}")->applyFromArray([
+                $sheet->getStyle("A{$r}:K{$r}")->applyFromArray([
                     'font'      => ['italic' => true, 'color' => ['argb' => 'FFCBD5E1'], 'size' => 9],
                     'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']],
                     'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
