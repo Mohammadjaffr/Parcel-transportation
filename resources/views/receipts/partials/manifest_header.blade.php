@@ -44,7 +44,7 @@
                             <div
                                 style="font-size: 7.5pt; font-weight: 700; color: #1e293b; line-height: 1.3; display: inline; align-items: center; gap: 4px; flex-wrap: wrap;">
                                 <span
-                                    style="background: #0f172a; color: #ffffff; padding: 1px 6px; border-radius: 3px; font-size: 7.5pt; font-weight: 800; white-space: nowrap; flex-shrink: 0;">
+                                    style="background: #059669; color: #ffffff; padding: 1px 6px; border-radius: 3px; font-size: 7.5pt; font-weight: 800; white-space: nowrap; flex-shrink: 0;">
                                     {{ $b['name'] ?? '' }}
                                 </span>
                                 <span style="color: #334155; font-weight: 700; font-size: 12pt;">

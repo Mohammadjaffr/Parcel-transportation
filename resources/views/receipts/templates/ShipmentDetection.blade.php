@@ -135,7 +135,7 @@
                                 <td
                                     class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">
                                     <span
-                                        class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">{{ $shipment['package_type'] }}</span>
+                                        class="inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 whitespace-nowrap">{{ $shipment['package_type'] }}@if (!empty($shipment['package_qty'])) <span class="font-sans font-black text-indigo-700 print:text-black">({{ $shipment['package_qty'] }})</span>@endif</span>
                                 </td>
                                 <td
                                     class="px-2 py-2 font-bold border-l text-slate-700 border-slate-100 print:border-slate-200">
@@ -215,7 +215,12 @@
                                             إجمالي العمولة
                                         </th>
 
+                                       
                                         <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
+                                            style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
+                                            إجمالي المحاسب
+                                        </th>
+                                         <th class="px-2 py-2.5 font-black text-indigo-900 border-l border-slate-200 print:text-slate-800"
                                             style="padding: 6px; font-weight: 900; border-left: 1px solid #e2e8f0;">
                                             <div>التصفية مع السائق</div>
                                         </th>
@@ -230,7 +235,7 @@
                                         <!-- الحقل الجديد في الترويسة -->
                                         <th class="px-2 py-2.5 font-black text-indigo-900 print:text-slate-800 bg-slate-100"
                                             style="padding: 6px; font-weight: 900;">
-                                            إجمالي (محاسب + آجل + الآجور الاخرى)
+                                            إجمالي المبالغ + الآجور الاخرى
                                         </th>
                                     </tr>
 
@@ -246,6 +251,9 @@
                                         <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
                                             style="padding: 6px; font-size: 15px; font-weight: 900; color: #16a34a; border-left: 1px solid #f1f5f9;">
                                             {{ number_format($totals['grand_commission'] ?? 0, 0) }}</td>
+                                        <td class="px-2 py-3 font-sans text-lg font-black text-emerald-600 border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
+                                            style="padding: 6px; font-size: 15px; font-weight: 900; color: #16a34a; border-left: 1px solid #f1f5f9;">
+                                            {{ number_format($totals['accountant_amount'] ?? 0, 0) }}</td>
 
                                         <td class="px-2 py-3 font-sans text-lg font-black border-l border-slate-100 print:border-slate-200 print:text-slate-800 total-val"
                                             style="padding: 6px; font-size: 15px; font-weight: 900; border-left: 1px solid #f1f5f9;">
